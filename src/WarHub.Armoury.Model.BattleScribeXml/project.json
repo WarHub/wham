@@ -1,6 +1,6 @@
 {
   "version": "0.1.0-*",
-    "description": "XML mapping of BattleScribe data format. Provides simple mapping classes as well as a mechanism to parse all IDs into Guid struct.",
+  "description": "XML mapping of BattleScribe data format. Provides simple mapping classes as well as a mechanism to parse all IDs into Guid struct.",
   "authors": [ "WarHub" ],
   "tags": [ "WarHub", "WarHub.Armoury.Model.BattleScribeXml", "wham", "wargame",
             "roster", "battlescribe", "xml" ],
@@ -48,6 +48,6 @@
     }
   },
   "dependencies": {
-    "WarHub.Armoury.Model": "0.1.0"
+    "WarHub.Armoury.Model": "0.1.0-*"
   }
 }

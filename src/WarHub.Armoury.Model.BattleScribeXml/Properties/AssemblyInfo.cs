@@ -2,6 +2,7 @@
 // See LICENSE file in the project root for more information.
 
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 // General Information about an assembly is controlled through the following
@@ -11,11 +12,12 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyTitle("WarHub.Armoury.Model.BattleScribeXml")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
+[assembly: AssemblyCompany("WarHub")]
 [assembly: AssemblyProduct("WarHub.Armoury.Model.BattleScribeXml")]
-[assembly: AssemblyCopyright("Copyright ©  2016")]
+[assembly: AssemblyCopyright("Copyright © WarHub 2016")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
+[assembly: InternalsVisibleTo("WarHub.Armoury.Model.BattleScribeXmlTests")]
 
 // Setting ComVisible to false makes the types in this assembly not visible
 // to COM components.  If you need to access a type in this assembly from
