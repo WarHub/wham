@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<roster id="6f42b503-7ff6-ddf7-f2e0-6c9c999ab451" battleScribeVersion="1.14b" name="Test Roster" points="94.0" pointsLimit="1300.0" gameSystemId="7e2a1cff-7498-69af-6b1e-04c38234a3c5" gameSystemName="Test Game System" gameSystemRevision="1" xmlns="http://www.battlescribe.net/schema/rosterSchema">
+  <catalogueLinks>
+    <catalogueLink id="dd65a795-1623-c2e0-f8ca-5ac5e3d5fdd9" catalogueId="a97a4f8d-a3d8-81e1-c4e8-1f4736b62879" catalogueRevision="1" catalogueName="Test Catalogue" forceTypeId="cad557e3-279d-b9af-3fe0-5b92360fd0ab" forceTypeName="Test Force Type">
+      <categories>
+        <category id="a3d7f4ed-761f-c4b4-3ba9-f111dc54a13b" categoryId="(No Category)" name="(No Category)"/>
+        <category id="8a5d410e-3519-ab73-8b3f-d10a4f824684" categoryId="896d8ba8-08ac-d2da-782d-a037ef086789" name="Modifier Test"/>
+        <category id="91411a39-910b-b971-ce65-67035fb21d99" categoryId="cca20a2e-516b-5eb7-f5f3-7685495497dc" name="Repeat modifier test"/>
+        <category id="46d3b31a-caba-a839-e0ef-69659f118572" categoryId="d99ab4b1-4076-e79a-c3f3-287fcd813394" name="Category Modifier Conditions"/>
+      </categories>
+      <catalogueLinks/>
+    </catalogueLink>
+  </catalogueLinks>
+  <selections>
+    <selection id="4fd16ae0-b803-d16b-148b-59aa1b681c4a" entryId="e0f58a2b-049f-4a28-1dba-0c8682022ccd::c9b1d432-f927-c74a-68fc-04bd91b1e278" catalogueLinkId="dd65a795-1623-c2e0-f8ca-5ac5e3d5fdd9" categoryId="(No Category)" name="Shared Test Entry" points="100.0" number="1" type="upgrade" page="0">
+      <rules>
+        <rule name="Shared Test Entry" hidden="false" page="0"/>
+      </rules>
+      <profiles>
+        <profile name="Shared Test Entry" type="Test Profile Type" hidden="false" page="0">
+          <characteristics>
+            <characteristic name="New Characteristic" value="1234" characteristicId="cc05a167-9e9a-6ae2-01da-633ea6aedde2"/>
+          </characteristics>
+        </profile>
+      </profiles>
+      <selections/>
+    </selection>
+    <selection id="ac1f693d-2a04-5187-1935-4602dc3f924a" entryId="aa59ddc0-cfbd-ab31-aba0-53e3404f4b78" catalogueLinkId="dd65a795-1623-c2e0-f8ca-5ac5e3d5fdd9" categoryId="d99ab4b1-4076-e79a-c3f3-287fcd813394" name="Main Entry" points="-3.0" number="1" type="upgrade" page="0">
+      <rules/>
+      <profiles/>
+      <selections/>
+    </selection>
+    <selection id="a17a4f55-305b-bfdf-1a46-cfdff60dfb83" entryId="aa59ddc0-cfbd-ab31-aba0-53e3404f4b78" catalogueLinkId="dd65a795-1623-c2e0-f8ca-5ac5e3d5fdd9" categoryId="d99ab4b1-4076-e79a-c3f3-287fcd813394" name="Main Entry" points="-3.0" number="1" type="upgrade" page="0">
+      <rules/>
+      <profiles/>
+      <selections/>
+    </selection>
+  </selections>
+  <rules>
+    <rule name="Main Rule" hidden="false" page="0"/>
+  </rules>
+</roster>

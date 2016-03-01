@@ -1,0 +1,381 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<catalogue id="a97a4f8d-a3d8-81e1-c4e8-1f4736b62879" revision="1" gameSystemId="7e2a1cff-7498-69af-6b1e-04c38234a3c5" gameSystemRevision="1" battleScribeVersion="1.15" name="Test Catalogue" books="cat-book-placeholder" authorName="Cat-author-name" authorContact="Cat-author-contact" authorUrl="http://www.cat-author.com" xmlns="http://www.battlescribe.net/schema/catalogueSchema">
+  <entries>
+    <entry id="aa59ddc0-cfbd-ab31-aba0-53e3404f4b78" name="Main Entry" points="-3.0" categoryId="d99ab4b1-4076-e79a-c3f3-287fcd813394" type="upgrade" minSelections="0" maxSelections="-1" minInForce="0" maxInForce="-1" minInRoster="0" maxInRoster="-1" minPoints="0.0" maxPoints="-1.0" collective="false" hidden="false" book="entry origin book" page="abba">
+      <entries/>
+      <entryGroups/>
+      <modifiers/>
+      <rules/>
+      <profiles/>
+      <links/>
+    </entry>
+  </entries>
+  <rules>
+    <rule id="7e19b9df-fd63-10c1-36d2-5f9973119612" name="Main Rule" hidden="false" book="escaping &apos; &quot; &lt; &gt; &amp;" page="0">
+      <description>escaping &apos; &quot; &lt; &gt; &amp;</description>
+      <modifiers/>
+    </rule>
+  </rules>
+  <links>
+    <link id="e0f58a2b-049f-4a28-1dba-0c8682022ccd" targetId="c9b1d432-f927-c74a-68fc-04bd91b1e278" linkType="entry" categoryId="(No Category)">
+      <modifiers/>
+    </link>
+    <link id="08aa32e8-f1a3-4257-e3a1-bbf9c8e70dfa" targetId="6149dbc1-aa03-049e-06e3-77ff728433c5" linkType="rule">
+      <modifiers/>
+    </link>
+  </links>
+  <sharedEntries>
+    <entry id="9d4aeac8-66d1-9104-a5fc-1958fe06d7e7" name="Condition Type Check Entry" points="0.0" categoryId="(No Category)" type="upgrade" minSelections="0" maxSelections="-1" minInForce="0" maxInForce="-1" minInRoster="0" maxInRoster="-1" minPoints="0.0" maxPoints="-1.0" collective="false" hidden="false" page="0">
+      <entries/>
+      <entryGroups/>
+      <modifiers>
+        <modifier type="increment" field="minSelections" value="1.0" repeat="true" numRepeats="1" incrementParentId="roster" incrementChildId="aa59ddc0-cfbd-ab31-aba0-53e3404f4b78" incrementField="points" incrementValue="1.0">
+          <conditions>
+            <condition parentId="roster" childId="aa59ddc0-cfbd-ab31-aba0-53e3404f4b78" field="selections" type="greater than" value="0.0"/>
+            <condition parentId="roster" childId="aa59ddc0-cfbd-ab31-aba0-53e3404f4b78" field="selections" type="at least" value="0.0"/>
+            <condition parentId="roster" childId="aa59ddc0-cfbd-ab31-aba0-53e3404f4b78" field="selections" type="at most" value="0.0"/>
+            <condition parentId="roster" childId="aa59ddc0-cfbd-ab31-aba0-53e3404f4b78" field="selections" type="less than" value="0.0"/>
+            <condition parentId="roster" childId="aa59ddc0-cfbd-ab31-aba0-53e3404f4b78" field="selections" type="not equal to" value="0.0"/>
+            <condition parentId="roster" childId="aa59ddc0-cfbd-ab31-aba0-53e3404f4b78" field="selections" type="equal to" value="0.0"/>
+          </conditions>
+          <conditionGroups>
+            <conditionGroup type="and">
+              <conditions/>
+              <conditionGroups>
+                <conditionGroup type="or">
+                  <conditions>
+                    <condition parentId="9d4aeac8-66d1-9104-a5fc-1958fe06d7e7" childId="3dca8525-286c-7024-4b41-a7f8984d1915" field="selections" type="equal to" value="1.0"/>
+                  </conditions>
+                  <conditionGroups/>
+                </conditionGroup>
+              </conditionGroups>
+            </conditionGroup>
+          </conditionGroups>
+        </modifier>
+      </modifiers>
+      <rules/>
+      <profiles/>
+      <links/>
+    </entry>
+    <entry id="b1d66e0c-16eb-e0a7-01f2-5064da4d8102" name="Entry Types" points="0.0" categoryId="(No Category)" type="upgrade" minSelections="0" maxSelections="-1" minInForce="0" maxInForce="-1" minInRoster="0" maxInRoster="-1" minPoints="0.0" maxPoints="-1.0" collective="false" hidden="false" page="0">
+      <entries>
+        <entry id="c8ffda09-78dd-0e04-9e45-94dbaaf0314c" name="New Entry - upgrade" points="0.0" categoryId="(No Category)" type="upgrade" minSelections="0" maxSelections="-1" minInForce="0" maxInForce="-1" minInRoster="0" maxInRoster="-1" minPoints="0.0" maxPoints="-1.0" collective="true" hidden="false" page="0">
+          <entries/>
+          <entryGroups/>
+          <modifiers/>
+          <rules/>
+          <profiles/>
+          <links/>
+        </entry>
+        <entry id="5bc22251-02da-0b54-3bbe-83fa6491e38d" name="New Entry - model" points="0.0" categoryId="(No Category)" type="model" minSelections="0" maxSelections="-1" minInForce="0" maxInForce="-1" minInRoster="0" maxInRoster="-1" minPoints="0.0" maxPoints="-1.0" collective="false" hidden="false" page="0">
+          <entries/>
+          <entryGroups/>
+          <modifiers/>
+          <rules/>
+          <profiles/>
+          <links/>
+        </entry>
+        <entry id="0352e7bd-0f88-1d25-2940-8dbfde75e63f" name="New Entry - unit" points="0.0" categoryId="(No Category)" type="unit" minSelections="0" maxSelections="-1" minInForce="0" maxInForce="-1" minInRoster="0" maxInRoster="-1" minPoints="0.0" maxPoints="-1.0" collective="false" hidden="false" page="0">
+          <entries/>
+          <entryGroups/>
+          <modifiers/>
+          <rules/>
+          <profiles/>
+          <links/>
+        </entry>
+      </entries>
+      <entryGroups/>
+      <modifiers/>
+      <rules/>
+      <profiles/>
+      <links/>
+    </entry>
+    <entry id="3dca8525-286c-7024-4b41-a7f8984d1915" name="Linked Entry" points="0.0" categoryId="(No Category)" type="upgrade" minSelections="0" maxSelections="-1" minInForce="0" maxInForce="-1" minInRoster="0" maxInRoster="-1" minPoints="0.0" maxPoints="-1.0" collective="false" hidden="false" page="0">
+      <entries/>
+      <entryGroups/>
+      <modifiers/>
+      <rules/>
+      <profiles/>
+      <links/>
+    </entry>
+    <entry id="b0c55505-8bf1-0c7c-f8aa-457d7f0aa823" name="Modifier Field Check Entry" points="0.0" categoryId="(No Category)" type="upgrade" minSelections="0" maxSelections="-1" minInForce="0" maxInForce="-1" minInRoster="0" maxInRoster="-1" minPoints="0.0" maxPoints="-1.0" collective="false" hidden="false" page="0">
+      <entries/>
+      <entryGroups/>
+      <modifiers>
+        <modifier type="increment" field="minInRoster" value="0.0" repeat="false" numRepeats="1" incrementParentId="roster" incrementChildId="no child" incrementField="selections" incrementValue="1.0">
+          <conditions/>
+          <conditionGroups/>
+        </modifier>
+        <modifier type="increment" field="maxSelections" value="0.0" repeat="false" numRepeats="1" incrementParentId="roster" incrementChildId="no child" incrementField="selections" incrementValue="1.0">
+          <conditions/>
+          <conditionGroups/>
+        </modifier>
+        <modifier type="increment" field="minSelections" value="0.0" repeat="false" numRepeats="1" incrementParentId="roster" incrementChildId="no child" incrementField="selections" incrementValue="1.0">
+          <conditions/>
+          <conditionGroups/>
+        </modifier>
+        <modifier type="increment" field="minPoints" value="0.0" repeat="false" numRepeats="1" incrementParentId="roster" incrementChildId="no child" incrementField="selections" incrementValue="1.0">
+          <conditions/>
+          <conditionGroups/>
+        </modifier>
+        <modifier type="increment" field="points" value="0.0" repeat="false" numRepeats="1" incrementParentId="roster" incrementChildId="no child" incrementField="selections" incrementValue="1.0">
+          <conditions/>
+          <conditionGroups/>
+        </modifier>
+        <modifier type="increment" field="maxPoints" value="0.0" repeat="false" numRepeats="1" incrementParentId="roster" incrementChildId="no child" incrementField="selections" incrementValue="1.0">
+          <conditions/>
+          <conditionGroups/>
+        </modifier>
+        <modifier type="increment" field="maxInRoster" value="0.0" repeat="false" numRepeats="1" incrementParentId="roster" incrementChildId="no child" incrementField="selections" incrementValue="1.0">
+          <conditions/>
+          <conditionGroups/>
+        </modifier>
+      </modifiers>
+      <rules/>
+      <profiles/>
+      <links/>
+    </entry>
+    <entry id="e54d29d0-7310-ffac-104d-2aa07daa184d" name="Modifier Type Check Entry" points="0.0" categoryId="(No Category)" type="upgrade" minSelections="0" maxSelections="-1" minInForce="0" maxInForce="-1" minInRoster="0" maxInRoster="-1" minPoints="0.0" maxPoints="-1.0" collective="false" hidden="false" page="0">
+      <entries/>
+      <entryGroups/>
+      <modifiers>
+        <modifier type="decrement" field="minSelections" value="0.0" repeat="false" numRepeats="1" incrementParentId="roster" incrementChildId="no child" incrementField="selections" incrementValue="1.0">
+          <conditions/>
+          <conditionGroups/>
+        </modifier>
+        <modifier type="set" field="minSelections" value="0.0" repeat="false" numRepeats="1" incrementParentId="roster" incrementChildId="no child" incrementField="selections" incrementValue="1.0">
+          <conditions/>
+          <conditionGroups/>
+        </modifier>
+        <modifier type="increment" field="minSelections" value="0.0" repeat="false" numRepeats="1" incrementParentId="roster" incrementChildId="no child" incrementField="selections" incrementValue="1.0">
+          <conditions/>
+          <conditionGroups/>
+        </modifier>
+      </modifiers>
+      <rules/>
+      <profiles/>
+      <links/>
+    </entry>
+    <entry id="c9b1d432-f927-c74a-68fc-04bd91b1e278" name="Shared Test Entry" points="100.0" categoryId="(No Category)" type="upgrade" minSelections="0" maxSelections="-1" minInForce="0" maxInForce="-1" minInRoster="0" maxInRoster="-1" minPoints="0.0" maxPoints="-1.0" collective="false" hidden="false" page="0">
+      <entries>
+        <entry id="743a110d-c76f-6967-4b5f-2ecef19f468a" name="Child Entry" points="0.0" categoryId="(No Category)" type="upgrade" minSelections="0" maxSelections="-1" minInForce="0" maxInForce="-1" minInRoster="0" maxInRoster="-1" minPoints="0.0" maxPoints="-1.0" collective="false" hidden="false" page="0">
+          <entries/>
+          <entryGroups/>
+          <modifiers/>
+          <rules/>
+          <profiles/>
+          <links/>
+        </entry>
+      </entries>
+      <entryGroups>
+        <entryGroup id="b9c5ae06-d574-7ab5-954a-9e0cfc0c1325" name="Child Entry Group" minSelections="0" maxSelections="-1" minInForce="0" maxInForce="-1" minInRoster="0" maxInRoster="-1" minPoints="0.0" maxPoints="-1.0" collective="false" hidden="false">
+          <entries/>
+          <entryGroups/>
+          <modifiers/>
+          <links/>
+        </entryGroup>
+      </entryGroups>
+      <modifiers>
+        <modifier type="increment" field="minSelections" value="0.0" repeat="false" numRepeats="1" incrementParentId="roster" incrementChildId="no child" incrementField="selections" incrementValue="1.0">
+          <conditions/>
+          <conditionGroups/>
+        </modifier>
+      </modifiers>
+      <rules>
+        <rule id="1d073fcb-7984-cdf0-0c99-937647acc5cf" name="Shared Test Entry" hidden="false" page="0">
+          <modifiers/>
+        </rule>
+      </rules>
+      <profiles>
+        <profile id="8471e827-ce5b-5b7c-fa31-e183269e79ad" profileTypeId="7e6737a8-902d-b4b2-4cf7-55d4dfc723ba" name="Shared Test Entry" hidden="false" page="0">
+          <characteristics>
+            <characteristic characteristicId="cc05a167-9e9a-6ae2-01da-633ea6aedde2" name="New Characteristic" value="1234"/>
+          </characteristics>
+          <modifiers/>
+        </profile>
+      </profiles>
+      <links>
+        <link id="8c2bfd80-3282-c0cf-1578-61b7183df149" targetId="3dca8525-286c-7024-4b41-a7f8984d1915" linkType="entry">
+          <modifiers/>
+        </link>
+      </links>
+    </entry>
+  </sharedEntries>
+  <sharedEntryGroups>
+    <entryGroup id="94b21a6e-2f3c-67c9-470e-0789c63e216a" name="Modifier Field Check Entry Group" minSelections="0" maxSelections="-1" minInForce="0" maxInForce="-1" minInRoster="0" maxInRoster="-1" minPoints="0.0" maxPoints="-1.0" collective="false" hidden="false">
+      <entries/>
+      <entryGroups/>
+      <modifiers>
+        <modifier type="increment" field="maxPoints" value="0.0" repeat="false" numRepeats="1" incrementParentId="roster" incrementChildId="no child" incrementField="selections" incrementValue="1.0">
+          <conditions/>
+          <conditionGroups/>
+        </modifier>
+        <modifier type="increment" field="minInRoster" value="0.0" repeat="false" numRepeats="1" incrementParentId="roster" incrementChildId="no child" incrementField="selections" incrementValue="1.0">
+          <conditions/>
+          <conditionGroups/>
+        </modifier>
+        <modifier type="increment" field="maxSelections" value="0.0" repeat="false" numRepeats="1" incrementParentId="roster" incrementChildId="no child" incrementField="selections" incrementValue="1.0">
+          <conditions/>
+          <conditionGroups/>
+        </modifier>
+        <modifier type="increment" field="minPoints" value="0.0" repeat="false" numRepeats="1" incrementParentId="roster" incrementChildId="no child" incrementField="selections" incrementValue="1.0">
+          <conditions/>
+          <conditionGroups/>
+        </modifier>
+        <modifier type="increment" field="minSelections" value="0.0" repeat="false" numRepeats="1" incrementParentId="roster" incrementChildId="no child" incrementField="selections" incrementValue="1.0">
+          <conditions/>
+          <conditionGroups/>
+        </modifier>
+        <modifier type="increment" field="maxInRoster" value="0.0" repeat="false" numRepeats="1" incrementParentId="roster" incrementChildId="no child" incrementField="selections" incrementValue="1.0">
+          <conditions/>
+          <conditionGroups/>
+        </modifier>
+      </modifiers>
+      <links/>
+    </entryGroup>
+    <entryGroup id="f452f6b1-87f5-0097-48a7-7cd2b5ff923e" name="Modifier Type Check Entry Group" minSelections="0" maxSelections="-1" minInForce="0" maxInForce="-1" minInRoster="0" maxInRoster="-1" minPoints="0.0" maxPoints="-1.0" collective="false" hidden="false">
+      <entries/>
+      <entryGroups/>
+      <modifiers>
+        <modifier type="set" field="minSelections" value="0.0" repeat="false" numRepeats="1" incrementParentId="roster" incrementChildId="no child" incrementField="selections" incrementValue="1.0">
+          <conditions/>
+          <conditionGroups/>
+        </modifier>
+        <modifier type="decrement" field="minSelections" value="0.0" repeat="false" numRepeats="1" incrementParentId="roster" incrementChildId="no child" incrementField="selections" incrementValue="1.0">
+          <conditions/>
+          <conditionGroups/>
+        </modifier>
+        <modifier type="increment" field="minSelections" value="0.0" repeat="false" numRepeats="1" incrementParentId="roster" incrementChildId="no child" incrementField="selections" incrementValue="1.0">
+          <conditions/>
+          <conditionGroups/>
+        </modifier>
+      </modifiers>
+      <links/>
+    </entryGroup>
+    <entryGroup id="ba8b8ceb-6c1f-d398-21da-53c7ce7a3887" name="Test Entry Group" minSelections="0" maxSelections="-1" minInForce="0" maxInForce="-1" minInRoster="0" maxInRoster="-1" minPoints="0.0" maxPoints="-1.0" collective="false" hidden="false">
+      <entries>
+        <entry id="47d33779-7c10-07f6-46e4-968ad873dc32" name="Group Entry" points="0.0" categoryId="(No Category)" type="upgrade" minSelections="0" maxSelections="-1" minInForce="0" maxInForce="-1" minInRoster="0" maxInRoster="-1" minPoints="0.0" maxPoints="-1.0" collective="false" hidden="false" page="0">
+          <entries/>
+          <entryGroups/>
+          <modifiers/>
+          <rules/>
+          <profiles/>
+          <links/>
+        </entry>
+      </entries>
+      <entryGroups>
+        <entryGroup id="018648ca-bcef-6951-1448-013f8195eac4" name="Group&apos;s Child Entry Group" minSelections="0" maxSelections="-1" minInForce="0" maxInForce="-1" minInRoster="0" maxInRoster="-1" minPoints="0.0" maxPoints="-1.0" collective="false" hidden="false">
+          <entries/>
+          <entryGroups/>
+          <modifiers/>
+          <links/>
+        </entryGroup>
+      </entryGroups>
+      <modifiers>
+        <modifier type="increment" field="minSelections" value="0.0" repeat="false" numRepeats="1" incrementParentId="roster" incrementChildId="no child" incrementField="selections" incrementValue="1.0">
+          <conditions/>
+          <conditionGroups/>
+        </modifier>
+      </modifiers>
+      <links>
+        <link id="c6deec4a-891b-f2ed-a637-27dacd0e17d0" targetId="3dca8525-286c-7024-4b41-a7f8984d1915" linkType="entry">
+          <modifiers/>
+        </link>
+      </links>
+    </entryGroup>
+  </sharedEntryGroups>
+  <sharedRules>
+    <rule id="6149dbc1-aa03-049e-06e3-77ff728433c5" name="Test Empty Rule" hidden="false" page="0">
+      <modifiers>
+        <modifier type="hide" field="name" value="0.0" repeat="false" numRepeats="1" incrementParentId="roster" incrementChildId="no child" incrementField="selections" incrementValue="1.0">
+          <conditions/>
+          <conditionGroups/>
+        </modifier>
+      </modifiers>
+    </rule>
+    <rule id="e0f47d10-62aa-8cfb-a8f5-f68fe5584219" name="Test Rule" hidden="true" book="Test Rule Book" page="1000">
+      <description>Test Rule&apos;s Description.</description>
+      <modifiers>
+        <modifier type="show" field="name" value="0.0" repeat="false" numRepeats="1" incrementParentId="roster" incrementChildId="no child" incrementField="selections" incrementValue="1.0">
+          <conditions/>
+          <conditionGroups/>
+        </modifier>
+        <modifier type="append" field="description" value="appended" repeat="false" numRepeats="1" incrementParentId="roster" incrementChildId="no child" incrementField="selections" incrementValue="1.0">
+          <conditions/>
+          <conditionGroups/>
+        </modifier>
+        <modifier type="set" field="name" value="Test Rule Modified" repeat="false" numRepeats="1" incrementParentId="roster" incrementChildId="no child" incrementField="selections" incrementValue="1.0">
+          <conditions/>
+          <conditionGroups/>
+        </modifier>
+      </modifiers>
+    </rule>
+  </sharedRules>
+  <sharedProfiles>
+    <profile id="c8d14a44-d2a7-4447-adfb-7bf73da800f7" profileTypeId="7e6737a8-902d-b4b2-4cf7-55d4dfc723ba" name="Condition Profile" hidden="false" page="0">
+      <characteristics>
+        <characteristic characteristicId="cc05a167-9e9a-6ae2-01da-633ea6aedde2" name="New Characteristic" value="1"/>
+      </characteristics>
+      <modifiers>
+        <modifier type="increment" field="cc05a167-9e9a-6ae2-01da-633ea6aedde2" value="1" repeat="false" numRepeats="1" incrementParentId="roster" incrementChildId="no child" incrementField="selections" incrementValue="1.0">
+          <conditions>
+            <condition parentId="direct parent" childId="aa59ddc0-cfbd-ab31-aba0-53e3404f4b78" field="points" type="equal to" value="0.0"/>
+            <condition parentId="roster" childId="no child" field="total selections" type="equal to" value="0.0"/>
+            <condition parentId="roster" childId="no child" field="points limit" type="equal to" value="0.0"/>
+            <condition parentId="roster" childId="aa59ddc0-cfbd-ab31-aba0-53e3404f4b78" field="points" type="equal to" value="0.0"/>
+            <condition parentId="category" childId="aa59ddc0-cfbd-ab31-aba0-53e3404f4b78" field="points" type="equal to" value="0.0"/>
+            <condition parentId="force type" childId="cad557e3-279d-b9af-3fe0-5b92360fd0ab" field="selections" type="instance of" value="0.0"/>
+            <condition parentId="category" childId="d99ab4b1-4076-e79a-c3f3-287fcd813394" field="selections" type="instance of" value="0.0"/>
+            <condition parentId="force type" childId="ba8b8ceb-6c1f-d398-21da-53c7ce7a3887" field="points" type="equal to" value="0.0"/>
+            <condition parentId="force type" childId="aa59ddc0-cfbd-ab31-aba0-53e3404f4b78" field="selections" type="equal to" value="0.0"/>
+            <condition parentId="direct parent" childId="aa59ddc0-cfbd-ab31-aba0-53e3404f4b78" field="selections" type="instance of" value="0.0"/>
+            <condition parentId="roster" childId="aa59ddc0-cfbd-ab31-aba0-53e3404f4b78" field="selections" type="equal to" value="0.0"/>
+            <condition parentId="category" childId="aa59ddc0-cfbd-ab31-aba0-53e3404f4b78" field="selections" type="equal to" value="0.0"/>
+            <condition parentId="direct parent" childId="roster" field="selections" type="instance of" value="0.0"/>
+            <condition parentId="direct parent" childId="aa59ddc0-cfbd-ab31-aba0-53e3404f4b78" field="selections" type="equal to" value="0.0"/>
+            <condition parentId="direct parent" childId="ba8b8ceb-6c1f-d398-21da-53c7ce7a3887" field="selections" type="instance of" value="0.0"/>
+          </conditions>
+          <conditionGroups/>
+        </modifier>
+      </modifiers>
+    </profile>
+    <profile id="12e40eac-8ac1-a2d7-4243-ec6bb1d982ce" profileTypeId="7e6737a8-902d-b4b2-4cf7-55d4dfc723ba" name="Hidden Profile" hidden="true" page="0">
+      <characteristics>
+        <characteristic characteristicId="cc05a167-9e9a-6ae2-01da-633ea6aedde2" name="New Characteristic" value="12"/>
+      </characteristics>
+      <modifiers>
+        <modifier type="increment" field="cc05a167-9e9a-6ae2-01da-633ea6aedde2" value="1" repeat="false" numRepeats="1" incrementParentId="roster" incrementChildId="no child" incrementField="selections" incrementValue="1.0">
+          <conditions/>
+          <conditionGroups/>
+        </modifier>
+        <modifier type="show" field="cc05a167-9e9a-6ae2-01da-633ea6aedde2" value="0.0" repeat="false" numRepeats="1" incrementParentId="roster" incrementChildId="no child" incrementField="selections" incrementValue="1.0">
+          <conditions/>
+          <conditionGroups/>
+        </modifier>
+        <modifier type="decrement" field="cc05a167-9e9a-6ae2-01da-633ea6aedde2" value="2" repeat="false" numRepeats="1" incrementParentId="roster" incrementChildId="no child" incrementField="selections" incrementValue="1.0">
+          <conditions/>
+          <conditionGroups/>
+        </modifier>
+      </modifiers>
+    </profile>
+    <profile id="651d474d-7958-a728-153f-f06e7c55c53b" profileTypeId="7e6737a8-902d-b4b2-4cf7-55d4dfc723ba" name="Test Profile" hidden="false" book="Test Profile Book" page="120">
+      <characteristics>
+        <characteristic characteristicId="cc05a167-9e9a-6ae2-01da-633ea6aedde2" name="New Characteristic" value="Test Profile Value"/>
+      </characteristics>
+      <modifiers>
+        <modifier type="set" field="cc05a167-9e9a-6ae2-01da-633ea6aedde2" value="setted" repeat="false" numRepeats="1" incrementParentId="roster" incrementChildId="no child" incrementField="selections" incrementValue="1.0">
+          <conditions/>
+          <conditionGroups/>
+        </modifier>
+        <modifier type="hide" field="cc05a167-9e9a-6ae2-01da-633ea6aedde2" value="0.0" repeat="false" numRepeats="1" incrementParentId="roster" incrementChildId="no child" incrementField="selections" incrementValue="1.0">
+          <conditions/>
+          <conditionGroups/>
+        </modifier>
+        <modifier type="append" field="cc05a167-9e9a-6ae2-01da-633ea6aedde2" value="appended" repeat="false" numRepeats="1" incrementParentId="roster" incrementChildId="no child" incrementField="selections" incrementValue="1.0">
+          <conditions/>
+          <conditionGroups/>
+        </modifier>
+      </modifiers>
+    </profile>
+  </sharedProfiles>
+</catalogue>

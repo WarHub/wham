@@ -1,0 +1,559 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<roster id="adfe66da-6a7e-baa3-a06c-e589bf35d6e6" battleScribeVersion="1.15" name="Test Roster" points="428.0" pointsLimit="1500.0" gameSystemId="e1ebd931-a209-3ce4-87b4-d9918d25530b" gameSystemName="Warhammer 40,000 7th Edition" gameSystemRevision="43" xmlns="http://www.battlescribe.net/schema/rosterSchema">
+  <forces>
+    <force id="3c060448-8d81-cf8e-02b5-28659f6b1f6a" catalogueId="3c888d8a-9391-6ae0-9af3-c2d7587098c2" catalogueRevision="34" catalogueName="Tau Empire: Codex (2013)" forceTypeId="5374616e6461726423232344415441232323" forceTypeName="Combined Arms Detachment">
+      <categories>
+        <category id="58d61715-302c-ed5b-1508-c5627c3bdf71" categoryId="(No Category)" name="(No Category)">
+          <selections/>
+        </category>
+        <category id="c1026109-687a-697e-1360-fa3505ae0069" categoryId="ff36a6f3-19bf-4f48-8956-adacfd28fe74" name="No Force Org Slot">
+          <selections/>
+        </category>
+        <category id="fc6f51b7-dee4-7079-8b13-758acd2092af" categoryId="848a6ff2-0def-4c72-8433-ff7da70e6bc7" name="HQ">
+          <selections>
+            <selection id="af1ecddb-d3fd-b7dd-e148-3dff97980753" entryId="71ee875b-41f6-8aa4-3b51-fdc7981fb172::dbd1d210-a812-6578-d6a5-677e45e0fe22" name="Aun&apos;Shi" points="110.0" number="1" type="model" book="Codex: Tau Empire" page="97">
+              <rules>
+                <rule ruleId="71ee875b-41f6-8aa4-3b51-fdc7981fb172::7243ec9e-26c4-1924-b149-7cba3cbd733d::4099a15f-cbd9-204d-83ba-cddeac12d72c" name="Blademaster" hidden="false" book="Codex: Tau Empire" page="64">
+                  <description>When in challenge, Aun&apos;Shi must choose a fighting stance each turn, before any rolls:
+Patient Blade: re-roll all failed saving throws that phase.
+Killing Blade: Rending for that phase.</description>
+                </rule>
+                <rule ruleId="71ee875b-41f6-8aa4-3b51-fdc7981fb172::a14f3992-d483-7ef2-e20f-b2abae2af812::c8df78e0-1ae6-b95f-efeb-92560b7c25c9" name="Failure is Not An Option" hidden="false" book="Codex: Tau Empire" page="35">
+                  <description>All friendly Tau Empire models within 12&quot; use the Ethereal&apos;s Ld for Fear, Morale, Pinning and Regroup tests. A slain Ethereal is worth an extra Victory Point.</description>
+                </rule>
+                <rule ruleId="71ee875b-41f6-8aa4-3b51-fdc7981fb172::f64ed4d2-e8d1-5277-e1fa-a268bdd33522::697bebf7-be21-2f57-4a80-e386c7554f1b" name="Invocation of the Elements" hidden="false" book="Codex: Tau Empire" page="35">
+                  <description>At the start of each Movement phase, choose one of the four elemental powers. The Ethereal, and all friendly non-vehicle Tau Empire models within 12&quot; benefit from the power until the start of the Ethereal&apos;s next Movement phase. If the Ethereal is slain, the power ends.
+- Calm of Tides: Stubborn.
+- Storm of Fire: Fire an extra shot with pulse weapons when target is within half range. This affects Kroot pulse rounds but not pulse bombs.
+- Sense of Stone: Feel No Pain (6+) .
+- Zephyr&apos;s Grace: Fire Snap Shots after running.</description>
+                </rule>
+                <rule ruleId="71ee875b-41f6-8aa4-3b51-fdc7981fb172::308f1e6a-0b5f-673a-f4ac-4838e933b3f4::9db57b63-d823-9f69-d1c8-6442c55edd66" name="Stubborn" hidden="false" book="Warhammer 40k rulebook" page="43"/>
+                <rule ruleId="71ee875b-41f6-8aa4-3b51-fdc7981fb172::f197eb4a-3c47-bc8b-25f0-924d227eecbf::d97e327f-efbf-647a-5f5e-15cd4ae6b179" name="Independent Character" hidden="false" book="Warhammer 40k rulebook" page="39"/>
+              </rules>
+              <profiles>
+                <profile profileId="71ee875b-41f6-8aa4-3b51-fdc7981fb172::70e3d439-f3f7-335a-9d2c-8ee35afef819::6d061265-20ce-298f-e946-624bb4539267" name="Aun&apos;Shi" type="Unit" hidden="false" book="Codex: Tau Empire" page="64">
+                  <characteristics>
+                    <characteristic name="Unit Type" value="Infantry (Character)" characteristicId="c2b4b061-a0fd-499d-8a3d-6ee52587cbd5"/>
+                    <characteristic name="WS" value="5" characteristicId="5ee4ff0b-b244-4670-9d05-91d10f80c32e"/>
+                    <characteristic name="BS" value="3" characteristicId="f6f92f00-8bb1-4afa-8ccb-46310b7dd5e5"/>
+                    <characteristic name="S" value="3" characteristicId="da036dbb-32c2-430a-9dd5-aa74e0c4f74b"/>
+                    <characteristic name="T" value="3" characteristicId="3f9ed75c-36cd-4169-9cef-48391bb55cfd"/>
+                    <characteristic name="W" value="3" characteristicId="17ee558f-3014-4bd2-afc1-b474d8d2b7a8"/>
+                    <characteristic name="I" value="5" characteristicId="a558b3ef-04d0-440e-a312-bac3255bf592"/>
+                    <characteristic name="A" value="4" characteristicId="5dff3e7c-e024-4030-a71d-03195ec06ea7"/>
+                    <characteristic name="Ld" value="10" characteristicId="4a42059d-12cd-4c1f-a4c7-bb569d13eeea"/>
+                    <characteristic name="Save" value="-/4++" characteristicId="b215fe72-dbce-4ad6-89ec-c4bb3962c39d"/>
+                  </characteristics>
+                </profile>
+              </profiles>
+              <selections>
+                <selection id="7f174098-ea6d-d419-ae49-1be003654406" entryId="71ee875b-41f6-8aa4-3b51-fdc7981fb172::af51523d-d9ab-11a1-1cc3-6d30f0d812cd" name="Honour Blade" points="0.0" number="1" type="upgrade">
+                  <rules/>
+                  <profiles>
+                    <profile profileId="71ee875b-41f6-8aa4-3b51-fdc7981fb172::b908e21c-a5e8-c119-62d0-24741b975a89::c7f38461-2bf4-da6b-bfe0-bb2249c01888" name="Honour Blade" type="Weapon" hidden="false" book="Codex: Tau Empire" page="65">
+                      <characteristics>
+                        <characteristic name="Range" value="-" characteristicId="6fa97fa8-ea74-4a27-a0fb-bc4e5f367464"/>
+                        <characteristic name="Strength" value="+2" characteristicId="a6383362-5aa8-4ff0-b1d0-00e059fc9d45"/>
+                        <characteristic name="AP" value="-" characteristicId="6abee736-f8d3-498e-97ac-a5c68445609f"/>
+                        <characteristic name="Type" value="Melee, Two-handed" characteristicId="077c342f-d7b9-45c6-b8af-88e97cafd3a2"/>
+                      </characteristics>
+                    </profile>
+                  </profiles>
+                  <selections/>
+                </selection>
+                <selection id="bb9f8428-7c02-863c-255f-9b1ee0f963e6" entryId="71ee875b-41f6-8aa4-3b51-fdc7981fb172::24126a49-e7e0-01ef-34ab-86db71c56c12" name="Photon Grenades" points="0.0" number="1" type="upgrade">
+                  <rules/>
+                  <profiles>
+                    <profile profileId="71ee875b-41f6-8aa4-3b51-fdc7981fb172::3c056e8b-379e-9b81-52e3-ffaccdadb90d::82af881d-6129-9aa8-c886-40e5f998562d" name="Photon Grenades" type="Wargear Item" hidden="false" book="Codex: Tau Empire" page="68">
+                      <characteristics>
+                        <characteristic name="Description" value="Defensive grenades, Wh40k rulebook pg62" characteristicId="21befb24-fc85-4f52-a745-64b2e48f8228"/>
+                      </characteristics>
+                    </profile>
+                  </profiles>
+                  <selections/>
+                </selection>
+                <selection id="7f699fcd-3cf1-8dc3-fd3f-475f5d4b96fd" entryId="71ee875b-41f6-8aa4-3b51-fdc7981fb172::52f82a2d-fa48-6643-38cd-802f33d56f19" name="EMP Grenades" points="0.0" number="1" type="upgrade">
+                  <rules/>
+                  <profiles>
+                    <profile profileId="71ee875b-41f6-8aa4-3b51-fdc7981fb172::d5f4bf1c-ad8c-7472-a45b-a2100a94fcf3::73d15279-9774-89fa-2b7f-fda14bf928da" name="EMP Grenades" type="Wargear Item" hidden="false" book="Codex: Tau Empire" page="68">
+                      <characteristics>
+                        <characteristic name="Description" value="Haywire grenades, Wh40k rulebook pg62" characteristicId="21befb24-fc85-4f52-a745-64b2e48f8228"/>
+                      </characteristics>
+                    </profile>
+                  </profiles>
+                  <selections/>
+                </selection>
+                <selection id="b02a7562-e3d0-fdbe-5428-e63537fd8d48" entryId="71ee875b-41f6-8aa4-3b51-fdc7981fb172::f4ecf2df-c331-d84e-9323-f5b6d1c63072" name="Shield Generator" points="0.0" number="1" type="upgrade">
+                  <rules/>
+                  <profiles>
+                    <profile profileId="71ee875b-41f6-8aa4-3b51-fdc7981fb172::077613d5-01ab-1297-d3e2-7a7f63952994::f2d0aa1c-0a8f-1745-2ad5-db28bf7d7538" name="Shield Generator" type="Wargear Item" hidden="false" book="Codex: Tau Empire" page="69">
+                      <characteristics>
+                        <characteristic name="Description" value="4+ invulnerable save." characteristicId="21befb24-fc85-4f52-a745-64b2e48f8228"/>
+                      </characteristics>
+                    </profile>
+                  </profiles>
+                  <selections/>
+                </selection>
+              </selections>
+            </selection>
+          </selections>
+        </category>
+        <category id="5eb78fb3-5eb2-3cac-f319-a9fa06fba2c7" categoryId="638d74c6-bd97-4de5-b65a-6aaa24e9f4b2" name="Elites">
+          <selections/>
+        </category>
+        <category id="44a5452c-6199-041a-86ad-06d6724ee094" categoryId="5d76b6f5-20ae-4d70-8f59-ade72a2add3a" name="Troops">
+          <selections>
+            <selection id="350f0ff8-8356-9d4f-1a65-dd38fba265e1" entryId="5a1d973f-af01-c86a-1a42-9fa74889d5bc::2559412b-ba0a-4a9b-9ded-581e828cb142" name="Fire Warrior Team" points="0.0" number="1" type="unit" book="Codex: Tau Empire" page="99">
+              <rules>
+                <rule ruleId="5a1d973f-af01-c86a-1a42-9fa74889d5bc::cb42beed-ee31-0b62-8e66-70ad9c1129fc::78ddae03-5da8-9e14-15b3-6a24882e5b8f" name="Supporting Fire" hidden="false" book="Codex: Tau Empire" page="32">
+                  <description>When an enemy charges, all friendly models with this special rule in units within 6&quot; of the unit being charged can choose to fire Overwatch.</description>
+                </rule>
+              </rules>
+              <profiles/>
+              <selections>
+                <selection id="8599c39c-c409-d0cf-9bdd-b5cd1cee559b" entryId="5a1d973f-af01-c86a-1a42-9fa74889d5bc::032000af-e208-2f41-1323-12f22f04ea80" name="Photon Grenades" points="0.0" number="1" type="upgrade">
+                  <rules/>
+                  <profiles>
+                    <profile profileId="5a1d973f-af01-c86a-1a42-9fa74889d5bc::78306d5f-e473-c882-6481-62fee95a4084::82af881d-6129-9aa8-c886-40e5f998562d" name="Photon Grenades" type="Wargear Item" hidden="false" book="Codex: Tau Empire" page="68">
+                      <characteristics>
+                        <characteristic name="Description" value="Defensive grenades, Wh40k rulebook pg62" characteristicId="21befb24-fc85-4f52-a745-64b2e48f8228"/>
+                      </characteristics>
+                    </profile>
+                  </profiles>
+                  <selections/>
+                </selection>
+                <selection id="fd247312-184f-edbe-3fb4-aafc040c7679" entryId="5a1d973f-af01-c86a-1a42-9fa74889d5bc::f5068b4e-6d6e-ee03-5c4b-cf0f9d76bf88" entryGroupId="5a1d973f-af01-c86a-1a42-9fa74889d5bc::541251d5-3775-f327-bf3e-4389269f8db3" name="Fire Warrior Shas&apos;la with Pulse Rifle" points="54.0" number="6" type="model">
+                  <rules/>
+                  <profiles>
+                    <profile profileId="5a1d973f-af01-c86a-1a42-9fa74889d5bc::97ac0c31-3f82-3fad-06de-3dd952ee7232::02bc4960-25e7-64a5-dc39-2b4407a6ffc6" name="Fire Warrior" type="Unit" hidden="false" book="Codex: Tau Empire" page="37">
+                      <characteristics>
+                        <characteristic name="Unit Type" value="Infantry" characteristicId="c2b4b061-a0fd-499d-8a3d-6ee52587cbd5"/>
+                        <characteristic name="WS" value="2" characteristicId="5ee4ff0b-b244-4670-9d05-91d10f80c32e"/>
+                        <characteristic name="BS" value="3" characteristicId="f6f92f00-8bb1-4afa-8ccb-46310b7dd5e5"/>
+                        <characteristic name="S" value="3" characteristicId="da036dbb-32c2-430a-9dd5-aa74e0c4f74b"/>
+                        <characteristic name="T" value="3" characteristicId="3f9ed75c-36cd-4169-9cef-48391bb55cfd"/>
+                        <characteristic name="W" value="1" characteristicId="17ee558f-3014-4bd2-afc1-b474d8d2b7a8"/>
+                        <characteristic name="I" value="2" characteristicId="a558b3ef-04d0-440e-a312-bac3255bf592"/>
+                        <characteristic name="A" value="1" characteristicId="5dff3e7c-e024-4030-a71d-03195ec06ea7"/>
+                        <characteristic name="Ld" value="7" characteristicId="4a42059d-12cd-4c1f-a4c7-bb569d13eeea"/>
+                        <characteristic name="Save" value="4+" characteristicId="b215fe72-dbce-4ad6-89ec-c4bb3962c39d"/>
+                      </characteristics>
+                    </profile>
+                    <profile profileId="5a1d973f-af01-c86a-1a42-9fa74889d5bc::9bdc6902-fd56-f6da-a81e-c8d47727d370::567cd349-df9b-44f9-1268-d770e5d2d4a3" name="Pulse Rifle" type="Weapon" hidden="false" book="Codex: Tau Empire" page="66">
+                      <characteristics>
+                        <characteristic name="Range" value="30&quot;" characteristicId="6fa97fa8-ea74-4a27-a0fb-bc4e5f367464"/>
+                        <characteristic name="Strength" value="5" characteristicId="a6383362-5aa8-4ff0-b1d0-00e059fc9d45"/>
+                        <characteristic name="AP" value="5" characteristicId="6abee736-f8d3-498e-97ac-a5c68445609f"/>
+                        <characteristic name="Type" value="Rapid Fire" characteristicId="077c342f-d7b9-45c6-b8af-88e97cafd3a2"/>
+                      </characteristics>
+                    </profile>
+                  </profiles>
+                  <selections/>
+                </selection>
+              </selections>
+            </selection>
+            <selection id="4cada938-d8eb-6ea6-6918-c3d48cf27e28" entryId="5a1d973f-af01-c86a-1a42-9fa74889d5bc::2559412b-ba0a-4a9b-9ded-581e828cb142" name="Fire Warrior Team" points="0.0" number="1" type="unit" book="Codex: Tau Empire" page="99">
+              <rules>
+                <rule ruleId="5a1d973f-af01-c86a-1a42-9fa74889d5bc::cb42beed-ee31-0b62-8e66-70ad9c1129fc::78ddae03-5da8-9e14-15b3-6a24882e5b8f" name="Supporting Fire" hidden="false" book="Codex: Tau Empire" page="32">
+                  <description>When an enemy charges, all friendly models with this special rule in units within 6&quot; of the unit being charged can choose to fire Overwatch.</description>
+                </rule>
+              </rules>
+              <profiles/>
+              <selections>
+                <selection id="dd599b79-7356-ce37-acd1-9e0c3f3f8525" entryId="5a1d973f-af01-c86a-1a42-9fa74889d5bc::032000af-e208-2f41-1323-12f22f04ea80" name="Photon Grenades" points="0.0" number="1" type="upgrade">
+                  <rules/>
+                  <profiles>
+                    <profile profileId="5a1d973f-af01-c86a-1a42-9fa74889d5bc::78306d5f-e473-c882-6481-62fee95a4084::82af881d-6129-9aa8-c886-40e5f998562d" name="Photon Grenades" type="Wargear Item" hidden="false" book="Codex: Tau Empire" page="68">
+                      <characteristics>
+                        <characteristic name="Description" value="Defensive grenades, Wh40k rulebook pg62" characteristicId="21befb24-fc85-4f52-a745-64b2e48f8228"/>
+                      </characteristics>
+                    </profile>
+                  </profiles>
+                  <selections/>
+                </selection>
+                <selection id="b3102b8d-9d99-edf6-330c-1683f3f3ac38" entryId="5a1d973f-af01-c86a-1a42-9fa74889d5bc::f5068b4e-6d6e-ee03-5c4b-cf0f9d76bf88" entryGroupId="5a1d973f-af01-c86a-1a42-9fa74889d5bc::541251d5-3775-f327-bf3e-4389269f8db3" name="Fire Warrior Shas&apos;la with Pulse Rifle" points="54.0" number="6" type="model">
+                  <rules/>
+                  <profiles>
+                    <profile profileId="5a1d973f-af01-c86a-1a42-9fa74889d5bc::97ac0c31-3f82-3fad-06de-3dd952ee7232::02bc4960-25e7-64a5-dc39-2b4407a6ffc6" name="Fire Warrior" type="Unit" hidden="false" book="Codex: Tau Empire" page="37">
+                      <characteristics>
+                        <characteristic name="Unit Type" value="Infantry" characteristicId="c2b4b061-a0fd-499d-8a3d-6ee52587cbd5"/>
+                        <characteristic name="WS" value="2" characteristicId="5ee4ff0b-b244-4670-9d05-91d10f80c32e"/>
+                        <characteristic name="BS" value="3" characteristicId="f6f92f00-8bb1-4afa-8ccb-46310b7dd5e5"/>
+                        <characteristic name="S" value="3" characteristicId="da036dbb-32c2-430a-9dd5-aa74e0c4f74b"/>
+                        <characteristic name="T" value="3" characteristicId="3f9ed75c-36cd-4169-9cef-48391bb55cfd"/>
+                        <characteristic name="W" value="1" characteristicId="17ee558f-3014-4bd2-afc1-b474d8d2b7a8"/>
+                        <characteristic name="I" value="2" characteristicId="a558b3ef-04d0-440e-a312-bac3255bf592"/>
+                        <characteristic name="A" value="1" characteristicId="5dff3e7c-e024-4030-a71d-03195ec06ea7"/>
+                        <characteristic name="Ld" value="7" characteristicId="4a42059d-12cd-4c1f-a4c7-bb569d13eeea"/>
+                        <characteristic name="Save" value="4+" characteristicId="b215fe72-dbce-4ad6-89ec-c4bb3962c39d"/>
+                      </characteristics>
+                    </profile>
+                    <profile profileId="5a1d973f-af01-c86a-1a42-9fa74889d5bc::9bdc6902-fd56-f6da-a81e-c8d47727d370::567cd349-df9b-44f9-1268-d770e5d2d4a3" name="Pulse Rifle" type="Weapon" hidden="false" book="Codex: Tau Empire" page="66">
+                      <characteristics>
+                        <characteristic name="Range" value="30&quot;" characteristicId="6fa97fa8-ea74-4a27-a0fb-bc4e5f367464"/>
+                        <characteristic name="Strength" value="5" characteristicId="a6383362-5aa8-4ff0-b1d0-00e059fc9d45"/>
+                        <characteristic name="AP" value="5" characteristicId="6abee736-f8d3-498e-97ac-a5c68445609f"/>
+                        <characteristic name="Type" value="Rapid Fire" characteristicId="077c342f-d7b9-45c6-b8af-88e97cafd3a2"/>
+                      </characteristics>
+                    </profile>
+                  </profiles>
+                  <selections/>
+                </selection>
+              </selections>
+            </selection>
+          </selections>
+        </category>
+        <category id="e6b56cac-f112-2974-a29f-690c601fd4a4" categoryId="c274d0b0-5866-44bc-9810-91c136ae7438" name="Fast Attack">
+          <selections>
+            <selection id="70e49d3a-5eb3-db5c-f7b7-e32df4289066" entryId="9d797dd8-1058-ea05-815c-5b5b39b9cc08::4a90e450-d04c-4f28-9f69-a2f43f9d4d8e" name="Piranhas" points="0.0" number="1" type="unit" book="Codex: Tau Empire" page="101">
+              <rules/>
+              <profiles/>
+              <selections>
+                <selection id="6710d0b6-1521-4862-003a-a4036ab7c64b" entryId="9d797dd8-1058-ea05-815c-5b5b39b9cc08::2648930f-b717-49f3-9966-152f92949b3a" name="Piranha" points="40.0" number="1" type="model">
+                  <rules/>
+                  <profiles>
+                    <profile profileId="9d797dd8-1058-ea05-815c-5b5b39b9cc08::7857ae89-eb54-cf17-5acf-88aa36fe3950::363da573-e78e-c7b0-beaf-add5aa866731" name="Piranha" type="Vehicle" hidden="false" book="Codex: Tau Empire" page="47">
+                      <characteristics>
+                        <characteristic name="BS" value="3" characteristicId="f6f92f00-8bb1-4afa-8ccb-46310b7dd5e5"/>
+                        <characteristic name="Front" value="11" characteristicId="8cdd4fef-d1ba-4007-992c-b6f93e86d43f"/>
+                        <characteristic name="Side" value="10" characteristicId="5f9a3780-eecb-4c70-be1d-e5bd06b06e9e"/>
+                        <characteristic name="Rear" value="10" characteristicId="0a9f33cb-0412-420a-89d2-20707c360bd2"/>
+                        <characteristic name="HP" value="2" characteristicId="ae95a1af-719f-4365-b951-33cd3ca9148a"/>
+                        <characteristic name="Type" value="Fast, Skimmer, Open-topped" characteristicId="077c342f-d7b9-45c6-b8af-88e97cafd3a2"/>
+                      </characteristics>
+                    </profile>
+                  </profiles>
+                  <selections>
+                    <selection id="2a06b170-259e-97cc-8a1b-c7a69c494176" entryId="9d797dd8-1058-ea05-815c-5b5b39b9cc08::aac2ea0e-8f7b-8554-e471-db6c2741cb4c" entryGroupId="9d797dd8-1058-ea05-815c-5b5b39b9cc08::10e4f7e2-797a-455e-a791-14dff9e2aab1" name="Burst Cannon" points="0.0" number="1" type="upgrade">
+                      <rules/>
+                      <profiles>
+                        <profile profileId="9d797dd8-1058-ea05-815c-5b5b39b9cc08::275ee208-bed9-ef6d-fb49-edf2f7c92acf::098adddb-eedc-e062-e858-2e34ca7a7ef6" name="Burst Cannon" type="Weapon" hidden="false" book="Codex: Tau Empire" page="65">
+                          <characteristics>
+                            <characteristic name="Range" value="18&quot;" characteristicId="6fa97fa8-ea74-4a27-a0fb-bc4e5f367464"/>
+                            <characteristic name="Strength" value="5" characteristicId="a6383362-5aa8-4ff0-b1d0-00e059fc9d45"/>
+                            <characteristic name="AP" value="5" characteristicId="6abee736-f8d3-498e-97ac-a5c68445609f"/>
+                            <characteristic name="Type" value="Assault 4" characteristicId="077c342f-d7b9-45c6-b8af-88e97cafd3a2"/>
+                          </characteristics>
+                        </profile>
+                      </profiles>
+                      <selections/>
+                    </selection>
+                    <selection id="3b77589f-db13-7b33-ba40-83f6dce340aa" entryId="9d797dd8-1058-ea05-815c-5b5b39b9cc08::ce3089ec-76ff-1668-9b3a-0062b70fc2db" name="Two Gun Drones" points="0.0" number="1" type="upgrade">
+                      <rules/>
+                      <profiles>
+                        <profile profileId="9d797dd8-1058-ea05-815c-5b5b39b9cc08::ed45a433-3250-b30c-b2dd-429fb47e1312::c45edd04-fbed-9960-761b-57d0efa228a8" name="Gun Drone" type="Unit" hidden="false" book="Codex: Tau Empire" page="33">
+                          <characteristics>
+                            <characteristic name="Unit Type" value="Jet Pack Infantry (Drone)" characteristicId="c2b4b061-a0fd-499d-8a3d-6ee52587cbd5"/>
+                            <characteristic name="WS" value="2" characteristicId="5ee4ff0b-b244-4670-9d05-91d10f80c32e"/>
+                            <characteristic name="BS" value="2" characteristicId="f6f92f00-8bb1-4afa-8ccb-46310b7dd5e5"/>
+                            <characteristic name="S" value="3" characteristicId="da036dbb-32c2-430a-9dd5-aa74e0c4f74b"/>
+                            <characteristic name="T" value="4" characteristicId="3f9ed75c-36cd-4169-9cef-48391bb55cfd"/>
+                            <characteristic name="W" value="1" characteristicId="17ee558f-3014-4bd2-afc1-b474d8d2b7a8"/>
+                            <characteristic name="I" value="4" characteristicId="a558b3ef-04d0-440e-a312-bac3255bf592"/>
+                            <characteristic name="A" value="1" characteristicId="5dff3e7c-e024-4030-a71d-03195ec06ea7"/>
+                            <characteristic name="Ld" value="7" characteristicId="4a42059d-12cd-4c1f-a4c7-bb569d13eeea"/>
+                            <characteristic name="Save" value="4+" characteristicId="b215fe72-dbce-4ad6-89ec-c4bb3962c39d"/>
+                          </characteristics>
+                        </profile>
+                        <profile profileId="9d797dd8-1058-ea05-815c-5b5b39b9cc08::dbf98650-19db-8301-6898-7f576bf1aaf5::cbb0da66-186b-a0ad-d442-e6337658b410" name="Pulse Carbine" type="Weapon" hidden="false" book="Codex: Tau Empire" page="66">
+                          <characteristics>
+                            <characteristic name="Range" value="18&quot;" characteristicId="6fa97fa8-ea74-4a27-a0fb-bc4e5f367464"/>
+                            <characteristic name="Strength" value="5" characteristicId="a6383362-5aa8-4ff0-b1d0-00e059fc9d45"/>
+                            <characteristic name="AP" value="5" characteristicId="6abee736-f8d3-498e-97ac-a5c68445609f"/>
+                            <characteristic name="Type" value="Assault 2, Pinning" characteristicId="077c342f-d7b9-45c6-b8af-88e97cafd3a2"/>
+                          </characteristics>
+                        </profile>
+                      </profiles>
+                      <selections/>
+                    </selection>
+                  </selections>
+                </selection>
+              </selections>
+            </selection>
+          </selections>
+        </category>
+        <category id="09740858-dfe9-fbe2-5909-c307736038b6" categoryId="abf5fd55-9ac7-4263-8bc1-a9fb0a8fa6a6" name="Heavy Support">
+          <selections/>
+        </category>
+        <category id="cccaecb6-acdc-3e8e-9c67-c4968a8ccc92" categoryId="c888f08a-6cea-4a01-8126-d374a9231554" name="Lord of War">
+          <selections/>
+        </category>
+        <category id="1b2507f6-9f69-f0fe-a316-8bda83e0401b" categoryId="7fc5b655-812e-45ed-98ff-db8847d356da" name="Primary Detachment">
+          <selections/>
+        </category>
+        <category id="79834ec2-efc3-1122-6434-a834cd420ba3" categoryId="d713cda3-5d0f-40d8-b621-69233263ec2a" name="Fortification">
+          <selections/>
+        </category>
+      </categories>
+      <forces/>
+    </force>
+    <force id="396fb78c-0ae0-5035-4ee3-f839f0c24f90" catalogueId="21e36b7e-84ee-2ec0-53f2-2c32fd8bd981" catalogueRevision="35" catalogueName="Space Wolves: Codex (2014)" forceTypeId="416c6c696564204465746163686d656e7423232344415441232323" forceTypeName="Allied Detachment">
+      <categories>
+        <category id="4dcced66-43b4-f359-9cf8-2baa8ecb1436" categoryId="(No Category)" name="(No Category)">
+          <selections/>
+        </category>
+        <category id="439ba359-828d-58fa-e201-f26f76eb82fd" categoryId="ff36a6f3-19bf-4f48-8956-adacfd28fe74" name="No Force Org Slot">
+          <selections/>
+        </category>
+        <category id="1f92b148-c392-dbf3-b7ba-2196d047f1cc" categoryId="848a6ff2-0def-4c72-8433-ff7da70e6bc7" name="HQ">
+          <selections>
+            <selection id="85515344-5bbb-c1c5-7866-4cdf29577246" entryId="27e8fb45-f8e1-4455-8739-7a8f84debfdb" name="Wolf Priest" points="110.0" number="1" type="model" book="Codex: Space Wolves" page="54">
+              <rules>
+                <rule ruleId="06baae39-4eed-e2fd-fdc0-3c37616dd910::913d454d-f14f-5c77-2f4a-97bcf531c2f3" name="Acute Senses" hidden="false" book="Warhammer 40k rulebook" page="0">
+                  <description>If a unit contains at least one model with this special rule, and that unit arrives on a random table edge (due to Outflank, or other special rules), then you can re-roll to see which table edge they arrive from.</description>
+                </rule>
+                <rule ruleId="b7d633a0-51af-7682-d047-8acbfb082b9e::7325dbb8-81ee-1150-735d-3c00808e39b3" name="Counter-attack" hidden="false" book="Warhammer 40k rulebook" page="0">
+                  <description>If a unit contains at least one model with this special rule, and that unit is charged, every model with the Counter-attack special rule in the unit gets +1 Attack until the end of the phase. 
+If, when charged, the unit was already locked in combat, the Counter-attack special rule has no effect.</description>
+                </rule>
+                <rule ruleId="c24731ca-418e-fb60-400b-fd381669004c::7b55b3bd-82f8-a73f-131c-0bcd40479b9e" name="Independent Character" hidden="false" page="0">
+                  <description>Independent Characters can join other units. They cannot, however, join units that contain vehicles or Monstrous Creatures. They can join other Independent Characters, though, to form a powerful multi-character unit!</description>
+                </rule>
+                <rule ruleId="8edd195b-90ee-d7c3-82d4-d7db9de5e70a::47f277a2-4f52-c636-baaa-8e0af970ed69" name="Fearless" hidden="false" page="0">
+                  <description>Units containing one or more models with the Fearless special rule automatically pass Pinning, Fear, Regroup tests and Morale checks, but cannot Go to Ground and cannot choose to fail a Morale check due to the Our Weapons Are Useless rule. If a unit has Gone to Ground and then gains the Fearless special rule, all the effects of Go to Ground are immediately cancelled.</description>
+                </rule>
+                <rule ruleId="02811f41-2f7e-7faf-8c67-7f448efabc6e::ce41bd53-3a8c-8cad-f721-b386883c9e7f" name="Oath of War" hidden="false" book="Codex: Space Wolves" page="54">
+                  <description>The Wolf Priest can nominate one unit type at the beginning of the game – for example, Infantry or Monstrous Creature. If he does so, the Wolf Priest has the Preferred Enemy special rule against models with that unit type.</description>
+                </rule>
+              </rules>
+              <profiles>
+                <profile profileId="52c0dc03-39b0-53bd-c7d4-7b7af7222ca3::c1a1a204-18f4-8dde-8e7b-0ce11d0b6be1" name="Wolf Priest" type="Unit" hidden="false" book="Codex: Space Wolves" page="54">
+                  <characteristics>
+                    <characteristic name="Unit Type" value="Infantry (Character)" characteristicId="c2b4b061-a0fd-499d-8a3d-6ee52587cbd5"/>
+                    <characteristic name="WS" value="5" characteristicId="5ee4ff0b-b244-4670-9d05-91d10f80c32e"/>
+                    <characteristic name="BS" value="4" characteristicId="f6f92f00-8bb1-4afa-8ccb-46310b7dd5e5"/>
+                    <characteristic name="S" value="4" characteristicId="da036dbb-32c2-430a-9dd5-aa74e0c4f74b"/>
+                    <characteristic name="T" value="4" characteristicId="3f9ed75c-36cd-4169-9cef-48391bb55cfd"/>
+                    <characteristic name="W" value="2" characteristicId="17ee558f-3014-4bd2-afc1-b474d8d2b7a8"/>
+                    <characteristic name="I" value="4" characteristicId="a558b3ef-04d0-440e-a312-bac3255bf592"/>
+                    <characteristic name="A" value="2" characteristicId="5dff3e7c-e024-4030-a71d-03195ec06ea7"/>
+                    <characteristic name="Ld" value="10" characteristicId="4a42059d-12cd-4c1f-a4c7-bb569d13eeea"/>
+                    <characteristic name="Save" value="3+/4++" characteristicId="b215fe72-dbce-4ad6-89ec-c4bb3962c39d"/>
+                  </characteristics>
+                </profile>
+              </profiles>
+              <selections>
+                <selection id="ddaf4520-b20a-9801-2ad5-dcf87f807756" entryId="1707196e-9eae-b6ba-c2ad-ba8a8ed78b83::56ae95cc-b423-0a86-452c-fdbfa5e95ee6" name="Crozius Arcanum" points="0.0" number="1" type="upgrade" book="Codex: Space Wolves" page="0">
+                  <rules/>
+                  <profiles>
+                    <profile profileId="1707196e-9eae-b6ba-c2ad-ba8a8ed78b83::5ced618a-905e-63c4-2578-98e4979987ca::461526cd-2aa1-8f5d-2cdd-037cd35e8f21" name="Crozius Arcanum" type="Weapon" hidden="false" book="Codex: Space Wolves" page="0">
+                      <characteristics>
+                        <characteristic name="Range" value="-" characteristicId="6fa97fa8-ea74-4a27-a0fb-bc4e5f367464"/>
+                        <characteristic name="Strength" value="+2" characteristicId="a6383362-5aa8-4ff0-b1d0-00e059fc9d45"/>
+                        <characteristic name="AP" value="4" characteristicId="6abee736-f8d3-498e-97ac-a5c68445609f"/>
+                        <characteristic name="Type" value="Melee, Concussive" characteristicId="077c342f-d7b9-45c6-b8af-88e97cafd3a2"/>
+                      </characteristics>
+                    </profile>
+                  </profiles>
+                  <selections/>
+                </selection>
+                <selection id="abdb0c9a-9ec6-8099-caf1-7d6518fb2f30" entryId="6616a50a-a6c2-365e-785e-8b4e8ed3b430::cd80cfe6-82b6-8d85-4313-9ee4aefecf4a" name="Healing Balms" points="0.0" number="1" type="upgrade" page="0">
+                  <rules>
+                    <rule ruleId="6616a50a-a6c2-365e-785e-8b4e8ed3b430::2856aeac-ef0d-3a4e-fa77-f0b135a4d95a::257e406b-e006-275d-b110-5675b4dcbe8b" name="Feel No Pain (6+)" hidden="false" book="Warhammer 40k rulebook" page="35">
+                      <description>When a model with this special rule suffers an unsaved Wound, it can make a special Feel No Pain roll to avoid being wounded (this is not a saving throw and so can be used against attacks that state that ‘no saves of any kind are allowed’, for example those inflicted by Perils of the Warp). 
+Feel No Pain saves may not be taken against Destroyer attacks or against unsaved Wounds that have the Instant Death special rule. 
+Roll a D6 each time an unsaved Wound is suffered. On a 5 or less, you must take the Wound as normal. On a 6+, the unsaved Wound is discounted – treat it as having been saved.</description>
+                    </rule>
+                  </rules>
+                  <profiles>
+                    <profile profileId="6616a50a-a6c2-365e-785e-8b4e8ed3b430::ce344c23-eea1-5616-2c69-584ae67dbaa2::7d454daf-5a13-b3c5-96f1-6f3d6eafee33" name="Healing Balms" type="Wargear Item" hidden="false" book="Codex: Space Wolves">
+                      <characteristics>
+                        <characteristic name="Description" value="As long as the model with healing balms is alive, all models in his unit have the Feel No Pain (6+) special rule." characteristicId="21befb24-fc85-4f52-a745-64b2e48f8228"/>
+                      </characteristics>
+                    </profile>
+                  </profiles>
+                  <selections/>
+                </selection>
+                <selection id="fe11b511-505f-63d8-86c8-bcc5ca39fa1d" entryId="68bdda9a-20aa-9fd7-8b42-1b55696aaae6::77c127c4-d015-3836-121a-e0f610a0fd01" name="Wolf Amulet" points="0.0" number="1" type="upgrade" page="0">
+                  <rules/>
+                  <profiles>
+                    <profile profileId="68bdda9a-20aa-9fd7-8b42-1b55696aaae6::d7bbd663-1d8b-b228-74cc-a54dfc6a4c9f::134fefc0-f6d8-dc78-8597-795abaadf6b2" name="Wolf Amulet" type="Wargear Item" hidden="false" book="Codex: Space Wolves" page="0">
+                      <characteristics>
+                        <characteristic name="Description" value="4+ Invul Sv." characteristicId="21befb24-fc85-4f52-a745-64b2e48f8228"/>
+                      </characteristics>
+                    </profile>
+                  </profiles>
+                  <selections/>
+                </selection>
+                <selection id="95ae7a5d-2491-2ccc-e2a6-b127f7e3392b" entryId="d8445972-5eac-c9b9-c36c-09324b64a7f0" entryGroupId="3eee8802-e7d3-7b01-8cdd-f709385b2538" name="Power Armour" points="0.0" number="1" type="upgrade" page="0">
+                  <rules/>
+                  <profiles>
+                    <profile profileId="c4c8afcc-2404-a049-bd43-e3c26311e4d0::0adf24a5-2133-fdb4-9999-2e1d3ad01439" name="Power Armour" type="Wargear Item" hidden="false" book="Codex: Space Wolves" page="99">
+                      <characteristics>
+                        <characteristic name="Description" value="3+ Armour Sv" characteristicId="21befb24-fc85-4f52-a745-64b2e48f8228"/>
+                      </characteristics>
+                    </profile>
+                  </profiles>
+                  <selections>
+                    <selection id="dc1eb415-ba7e-e6ac-9a52-49911932f5d0" entryId="b9c32b62-9e44-e799-7aeb-652e0a1a1482::c50b8cd4-1671-2744-02dd-1c08ea726dc1" name="Frag &amp; Krak Grenades" points="0.0" number="1" type="upgrade" book="" page="0">
+                      <rules/>
+                      <profiles>
+                        <profile profileId="b9c32b62-9e44-e799-7aeb-652e0a1a1482::00d1e2b4-d6ae-d001-83b0-24407fd50a80::b898194f-5b6a-18e8-e08e-b8f3016b4380" name="Grenades (Frag)" type="Weapon" hidden="false" book="Codex: Space Wolves" page="0">
+                          <characteristics>
+                            <characteristic name="Range" value="8&quot;" characteristicId="6fa97fa8-ea74-4a27-a0fb-bc4e5f367464"/>
+                            <characteristic name="Strength" value="3" characteristicId="a6383362-5aa8-4ff0-b1d0-00e059fc9d45"/>
+                            <characteristic name="AP" value="-" characteristicId="6abee736-f8d3-498e-97ac-a5c68445609f"/>
+                            <characteristic name="Type" value="Assault 1, 3&quot; Blast" characteristicId="077c342f-d7b9-45c6-b8af-88e97cafd3a2"/>
+                          </characteristics>
+                        </profile>
+                        <profile profileId="b9c32b62-9e44-e799-7aeb-652e0a1a1482::3c91776a-fe46-e962-2ef8-b7ff93f80d7b::30a9ee54-c548-052d-68f3-5091f765b150" name="Grenades (Krak)" type="Weapon" hidden="false" book="Codex: Space Wolves" page="0">
+                          <characteristics>
+                            <characteristic name="Range" value="8&quot;" characteristicId="6fa97fa8-ea74-4a27-a0fb-bc4e5f367464"/>
+                            <characteristic name="Strength" value="6" characteristicId="a6383362-5aa8-4ff0-b1d0-00e059fc9d45"/>
+                            <characteristic name="AP" value="4" characteristicId="6abee736-f8d3-498e-97ac-a5c68445609f"/>
+                            <characteristic name="Type" value="Assault 1" characteristicId="077c342f-d7b9-45c6-b8af-88e97cafd3a2"/>
+                          </characteristics>
+                        </profile>
+                      </profiles>
+                      <selections/>
+                    </selection>
+                    <selection id="38d089cf-75b7-3337-0339-8881cb3f028a" entryId="152ee866-eafa-4640-3487-e14e3e1619c1::5603102a-bc90-fe6e-3f11-12e2f1e1baf5" entryGroupId="152ee866-eafa-4640-3487-e14e3e1619c1::b8872ce3-c422-18a0-44e5-a555c5cc0a3c" name="Bolt Pistol" points="0.0" number="1" type="upgrade" page="0">
+                      <rules/>
+                      <profiles>
+                        <profile profileId="152ee866-eafa-4640-3487-e14e3e1619c1::5ea30a33-df3e-ab21-0214-e5475dbaf17a::82de7a82-9e87-8dc1-6d88-fbe1ee0c024c" name="Bolt Pistol" type="Weapon" hidden="false" book="Codex: Space Wolves" page="0">
+                          <characteristics>
+                            <characteristic name="Range" value="12" characteristicId="6fa97fa8-ea74-4a27-a0fb-bc4e5f367464"/>
+                            <characteristic name="Strength" value="4" characteristicId="a6383362-5aa8-4ff0-b1d0-00e059fc9d45"/>
+                            <characteristic name="AP" value="5" characteristicId="6abee736-f8d3-498e-97ac-a5c68445609f"/>
+                            <characteristic name="Type" value="Pistol" characteristicId="077c342f-d7b9-45c6-b8af-88e97cafd3a2"/>
+                          </characteristics>
+                        </profile>
+                      </profiles>
+                      <selections/>
+                    </selection>
+                  </selections>
+                </selection>
+              </selections>
+            </selection>
+          </selections>
+        </category>
+        <category id="21a4634a-7567-0d7b-a8e2-575882b1d9b1" categoryId="638d74c6-bd97-4de5-b65a-6aaa24e9f4b2" name="Elites">
+          <selections/>
+        </category>
+        <category id="af66a497-08f8-7ed4-bb72-e720516411d7" categoryId="5d76b6f5-20ae-4d70-8f59-ade72a2add3a" name="Troops">
+          <selections>
+            <selection id="6a36af16-028d-d29b-92ba-86cd283631b1" entryId="355c8b84-7a32-50ee-1810-9ff9de5b385e::ce35738a-69e1-2b3e-c3b1-d1a9a447613b" name="Blood Claws" points="0.0" number="1" type="model" book="Codex: Space Wolves" page="58">
+              <rules>
+                <rule ruleId="355c8b84-7a32-50ee-1810-9ff9de5b385e::2578e616-e55c-5935-7c18-86ad258e6ea4::44e0993d-4c19-297a-837a-869e17e25c12" name="And They Shall Know No Fear" hidden="false" book="Warhammer 40k rulebook" page="0">
+                  <description>A unit that contains at least one model with this special rule automatically passes Fear and Regroup tests. When it Regroups, the unit does not make the 3&quot; Regroup move, but can instead move, shoot (or Run) and declare charges normally in that turn. Furthermore, if a unit containing one or more models with this special rule is caught by a Sweeping Advance, they are not destroyed, but remain locked in combat instead.</description>
+                </rule>
+                <rule ruleId="355c8b84-7a32-50ee-1810-9ff9de5b385e::ab71ed46-77a4-d1cc-c4dc-4495441e0416::7325dbb8-81ee-1150-735d-3c00808e39b3" name="Counter-attack" hidden="false" book="Warhammer 40k rulebook" page="0">
+                  <description>If a unit contains at least one model with this special rule, and that unit is charged, every model with the Counter-attack special rule in the unit gets +1 Attack until the end of the phase. 
+If, when charged, the unit was already locked in combat, the Counter-attack special rule has no effect.</description>
+                </rule>
+                <rule ruleId="355c8b84-7a32-50ee-1810-9ff9de5b385e::1902a509-ea54-5d76-a365-73d41244121c::913d454d-f14f-5c77-2f4a-97bcf531c2f3" name="Acute Senses" hidden="false" book="Warhammer 40k rulebook" page="0">
+                  <description>If a unit contains at least one model with this special rule, and that unit arrives on a random table edge (due to Outflank, or other special rules), then you can re-roll to see which table edge they arrive from.</description>
+                </rule>
+              </rules>
+              <profiles/>
+              <selections>
+                <selection id="8dd7de99-2b10-4dac-97da-fbac61c8cb00" entryId="355c8b84-7a32-50ee-1810-9ff9de5b385e::42a1322f-5540-1a41-fbb1-ae59ef36cdfc::75747f46-5328-674c-f7fd-b6107d182cf8" name="Permits One Lone Wolf" points="0.0" number="1" type="upgrade">
+                  <rules/>
+                  <profiles/>
+                  <selections/>
+                </selection>
+                <selection id="17d77150-1297-9dd8-19c2-7675aca9aa13" entryId="355c8b84-7a32-50ee-1810-9ff9de5b385e::e299e3fc-e9f4-0381-7e9b-03ce700ad49e" entryGroupId="355c8b84-7a32-50ee-1810-9ff9de5b385e::9fadf9c0-d5f3-95f6-e957-bd6f762d2409" name="Blood Claw" points="60.0" number="5" type="model" page="0">
+                  <rules>
+                    <rule ruleId="355c8b84-7a32-50ee-1810-9ff9de5b385e::0a946f90-32a3-e9d9-161c-61b66272e332::e2158329-cadf-d23f-6391-0a33f0619b43" name="Rage" hidden="false" book="Warhammer 40k rulebook" page="0">
+                      <description>In a turn in which a model with this special rule charges into combat, it gains +2 Attacks for charging, rather than +1. A model that has made a disordered charge that turn receives no benefit from Rage. </description>
+                    </rule>
+                  </rules>
+                  <profiles>
+                    <profile profileId="355c8b84-7a32-50ee-1810-9ff9de5b385e::4958cdf9-d1dc-5509-68a6-a2170381b19a::de4dbead-8e48-7627-e60a-d756eb50bceb" name="Blood Claw" type="Unit" hidden="false" book="Codex: Space Wolves" page="58">
+                      <characteristics>
+                        <characteristic name="Unit Type" value="Infantry" characteristicId="c2b4b061-a0fd-499d-8a3d-6ee52587cbd5"/>
+                        <characteristic name="WS" value="3" characteristicId="5ee4ff0b-b244-4670-9d05-91d10f80c32e"/>
+                        <characteristic name="BS" value="3" characteristicId="f6f92f00-8bb1-4afa-8ccb-46310b7dd5e5"/>
+                        <characteristic name="S" value="4" characteristicId="da036dbb-32c2-430a-9dd5-aa74e0c4f74b"/>
+                        <characteristic name="T" value="4" characteristicId="3f9ed75c-36cd-4169-9cef-48391bb55cfd"/>
+                        <characteristic name="W" value="1" characteristicId="17ee558f-3014-4bd2-afc1-b474d8d2b7a8"/>
+                        <characteristic name="I" value="4" characteristicId="a558b3ef-04d0-440e-a312-bac3255bf592"/>
+                        <characteristic name="A" value="1" characteristicId="5dff3e7c-e024-4030-a71d-03195ec06ea7"/>
+                        <characteristic name="Ld" value="8" characteristicId="4a42059d-12cd-4c1f-a4c7-bb569d13eeea"/>
+                        <characteristic name="Save" value="3+" characteristicId="b215fe72-dbce-4ad6-89ec-c4bb3962c39d"/>
+                      </characteristics>
+                    </profile>
+                  </profiles>
+                  <selections>
+                    <selection id="0969bfe8-b2f7-1ea7-0155-8df40e8e2b53" entryId="355c8b84-7a32-50ee-1810-9ff9de5b385e::277d9bc7-b777-b93f-73c2-ca999c0236bc::d3fb2835-5b64-beb7-c844-df8ddc84a8ac" name="Power Armour" points="0.0" number="5" type="upgrade" page="0">
+                      <rules/>
+                      <profiles>
+                        <profile profileId="355c8b84-7a32-50ee-1810-9ff9de5b385e::277d9bc7-b777-b93f-73c2-ca999c0236bc::7b14e5db-c040-954b-89e0-915ca490b28c::0adf24a5-2133-fdb4-9999-2e1d3ad01439" name="Power Armour" type="Wargear Item" hidden="false" book="Codex: Space Wolves" page="99">
+                          <characteristics>
+                            <characteristic name="Description" value="3+ Armour Sv" characteristicId="21befb24-fc85-4f52-a745-64b2e48f8228"/>
+                          </characteristics>
+                        </profile>
+                      </profiles>
+                      <selections/>
+                    </selection>
+                    <selection id="de5f2709-f4d5-b9e8-c538-23e94cea276c" entryId="355c8b84-7a32-50ee-1810-9ff9de5b385e::e3aa8219-4054-b4a6-6ec7-6c8fb2e65e2b::c50b8cd4-1671-2744-02dd-1c08ea726dc1" name="Frag &amp; Krak Grenades" points="0.0" number="5" type="upgrade" book="" page="0">
+                      <rules/>
+                      <profiles>
+                        <profile profileId="355c8b84-7a32-50ee-1810-9ff9de5b385e::e3aa8219-4054-b4a6-6ec7-6c8fb2e65e2b::00d1e2b4-d6ae-d001-83b0-24407fd50a80::b898194f-5b6a-18e8-e08e-b8f3016b4380" name="Grenades (Frag)" type="Weapon" hidden="false" book="Codex: Space Wolves" page="0">
+                          <characteristics>
+                            <characteristic name="Range" value="8&quot;" characteristicId="6fa97fa8-ea74-4a27-a0fb-bc4e5f367464"/>
+                            <characteristic name="Strength" value="3" characteristicId="a6383362-5aa8-4ff0-b1d0-00e059fc9d45"/>
+                            <characteristic name="AP" value="-" characteristicId="6abee736-f8d3-498e-97ac-a5c68445609f"/>
+                            <characteristic name="Type" value="Assault 1, 3&quot; Blast" characteristicId="077c342f-d7b9-45c6-b8af-88e97cafd3a2"/>
+                          </characteristics>
+                        </profile>
+                        <profile profileId="355c8b84-7a32-50ee-1810-9ff9de5b385e::e3aa8219-4054-b4a6-6ec7-6c8fb2e65e2b::3c91776a-fe46-e962-2ef8-b7ff93f80d7b::30a9ee54-c548-052d-68f3-5091f765b150" name="Grenades (Krak)" type="Weapon" hidden="false" book="Codex: Space Wolves" page="0">
+                          <characteristics>
+                            <characteristic name="Range" value="8&quot;" characteristicId="6fa97fa8-ea74-4a27-a0fb-bc4e5f367464"/>
+                            <characteristic name="Strength" value="6" characteristicId="a6383362-5aa8-4ff0-b1d0-00e059fc9d45"/>
+                            <characteristic name="AP" value="4" characteristicId="6abee736-f8d3-498e-97ac-a5c68445609f"/>
+                            <characteristic name="Type" value="Assault 1" characteristicId="077c342f-d7b9-45c6-b8af-88e97cafd3a2"/>
+                          </characteristics>
+                        </profile>
+                      </profiles>
+                      <selections/>
+                    </selection>
+                    <selection id="421eb298-81b8-c510-0b08-76892f3c5af3" entryId="355c8b84-7a32-50ee-1810-9ff9de5b385e::f0035318-aa82-cd22-09d5-3235425545db" entryGroupId="355c8b84-7a32-50ee-1810-9ff9de5b385e::7b649ed4-2ba3-256c-fba9-6f43b4efc693" name="Chainsword" points="0.0" number="5" type="upgrade" page="0">
+                      <rules/>
+                      <profiles>
+                        <profile profileId="355c8b84-7a32-50ee-1810-9ff9de5b385e::e951ea30-d182-42e3-79b4-9c5e7c06007f::b5a15a10-378a-f59e-80a7-090b5c95a19d" name="Close Combat Weapon" type="Weapon" hidden="false" book="Codex: Space Wolves" page="0">
+                          <characteristics>
+                            <characteristic name="Range" value="-" characteristicId="6fa97fa8-ea74-4a27-a0fb-bc4e5f367464"/>
+                            <characteristic name="Strength" value="User" characteristicId="a6383362-5aa8-4ff0-b1d0-00e059fc9d45"/>
+                            <characteristic name="AP" value="-" characteristicId="6abee736-f8d3-498e-97ac-a5c68445609f"/>
+                            <characteristic name="Type" value="Melee, Chainsword/Bayonet/Teeth &amp; Claws/etc" characteristicId="077c342f-d7b9-45c6-b8af-88e97cafd3a2"/>
+                          </characteristics>
+                        </profile>
+                      </profiles>
+                      <selections/>
+                    </selection>
+                    <selection id="258b91fa-071a-379d-c988-1aff52644704" entryId="355c8b84-7a32-50ee-1810-9ff9de5b385e::6788831e-ad05-1449-768a-d4d89e17aaf3::6f96a491-978f-914f-8c40-ba443febb298" entryGroupId="355c8b84-7a32-50ee-1810-9ff9de5b385e::6788831e-ad05-1449-768a-d4d89e17aaf3::55b3f220-c0e6-3ec9-8383-4fca059aab64" name="Bolt Pistol" points="0.0" number="5" type="upgrade" page="0">
+                      <rules/>
+                      <profiles>
+                        <profile profileId="355c8b84-7a32-50ee-1810-9ff9de5b385e::6788831e-ad05-1449-768a-d4d89e17aaf3::2bd5ba45-f159-a76e-e401-7b687dd5906d::82de7a82-9e87-8dc1-6d88-fbe1ee0c024c" name="Bolt Pistol" type="Weapon" hidden="false" book="Codex: Space Wolves" page="0">
+                          <characteristics>
+                            <characteristic name="Range" value="12" characteristicId="6fa97fa8-ea74-4a27-a0fb-bc4e5f367464"/>
+                            <characteristic name="Strength" value="4" characteristicId="a6383362-5aa8-4ff0-b1d0-00e059fc9d45"/>
+                            <characteristic name="AP" value="5" characteristicId="6abee736-f8d3-498e-97ac-a5c68445609f"/>
+                            <characteristic name="Type" value="Pistol" characteristicId="077c342f-d7b9-45c6-b8af-88e97cafd3a2"/>
+                          </characteristics>
+                        </profile>
+                      </profiles>
+                      <selections/>
+                    </selection>
+                  </selections>
+                </selection>
+              </selections>
+            </selection>
+          </selections>
+        </category>
+        <category id="e65aeeec-4360-93b8-3b3e-1695585ee7b7" categoryId="c274d0b0-5866-44bc-9810-91c136ae7438" name="Fast Attack">
+          <selections/>
+        </category>
+        <category id="971f277b-22ff-1699-a5f1-f4addd66ed91" categoryId="abf5fd55-9ac7-4263-8bc1-a9fb0a8fa6a6" name="Heavy Support">
+          <selections/>
+        </category>
+      </categories>
+      <forces/>
+    </force>
+  </forces>
+  <rules>
+    <rule ruleId="3fad00ad-979f-4194-377e-449130313de5::906a5f96-4c50-0fd6-c525-cd611e4ee811" name="Objective Secured (Allied Detachment)" hidden="false" book="Warhammer 40k rulebook"/>
+  </rules>
+</roster>

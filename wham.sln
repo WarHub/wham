@@ -11,6 +11,13 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{6055CEFB-2A8
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{6AF5B4EB-38C3-43CD-B6D9-47A8BB52BC43}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{A11F905B-21EA-4CB2-95CF-9FDCB7BE4AE2}"
+	ProjectSection(SolutionItems) = preProject
+		global.json = global.json
+	EndProjectSection
+EndProject
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "WarHub.Armoury.Model.BattleScribeXmlTests", "tests\WarHub.Armoury.Model.BattleScribeXmlTests\WarHub.Armoury.Model.BattleScribeXmlTests.xproj", "{1AD9D659-A39C-4333-90D2-C4D53D34828E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -25,6 +32,10 @@ Global
 		{31C63724-B173-480B-BD3F-ACE0D3EC6402}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{31C63724-B173-480B-BD3F-ACE0D3EC6402}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{31C63724-B173-480B-BD3F-ACE0D3EC6402}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1AD9D659-A39C-4333-90D2-C4D53D34828E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1AD9D659-A39C-4333-90D2-C4D53D34828E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1AD9D659-A39C-4333-90D2-C4D53D34828E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1AD9D659-A39C-4333-90D2-C4D53D34828E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -32,5 +43,6 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{64425601-EF61-413F-81B5-AE538D630009} = {6055CEFB-2A8B-45E3-B6D7-B9DB2A4FE612}
 		{31C63724-B173-480B-BD3F-ACE0D3EC6402} = {6055CEFB-2A8B-45E3-B6D7-B9DB2A4FE612}
+		{1AD9D659-A39C-4333-90D2-C4D53D34828E} = {6AF5B4EB-38C3-43CD-B6D9-47A8BB52BC43}
 	EndGlobalSection
 EndGlobal
