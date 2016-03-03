@@ -20,6 +20,8 @@ Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "WarHub.Armoury.Model.Battle
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "WarHub.Armoury.Model.BattleScribe", "src\WarHub.Armoury.Model.BattleScribe\WarHub.Armoury.Model.BattleScribe.xproj", "{C2BCEE91-D877-4289-938A-2346F050B2EA}"
 EndProject
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "WarHub.Armoury.Model.BattleScribeTests", "tests\WarHub.Armoury.Model.BattleScribeTests\WarHub.Armoury.Model.BattleScribeTests.xproj", "{A72E448C-75FE-47A6-9D04-9D3541325C5E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -42,6 +44,10 @@ Global
 		{C2BCEE91-D877-4289-938A-2346F050B2EA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C2BCEE91-D877-4289-938A-2346F050B2EA}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C2BCEE91-D877-4289-938A-2346F050B2EA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A72E448C-75FE-47A6-9D04-9D3541325C5E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A72E448C-75FE-47A6-9D04-9D3541325C5E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A72E448C-75FE-47A6-9D04-9D3541325C5E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A72E448C-75FE-47A6-9D04-9D3541325C5E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -51,5 +57,6 @@ Global
 		{31C63724-B173-480B-BD3F-ACE0D3EC6402} = {6055CEFB-2A8B-45E3-B6D7-B9DB2A4FE612}
 		{1AD9D659-A39C-4333-90D2-C4D53D34828E} = {6AF5B4EB-38C3-43CD-B6D9-47A8BB52BC43}
 		{C2BCEE91-D877-4289-938A-2346F050B2EA} = {6055CEFB-2A8B-45E3-B6D7-B9DB2A4FE612}
+		{A72E448C-75FE-47A6-9D04-9D3541325C5E} = {6AF5B4EB-38C3-43CD-B6D9-47A8BB52BC43}
 	EndGlobalSection
 EndGlobal
