@@ -1,4 +1,7 @@
-﻿using XmlCharacteristicList = WarHub.Armoury.Model.BattleScribe.Nodes.CastingList
+﻿// WarHub licenses this file to you under the MIT license.
+// See LICENSE file in the project root for more information.
+
+using XmlCharacteristicList = WarHub.Armoury.Model.BattleScribe.Nodes.CastingList
     <WarHub.Armoury.Model.BattleScribeXml.ICharacteristic,
         WarHub.Armoury.Model.BattleScribeXml.Characteristic>;
 using XmlRosterCharacteristicList = WarHub.Armoury.Model.BattleScribe.Nodes.CastingList

@@ -1,4 +1,7 @@
-﻿namespace WarHub.Armoury.Model.BattleScribe.Nodes
+﻿// WarHub licenses this file to you under the MIT license.
+// See LICENSE file in the project root for more information.
+
+namespace WarHub.Armoury.Model.BattleScribe.Nodes
 {
     using System;
     using System.Collections.Generic;
@@ -27,7 +30,7 @@
         private static ProfileType Factory()
         {
             var xml = new BattleScribeXml.ProfileType();
-            IdentifiedExtensions.SetNewGuid(xml);
+            xml.SetNewGuid();
             return Transformation(xml);
         }
 

@@ -1,4 +1,7 @@
-﻿namespace WarHub.Armoury.Model.BattleScribe.Nodes
+﻿// WarHub licenses this file to you under the MIT license.
+// See LICENSE file in the project root for more information.
+
+namespace WarHub.Armoury.Model.BattleScribe.Nodes
 {
     using System;
     using System.Collections.Generic;
@@ -32,7 +35,7 @@
                 CategoryId = category.Id.RawValue,
                 Name = category.Name
             };
-            IdentifiedExtensions.SetNewGuid(xmlMock);
+            xmlMock.SetNewGuid();
             return Transformation(xmlMock);
         }
 
