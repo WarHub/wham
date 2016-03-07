@@ -1,0 +1,67 @@
+version: 0.2.0-build{build}
+
+# configuration for all except 'stable' branch
+# Build in Debug
+-
+  branches:
+    except:
+    - stable
+  configuration: Debug
+  cache:
+    - "C:\Users\appveyor\.dnx\packages"
+  install:
+  - ps: >-
+      dnvm update-self
+  
+      dnvm upgrade
+  
+      dnvm list
+  before_build:
+  - ps: dnu restore
+  - ps: $DNX_BUILD_VERSION="$APPVEYOR_REPO_BRANCH-build-$APPVEYOR_BUILD_NUMBER"
+  build:
+    verbosity: minimal
+  test_script:
+  - ps: >-
+      foreach ($testdir in (gi tests/*/project.json | Split-Path))
+      {
+        Push-Location $testdir;
+        dnx test;
+        Pop-Location;
+      }
+
+# configuration for all except 'stable' branch
+# Build in Release, publish to Nuget
+-
+  branches:
+    only:
+    - stable
+  configuration: Release
+  cache:
+    - "C:\Users\appveyor\.dnx\packages"
+  install:
+  - ps: >-
+      dnvm update-self
+  
+      dnvm upgrade
+  
+      dnvm list
+  before_build:
+  - ps: dnu restore
+  build:
+    verbosity: minimal
+  test_script:
+  - ps: >-
+      foreach ($testdir in (gi tests/*/project.json | Split-Path))
+      {
+        Push-Location $testdir;
+        dnx test;
+        Pop-Location;
+      }
+
+  deploy:
+    provider: NuGet
+    api_key:
+      secure: Qiw6Qq0ZTIhBoy4L1QT3whagCQAKK6/KcjxDz6XhzHuTnmLr4sdPtRvx2AHc5zGp
+    skip_symbols: false
+    artifact: /artifacts\\bin\\.*\.nupkg/
