@@ -28,7 +28,13 @@
         dnx test;
         Pop-Location;
       }
-
+  notifications:
+    - provider: Webhook
+      url: https://webhooks.gitter.im/e/912155f98bd0aed48efc
+      on_build_success: true
+      on_build_failure: true
+      on_build_status_changed: true
+	  
 # configuration for all except 'stable' branch
 # Build in Release, publish to Nuget
 -
@@ -58,6 +64,12 @@
         dnx test;
         Pop-Location;
       }
+  notifications:
+    - provider: Webhook
+      url: https://webhooks.gitter.im/e/912155f98bd0aed48efc
+      on_build_success: true
+      on_build_failure: true
+      on_build_status_changed: true
   artifacts:
     - path: '**\*.nupkg'
   deploy:
