@@ -1,15 +1,14 @@
-version: 0.2.0-build{build}
-
 # configuration for all except 'stable' branch
 # Build in Debug
 -
   branches:
     except:
     - stable
+  version: 0.2.0-build{build}
   configuration: Debug
   cache:
     - "C:\Users\appveyor\.dnx\packages"
-  install:
+  init:
   - ps: >-
       dnvm update-self
   
@@ -18,7 +17,7 @@ version: 0.2.0-build{build}
       dnvm list
   before_build:
   - ps: dnu restore
-  - ps: $DNX_BUILD_VERSION="$APPVEYOR_REPO_BRANCH-build-$APPVEYOR_BUILD_NUMBER"
+  - ps: $env:DNX_BUILD_VERSION="$env:APPVEYOR_REPO_BRANCH-build-$env:APPVEYOR_BUILD_NUMBER"
   build:
     verbosity: minimal
   test_script:
@@ -36,10 +35,11 @@ version: 0.2.0-build{build}
   branches:
     only:
     - stable
+  version: 0.2.0-build{build}
   configuration: Release
   cache:
     - "C:\Users\appveyor\.dnx\packages"
-  install:
+  init:
   - ps: >-
       dnvm update-self
   
