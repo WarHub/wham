@@ -1,16 +1,42 @@
 {
-  "version": "0.1.0-*",
+  "version": "0.2.0-*",
   "description": "XML mapping of BattleScribe data format. Provides simple mapping classes as well as a mechanism to parse all IDs into Guid struct.",
   "authors": [ "WarHub" ],
-  "tags": [ "WarHub", "WarHub.Armoury.Model.BattleScribeXml", "wham", "wargame",
-            "roster", "battlescribe", "xml" ],
+  "tags": [
+    "WarHub",
+    "WarHub.Armoury.Model.BattleScribeXml",
+    "wham",
+    "wargame",
+    "roster",
+    "battlescribe",
+    "xml"
+  ],
   "projectUrl": "https://github.com/WarHub/wham",
   "licenseUrl": "https://github.com/WarHub/wham/blob/master/LICENSE",
+  "releaseNotes": "v0.2: Added netcore45 target.",
+
   "frameworks": {
-    "net451": {
+    "netcore45": {
       "frameworkAssemblies": {
-        "System.XML": "4.0.0.0",
-        "System.Xml.Serialization": "4.0.0.0"
+        "Microsoft.CSharp": "4.0.0.0",
+        "mscorlib": "4.0.0.0",
+        "System": "4.0.0.0",
+        "System.Collections": "4.0.0.0",
+        "System.ComponentModel": "4.0.0.0",
+        "System.Core": "4.0.0.0",
+        "System.IO": "4.0.0.0",
+        "System.Linq": "4.0.0.0",
+        "System.ObjectModel": "4.0.0.0",
+        "System.Reflection": "4.0.0.0",
+        "System.Reflection.Extensions": "4.0.0.0",
+        "System.Runtime": "4.0.0.0",
+        "System.Text.Encoding": "4.0.0.0",
+        "System.Text.RegularExpressions": "4.0.0.0",
+        "System.Threading": "4.0.0.0",
+        "System.Threading.Tasks": "4.0.0.0",
+        "System.Xml": "4.0.0.0",
+        "System.Xml.ReaderWriter": "4.0.0.0",
+        "System.Xml.XmlSerializer": "4.0.0.0"
       }
     },
     ".NETPortable,Version=v4.5,Profile=Profile259": {
@@ -35,19 +61,9 @@
         "System.Xml.ReaderWriter": "4.0.0.0",
         "System.Xml.XmlSerializer": "4.0.0.0"
       }
-    },
-    "dotnet5.4": {
-      "dependencies": {
-        "Microsoft.CSharp": "4.0.1-beta-23516",
-        "System.Collections": "4.0.11-beta-23516",
-        "System.Linq": "4.0.1-beta-23516",
-        "System.Runtime": "4.0.21-beta-23516",
-        "System.Threading": "4.0.11-beta-23516",
-        "System.Xml.XmlSerializer": "4.0.11-beta-23516"
-      }
     }
   },
   "dependencies": {
-    "WarHub.Armoury.Model": "0.1.0-*"
+    "WarHub.Armoury.Model": "0.2.0-*"
   }
 }

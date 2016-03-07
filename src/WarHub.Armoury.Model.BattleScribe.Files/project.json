@@ -1,0 +1,29 @@
+﻿{
+  "version": "0.1.0-*",
+  "description": "Helper classes to easily handle zipped/unzipped formats.",
+  "authors": [ "WarHub" ],
+  "tags": [ "WarHub", "wham", "armoury model", "BattleScribe", "files", "file handling" ],
+  "projectUrl": "https://github.com/WarHub/wham",
+  "licenseUrl": "https://github.com/WarHub/wham/blob/master/LICENSE",
+
+  "frameworks": {
+    "netcore45": {
+      "frameworkAssemblies": {
+        "Microsoft.CSharp": "4.0.0.0",
+        "mscorlib": "4.0.0.0",
+        "System": "4.0.0.0",
+        "System.Collections": "4.0.0.0",
+        "System.Core": "4.0.0.0",
+        "System.Diagnostics.Tools": "4.0.0.0",
+        "System.IO": "4.0.0.0",
+        "System.IO.Compression": "4.0.0.0",
+        "System.Runtime": "4.0.0.0"
+      }
+    }
+  },
+  "dependencies": {
+    "WarHub.Armoury.Model": "0.2.0-*",
+    "WarHub.Armoury.Model.BattleScribeXml": "0.2.0-*",
+    "WarHub.Armoury.Model.BattleScribe": "0.2.0-*"
+  }
+}
