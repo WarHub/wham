@@ -16,6 +16,10 @@
     "test": "xunit.runner.dnx"
   },
   "frameworks": {
-    "dnx46": { }
+    "dnx46": {
+      "frameworkAssemblies": {
+        "System.Runtime": ""
+      }
+    }
   }
 }
