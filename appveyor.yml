@@ -7,7 +7,7 @@
   version: 0.2.0-build{build}
   configuration: Debug
   cache:
-    - "C:\Users\appveyor\.dnx\packages"
+    - C:\Users\appveyor\.dnx\packages -> appveyor.yml
   init:
   - ps: >-
       dnvm update-self
