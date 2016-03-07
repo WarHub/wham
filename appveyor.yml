@@ -34,7 +34,7 @@
       on_build_success: true
       on_build_failure: true
       on_build_status_changed: true
-	  
+
 # configuration for all except 'stable' branch
 # Build in Release, publish to Nuget
 -
@@ -78,4 +78,3 @@
       secure: Qiw6Qq0ZTIhBoy4L1QT3whagCQAKK6/KcjxDz6XhzHuTnmLr4sdPtRvx2AHc5zGp
     skip_symbols: false
     artifact: /.*\.nupkg/
-
