@@ -9,15 +9,23 @@
   "frameworks": {
     "netcore45": {
       "frameworkAssemblies": {
-        "Microsoft.CSharp": "4.0.0.0",
-        "mscorlib": "4.0.0.0",
+        "System": "4.0.0.0",
+        "System.Collections": "4.0.0.0",
+        "System.Core": "4.0.0.0",
+        "System.Diagnostics.Tools": "4.0.0.0",
+        "System.IO": "4.0.0.0",
+        "System.IO.Compression": "4.0.0.0"
+      }
+    },
+    "wpa81": {
+      "frameworkAssemblies": {
         "System": "4.0.0.0",
         "System.Collections": "4.0.0.0",
         "System.Core": "4.0.0.0",
         "System.Diagnostics.Tools": "4.0.0.0",
         "System.IO": "4.0.0.0",
         "System.IO.Compression": "4.0.0.0",
-        "System.Runtime": "4.0.0.0"
+        "System.Runtime": "4.0.10.0"
       }
     }
   },

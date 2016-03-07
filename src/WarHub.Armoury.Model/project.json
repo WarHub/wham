@@ -10,8 +10,6 @@
   "frameworks": {
     "netcore45": {
       "frameworkAssemblies": {
-        "Microsoft.CSharp": "4.0.0.0",
-        "mscorlib": "4.0.0.0",
         "System": "4.0.0.0",
         "System.Collections": "4.0.0.0",
         "System.ComponentModel": "4.0.0.0",
@@ -30,8 +28,6 @@
     },
     ".NETPortable,Version=v4.5,Profile=Profile259": {
       "frameworkAssemblies": {
-        "Microsoft.CSharp": "4.0.0.0",
-        "mscorlib": "4.0.0.0",
         "System": "4.0.0.0",
         "System.Collections": "4.0.0.0",
         "System.ComponentModel": "4.0.0.0",
