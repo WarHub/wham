@@ -14,5 +14,5 @@ Continuous integration is provided by AppVeyor.
 
 | branch | build status |
 ---------|--------------
-master   | [![Build status](https://ci.appveyor.com/api/projects/status/WarHub/wham?branch=master?svg=true)](https://ci.appveyor.com/project/amis92/wham/branch/master)
-master   | [![Build status](https://ci.appveyor.com/api/projects/status/WarHub/wham?branch=stable?svg=true)](https://ci.appveyor.com/project/amis92/wham/branch/stable)
+master   | [![Build status](https://ci.appveyor.com/api/projects/status/6md5spej0f08wnpp/branch/master?svg=true)](https://ci.appveyor.com/project/amis92/wham/branch/master)
+stable   | [![Build status](https://ci.appveyor.com/api/projects/status/6md5spej0f08wnpp/branch/stable?svg=true)](https://ci.appveyor.com/project/amis92/wham/branch/stable)
