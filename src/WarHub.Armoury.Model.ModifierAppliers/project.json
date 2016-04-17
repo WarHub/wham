@@ -11,7 +11,6 @@
   },
 
   "frameworks": {
-    "net451": { },
     "netcore45": {
       "frameworkAssemblies": {
         "System": "",
@@ -20,7 +19,8 @@
         "System.Diagnostics.Debug": "",
         "System.Linq": "",
         "System.Reflection": "",
-        "System.Runtime": ""
+        "System.Runtime": "",
+        "System.Runtime.Extensions": "" 
       }
     }
   }
