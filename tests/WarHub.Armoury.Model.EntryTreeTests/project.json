@@ -8,8 +8,8 @@
 
   "dependencies": {
     "NSubstitute": "1.10.0",
-    "WarHub.Armoury.Model": "0.2.1-*",
-    "WarHub.Armoury.Model.EntryTree": "0.2.1-*",
+    "WarHub.Armoury.Model": "",
+    "WarHub.Armoury.Model.EntryTree": "",
     "xunit": "2.1.0",
     "xunit.runner.dnx": "2.1.0-rc1-*"
   },

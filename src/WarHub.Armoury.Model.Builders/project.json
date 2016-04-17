@@ -1,15 +1,16 @@
 ﻿{
-  "version": "0.2.1-*",
-  "description":
-    "Provides abstraction of structures that follow and update wham (WarHub.Armoury.Model) roster data according to active modifiers, conditions etc.",
-  "authors": ["WarHub"],
-  "tags": ["warhub", "datafile", "catalogue", "changetracking", "condition", "modifier"],
+  "version": "0.2.2-*",
+  "description": "Provides abstraction of structures that follow and update wham (WarHub.Armoury.Model) roster data according to active modifiers, conditions etc.",
+  "authors": [ "WarHub" ],
+  "tags": [ "warhub", "datafile", "catalogue", "changetracking", "condition", "modifier" ],
   "projectUrl": "https://github.com/WarHub/wham",
   "licenseUrl": "https://github.com/WarHub/wham/blob/master/LICENSE",
 
+  "releaseNotes": "0.2.2: added portable profile 259 support",
+
   "dependencies": {
     "WarHub.Armoury.Model": "0.2.1-*",
-    "WarHub.Armoury.Model.EntryTree": "0.2.1-*"
+    "WarHub.Armoury.Model.EntryTree": "0.2.2-*"
   },
 
   "frameworks": {
@@ -30,6 +31,14 @@
         "System.Core": "",
         "System.Linq": "",
         "System.ObjectModel": "",
+        "System.Runtime": ""
+      }
+    },
+    ".NETPortable,Version=v4.5,Profile=Profile259": {
+      "frameworkAssemblies": {
+        "System.Collections": "",
+        "System.Diagnostics.Debug": "",
+        "System.Linq": "",
         "System.Runtime": ""
       }
     }

@@ -1,14 +1,16 @@
 ﻿{
-  "version": "0.2.1-*",
+  "version": "0.2.2-*",
   "description": "Provides wham (WarHub.Armoury.Model) Conditions' resolution utilities.",
-  "authors": ["WarHub"],
-  "tags": ["warhub", "catalogue", "datafile", "condition"],
+  "authors": [ "WarHub" ],
+  "tags": [ "warhub", "catalogue", "datafile", "condition" ],
   "projectUrl": "https://github.com/WarHub/wham",
   "licenseUrl": "https://github.com/WarHub/wham/blob/master/LICENSE",
 
+  "releaseNotes": "0.2.2: added portable profile 259 support",
+
   "dependencies": {
     "WarHub.Armoury.Model": "0.2.1-*",
-    "WarHub.Armoury.Model.Builders": "0.2.1-*"
+    "WarHub.Armoury.Model.Builders": "0.2.2-*"
   },
 
   "frameworks": {
@@ -31,6 +33,15 @@
         "System.Linq": "",
         "System.ObjectModel": "",
         "System.Runtime": ""
+      }
+    },
+    ".NETPortable,Version=v4.5,Profile=Profile259": {
+      "frameworkAssemblies": {
+        "System.Collections": "",
+        "System.Diagnostics.Debug": "",
+        "System.Linq": "",
+        "System.Runtime": "",
+        "System.Runtime.Extensions": ""
       }
     }
   }

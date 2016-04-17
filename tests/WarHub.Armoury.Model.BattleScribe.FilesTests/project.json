@@ -7,9 +7,9 @@
   "licenseUrl": "https://github.com/WarHub/wham/blob/master/LICENSE",
 
   "dependencies": {
-    "WarHub.Armoury.Model": "0.2.1-*",
-    "WarHub.Armoury.Model.BattleScribeXml": "0.2.1-*",
-    "WarHub.Armoury.Model.BattleScribe.Files": "0.2.1-*",
+    "WarHub.Armoury.Model": "",
+    "WarHub.Armoury.Model.BattleScribeXml": "",
+    "WarHub.Armoury.Model.BattleScribe.Files": "",
     "xunit": "2.1.0",
     "xunit.runner.dnx": "2.1.0-rc1-*"
   },
