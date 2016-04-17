@@ -113,7 +113,7 @@ namespace WarHub.Armoury.Model
         public static bool IsAllContentCollective(this IEntryBase entryBase)
         {
             return entryBase.GetSubEntries().All(entry => entry.IsCollective && entry.IsAllContentCollective()) &&
-                   entryBase.GetSubGroups().All(@group => group.IsCollective && group.IsAllContentCollective());
+                   entryBase.GetSubGroups().All(group => group.IsCollective && group.IsAllContentCollective());
         }
 
         /// <summary>

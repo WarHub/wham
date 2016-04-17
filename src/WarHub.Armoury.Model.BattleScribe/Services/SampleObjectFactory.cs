@@ -115,7 +115,7 @@ namespace WarHub.Armoury.Model.BattleScribe.Services
             var captainEntry = catalogue.Entries.First(x => x.Name.Equals("Captain"));
             var path = new CataloguePath(catalogue);
             var captain = force.CategoryMocks.First(x => x.Name == "HQ").Selections.AddNew(path.Select(captainEntry));
-            var honourGuardEntry = captainEntry.GetSubEntries().First(@group => group.Name.Contains("Honour Guard"));
+            var honourGuardEntry = captainEntry.GetSubEntries().First(group => group.Name.Contains("Honour Guard"));
             var hgPath = path.Select(captainEntry).Select(honourGuardEntry);
             var honourGuard1 = captain.Selections.AddNew(hgPath);
             if (honourGuard1.NumberTaken != 1)

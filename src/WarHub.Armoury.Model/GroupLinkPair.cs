@@ -10,11 +10,11 @@ namespace WarHub.Armoury.Model
     /// </summary>
     public class GroupLinkPair
     {
-        private GroupLinkPair(IGroup @group, IGroupLink link)
+        private GroupLinkPair(IGroup group, IGroupLink link)
         {
-            if (@group == null)
-                throw new ArgumentNullException(nameof(@group));
-            Group = @group;
+            if (group == null)
+                throw new ArgumentNullException(nameof(group));
+            Group = group;
             Link = link;
         }
 

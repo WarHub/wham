@@ -4,7 +4,7 @@
   branches:
     except:
     - stable
-  version: 0.2.0-{branch}-build{build}
+  version: 0.2.1-{branch}-build{build}
   configuration: Debug
   cache:
     - C:\Users\appveyor\.dnx\packages -> appveyor.yml
@@ -28,6 +28,12 @@
         dnx test;
         Pop-Location;
       }
+  notifications:
+    - provider: Webhook
+      url: https://webhooks.gitter.im/e/912155f98bd0aed48efc
+      on_build_success: true
+      on_build_failure: true
+      on_build_status_changed: true
 
 # configuration for all except 'stable' branch
 # Build in Release, publish to Nuget
@@ -35,7 +41,7 @@
   branches:
     only:
     - stable
-  version: 0.2.0-build{build}
+  version: 0.2.1-build{build}
   configuration: Release
   cache:
     - C:\Users\appveyor\.dnx\packages -> appveyor.yml
@@ -58,6 +64,12 @@
         dnx test;
         Pop-Location;
       }
+  notifications:
+    - provider: Webhook
+      url: https://webhooks.gitter.im/e/912155f98bd0aed48efc
+      on_build_success: true
+      on_build_failure: true
+      on_build_status_changed: true
   artifacts:
     - path: '**\*.nupkg'
   deploy:
@@ -66,4 +78,3 @@
       secure: Qiw6Qq0ZTIhBoy4L1QT3whagCQAKK6/KcjxDz6XhzHuTnmLr4sdPtRvx2AHc5zGp
     skip_symbols: false
     artifact: /.*\.nupkg/
-
