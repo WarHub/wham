@@ -1,4 +1,7 @@
-﻿namespace WarHub.Armoury.Model.ConditionResolvers
+﻿// WarHub licenses this file to you under the MIT license.
+// See LICENSE file in the project root for more information.
+
+namespace WarHub.Armoury.Model.ConditionResolvers
 {
     using System;
     using System.ComponentModel;
@@ -8,13 +11,15 @@
     {
         public ConditionResolverCore(ExtractChildValue<TBuilder> extract, TBuilder builder)
         {
-            if (extract == null) throw new ArgumentNullException(nameof(extract));
+            if (extract == null)
+                throw new ArgumentNullException(nameof(extract));
             Extract = extract;
             Builder = builder;
         }
 
-        private ExtractChildValue<TBuilder> Extract { get; }
         private TBuilder Builder { get; }
+
+        private ExtractChildValue<TBuilder> Extract { get; }
 
         public int CountRepeats(IRepetitionInfo repetition)
         {

@@ -1,4 +1,7 @@
-﻿namespace WarHub.Armoury.Model.ConditionResolvers
+﻿// WarHub licenses this file to you under the MIT license.
+// See LICENSE file in the project root for more information.
+
+namespace WarHub.Armoury.Model.ConditionResolvers
 {
     using System;
     using Builders;
@@ -7,8 +10,10 @@
     {
         public static ConditionChildValue Extract(ICondition condition, IBuilderCore builder)
         {
-            if (condition == null) throw new ArgumentNullException(nameof(condition));
-            if (builder == null) throw new ArgumentNullException(nameof(builder));
+            if (condition == null)
+                throw new ArgumentNullException(nameof(condition));
+            if (builder == null)
+                throw new ArgumentNullException(nameof(builder));
             return condition.GetParentBuilder(builder).RetrieveChildValue(condition);
         }
 

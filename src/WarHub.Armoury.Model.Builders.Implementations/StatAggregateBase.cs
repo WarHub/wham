@@ -1,4 +1,7 @@
-﻿namespace WarHub.Armoury.Model.Builders.Implementations
+﻿// WarHub licenses this file to you under the MIT license.
+// See LICENSE file in the project root for more information.
+
+namespace WarHub.Armoury.Model.Builders.Implementations
 {
     using System;
     using System.Collections.Generic;
@@ -12,6 +15,7 @@
         }
 
         public IEnumerable<IStatAggregate> ChildrenAggregates { get; }
+
         public abstract uint ChildSelectionsCount { get; }
 
         public decimal GetPointsTotal(Guid nodeGuid)
@@ -27,6 +31,7 @@
         }
 
         public abstract decimal PointsTotal { get; }
+
         protected abstract decimal GetChildPointsValue(Guid nodeGuid);
         protected abstract uint GetChildSelectionCount(Guid selectionGuid);
     }

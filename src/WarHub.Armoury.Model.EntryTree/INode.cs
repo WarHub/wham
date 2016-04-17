@@ -1,4 +1,7 @@
-﻿namespace WarHub.Armoury.Model.EntryTree
+﻿// WarHub licenses this file to you under the MIT license.
+// See LICENSE file in the project root for more information.
+
+namespace WarHub.Armoury.Model.EntryTree
 {
     using System;
     using System.Collections.Generic;

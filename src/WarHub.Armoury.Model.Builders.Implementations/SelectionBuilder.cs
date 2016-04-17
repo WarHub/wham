@@ -1,4 +1,7 @@
-﻿namespace WarHub.Armoury.Model.Builders.Implementations
+﻿// WarHub licenses this file to you under the MIT license.
+// See LICENSE file in the project root for more information.
+
+namespace WarHub.Armoury.Model.Builders.Implementations
 {
     using System;
     using System.Collections.Generic;
@@ -10,9 +13,12 @@
         public SelectionBuilder(ISelection selection, IBuilderCore parentBuilder,
             IBuilderAncestorContext ancestorContext) : base(parentBuilder, ancestorContext)
         {
-            if (selection == null) throw new ArgumentNullException(nameof(selection));
-            if (parentBuilder == null) throw new ArgumentNullException(nameof(parentBuilder));
-            if (ancestorContext == null) throw new ArgumentNullException(nameof(ancestorContext));
+            if (selection == null)
+                throw new ArgumentNullException(nameof(selection));
+            if (parentBuilder == null)
+                throw new ArgumentNullException(nameof(parentBuilder));
+            if (ancestorContext == null)
+                throw new ArgumentNullException(nameof(ancestorContext));
             Selection = selection;
             var entry = selection.OriginEntryPath.Target;
             EntryTreeRoot = TreeRoot.Create(entry);
@@ -38,12 +44,19 @@
             => EntryBuilders.Cast<IBuilderCore>().Concat(GroupBuilders).Concat(ProfileBuilders).Concat(RuleBuilders);
 
         public IEnumerable<IEntryBuilder> EntryBuilders { get; }
+
         public override IStatAggregate StatAggregate { get; }
+
         public IEnumerable<IGroupBuilder> GroupBuilders { get; }
+
         public INode EntryTreeRoot { get; }
+
         public IEnumerable<IProfileBuilder> ProfileBuilders { get; }
+
         public IEnumerable<IRuleBuilder> RuleBuilders { get; }
+
         public ISelection Selection { get; }
+
         public override bool IsForEntityId(Guid idValue) => false;
 
         public override void ApplyModifiers()
@@ -62,8 +75,6 @@
                 Builder = builder;
             }
 
-            private SelectionBuilder Builder { get; }
-
             public override uint ChildSelectionsCount
                 => ChildrenAggregates.Aggregate(0u, (sum, aggregate) => sum + aggregate.ChildSelectionsCount);
 
@@ -71,6 +82,8 @@
                 =>
                     Builder.Selection.GetTotalPoints() +
                     ChildrenAggregates.Aggregate(0m, (sum, aggregate) => sum + aggregate.PointsTotal);
+
+            private SelectionBuilder Builder { get; }
 
             protected override decimal GetChildPointsValue(Guid nodeGuid)
             {

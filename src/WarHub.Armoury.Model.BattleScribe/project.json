@@ -1,7 +1,7 @@
 {
   "version": "0.2.1-*",
   "description": "WarHub.Armoury.Model (wham) binding of BattleScribe data format.",
-  "authors": [ "WarHub" ],
+  "authors": ["WarHub"],
   "tags": [
     "WarHub",
     "WarHub.Armoury.Model.BattleScribe",

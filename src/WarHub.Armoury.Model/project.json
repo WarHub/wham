@@ -1,8 +1,8 @@
 {
   "version": "0.2.1-*",
   "description": "wham: Top level abstraction of roster building model in C#.",
-  "authors": [ "WarHub" ],
-  "tags": [ "WarHub", "WarHub.Armoury.Model", "wham", "wargame", "roster", "battlescribe" ],
+  "authors": ["WarHub"],
+  "tags": ["WarHub", "WarHub.Armoury.Model", "wham", "wargame", "roster", "battlescribe"],
   "projectUrl": "https://github.com/WarHub/wham",
   "licenseUrl": "https://github.com/WarHub/wham/blob/master/LICENSE",
   "releaseNotes": "v0.2: Added netcore45 target.",

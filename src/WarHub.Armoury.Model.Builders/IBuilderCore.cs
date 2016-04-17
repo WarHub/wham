@@ -1,4 +1,7 @@
-﻿namespace WarHub.Armoury.Model.Builders
+﻿// WarHub licenses this file to you under the MIT license.
+// See LICENSE file in the project root for more information.
+
+namespace WarHub.Armoury.Model.Builders
 {
     using System;
     using System.Collections.Generic;
@@ -10,8 +13,11 @@
     public interface IBuilderCore
     {
         IBuilderAncestorContext AncestorContext { get; }
+
         IEnumerable<IBuilderCore> Children { get; }
+
         IBuilderCore ParentBuilder { get; }
+
         IStatAggregate StatAggregate { get; }
 
         bool IsForEntityId(Guid idValue);

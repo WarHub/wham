@@ -1,4 +1,7 @@
-﻿namespace WarHub.Armoury.Model.Builders.Implementations
+﻿// WarHub licenses this file to you under the MIT license.
+// See LICENSE file in the project root for more information.
+
+namespace WarHub.Armoury.Model.Builders.Implementations
 {
     using System;
     using System.Collections.Generic;
@@ -9,9 +12,12 @@
         public ForceBuilder(IForce force, IBuilderCore parentBuilder, IBuilderAncestorContext ancestorContext)
             : base(parentBuilder, ancestorContext)
         {
-            if (force == null) throw new ArgumentNullException(nameof(force));
-            if (parentBuilder == null) throw new ArgumentNullException(nameof(parentBuilder));
-            if (ancestorContext == null) throw new ArgumentNullException(nameof(ancestorContext));
+            if (force == null)
+                throw new ArgumentNullException(nameof(force));
+            if (parentBuilder == null)
+                throw new ArgumentNullException(nameof(parentBuilder));
+            if (ancestorContext == null)
+                throw new ArgumentNullException(nameof(ancestorContext));
             var childrenContext = AncestorContext.AppendedWith(this);
             InnerApplicableGeneralLimits.CopyFrom(force.ForceTypeLink.Target.Limits);
             Force = force;
@@ -22,6 +28,7 @@
         }
 
         private GeneralLimits InnerApplicableGeneralLimits { get; } = new GeneralLimits();
+
         public ILimits<int, decimal, int> ApplicableGeneralLimits => InnerApplicableGeneralLimits;
 
         public override IStatAggregate StatAggregate { get; }
@@ -45,7 +52,9 @@
             => CategoryBuilders.Concat(ForceBuilders.Cast<IBuilderCore>());
 
         public IEnumerable<ICategoryBuilder> CategoryBuilders { get; }
+
         public IForce Force { get; }
+
         public IEnumerable<IForceBuilder> ForceBuilders { get; }
 
         private class ForceStatAggregate : StatAggregateBase

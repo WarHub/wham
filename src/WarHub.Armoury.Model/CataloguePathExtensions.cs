@@ -51,13 +51,13 @@ namespace WarHub.Armoury.Model
         /// <param name="group">Group to (optionally) be 'Select'ed.</param>
         /// <param name="link">Link to (optionally) be 'Select'ed.</param>
         /// <returns>Result of 'Select' invocation.</returns>
-        public static CataloguePath SelectAuto(this CataloguePath path, IGroup @group, IGroupLink link)
+        public static CataloguePath SelectAuto(this CataloguePath path, IGroup group, IGroupLink link)
         {
             if (path == null)
                 throw new ArgumentNullException(nameof(path));
-            if (@group == null)
-                throw new ArgumentNullException(nameof(@group));
-            return link == null ? path.Select(@group) : path.Select(link);
+            if (group == null)
+                throw new ArgumentNullException(nameof(group));
+            return link == null ? path.Select(group) : path.Select(link);
         }
 
         /// <summary>

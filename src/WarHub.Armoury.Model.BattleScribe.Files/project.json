@@ -1,8 +1,8 @@
 ﻿{
   "version": "0.2.1-*",
   "description": "Helper classes to easily handle zipped/unzipped formats.",
-  "authors": [ "WarHub" ],
-  "tags": [ "WarHub", "wham", "armoury model", "BattleScribe", "files", "file handling" ],
+  "authors": ["WarHub"],
+  "tags": ["WarHub", "wham", "armoury model", "BattleScribe", "files", "file handling"],
   "projectUrl": "https://github.com/WarHub/wham",
   "licenseUrl": "https://github.com/WarHub/wham/blob/master/LICENSE",
 

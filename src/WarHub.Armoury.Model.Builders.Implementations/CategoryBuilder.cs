@@ -1,4 +1,7 @@
-﻿namespace WarHub.Armoury.Model.Builders.Implementations
+﻿// WarHub licenses this file to you under the MIT license.
+// See LICENSE file in the project root for more information.
+
+namespace WarHub.Armoury.Model.Builders.Implementations
 {
     using System;
     using System.Collections.Generic;
@@ -12,19 +15,26 @@
         public CategoryBuilder(ICategoryMock categoryMock, IBuilderCore parentBuilder,
             IBuilderAncestorContext ancestorContext) : base(parentBuilder, ancestorContext)
         {
-            if (categoryMock == null) throw new ArgumentNullException(nameof(categoryMock));
-            if (parentBuilder == null) throw new ArgumentNullException(nameof(parentBuilder));
-            if (ancestorContext == null) throw new ArgumentNullException(nameof(ancestorContext));
+            if (categoryMock == null)
+                throw new ArgumentNullException(nameof(categoryMock));
+            if (parentBuilder == null)
+                throw new ArgumentNullException(nameof(parentBuilder));
+            if (ancestorContext == null)
+                throw new ArgumentNullException(nameof(ancestorContext));
             CategoryMock = categoryMock;
             InnerApplicableGeneralLimits.CopyFrom(Category.Limits);
             EntryBuilders = CreateChildren(categoryMock, this, ancestorContext);
             StatAggregate = new CategoryStatAggregate(this);
         }
 
-        private GeneralLimits InnerApplicableGeneralLimits { get; } = new GeneralLimits();
         private ICategory Category => CategoryMock.CategoryLink.Target;
+
+        private GeneralLimits InnerApplicableGeneralLimits { get; } = new GeneralLimits();
+
         public ILimits<int, decimal, int> ApplicableGeneralLimits => InnerApplicableGeneralLimits;
+
         public override IStatAggregate StatAggregate { get; }
+
         public override bool IsForEntityId(Guid idValue) => Category.IdValueEquals(idValue);
 
         public override void ApplyModifiers()
@@ -40,7 +50,9 @@
         }
 
         public override IEnumerable<IBuilderCore> Children => EntryBuilders;
+
         public ICategoryMock CategoryMock { get; }
+
         public IEnumerable<IEntryBuilder> EntryBuilders { get; }
 
         private static IEnumerable<IEntryBuilder> CreateChildren(ICategoryMock categoryMock, ICategoryBuilder @this,

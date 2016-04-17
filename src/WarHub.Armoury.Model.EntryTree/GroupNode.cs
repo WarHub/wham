@@ -1,3 +1,6 @@
+// WarHub licenses this file to you under the MIT license.
+// See LICENSE file in the project root for more information.
+
 namespace WarHub.Armoury.Model.EntryTree
 {
     using System;
@@ -10,8 +13,10 @@ namespace WarHub.Armoury.Model.EntryTree
     {
         public GroupNode(GroupLinkPair pair, INode parent)
         {
-            if (pair == null) throw new ArgumentNullException(nameof(pair));
-            if (parent == null) throw new ArgumentNullException(nameof(parent));
+            if (pair == null)
+                throw new ArgumentNullException(nameof(pair));
+            if (parent == null)
+                throw new ArgumentNullException(nameof(parent));
             GroupLinkPair = pair;
             Parent = parent;
             GroupNodes = Group.GetGroupLinkPairs().Select(groupPair => Create(groupPair, this)).ToArray();
@@ -19,7 +24,9 @@ namespace WarHub.Armoury.Model.EntryTree
         }
 
         public IGroup Group => GroupLinkPair.Group;
+
         public GroupLinkPair GroupLinkPair { get; }
+
         public IGroupLink Link => GroupLinkPair.Link;
 
         IEntryNode INode.AsEntryNode
@@ -82,8 +89,10 @@ namespace WarHub.Armoury.Model.EntryTree
 
         public static GroupNode Create(GroupLinkPair pair, INode parent)
         {
-            if (pair == null) throw new ArgumentNullException(nameof(pair));
-            if (parent == null) throw new ArgumentNullException(nameof(parent));
+            if (pair == null)
+                throw new ArgumentNullException(nameof(pair));
+            if (parent == null)
+                throw new ArgumentNullException(nameof(parent));
             return new GroupNode(pair, parent);
         }
     }

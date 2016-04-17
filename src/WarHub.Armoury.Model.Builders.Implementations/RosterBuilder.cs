@@ -1,4 +1,7 @@
-﻿namespace WarHub.Armoury.Model.Builders.Implementations
+﻿// WarHub licenses this file to you under the MIT license.
+// See LICENSE file in the project root for more information.
+
+namespace WarHub.Armoury.Model.Builders.Implementations
 {
     using System;
     using System.Collections.Generic;
@@ -8,7 +11,8 @@
     {
         public RosterBuilder(IRoster roster) : base(null, null)
         {
-            if (roster == null) throw new ArgumentNullException(nameof(roster));
+            if (roster == null)
+                throw new ArgumentNullException(nameof(roster));
             Roster = roster;
             var childrenContext = BuilderAncestorContext.Create(this);
             ForceBuilders = Roster.Forces.Select(force => new ForceBuilder(force, this, childrenContext)).ToArray();
@@ -16,6 +20,7 @@
         }
 
         public override IStatAggregate StatAggregate { get; }
+
         public override bool IsForEntityId(Guid idValue) => false;
 
         public override void ApplyModifiers()
@@ -27,7 +32,9 @@
         }
 
         public override IEnumerable<IBuilderCore> Children => ForceBuilders;
+
         public IEnumerable<IForceBuilder> ForceBuilders { get; }
+
         public IRoster Roster { get; }
 
         private class RosterStatAggregate : StatAggregateBase

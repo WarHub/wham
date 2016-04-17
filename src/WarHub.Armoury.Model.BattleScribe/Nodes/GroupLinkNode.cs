@@ -30,7 +30,7 @@ namespace WarHub.Armoury.Model.BattleScribe.Nodes
             var link = new Link
             {
                 LinkType = LinkType.EntryGroup,
-                TargetGuid = @group.Id.Value
+                TargetGuid = group.Id.Value
             };
             link.SetNewGuid();
             return Transformation(link);

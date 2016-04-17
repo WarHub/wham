@@ -1,4 +1,7 @@
-﻿namespace WarHub.Armoury.Model.EntryTree
+﻿// WarHub licenses this file to you under the MIT license.
+// See LICENSE file in the project root for more information.
+
+namespace WarHub.Armoury.Model.EntryTree
 {
     using System;
     using System.Collections.Generic;
@@ -20,8 +23,10 @@
         public static IReadOnlyDictionary<IEntryNode, List<ISelection>> MapSelections(this INode root,
             ISelection parentSelection)
         {
-            if (root == null) throw new ArgumentNullException(nameof(root));
-            if (parentSelection == null) throw new ArgumentNullException(nameof(parentSelection));
+            if (root == null)
+                throw new ArgumentNullException(nameof(root));
+            if (parentSelection == null)
+                throw new ArgumentNullException(nameof(parentSelection));
             var mappedSelections =
                 root.AllDescendants(node => node.Children)
                     .Where(node => node.IsEntryNode)
@@ -47,8 +52,10 @@
         public static IReadOnlyDictionary<IEntryNode, List<ISelection>> MapSelections(this INode root,
             ISelectionNodeContainer selectionNodeContainer)
         {
-            if (root == null) throw new ArgumentNullException(nameof(root));
-            if (selectionNodeContainer == null) throw new ArgumentNullException(nameof(selectionNodeContainer));
+            if (root == null)
+                throw new ArgumentNullException(nameof(root));
+            if (selectionNodeContainer == null)
+                throw new ArgumentNullException(nameof(selectionNodeContainer));
             var mappedSelections =
                 root.AllDescendants(node => node.Children)
                     .Where(node => node.IsEntryNode)

@@ -1,4 +1,7 @@
-﻿namespace WarHub.Armoury.Model.Builders.Implementations
+﻿// WarHub licenses this file to you under the MIT license.
+// See LICENSE file in the project root for more information.
+
+namespace WarHub.Armoury.Model.Builders.Implementations
 {
     using System;
     using System.Collections.Generic;
@@ -10,10 +13,14 @@
         public GroupBuilder(IGroupNode groupNode, IReadOnlyDictionary<IEntryNode, List<ISelection>> selectionMapping,
             IBuilderCore parentBuilder, IBuilderAncestorContext ancestorContext) : base(parentBuilder, ancestorContext)
         {
-            if (groupNode == null) throw new ArgumentNullException(nameof(groupNode));
-            if (selectionMapping == null) throw new ArgumentNullException(nameof(selectionMapping));
-            if (parentBuilder == null) throw new ArgumentNullException(nameof(parentBuilder));
-            if (ancestorContext == null) throw new ArgumentNullException(nameof(ancestorContext));
+            if (groupNode == null)
+                throw new ArgumentNullException(nameof(groupNode));
+            if (selectionMapping == null)
+                throw new ArgumentNullException(nameof(selectionMapping));
+            if (parentBuilder == null)
+                throw new ArgumentNullException(nameof(parentBuilder));
+            if (ancestorContext == null)
+                throw new ArgumentNullException(nameof(ancestorContext));
             var childrenContext = AncestorContext.AppendedWith(this);
             GroupLinkPair = groupNode.GroupLinkPair;
             InnerApplicableEntryLimits.CopyFrom(groupNode.Group);
@@ -29,9 +36,13 @@
         }
 
         private EntryLimits InnerApplicableEntryLimits { get; } = new EntryLimits();
+
         private ApplicableVisibility InnerApplicableVisibility { get; } = new ApplicableVisibility();
+
         public IEntryLimits ApplicableEntryLimits => InnerApplicableEntryLimits;
+
         public IApplicableVisibility ApplicableVisibility => InnerApplicableVisibility;
+
         public override IStatAggregate StatAggregate { get; }
 
         public override bool IsForEntityId(Guid idValue) => GroupLinkPair.AnyHasId(idValue);
@@ -45,8 +56,11 @@
         }
 
         public override IEnumerable<IBuilderCore> Children => EntryBuilders.Concat(GroupBuilders.Cast<IBuilderCore>());
+
         public IEnumerable<IEntryBuilder> EntryBuilders { get; }
+
         public IEnumerable<IGroupBuilder> GroupBuilders { get; }
+
         public GroupLinkPair GroupLinkPair { get; }
 
         private class GroupStatAggregate : StatAggregateBase

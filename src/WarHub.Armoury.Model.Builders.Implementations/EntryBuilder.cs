@@ -1,4 +1,7 @@
-﻿namespace WarHub.Armoury.Model.Builders.Implementations
+﻿// WarHub licenses this file to you under the MIT license.
+// See LICENSE file in the project root for more information.
+
+namespace WarHub.Armoury.Model.Builders.Implementations
 {
     using System;
     using System.Collections.Generic;
@@ -10,9 +13,12 @@
         public EntryBuilder(IEntryNode entryNode, IEnumerable<ISelection> selections, IBuilderCore parentBuilder,
             IBuilderAncestorContext ancestorContext) : base(parentBuilder, ancestorContext)
         {
-            if (entryNode == null) throw new ArgumentNullException(nameof(entryNode));
-            if (parentBuilder == null) throw new ArgumentNullException(nameof(parentBuilder));
-            if (ancestorContext == null) throw new ArgumentNullException(nameof(ancestorContext));
+            if (entryNode == null)
+                throw new ArgumentNullException(nameof(entryNode));
+            if (parentBuilder == null)
+                throw new ArgumentNullException(nameof(parentBuilder));
+            if (ancestorContext == null)
+                throw new ArgumentNullException(nameof(ancestorContext));
             var childrenContext = AncestorContext.AppendedWith(this);
             EntryNode = entryNode;
             InnerApplicableEntryLimits.CopyFrom(entryNode.Entry);
@@ -23,9 +29,13 @@
         }
 
         public IEntryNode EntryNode { get; }
+
         private EntryLimits InnerApplicableEntryLimits { get; } = new EntryLimits();
+
         private ApplicableVisibility InnerApplicableVisibility { get; } = new ApplicableVisibility();
+
         public IEntryLimits ApplicableEntryLimits => InnerApplicableEntryLimits;
+
         public IApplicableVisibility ApplicableVisibility => InnerApplicableVisibility;
 
         public override IStatAggregate StatAggregate { get; }
@@ -42,7 +52,9 @@
         }
 
         public override IEnumerable<IBuilderCore> Children => SelectionBuilders;
+
         public EntryLinkPair EntryLinkPair => EntryNode.EntryLinkPair;
+
         public IEnumerable<ISelectionBuilder> SelectionBuilders { get; }
 
         private class EntryStatAggregate : StatAggregateBase
@@ -52,12 +64,12 @@
                 Builder = builder;
             }
 
-            private EntryBuilder Builder { get; }
-
             public override uint ChildSelectionsCount
                 => Builder.SelectionBuilders.Aggregate(0u, (sum, builder) => builder.Selection.NumberTaken);
 
             public override decimal PointsTotal => ChildrenAggregates.Select(aggregate => aggregate.PointsTotal).Sum();
+
+            private EntryBuilder Builder { get; }
 
             protected override decimal GetChildPointsValue(Guid nodeGuid) => 0m;
 

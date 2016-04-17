@@ -1,4 +1,7 @@
-﻿namespace WarHub.Armoury.Model.EntryTree
+﻿// WarHub licenses this file to you under the MIT license.
+// See LICENSE file in the project root for more information.
+
+namespace WarHub.Armoury.Model.EntryTree
 {
     using System.Collections.Generic;
     using System.Linq;
@@ -24,7 +27,8 @@
         {
             while (true)
             {
-                if (@this.IsRoot) yield break;
+                if (@this.IsRoot)
+                    yield break;
                 yield return @this.Parent;
                 @this = @this.Parent;
             }

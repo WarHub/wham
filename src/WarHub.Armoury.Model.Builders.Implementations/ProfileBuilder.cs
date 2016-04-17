@@ -1,4 +1,7 @@
-﻿namespace WarHub.Armoury.Model.Builders.Implementations
+﻿// WarHub licenses this file to you under the MIT license.
+// See LICENSE file in the project root for more information.
+
+namespace WarHub.Armoury.Model.Builders.Implementations
 {
     using System;
     using System.Collections.Generic;
@@ -9,7 +12,8 @@
         public ProfileBuilder(ProfileLinkPair profileLinkPair, IBuilderCore parentBuilder,
             IBuilderAncestorContext ancestorContext) : base(parentBuilder, ancestorContext)
         {
-            if (profileLinkPair == null) throw new ArgumentNullException(nameof(profileLinkPair));
+            if (profileLinkPair == null)
+                throw new ArgumentNullException(nameof(profileLinkPair));
             ProfileLinkPair = profileLinkPair;
             var profile = profileLinkPair.Profile;
             CharacteristicBuilders =
@@ -18,10 +22,15 @@
         }
 
         public IApplicableVisibility ApplicableVisibility { get; } = new ApplicableVisibility();
+
         public ProfileLinkPair ProfileLinkPair { get; }
+
         public string ApplicableName { get; set; }
+
         public IReadOnlyCollection<ICharacteristicBuilder> CharacteristicBuilders { get; }
+
         public override IStatAggregate StatAggregate { get; } = new ProfileStatAggregate();
+
         public override bool IsForEntityId(Guid idValue) => ProfileLinkPair.AnyHasId(idValue);
 
         public override void ApplyModifiers()
@@ -32,8 +41,11 @@
         private class ProfileStatAggregate : IStatAggregate
         {
             public IEnumerable<IStatAggregate> ChildrenAggregates => Enumerable.Empty<IStatAggregate>();
+
             public uint ChildSelectionsCount => 0;
+
             public decimal PointsTotal => 0;
+
             public decimal GetPointsTotal(Guid nodeGuid) => 0;
             public uint GetSelectionCount(Guid selectionGuid) => 0;
         }

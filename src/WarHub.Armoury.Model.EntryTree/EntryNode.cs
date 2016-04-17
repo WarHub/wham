@@ -1,3 +1,6 @@
+// WarHub licenses this file to you under the MIT license.
+// See LICENSE file in the project root for more information.
+
 namespace WarHub.Armoury.Model.EntryTree
 {
     using System;
@@ -10,15 +13,20 @@ namespace WarHub.Armoury.Model.EntryTree
     {
         public EntryNode(EntryLinkPair pair, INode parent)
         {
-            if (pair == null) throw new ArgumentNullException(nameof(pair));
-            if (parent == null) throw new ArgumentNullException(nameof(parent));
+            if (pair == null)
+                throw new ArgumentNullException(nameof(pair));
+            if (parent == null)
+                throw new ArgumentNullException(nameof(parent));
             EntryLinkPair = pair;
             Parent = parent;
         }
 
         public IEntry Entry => EntryLinkPair.Entry;
+
         public EntryLinkPair EntryLinkPair { get; }
+
         public IEntryLink Link => EntryLinkPair.Link;
+
         IEntryNode INode.AsEntryNode => this;
 
         IGroupNode INode.AsGroupNode
@@ -27,8 +35,11 @@ namespace WarHub.Armoury.Model.EntryTree
         }
 
         IEnumerable<INode> INode.Children => Enumerable.Empty<INode>();
+
         IEnumerable<IEntryNode> INode.EntryNodes => Enumerable.Empty<IEntryNode>();
+
         IEnumerable<IGroupNode> INode.GroupNodes => Enumerable.Empty<IGroupNode>();
+
         bool INode.IsEntryNode => true;
 
         /// <summary>
@@ -54,8 +65,10 @@ namespace WarHub.Armoury.Model.EntryTree
 
         public static EntryNode Create(EntryLinkPair pair, INode parent)
         {
-            if (pair == null) throw new ArgumentNullException(nameof(pair));
-            if (parent == null) throw new ArgumentNullException(nameof(parent));
+            if (pair == null)
+                throw new ArgumentNullException(nameof(pair));
+            if (parent == null)
+                throw new ArgumentNullException(nameof(parent));
             return new EntryNode(pair, parent);
         }
     }
