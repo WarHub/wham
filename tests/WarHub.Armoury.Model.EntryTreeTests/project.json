@@ -21,6 +21,7 @@
       "frameworkAssemblies": {
         "System.Collections": "",
         "System.IO": "",
+        "System.Linq": "",
         "System.ObjectModel": "",
         "System.Runtime": ""
       }
