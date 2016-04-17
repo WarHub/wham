@@ -19,6 +19,7 @@
   "frameworks": {
     "dnx46": {
       "frameworkAssemblies": {
+        "System.Linq": "",
         "System.Runtime": ""
       }
     }
