@@ -4,7 +4,7 @@
   branches:
     except:
     - stable
-  version: 0.2.0-{branch}-build{build}
+  version: 0.2.1-{branch}-build{build}
   configuration: Debug
   cache:
     - C:\Users\appveyor\.dnx\packages -> appveyor.yml
@@ -41,7 +41,7 @@
   branches:
     only:
     - stable
-  version: 0.2.0-build{build}
+  version: 0.2.1-build{build}
   configuration: Release
   cache:
     - C:\Users\appveyor\.dnx\packages -> appveyor.yml
