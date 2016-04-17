@@ -1,0 +1,30 @@
+﻿{
+  "version": "0.2.1-*",
+  "description": "WarHub.Armoury.Model.Builders.Implementations Class Library",
+  "authors": [ "WarHub" ],
+  "tags": [ "" ],
+  "projectUrl": "https://github.com/WarHub/wham",
+  "licenseUrl": "https://github.com/WarHub/wham/blob/master/LICENSE",
+
+  "dependencies": {
+    "WarHub.Armoury.Model": "0.2.1-*",
+    "WarHub.Armoury.Model.Builders": "0.2.1-*",
+    "WarHub.Armoury.Model.ConditionResolvers": "0.2.1-*",
+    "WarHub.Armoury.Model.ModifierAppliers": "0.2.1-*",
+    "WarHub.Mvvm": "1.0.1"
+  },
+
+  "frameworks": {
+    "netcore45": {
+      "frameworkAssemblies": {
+        "System": "",
+        "System.Collections": "",
+        "System.Core": "",
+        "System.Diagnostics.Debug": "",
+        "System.Linq": "",
+        "System.Reflection": "",
+        "System.Runtime": ""
+      }
+    }
+  }
+}
