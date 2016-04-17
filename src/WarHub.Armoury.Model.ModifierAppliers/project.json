@@ -20,7 +20,15 @@
         "System.Linq": "",
         "System.Reflection": "",
         "System.Runtime": "",
-        "System.Runtime.Extensions": "" 
+        "System.Runtime.Extensions": ""
+      }
+    },
+    "dnx451": {
+      "frameworkAssemblies": {
+        "System.Collections": "",
+        "System.Core": "",
+        "System.Linq": "",
+        "System.Runtime": ""
       }
     }
   }

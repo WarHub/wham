@@ -22,6 +22,15 @@
         "System.Reflection": "",
         "System.Runtime": ""
       }
+    },
+    "dnx451": {
+      "frameworkAssemblies": {
+        "System.Collections": "",
+        "System.Core": "",
+        "System.Linq": "",
+        "System.ObjectModel": "",
+        "System.Runtime": ""
+      }
     }
   }
 }

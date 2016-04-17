@@ -8,8 +8,7 @@
 
   "dependencies": {
     "WarHub.Armoury.Model": "0.2.1-*",
-    "WarHub.Armoury.Model.Builders": "0.2.1-*",
-    "xunit": "2.1.0"
+    "WarHub.Armoury.Model.Builders": "0.2.1-*"
   },
 
   "frameworks": {
@@ -23,6 +22,15 @@
         "System.Reflection": "",
         "System.Runtime": "",
         "System.Runtime.Extensions": ""
+      }
+    },
+    "dnx451": {
+      "frameworkAssemblies": {
+        "System.Collections": "",
+        "System.Core": "",
+        "System.Linq": "",
+        "System.ObjectModel": "",
+        "System.Runtime": ""
       }
     }
   }
