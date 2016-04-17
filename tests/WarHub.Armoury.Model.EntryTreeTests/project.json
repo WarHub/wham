@@ -1,6 +1,6 @@
 ﻿{
   "version": "0.1.0-*",
-  "description": "WarHub.Armoury.Model.EntryTreeTests Class Library",
+  "description": "WarHub.Armoury.Model.EntryTree package unit tests",
   "authors": [ "WarHub" ],
   "tags": [ "" ],
   "projectUrl": "https://github.com/WarHub/wham",

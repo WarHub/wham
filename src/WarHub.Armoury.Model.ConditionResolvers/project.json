@@ -1,8 +1,8 @@
 ﻿{
   "version": "0.2.1-*",
-  "description": "WarHub.Armoury.Model.ConditionResolvers Class Library",
+  "description": "Provides wham (WarHub.Armoury.Model) Conditions' resolution utilities.",
   "authors": [ "WarHub" ],
-  "tags": [ "" ],
+  "tags": [ "warhub", "catalogue", "datafile", "condition" ],
   "projectUrl": "https://github.com/WarHub/wham",
   "licenseUrl": "https://github.com/WarHub/wham/blob/master/LICENSE",
 

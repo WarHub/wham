@@ -1,8 +1,8 @@
 ﻿{
   "version": "0.2.1-*",
-  "description": "WarHub.Armoury.Model.ModifierAppliers Class Library",
+  "description": "Provides utilities which apply modifiers on appropriate roster node Builder.",
   "authors": [ "WarHub" ],
-  "tags": [ "" ],
+  "tags": [ "warhub", "roster", "modifiers", "builders" ],
   "projectUrl": "https://github.com/WarHub/wham",
   "licenseUrl": "https://github.com/WarHub/wham/blob/master/LICENSE",
 

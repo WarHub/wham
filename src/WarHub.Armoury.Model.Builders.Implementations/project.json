@@ -1,8 +1,8 @@
 ﻿{
   "version": "0.2.1-*",
-  "description": "WarHub.Armoury.Model.Builders.Implementations Class Library",
+  "description": "Provides implementation of structures that follow and update wham (WarHub.Armoury.Model) roster data according to active modifiers, conditions etc.",
   "authors": [ "WarHub" ],
-  "tags": [ "" ],
+  "tags": [ "warhub", "datafile", "catalogue", "changetracking", "condition", "modifier" ],
   "projectUrl": "https://github.com/WarHub/wham",
   "licenseUrl": "https://github.com/WarHub/wham/blob/master/LICENSE",
 

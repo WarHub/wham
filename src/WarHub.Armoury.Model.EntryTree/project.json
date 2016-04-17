@@ -1,8 +1,8 @@
 ﻿{
   "version": "0.2.1-*",
-  "description": "WarHub.Armoury.Model.EntryTree Class Library",
+  "description": "Provides tree structure of entry/entrygroup choices in given entry. Helpful for immediate resolution which group was parent for some child selection.",
   "authors": [ "WarHub" ],
-  "tags": [ "" ],
+  "tags": [ "warhub", "tree", "entry", "entrygroup", "group" ],
   "projectUrl": "https://github.com/WarHub/wham",
   "licenseUrl": "https://github.com/WarHub/wham/blob/master/LICENSE",
 
