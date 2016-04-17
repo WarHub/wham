@@ -19,7 +19,9 @@
   "frameworks": {
     "dnx46": {
       "frameworkAssemblies": {
-        "System.Linq": "",
+        "System.Collections": "",
+        "System.IO": "",
+        "System.ObjectModel": "",
         "System.Runtime": ""
       }
     }
