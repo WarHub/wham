@@ -1,5 +1,5 @@
 ﻿{
-  "version": "0.1.0-*",
+  "version": "0.2.1-*",
   "description": "Helper classes to easily handle zipped/unzipped formats.",
   "authors": [ "WarHub" ],
   "tags": [ "WarHub", "wham", "armoury model", "BattleScribe", "files", "file handling" ],
@@ -9,29 +9,39 @@
   "frameworks": {
     "netcore45": {
       "frameworkAssemblies": {
-        "System": "4.0.0.0",
-        "System.Collections": "4.0.0.0",
-        "System.Core": "4.0.0.0",
-        "System.Diagnostics.Tools": "4.0.0.0",
-        "System.IO": "4.0.0.0",
-        "System.IO.Compression": "4.0.0.0"
+        "System": "",
+        "System.Collections": "",
+        "System.Core": "",
+        "System.Diagnostics.Tools": "",
+        "System.IO": "",
+        "System.IO.Compression": ""
       }
     },
     "wpa81": {
       "frameworkAssemblies": {
-        "System": "4.0.0.0",
-        "System.Collections": "4.0.0.0",
-        "System.Core": "4.0.0.0",
-        "System.Diagnostics.Tools": "4.0.0.0",
-        "System.IO": "4.0.0.0",
-        "System.IO.Compression": "4.0.0.0",
-        "System.Runtime": "4.0.10.0"
+        "System": "",
+        "System.Collections": "",
+        "System.Core": "",
+        "System.Diagnostics.Tools": "",
+        "System.IO": "",
+        "System.IO.Compression": "",
+        "System.Runtime": ""
+      }
+    },
+    "dnx451": {
+      "frameworkAssemblies": {
+        "System": "",
+        "System.Collections": "",
+        "System.Core": "",
+        "System.Diagnostics.Tools": "",
+        "System.IO": "",
+        "System.IO.Compression": ""
       }
     }
   },
   "dependencies": {
-    "WarHub.Armoury.Model": "0.2.0-*",
-    "WarHub.Armoury.Model.BattleScribeXml": "0.2.0-*",
-    "WarHub.Armoury.Model.BattleScribe": "0.2.0-*"
+    "WarHub.Armoury.Model": "0.2.1-*",
+    "WarHub.Armoury.Model.BattleScribeXml": "0.2.1-*",
+    "WarHub.Armoury.Model.BattleScribe": "0.2.1-*"
   }
 }

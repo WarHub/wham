@@ -1,5 +1,5 @@
 {
-  "version": "0.2.0-*",
+  "version": "0.2.1-*",
   "description": "XML mapping of BattleScribe data format. Provides simple mapping classes as well as a mechanism to parse all IDs into Guid struct.",
   "authors": [ "WarHub" ],
   "tags": [
@@ -18,46 +18,48 @@
   "frameworks": {
     "netcore45": {
       "frameworkAssemblies": {
-        "System": "4.0.0.0",
-        "System.Collections": "4.0.0.0",
-        "System.ComponentModel": "4.0.0.0",
-        "System.Core": "4.0.0.0",
-        "System.IO": "4.0.0.0",
-        "System.Linq": "4.0.0.0",
-        "System.ObjectModel": "4.0.0.0",
-        "System.Reflection": "4.0.0.0",
-        "System.Reflection.Extensions": "4.0.0.0",
-        "System.Text.Encoding": "4.0.0.0",
-        "System.Text.RegularExpressions": "4.0.0.0",
-        "System.Threading": "4.0.0.0",
-        "System.Threading.Tasks": "4.0.0.0",
-        "System.Xml": "4.0.0.0",
-        "System.Xml.ReaderWriter": "4.0.0.0",
-        "System.Xml.XmlSerializer": "4.0.0.0"
+        "System": "",
+        "System.Collections": "",
+        "System.ComponentModel": "",
+        "System.Core": "",
+        "System.IO": "",
+        "System.Linq": "",
+        "System.ObjectModel": "",
+        "System.Reflection": "",
+        "System.Reflection.Extensions": "",
+        "System.Runtime": "",
+        "System.Text.Encoding": "",
+        "System.Text.RegularExpressions": "",
+        "System.Threading": "",
+        "System.Threading.Tasks": "",
+        "System.Xml": "",
+        "System.Xml.ReaderWriter": "",
+        "System.Xml.XmlSerializer": ""
       }
     },
     ".NETPortable,Version=v4.5,Profile=Profile259": {
       "frameworkAssemblies": {
-        "System": "4.0.0.0",
-        "System.Collections": "4.0.0.0",
-        "System.ComponentModel": "4.0.0.0",
-        "System.Core": "4.0.0.0",
-        "System.IO": "4.0.0.0",
-        "System.Linq": "4.0.0.0",
-        "System.ObjectModel": "4.0.0.0",
-        "System.Reflection": "4.0.0.0",
-        "System.Reflection.Extensions": "4.0.0.0",
-        "System.Text.Encoding": "4.0.0.0",
-        "System.Text.RegularExpressions": "4.0.0.0",
-        "System.Threading": "4.0.0.0",
-        "System.Threading.Tasks": "4.0.0.0",
-        "System.Xml": "4.0.0.0",
-        "System.Xml.ReaderWriter": "4.0.0.0",
-        "System.Xml.XmlSerializer": "4.0.0.0"
+        "System": "",
+        "System.Collections": "",
+        "System.ComponentModel": "",
+        "System.Core": "",
+        "System.IO": "",
+        "System.Linq": "",
+        "System.ObjectModel": "",
+        "System.Reflection": "",
+        "System.Reflection.Extensions": "",
+        "System.Runtime": "",
+        "System.Text.Encoding": "",
+        "System.Text.RegularExpressions": "",
+        "System.Threading": "",
+        "System.Threading.Tasks": "",
+        "System.Xml": "",
+        "System.Xml.ReaderWriter": "",
+        "System.Xml.XmlSerializer": ""
       }
     }
   },
   "dependencies": {
-    "WarHub.Armoury.Model": "0.2.0-*"
+    "WarHub.Armoury.Model": "0.2.1-*"
   }
 }

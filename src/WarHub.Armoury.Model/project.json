@@ -1,5 +1,5 @@
 {
-  "version": "0.2.0-*",
+  "version": "0.2.1-*",
   "description": "wham: Top level abstraction of roster building model in C#.",
   "authors": [ "WarHub" ],
   "tags": [ "WarHub", "WarHub.Armoury.Model", "wham", "wargame", "roster", "battlescribe" ],
@@ -10,38 +10,38 @@
   "frameworks": {
     "netcore45": {
       "frameworkAssemblies": {
-        "System": "4.0.0.0",
-        "System.Collections": "4.0.0.0",
-        "System.ComponentModel": "4.0.0.0",
-        "System.Core": "4.0.0.0",
-        "System.IO": "4.0.0.0",
-        "System.Linq": "4.0.0.0",
-        "System.ObjectModel": "4.0.0.0",
-        "System.Reflection": "4.0.0.0",
-        "System.Reflection.Extensions": "4.0.0.0",
-        "System.Runtime": "4.0.0.0",
-        "System.Threading.Tasks": "4.0.0.0",
-        "System.Xml": "4.0.0.0",
-        "System.Xml.ReaderWriter": "4.0.0.0",
-        "System.Xml.XmlSerializer": "4.0.0.0"
+        "System": "",
+        "System.Collections": "",
+        "System.ComponentModel": "",
+        "System.Core": "",
+        "System.IO": "",
+        "System.Linq": "",
+        "System.ObjectModel": "",
+        "System.Reflection": "",
+        "System.Reflection.Extensions": "",
+        "System.Runtime": "",
+        "System.Threading.Tasks": "",
+        "System.Xml": "",
+        "System.Xml.ReaderWriter": "",
+        "System.Xml.XmlSerializer": ""
       }
     },
     ".NETPortable,Version=v4.5,Profile=Profile259": {
       "frameworkAssemblies": {
-        "System": "4.0.0.0",
-        "System.Collections": "4.0.0.0",
-        "System.ComponentModel": "4.0.0.0",
-        "System.Core": "4.0.0.0",
-        "System.IO": "4.0.0.0",
-        "System.Linq": "4.0.0.0",
-        "System.ObjectModel": "4.0.0.0",
-        "System.Reflection": "4.0.0.0",
-        "System.Reflection.Extensions": "4.0.0.0",
-        "System.Runtime": "4.0.0.0",
-        "System.Threading.Tasks": "4.0.0.0",
-        "System.Xml": "4.0.0.0",
-        "System.Xml.ReaderWriter": "4.0.0.0",
-        "System.Xml.XmlSerializer": "4.0.0.0"
+        "System": "",
+        "System.Collections": "",
+        "System.ComponentModel": "",
+        "System.Core": "",
+        "System.IO": "",
+        "System.Linq": "",
+        "System.ObjectModel": "",
+        "System.Reflection": "",
+        "System.Reflection.Extensions": "",
+        "System.Runtime": "",
+        "System.Threading.Tasks": "",
+        "System.Xml": "",
+        "System.Xml.ReaderWriter": "",
+        "System.Xml.XmlSerializer": ""
       }
     }
   }
