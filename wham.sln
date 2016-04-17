@@ -38,6 +38,8 @@ Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "WarHub.Armoury.Model.Builde
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "WarHub.Armoury.Model.ConditionResolversTests", "tests\WarHub.Armoury.Model.ConditionResolversTests\WarHub.Armoury.Model.ConditionResolversTests.xproj", "{EB4B0183-5FF4-4CD3-86D8-5A89C492DBA3}"
 EndProject
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "WarHub.Armoury.Model.EntryTreeTests", "tests\WarHub.Armoury.Model.EntryTreeTests\WarHub.Armoury.Model.EntryTreeTests.xproj", "{18234E6C-1262-4F2B-BD55-C081450F8D5E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -258,6 +260,22 @@ Global
 		{EB4B0183-5FF4-4CD3-86D8-5A89C492DBA3}.Release|x64.Build.0 = Release|Any CPU
 		{EB4B0183-5FF4-4CD3-86D8-5A89C492DBA3}.Release|x86.ActiveCfg = Release|Any CPU
 		{EB4B0183-5FF4-4CD3-86D8-5A89C492DBA3}.Release|x86.Build.0 = Release|Any CPU
+		{18234E6C-1262-4F2B-BD55-C081450F8D5E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{18234E6C-1262-4F2B-BD55-C081450F8D5E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{18234E6C-1262-4F2B-BD55-C081450F8D5E}.Debug|ARM.ActiveCfg = Debug|Any CPU
+		{18234E6C-1262-4F2B-BD55-C081450F8D5E}.Debug|ARM.Build.0 = Debug|Any CPU
+		{18234E6C-1262-4F2B-BD55-C081450F8D5E}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{18234E6C-1262-4F2B-BD55-C081450F8D5E}.Debug|x64.Build.0 = Debug|Any CPU
+		{18234E6C-1262-4F2B-BD55-C081450F8D5E}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{18234E6C-1262-4F2B-BD55-C081450F8D5E}.Debug|x86.Build.0 = Debug|Any CPU
+		{18234E6C-1262-4F2B-BD55-C081450F8D5E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{18234E6C-1262-4F2B-BD55-C081450F8D5E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{18234E6C-1262-4F2B-BD55-C081450F8D5E}.Release|ARM.ActiveCfg = Release|Any CPU
+		{18234E6C-1262-4F2B-BD55-C081450F8D5E}.Release|ARM.Build.0 = Release|Any CPU
+		{18234E6C-1262-4F2B-BD55-C081450F8D5E}.Release|x64.ActiveCfg = Release|Any CPU
+		{18234E6C-1262-4F2B-BD55-C081450F8D5E}.Release|x64.Build.0 = Release|Any CPU
+		{18234E6C-1262-4F2B-BD55-C081450F8D5E}.Release|x86.ActiveCfg = Release|Any CPU
+		{18234E6C-1262-4F2B-BD55-C081450F8D5E}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -276,5 +294,6 @@ Global
 		{8544F75A-BA49-4A13-91E7-90077786CE32} = {6055CEFB-2A8B-45E3-B6D7-B9DB2A4FE612}
 		{5DAA1823-38CC-4595-BBEF-2FB467EABD83} = {6055CEFB-2A8B-45E3-B6D7-B9DB2A4FE612}
 		{EB4B0183-5FF4-4CD3-86D8-5A89C492DBA3} = {6AF5B4EB-38C3-43CD-B6D9-47A8BB52BC43}
+		{18234E6C-1262-4F2B-BD55-C081450F8D5E} = {6AF5B4EB-38C3-43CD-B6D9-47A8BB52BC43}
 	EndGlobalSection
 EndGlobal
