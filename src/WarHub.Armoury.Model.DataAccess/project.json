@@ -1,0 +1,37 @@
+{
+  "version": "0.2.0-*",
+  "description":
+    "wham DataAccess library provides portable data storage and data access API, to allow cross-platform, simple experience with wham libs.",
+  "authors": ["WarHub"],
+  "tags": ["wham", "WarHub", "DataAccess", "storage", "pcl", "BattleScribe"],
+  "projectUrl": "https://github.com/WarHub/wham",
+  "licenseUrl": "https://github.com/WarHub/wham/blob/master/LICENSE",
+  "releaseNotes": "v0.2: First release.",
+
+  "dependencies": {
+    "WarHub.Armoury.Model": "0.2.2-*",
+    "WarHub.Armoury.Model.BattleScribe.Files": "0.2.1-*",
+    "PCLStorage": "1.0.2"
+  },
+  "frameworks": {
+    "netcore45": {
+      "frameworkAssemblies": {
+        "System": "",
+        "System.Collections": "",
+        "System.ComponentModel": "",
+        "System.Core": "",
+        "System.IO": "",
+        "System.Linq": "",
+        "System.Net.Http": "",
+        "System.ObjectModel": "",
+        "System.Reflection": "",
+        "System.Reflection.Extensions": "",
+        "System.Runtime": "",
+        "System.Threading.Tasks": "",
+        "System.Xml": "",
+        "System.Xml.ReaderWriter": "",
+        "System.Xml.XmlSerializer": ""
+      }
+    }
+  }
+}

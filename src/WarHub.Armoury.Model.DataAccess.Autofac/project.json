@@ -1,0 +1,35 @@
+﻿{
+  "version": "0.2.0-*",
+  "description": "wham DataAccess Autofac Module. Provides IoC configuration for DataAccess library.",
+  "authors": [ "WarHub" ],
+  "tags": [ "wham", "WarHub", "DataAccess", "storage", "pcl", "BattleScribe", "Autofac", "IoC", "DI" ],
+  "projectUrl": "https://github.com/WarHub/wham",
+  "licenseUrl": "https://github.com/WarHub/wham/blob/master/LICENSE",
+  "releaseNotes": "v0.2: First release.",
+
+  "dependencies": {
+    "Autofac": "3.5.2",
+    "WarHub.Armoury.Model.DataAccess": "0.2.0-*"
+  },
+  "frameworks": {
+    "netcore45": {
+      "frameworkAssemblies": {
+        "System": "",
+        "System.Collections": "",
+        "System.ComponentModel": "",
+        "System.Core": "",
+        "System.IO": "",
+        "System.Linq": "",
+        "System.Net.Http": "",
+        "System.ObjectModel": "",
+        "System.Reflection": "",
+        "System.Reflection.Extensions": "",
+        "System.Runtime": "",
+        "System.Threading.Tasks": "",
+        "System.Xml": "",
+        "System.Xml.ReaderWriter": "",
+        "System.Xml.XmlSerializer": ""
+      }
+    }
+  }
+}
