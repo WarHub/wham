@@ -33,6 +33,16 @@
         "System.IO": "",
         "System.IO.Compression": ""
       }
+    },
+    "net45": {
+      "frameworkAssemblies": {
+        "System": "",
+        "System.Collections": "",
+        "System.Core": "",
+        "System.Diagnostics.Tools": "",
+        "System.IO": "",
+        "System.IO.Compression": ""
+      }
     }
   },
   "dependencies": {
