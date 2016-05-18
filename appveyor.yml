@@ -8,7 +8,7 @@
   configuration: Debug
   cache:
     - C:\Users\appveyor\.nuget\packages -> appveyor.yml
-  init:
+  install:
   - ps: Start-FileDownload 'https://dotnetcli.blob.core.windows.net/dotnet/beta/Installers/Latest/dotnet-dev-win-x64.latest.exe'
   - cmd: dotnet-dev-win-x64.latest.exe /quiet
   - ps: dotnet --info
@@ -44,7 +44,7 @@
   configuration: Release
   cache:
     - C:\Users\appveyor\.nuget\packages -> appveyor.yml
-  init:
+  install:
   - ps: Start-FileDownload 'https://dotnetcli.blob.core.windows.net/dotnet/beta/Installers/Latest/dotnet-dev-win-x64.latest.exe'
   - cmd: dotnet-dev-win-x64.latest.exe /quiet
   - ps: dotnet --info
