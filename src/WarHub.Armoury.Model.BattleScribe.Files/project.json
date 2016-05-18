@@ -1,6 +1,6 @@
 ﻿{
-  "version": "0.2.2-*",
-  "description": "Helper classes to easily handle zipped/unzipped formats.",
+  "version": "0.2.3-*",
+  "description": "wham BattleScribe Files: Helper classes to easily handle zipped/unzipped formats.",
   "authors": [ "WarHub" ],
   "frameworks": {
     "netcore45": {
@@ -43,6 +43,16 @@
         "System.IO": "",
         "System.IO.Compression": ""
       }
+    },
+    ".NETPortable,Version=v4.5,Profile=Profile111": {
+      "frameworkAssemblies": {
+        "System": "",
+        "System.Collections": "",
+        "System.Core": "",
+        "System.Diagnostics.Tools": "",
+        "System.IO": "",
+        "System.IO.Compression": ""
+      }
     }
   },
   "dependencies": {
@@ -59,6 +69,6 @@
     },
     "summary": "WarHub Armoury Model file helpers.",
     "tags": [ "WarHub", "wham", "armoury", "model", "BattleScribe", "files" ],
-    "releaseNotes": "v0.2.2: update versioning."
+    "releaseNotes": "v0.2.2: update versioning.\nv0.2.3: added PCL profile 111 support."
   }
 }
