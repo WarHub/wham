@@ -1,5 +1,5 @@
 ﻿{
-  "version": "0.2.2-*",
+  "version": "1.0.0-*",
   "description": "WarHub.Armoury.Model.BattleScribe.Files package unit tests",
   "authors": [ "WarHub" ],
 
@@ -19,6 +19,7 @@
     "netcoreapp1.0": {
       "imports": [
         "dotnet5.4",
+        "net45",
         "portable-net451+win8"
       ]
     }
