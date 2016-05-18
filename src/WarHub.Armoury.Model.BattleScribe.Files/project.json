@@ -1,11 +1,7 @@
 ﻿{
-  "version": "0.2.1-*",
+  "version": "0.2.2-*",
   "description": "Helper classes to easily handle zipped/unzipped formats.",
-  "authors": ["WarHub"],
-  "tags": ["WarHub", "wham", "armoury model", "BattleScribe", "files", "file handling"],
-  "projectUrl": "https://github.com/WarHub/wham",
-  "licenseUrl": "https://github.com/WarHub/wham/blob/master/LICENSE",
-
+  "authors": [ "WarHub" ],
   "frameworks": {
     "netcore45": {
       "frameworkAssemblies": {
@@ -40,8 +36,19 @@
     }
   },
   "dependencies": {
-    "WarHub.Armoury.Model": "0.2.1-*",
-    "WarHub.Armoury.Model.BattleScribeXml": "0.2.1-*",
-    "WarHub.Armoury.Model.BattleScribe": "0.2.1-*"
+    "WarHub.Armoury.Model": "0.2.2-*",
+    "WarHub.Armoury.Model.BattleScribeXml": "0.2.2-*",
+    "WarHub.Armoury.Model.BattleScribe": "0.2.2-*"
+  },
+  "packOptions": {
+    "licenseUrl": "https://github.com/WarHub/wham/blob/master/LICENSE",
+    "owners": [ "WarHub" ],
+    "repository": {
+      "type": "git",
+      "url": "https://github.com/WarHub/wham"
+    },
+    "summary": "WarHub Armoury Model file helpers.",
+    "tags": [ "WarHub", "wham", "armoury", "model", "BattleScribe", "files" ],
+    "releaseNotes": "v0.2.2: update versioning."
   }
 }

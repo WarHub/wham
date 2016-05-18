@@ -1,17 +1,7 @@
 ﻿{
   "version": "0.2.2-*",
   "description": "Provides tree structure of entry/entrygroup choices in given entry. Helpful for immediate resolution which group was parent for some child selection.",
-  "authors": ["WarHub"],
-  "tags": ["warhub", "tree", "entry", "entrygroup", "group"],
-  "projectUrl": "https://github.com/WarHub/wham",
-  "licenseUrl": "https://github.com/WarHub/wham/blob/master/LICENSE",
-
-  "releaseNotes": "0.2.2: added portable profile 259 support",
-
-  "dependencies": {
-    "WarHub.Armoury.Model": "0.2.1-*"
-  },
-
+  "authors": [ "WarHub" ],
   "frameworks": {
     "netcore45": {
       "frameworkAssemblies": {
@@ -40,5 +30,19 @@
         "System.Runtime": ""
       }
     }
+  },
+  "dependencies": {
+    "WarHub.Armoury.Model": "0.2.2-*"
+  },
+  "packOptions": {
+    "licenseUrl": "https://github.com/WarHub/wham/blob/master/LICENSE",
+    "owners": [ "WarHub" ],
+    "repository": {
+      "type": "git",
+      "url": "https://github.com/WarHub/wham"
+    },
+    "summary": "WarHub Armoury Model Entry tree structure library.",
+    "tags": [ "wham", "warhub", "tree", "entry", "entrygroup", "group" ],
+    "releaseNotes": "0.2.2: added portable profile 259 support."
   }
 }

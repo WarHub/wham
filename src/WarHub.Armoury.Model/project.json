@@ -2,11 +2,6 @@
   "version": "0.2.2-*",
   "description": "wham: Top level abstraction of roster building model in C#.",
   "authors": ["WarHub"],
-  "tags": ["WarHub", "WarHub.Armoury.Model", "wham", "wargame", "roster", "battlescribe"],
-  "projectUrl": "https://github.com/WarHub/wham",
-  "licenseUrl": "https://github.com/WarHub/wham/blob/master/LICENSE",
-  "releaseNotes": "v0.2.2: Added IRepoManagerLocator implementation.",
-
   "frameworks": {
     "netcore45": {
       "frameworkAssemblies": {
@@ -44,5 +39,16 @@
         "System.Xml.XmlSerializer": ""
       }
     }
+  },
+  "packOptions": {
+    "licenseUrl": "https://github.com/WarHub/wham/blob/master/LICENSE",
+    "owners": [ "WarHub" ],
+    "repository": {
+      "type": "git",
+      "url": "https://github.com/WarHub/wham"
+    },
+    "summary": "WarHub Armoury Model - Top level abstraction of tabletop datafiles.",
+    "tags": [ "WarHub", "WarHub.Armoury.Model", "wham", "wargame", "roster", "battlescribe" ],
+    "releaseNotes": "v0.2.2: Added IRepoManagerLocator implementation."
   }
 }
