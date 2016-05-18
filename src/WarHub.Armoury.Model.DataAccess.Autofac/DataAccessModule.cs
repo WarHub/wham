@@ -15,12 +15,27 @@ namespace WarHub.Armoury.Model.DataAccess.Autofac
     {
         protected override void Load(ContainerBuilder builder)
         {
-            builder.RegisterType<DataIndexAccessService>().AsImplementedInterfaces();
-            builder.RegisterType<DataIndexService>().AsImplementedInterfaces();
-            builder.RegisterType<RemoteDataService>().AsImplementedInterfaces();
-            builder.RegisterType<RostersService>().AsImplementedInterfaces();
-            builder.RegisterType<StorageService>().AsImplementedInterfaces();
-            builder.RegisterType<RepoManagerLocator>().AsImplementedInterfaces();
+            builder.RegisterType<DataIndexAccessService>()
+                .AsImplementedInterfaces()
+                .InstancePerLifetimeScope();
+            builder.RegisterType<DataIndexService>()
+                .AsImplementedInterfaces()
+                .InstancePerLifetimeScope();
+            builder.RegisterType<RemoteDataIndex>()
+                .AsImplementedInterfaces()
+                .InstancePerLifetimeScope();
+            builder.RegisterType<RemoteDataService>()
+                .AsImplementedInterfaces()
+                .InstancePerLifetimeScope();
+            builder.RegisterType<RostersService>()
+                .AsImplementedInterfaces()
+                .InstancePerLifetimeScope();
+            builder.RegisterType<StorageService>()
+                .AsImplementedInterfaces()
+                .InstancePerLifetimeScope();
+            builder.RegisterType<RepoManagerLocator>()
+                .AsImplementedInterfaces()
+                .InstancePerLifetimeScope();
         }
     }
 }

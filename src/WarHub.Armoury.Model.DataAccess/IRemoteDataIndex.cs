@@ -5,7 +5,7 @@ namespace WarHub.Armoury.Model.DataAccess
 {
     using System.Collections.Generic;
 
-    public interface IRemoteDataSettings
+    public interface IRemoteDataIndex
     {
         IEnumerable<RemoteDataSourceInfo> Entries { get; }
 

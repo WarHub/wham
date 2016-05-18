@@ -12,15 +12,15 @@ namespace WarHub.Armoury.Model.DataAccess.ServiceImplementations
 
     public class RemoteDataService : IRemoteDataService
     {
-        public RemoteDataService(IRemoteDataSettings remoteDataSettings)
+        public RemoteDataService(IRemoteDataIndex remoteDataIndex)
         {
-            if (remoteDataSettings == null)
-                throw new ArgumentNullException(nameof(remoteDataSettings));
-            DataSettings = remoteDataSettings;
-            SourceInfos = new ObservableList<RemoteDataSourceInfo>(DataSettings.Entries);
+            if (remoteDataIndex == null)
+                throw new ArgumentNullException(nameof(remoteDataIndex));
+            Index = remoteDataIndex;
+            SourceInfos = new ObservableList<RemoteDataSourceInfo>(Index.Entries);
         }
 
-        protected IRemoteDataSettings DataSettings { get; }
+        protected IRemoteDataIndex Index { get; }
 
         protected ObservableList<RemoteDataSourceInfo> SourceInfos { get; }
 
@@ -28,7 +28,7 @@ namespace WarHub.Armoury.Model.DataAccess.ServiceImplementations
 
         public void AddSource(RemoteDataSourceInfo info)
         {
-            DataSettings.AddEntry(info);
+            Index.AddEntry(info);
             if (SourceInfos.Any(x => x.IndexUri == info.IndexUri))
             {
                 var duplicates = SourceInfos.Where(x => x.IndexUri == info.IndexUri);
@@ -46,7 +46,7 @@ namespace WarHub.Armoury.Model.DataAccess.ServiceImplementations
         public void RemoveSource(RemoteDataSourceInfo info)
         {
             SourceInfos.Remove(info);
-            DataSettings.RemoveEntry(info);
+            Index.RemoveEntry(info);
         }
 
         public static async Task<RemoteDataSourceIndex> DownloadIndexStaticAsync(RemoteDataSourceInfo source)

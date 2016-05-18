@@ -1,5 +1,5 @@
 ﻿{
-  "version": "0.2.0-*",
+  "version": "0.2.1-*",
   "description": "wham DataAccess Autofac Module. Provides IoC configuration for DataAccess library.",
   "authors": [ "WarHub" ],
   "frameworks": {
@@ -25,7 +25,7 @@
   },
   "dependencies": {
     "Autofac": "3.5.2",
-    "WarHub.Armoury.Model.DataAccess": "0.2.0-*"
+    "WarHub.Armoury.Model.DataAccess": "0.2.1-*"
   },
   "packOptions": {
     "licenseUrl": "https://github.com/WarHub/wham/blob/master/LICENSE",
@@ -36,6 +36,6 @@
     },
     "summary": "WarHub Armoury Model DataAccess Autofac module.",
     "tags": [ "wham", "WarHub", "DataAccess", "storage", "pcl", "BattleScribe", "Autofac", "IoC", "DI" ],
-    "releaseNotes": "0.2: First release."
+    "releaseNotes": "0.2: First release.\nv0.2.1: Added IRemoteDataIndex implementation."
   }
 }
