@@ -5,7 +5,7 @@
 Our chat room:
 [![Join the chat at https://gitter.im/WarHub/wham](https://badges.gitter.im/WarHub/wham.svg)](https://gitter.im/WarHub/wham?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
-NuGet packages: [](https://www.nuget.org/profiles/warhub)
+NuGet packages: [WarHub NuGet](https://www.nuget.org/profiles/warhub)
 
 ## Overview
 
