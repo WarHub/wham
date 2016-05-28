@@ -4,29 +4,24 @@
   branches:
     except:
     - stable
-  version: 0.2.2-{branch}-build{build}
+  version: 0.2.5-{branch}-build{build}
   configuration: Debug
   cache:
     - C:\Users\appveyor\.nuget\packages -> appveyor.yml
-  install:
-  - ps: Start-FileDownload 'https://dotnetcli.blob.core.windows.net/dotnet/beta/Installers/Latest/dotnet-dev-win-x64.latest.exe'
-  - cmd: dotnet-dev-win-x64.latest.exe /quiet
-  - ps: dotnet --info
-  environment:
-    PATH: $(PATH);$(PROGRAMFILES)\dotnet\
   before_build:
+  - ps: dotnet --info
   - ps: dotnet restore
   - ps: $env:DOTNET_BUILD_VERSION="$env:APPVEYOR_REPO_BRANCH-build-$env:APPVEYOR_BUILD_NUMBER"
   build:
     verbosity: minimal
-  test_script:
-  - ps: >-
-      foreach ($testdir in (gi tests/*/project.json | Split-Path))
-      {
-        Push-Location $testdir;
-        dotnet test;
-        Pop-Location;
-      }
+#  test_script:
+#  - ps: >-
+#      foreach ($testdir in (gi tests/*/project.json | Split-Path))
+#      {
+#        Push-Location $testdir;
+#        dotnet test;
+#        Pop-Location;
+#      }
   notifications:
     - provider: Webhook
       url: https://webhooks.gitter.im/e/912155f98bd0aed48efc
@@ -40,17 +35,17 @@
   branches:
     only:
     - stable
-  version: 0.2.2-build{build}
+  version: 0.2.5-build{build}
   configuration: Release
   cache:
     - C:\Users\appveyor\.nuget\packages -> appveyor.yml
-  install:
-  - ps: Start-FileDownload 'https://dotnetcli.blob.core.windows.net/dotnet/beta/Installers/Latest/dotnet-dev-win-x64.latest.exe'
-  - cmd: dotnet-dev-win-x64.latest.exe /quiet
-  - ps: dotnet --info
-  environment:
-    PATH: $(PATH);$(PROGRAMFILES)\dotnet\
+#  install:
+  # - ps: Start-FileDownload 'https://dotnetcli.blob.core.windows.net/dotnet/beta/Installers/Latest/dotnet-dev-win-x64.latest.exe'
+  # - cmd: dotnet-dev-win-x64.latest.exe /quiet
+#  environment:
+#    PATH: $(PATH);$(PROGRAMFILES)\dotnet\
   before_build:
+  - ps: dotnet --info
   - ps: dotnet restore
   build:
     verbosity: minimal
@@ -62,14 +57,14 @@
         dotnet pack;
         Pop-Location;
       }
-  test_script:
-  - ps: >-
-      foreach ($testdir in (gi tests/*/project.json | Split-Path))
-      {
-        Push-Location $testdir;
-        dotnet test;
-        Pop-Location;
-      }
+#  test_script:
+  # - ps: >-
+  #     foreach ($testdir in (gi tests/*/project.json | Split-Path))
+  #     {
+  #       Push-Location $testdir;
+  #       dotnet test;
+  #       Pop-Location;
+  #     }
   notifications:
     - provider: Webhook
       url: https://webhooks.gitter.im/e/912155f98bd0aed48efc
