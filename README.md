@@ -1,12 +1,19 @@
 # wham
 
-Our chat room: [![Join the chat at https://gitter.im/WarHub/wham](https://badges.gitter.im/WarHub/wham.svg)](https://gitter.im/WarHub/wham?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+## Links
 
-## WarHub.Armoury.Model (wham)
+Our chat room:
+[![Join the chat at https://gitter.im/WarHub/wham](https://badges.gitter.im/WarHub/wham.svg)](https://gitter.im/WarHub/wham?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
-*Top level abstraction of roster building model in C#.*
+NuGet packages: [](https://www.nuget.org/profiles/warhub)
 
-# Overview
+## Overview
+
+WarHub.Armoury.Model: *Top level abstraction of roster building model in C#.*
+
+This library provides means to manage and interact with wargaming data files (game systems, catalogues) and rosters.
+
+## Development
 
 The development branch is the `master` branch. `stable` is for stable releases which are pushed to NuGet.
 
