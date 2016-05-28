@@ -1,22 +1,20 @@
 ﻿// WarHub licenses this file to you under the MIT license.
 // See LICENSE file in the project root for more information.
 
-namespace WarHub.Armoury.Model.DataAccess
+namespace WarHub.Armoury.Model.Repo
 {
-    using Repo;
-
     /// <summary>
     ///     Describes single remote data source's name and <see cref="System.Uri" /> .
     /// </summary>
-    public class RemoteDataSourceInfo
+    public class RemoteSource
     {
-        public RemoteDataSourceInfo(string name, string indexUri)
+        public RemoteSource(string name, string indexUri)
         {
             Name = name;
             IndexUri = indexUri;
         }
 
-        public RemoteDataSourceInfo(RemoteDataSourceIndex index)
+        public RemoteSource(RemoteSourceDataIndex index)
         {
             Name = index.Name;
             IndexUri = index.IndexUri.AbsoluteUri;
@@ -32,7 +30,7 @@ namespace WarHub.Armoury.Model.DataAccess
                 return false;
             if (ReferenceEquals(obj, this))
                 return true;
-            var other = obj as RemoteDataSourceInfo;
+            var other = obj as RemoteSource;
             if (other == null)
                 return false;
             return IndexUri.Equals(other.IndexUri)

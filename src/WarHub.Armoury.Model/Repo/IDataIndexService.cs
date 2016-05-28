@@ -23,6 +23,7 @@ namespace WarHub.Armoury.Model.Repo
         IObservableReadonlySet<ISystemIndex> SystemIndexes { get; }
 
         void OnRepoChanged(object sender, NotifyRepoChangedEventArgs e);
+
         Task IndexStorageAsync();
     }
 }

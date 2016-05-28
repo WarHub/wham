@@ -9,7 +9,7 @@ namespace WarHub.Armoury.Model.BattleScribe.Services
 
     public class SampleObjectFactory
     {
-        private RemoteDataSourceIndex _bsi;
+        private RemoteSourceDataIndex _bsi;
         private ICatalogue _cat;
         private IGameSystem _gst;
         private IRoster _ros;
@@ -22,7 +22,7 @@ namespace WarHub.Armoury.Model.BattleScribe.Services
 
         public IRoster SampleRoster => _ros ?? (_ros = GetNewRoster());
 
-        public RemoteDataSourceIndex SampleSourceIndex => _bsi ?? (_bsi = GetSourceIndex());
+        public RemoteSourceDataIndex SampleRemoteSourceIndex => _bsi ?? (_bsi = GetSourceIndex());
 
         private static void FillCatalogue(ICatalogue catalogue, IGameSystem system)
         {
@@ -173,10 +173,10 @@ namespace WarHub.Armoury.Model.BattleScribe.Services
             return roster;
         }
 
-        private RemoteDataSourceIndex GetSourceIndex()
+        private RemoteSourceDataIndex GetSourceIndex()
         {
             var originVersion = Infos.SampleGstInfo.OriginProgramVersion;
-            var index = new RemoteDataSourceIndex
+            var index = new RemoteSourceDataIndex
             {
                 Name = "Age of Modern Warfare",
                 IndexUri = new Uri("http://example.com/index.bsi"),

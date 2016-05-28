@@ -15,22 +15,22 @@ namespace WarHub.Armoury.Model.DataAccess.ServiceImplementations
         ///     Creates new instance and, starts loading index file except when Design mode is on or
         ///     <paramref name="autoStartLoadingIndex" /> is false.
         /// </summary>
-        /// <param name="dataIndexAccessService">Data index service to save and load index to/from.</param>
+        /// <param name="dataIndexStore">Data index service to save and load index to/from.</param>
         /// <param name="storageService">Storage service to index contents of.</param>
         /// <param name="repoManagerLocator">Repo manager locator to be updated with indexed systems.</param>
         /// <param name="repoStorageService">Repo storage service.</param>
         /// <param name="repoManagerFactory">Factory of repo managers.</param>
+        /// <param name="log">Logger.</param>
         /// <param name="autoStartLoadingIndex">Set to false to stop auto loading index file.</param>
         public DataIndexService(
-            IDataIndexAccessService dataIndexAccessService,
+            IDataIndexStore dataIndexStore,
             IStorageService storageService,
             IRepoManagerLocator repoManagerLocator,
             IRepoStorageService repoStorageService,
-            Func<ISystemIndex, IRepoManager> repoManagerFactory,
-            bool autoStartLoadingIndex = true)
+            Func<ISystemIndex, IRepoManager> repoManagerFactory, ILog log, bool autoStartLoadingIndex = true)
         {
-            if (dataIndexAccessService == null)
-                throw new ArgumentNullException(nameof(dataIndexAccessService));
+            if (dataIndexStore == null)
+                throw new ArgumentNullException(nameof(dataIndexStore));
             if (storageService == null)
                 throw new ArgumentNullException(nameof(storageService));
             if (repoManagerLocator == null)
@@ -39,18 +39,19 @@ namespace WarHub.Armoury.Model.DataAccess.ServiceImplementations
                 throw new ArgumentNullException(nameof(repoStorageService));
             if (repoManagerFactory == null)
                 throw new ArgumentNullException(nameof(repoManagerFactory));
-            DataIndexAccessService = dataIndexAccessService;
+            DataIndexStore = dataIndexStore;
             RepoManagerLocator = repoManagerLocator;
             RepoManagerFactory = repoManagerFactory;
+            Log = log;
             StorageService = storageService;
             repoStorageService.RepoChanged += OnRepoChanged;
             if (autoStartLoadingIndex)
             {
-                LastIndexingTask = LoadIndex();
+                LastIndexingTask = LoadIndexAsync();
             }
         }
 
-        protected IDataIndexAccessService DataIndexAccessService { get; }
+        protected IDataIndexStore DataIndexStore { get; }
 
         protected DataIndex Index { get; } = new DataIndex();
 
@@ -93,6 +94,8 @@ namespace WarHub.Armoury.Model.DataAccess.ServiceImplementations
                     as SystemIndex ?? AddNewSystem(systemInfo);
             }
         }
+
+        protected ILog Log { get; }
 
         protected Func<ISystemIndex, IRepoManager> RepoManagerFactory { get; }
 
@@ -178,27 +181,36 @@ namespace WarHub.Armoury.Model.DataAccess.ServiceImplementations
                 await IndexSystemStorageAsync(repoFolder);
             }
             await IndexRostersStorageAsync();
-            await DataIndexAccessService.SaveIndexAsync(Index);
+            await SaveIndexAsync();
         }
 
-        /// <summary>
-        ///     Called during object creation, when using constructor without DataIndex argument.
-        /// </summary>
-        /// <returns></returns>
-        protected async Task LoadIndex()
+        protected async Task LoadIndexAsync()
         {
-            var dataIndex = await DataIndexAccessService.LoadIndexAsync();
-            if (dataIndex == null)
+            try
             {
-                await IndexStorageAsync();
-            }
-            else
-            {
+                var dataIndex = await DataIndexStore.LoadItemAsync();
                 CopyAndRegister(dataIndex);
             }
+            catch (Exception e)
+            {
+                Log.Trace?.With("Loading index failed.", e);
+                await IndexStorageAsync();
+            }
         }
 
-        protected virtual void OnRepoChanged(object sender, NotifyRepoChangedEventArgs e)
+        protected async Task SaveIndexAsync()
+        {
+            try
+            {
+                await DataIndexStore.SaveItemAsync(Index);
+            }
+            catch (Exception e)
+            {
+                Log.Warn?.With("Saving index failed.", e);
+            }
+        }
+
+        protected virtual async void OnRepoChanged(object sender, NotifyRepoChangedEventArgs e)
         {
             var rawId = e.SystemRawId;
             var systemIndex = this[rawId];
@@ -242,7 +254,7 @@ namespace WarHub.Armoury.Model.DataAccess.ServiceImplementations
                         });
                     break;
             }
-            DataIndexAccessService.SaveIndexAsync(Index);
+            await SaveIndexAsync();
         }
 
         private async Task IndexRostersStorageAsync()
@@ -272,7 +284,7 @@ namespace WarHub.Armoury.Model.DataAccess.ServiceImplementations
             }
             catch (StorageException e)
             {
-                App.TelemetryClient.TrackException(e);
+                Log.Trace?.With("Indexing repo folder failed.", e);
             }
         }
     }

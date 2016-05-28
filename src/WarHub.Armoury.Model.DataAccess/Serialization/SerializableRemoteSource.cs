@@ -4,9 +4,10 @@
 namespace WarHub.Armoury.Model.DataAccess.Serialization
 {
     using System.Xml.Serialization;
+    using Repo;
 
-    [XmlType("RemoteDataSourceInfo")]
-    public class SerializableRemoteDataSourceInfo
+    [XmlType("RemoteSource")]
+    public class SerializableRemoteSource
     {
         public string IndexUri { get; set; }
 
@@ -17,22 +18,22 @@ namespace WarHub.Armoury.Model.DataAccess.Serialization
             return $"[{Name}]({IndexUri})";
         }
 
-        public static implicit operator RemoteDataSourceInfo(SerializableRemoteDataSourceInfo rhs)
+        public static implicit operator RemoteSource(SerializableRemoteSource rhs)
         {
             if (rhs == null)
             {
-                return default(RemoteDataSourceInfo);
+                return default(RemoteSource);
             }
-            return new RemoteDataSourceInfo(rhs.Name, rhs.IndexUri);
+            return new RemoteSource(rhs.Name, rhs.IndexUri);
         }
 
-        public static implicit operator SerializableRemoteDataSourceInfo(RemoteDataSourceInfo rhs)
+        public static implicit operator SerializableRemoteSource(RemoteSource rhs)
         {
             if (rhs == null)
             {
-                return default(SerializableRemoteDataSourceInfo);
+                return default(SerializableRemoteSource);
             }
-            return new SerializableRemoteDataSourceInfo
+            return new SerializableRemoteSource
             {
                 Name = rhs.Name,
                 IndexUri = rhs.IndexUri

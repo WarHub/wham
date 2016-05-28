@@ -10,27 +10,31 @@ namespace WarHub.Armoury.Model.BattleScribe.Files
 
     public class BattleScribeFileHandler : IBattleScribeFileHandler
     {
-        public RemoteDataSourceIndex ReadIndexAuto(string filepath, Stream stream)
+        public BattleScribeFileHandler(IRepoStorageService repoStorageService)
+        {
+            RepoStorageService = repoStorageService;
+        }
+
+        private IRepoStorageService RepoStorageService { get; }
+
+        public RemoteSourceDataIndex ReadIndexAuto(Stream stream, string filepath)
         {
             return DataIndexFile.ReadBattleScribeIndexAuto(filepath, stream);
         }
 
-        public Task<CatalogueInfo> MoveCatalogueToRepoStorageAsync(Stream stream, string filename,
-            IRepoStorageService repoStorageService)
+        public Task<CatalogueInfo> MoveCatalogueToRepoStorageAsync(Stream stream, string filename)
         {
-            return CatalogueFile.MoveToRepoStorageAsync(stream, filename, repoStorageService);
+            return CatalogueFile.MoveToRepoStorageAsync(stream, filename, RepoStorageService);
         }
 
-        public Task<GameSystemInfo> MoveGameSystemToRepoStorageAsync(Stream stream, string filename,
-            IRepoStorageService repoStorageService)
+        public Task<GameSystemInfo> MoveGameSystemToRepoStorageAsync(Stream stream, string filename)
         {
-            return GameSystemFile.MoveToRepoStorageAsync(stream, filename, repoStorageService);
+            return GameSystemFile.MoveToRepoStorageAsync(stream, filename, RepoStorageService);
         }
 
-        public Task<RosterInfo> MoveRosterToRepoStorageAsync(Stream stream, string filename,
-            IRepoStorageService repoStorageService)
+        public Task<RosterInfo> MoveRosterToRepoStorageAsync(Stream stream, string filename)
         {
-            return RosterFile.MoveToRepoStorageAsync(stream, filename, repoStorageService);
+            return RosterFile.MoveToRepoStorageAsync(stream, filename, RepoStorageService);
         }
     }
 }

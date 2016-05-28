@@ -1,5 +1,5 @@
 ﻿{
-  "version": "0.2.3-*",
+  "version": "0.2.5-*",
   "description": "wham BattleScribe Files: Helper classes to easily handle zipped/unzipped formats.",
   "authors": [ "WarHub" ],
   "frameworks": {
@@ -56,9 +56,9 @@
     }
   },
   "dependencies": {
-    "WarHub.Armoury.Model": "0.2.2-*",
-    "WarHub.Armoury.Model.BattleScribeXml": "0.2.2-*",
-    "WarHub.Armoury.Model.BattleScribe": "0.2.2-*"
+    "WarHub.Armoury.Model": "0.2.5-*",
+    "WarHub.Armoury.Model.BattleScribeXml": "0.2.5-*",
+    "WarHub.Armoury.Model.BattleScribe": "0.2.5-*"
   },
   "packOptions": {
     "licenseUrl": "https://github.com/WarHub/wham/blob/master/LICENSE",
@@ -69,6 +69,6 @@
     },
     "summary": "WarHub Armoury Model file helpers.",
     "tags": [ "WarHub", "wham", "armoury", "model", "BattleScribe", "files" ],
-    "releaseNotes": "v0.2.2: update versioning.\nv0.2.3: added PCL profile 111 support."
+    "releaseNotes": "v0.2.2: update versioning.\nv0.2.3: added PCL profile 111 support.\nv0.2.5: Aligned with RemoteDataSource name/namespace changes and BattleScribeFileHandler changes."
   }
 }

@@ -1,6 +1,6 @@
 {
-  "version": "0.2.2-*",
-  "description": "WarHub.Armoury.Model (wham) binding of BattleScribe data format.",
+  "version": "0.2.5-*",
+  "description": "wham BattleScribe data format binding.",
   "authors": [ "WarHub" ],
   "frameworks": {
     "netcore45": {
@@ -49,8 +49,8 @@
     }
   },
   "dependencies": {
-    "WarHub.Armoury.Model": "0.2.2-*",
-    "WarHub.Armoury.Model.BattleScribeXml": "0.2.2-*"
+    "WarHub.Armoury.Model": "0.2.5-*",
+    "WarHub.Armoury.Model.BattleScribeXml": "0.2.5-*"
   },
   "packOptions": {
     "licenseUrl": "https://github.com/WarHub/wham/blob/master/LICENSE",
@@ -61,6 +61,6 @@
     },
     "summary": "WarHub Armoury Model - Top level abstraction of tabletop datafiles.",
     "tags": [ "WarHub", "WarHub.Armoury.Model.BattleScribe", "wham", "wargame", "roster", "battlescribe", "xml" ],
-    "releaseNotes": "v0.2: Added netcore45 target.\nv0.2.2: update versioning."
+    "releaseNotes": "v0.2: Added netcore45 target.\nv0.2.2: update versioning.\nv0.2.5: Aligned with RemoteDataSource name/namespace changes."
   }
 }

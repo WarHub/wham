@@ -33,7 +33,7 @@ namespace WarHub.Armoury.Model.BattleScribeXml
         [XmlArray("dataIndexEntries")]
         public List<DataIndexEntry> DataIndexEntries { get; set; } = new List<DataIndexEntry>();
 
-        public static DataIndex CreateFromSourceIndex(RemoteDataSourceIndex index)
+        public static DataIndex CreateFromSourceIndex(RemoteSourceDataIndex index)
         {
             return new DataIndex
             {
@@ -46,19 +46,19 @@ namespace WarHub.Armoury.Model.BattleScribeXml
         }
 
         /// <summary>
-        ///     Builds <see cref="RemoteDataSourceIndex" /> out of this object.
+        ///     Builds <see cref="RemoteSourceDataIndex" /> out of this object.
         /// </summary>
         /// <returns>Built index.</returns>
         /// <exception cref="NotSupportedException">When there are no repo addresses available in this object.</exception>
-        public RemoteDataSourceIndex CreateSourceIndex()
+        public RemoteSourceDataIndex CreateSourceIndex()
         {
             var isIndexUrlNull = IndexUrl == null;
             if (isIndexUrlNull && (RepositoryUrls == null || RepositoryUrls.Count < 1))
             {
-                throw new NotSupportedException($"Cannot create {nameof(RemoteDataSourceIndex)}"
+                throw new NotSupportedException($"Cannot create {nameof(RemoteSourceDataIndex)}"
                                                 + $" without any repo address in {nameof(DataIndex)}.");
             }
-            return new RemoteDataSourceIndex(DataIndexEntries.Select(x => x.CreateInfo()))
+            return new RemoteSourceDataIndex(DataIndexEntries.Select(x => x.CreateInfo()))
             {
                 Name = Name,
                 OriginProgramVersion = BattleScribeVersion,

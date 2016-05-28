@@ -12,7 +12,7 @@ namespace WarHub.Armoury.Model.BattleScribe.Files
 
     /// <summary>
     ///     Provides methods to read BattleScribe index-formatted data from streams and deserialize
-    ///     them into <see cref="RemoteDataSourceIndex" />.
+    ///     them into <see cref="RemoteSourceDataIndex" />.
     /// </summary>
     public class DataIndexFile
     {
@@ -27,7 +27,7 @@ namespace WarHub.Armoury.Model.BattleScribe.Files
         ///     If the <paramref name="filepath" /> has unsupported extension.
         /// </exception>
         /// <exception cref="InvalidDataException">When index could not be read.</exception>
-        public static RemoteDataSourceIndex ReadBattleScribeIndexAuto(string filepath, Stream stream)
+        public static RemoteSourceDataIndex ReadBattleScribeIndexAuto(string filepath, Stream stream)
         {
             try
             {
@@ -53,7 +53,7 @@ namespace WarHub.Armoury.Model.BattleScribe.Files
         /// <param name="stream">Contains index.xml content.</param>
         /// <returns>Created source index object.</returns>
         /// <exception cref="InvalidDataException">On error reading index content.</exception>
-        public static RemoteDataSourceIndex ReadBattleScribeIndex(Stream stream)
+        public static RemoteSourceDataIndex ReadBattleScribeIndex(Stream stream)
         {
             var index = XmlSerializer.Deserialize<DataIndex>(stream);
             try
@@ -93,7 +93,7 @@ namespace WarHub.Armoury.Model.BattleScribe.Files
         /// <exception cref="NotSupportedException">
         ///     If the zipped <paramref name="stream" /> has invalid number of entries.
         /// </exception>
-        public static RemoteDataSourceIndex ReadBattleScribeIndexZipped(Stream stream)
+        public static RemoteSourceDataIndex ReadBattleScribeIndexZipped(Stream stream)
         {
             using (var archive = new ZipArchive(stream))
             {

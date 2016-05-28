@@ -9,14 +9,16 @@ namespace WarHub.Armoury.Model.DataAccess
     /// <summary>
     ///     Provides methods to access remote source indexes, check for updates using them and download chosen updates.
     /// </summary>
-    public interface IRemoteDataService
+    public interface IRemoteSourceIndexService
     {
-        IObservableReadonlySet<RemoteDataSourceInfo> SourceInfos { get; }
+        IObservableReadonlySet<RemoteSource> SourceInfos { get; }
 
-        void AddSource(RemoteDataSourceInfo info);
+        void AddSource(RemoteSource info);
 
-        Task<RemoteDataSourceIndex> DownloadIndexAsync(RemoteDataSourceInfo source);
+        Task<RemoteSourceDataIndex> DownloadIndexAsync(RemoteSource source);
 
-        void RemoveSource(RemoteDataSourceInfo info);
+        void RemoveSource(RemoteSource info);
+
+        Task ReloadIndexAsync();
     }
 }
