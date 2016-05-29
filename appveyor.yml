@@ -3,19 +3,19 @@
 -
   branches:
     except:
-    - stable
+      - stable
   version: 0.2.5-{branch}-build{build}
   configuration: Debug
   cache:
     - C:\Users\appveyor\.nuget\packages -> appveyor.yml
   before_build:
-  - ps: dotnet --info
-  - ps: dotnet restore
-  - ps: $env:DOTNET_BUILD_VERSION="$env:APPVEYOR_REPO_BRANCH-build-$env:APPVEYOR_BUILD_NUMBER"
+    - ps: dotnet --info
+    - ps: dotnet restore
+    - ps: $env:DOTNET_BUILD_VERSION="$env:APPVEYOR_REPO_BRANCH-build-$env:APPVEYOR_BUILD_NUMBER"
   build:
     verbosity: minimal
 #  test_script:
-#  - ps: >-
+#  - ps: >
 #      foreach ($testdir in (gi tests/*/project.json | Split-Path))
 #      {
 #        Push-Location $testdir;
@@ -34,31 +34,26 @@
 -
   branches:
     only:
-    - stable
+      - stable
   version: 0.2.5-build{build}
   configuration: Release
   cache:
     - C:\Users\appveyor\.nuget\packages -> appveyor.yml
-#  install:
-  # - ps: Start-FileDownload 'https://dotnetcli.blob.core.windows.net/dotnet/beta/Installers/Latest/dotnet-dev-win-x64.latest.exe'
-  # - cmd: dotnet-dev-win-x64.latest.exe /quiet
-#  environment:
-#    PATH: $(PATH);$(PROGRAMFILES)\dotnet\
   before_build:
-  - ps: dotnet --info
-  - ps: dotnet restore
+    - ps: dotnet --info
+    - ps: dotnet restore
   build:
     verbosity: minimal
   after_build:
-  - ps: >-
-      foreach($srcdir in (gi src/*/project.json | Split-Path))
-      {
-        Push-Location $srcdir;
-        dotnet pack;
-        Pop-Location;
-      }
+    - ps: >
+        foreach($srcdir in (gi src/*/project.json | Split-Path))
+        {
+          Push-Location $srcdir;
+          dotnet pack;
+          Pop-Location;
+        }
 #  test_script:
-  # - ps: >-
+  # - ps: >
   #     foreach ($testdir in (gi tests/*/project.json | Split-Path))
   #     {
   #       Push-Location $testdir;

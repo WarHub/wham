@@ -1,5 +1,5 @@
 {
-  "version": "0.2.5-*",
+  "version": "0.2.6-*",
   "description": "wham DataAccess library provides portable data storage and data access API, to allow cross-platform, simple experience with wham libs.",
   "authors": [ "WarHub" ],
   "frameworks": {
@@ -56,6 +56,6 @@
     },
     "summary": "WarHub Armoury Model condition resolution library.",
     "tags": [ "wham", "WarHub", "Armoury", "DataAccess", "storage", "pcl", "BattleScribe" ],
-    "releaseNotes": "0.2: First release.\nv0.2.1: Added IRemoteDataIndex implementation.\nv0.2.2: added PCL profile 111 support.\nv0.2.5: Remote* rewrite (name/namespace changes), logging, fixes."
+    "releaseNotes": "0.2: First release.\nv0.2.1: Added IRemoteDataIndex implementation.\nv0.2.2: added PCL profile 111 support.\nv0.2.5: Remote* rewrite (name/namespace changes), logging, fixes.\nv0.2.6: fixed RemoteSourceIndexService not saving index (#6)."
   }
 }

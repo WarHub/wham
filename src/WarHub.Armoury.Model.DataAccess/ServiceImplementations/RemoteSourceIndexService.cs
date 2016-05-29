@@ -28,7 +28,7 @@ namespace WarHub.Armoury.Model.DataAccess.ServiceImplementations
 
         IObservableReadonlySet<RemoteSource> IRemoteSourceIndexService.SourceInfos => Index.RemoteSources;
 
-        public void AddSource(RemoteSource info)
+        public async void AddSource(RemoteSource info)
         {
             if (SourceInfos.Any(x => x.IndexUri == info.IndexUri))
             {
@@ -39,14 +39,16 @@ namespace WarHub.Armoury.Model.DataAccess.ServiceImplementations
                 }
             }
             SourceInfos.Add(info);
+            await SaveIndexAsync();
         }
 
         public virtual async Task<RemoteSourceDataIndex> DownloadIndexAsync(RemoteSource source)
             => await DownloadIndexStaticAsync(source);
 
-        public void RemoveSource(RemoteSource info)
+        public async void RemoveSource(RemoteSource info)
         {
             SourceInfos.Remove(info);
+            await SaveIndexAsync();
         }
 
         public async Task ReloadIndexAsync()
@@ -61,6 +63,7 @@ namespace WarHub.Armoury.Model.DataAccess.ServiceImplementations
             {
                 var index = await IndexStore.LoadItemAsync();
                 Copy(index);
+                Log.Trace?.With("Loading index succeeded.");
             }
             catch (Exception e)
             {
@@ -73,6 +76,7 @@ namespace WarHub.Armoury.Model.DataAccess.ServiceImplementations
             try
             {
                 await IndexStore.SaveItemAsync(Index);
+                Log.Trace?.With("Saving index succeeded.");
             }
             catch (Exception e)
             {
