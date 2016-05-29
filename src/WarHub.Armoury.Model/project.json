@@ -1,5 +1,5 @@
 {
-  "version": "0.2.5-*",
+  "version": "0.3.0-*",
   "description": "wham main package. Top level abstraction of roster building model in C#.",
   "authors": [ "WarHub" ],
 
@@ -63,6 +63,6 @@
     },
     "summary": "WarHub Armoury Model - Top level abstraction of tabletop datafiles.",
     "tags": [ "WarHub", "WarHub.Armoury.Model", "wham", "wargame", "roster", "battlescribe" ],
-    "releaseNotes": "v0.2.2: Added IRepoManagerLocator implementation.\nv0.2.5: added IDataIndexService, RemoteSource and RemoteSourceDataIndex into Repo namespace."
+    "releaseNotes": "v0.2.2: Added IRepoManagerLocator implementation.\nv0.2.5: added IDataIndexService, RemoteSource and RemoteSourceDataIndex into Repo namespace.\nv0.3.0: NetCoreApp TFM support."
   }
 }

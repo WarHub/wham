@@ -10,8 +10,8 @@
     "dotnet-test-xunit": "1.0.0-rc2-*",
     "NSubstitute": "2.0.0-*",
     "System.Diagnostics.TraceSource": "4.0.0-rc2-24027",
-    "WarHub.Armoury.Model": "0.2.5-*",
-    "WarHub.Armoury.Model.EntryTree": "0.2.2"
+    "WarHub.Armoury.Model": "0.3.0-*",
+    "WarHub.Armoury.Model.EntryTree": "0.3.0-*"
   },
 
   "frameworks": {

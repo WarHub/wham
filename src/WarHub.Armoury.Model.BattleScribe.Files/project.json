@@ -1,5 +1,5 @@
 ﻿{
-  "version": "0.2.5-*",
+  "version": "0.3.0-*",
   "description": "wham BattleScribe Files provides helper classes to easily handle zipped/unzipped datafile formats.",
   "authors": [ "WarHub" ],
 
@@ -38,9 +38,9 @@
   },
 
   "dependencies": {
-    "WarHub.Armoury.Model": "0.2.5-*",
-    "WarHub.Armoury.Model.BattleScribeXml": "0.2.5-*",
-    "WarHub.Armoury.Model.BattleScribe": "0.2.5-*"
+    "WarHub.Armoury.Model": "0.3.0-*",
+    "WarHub.Armoury.Model.BattleScribeXml": "0.3.0-*",
+    "WarHub.Armoury.Model.BattleScribe": "0.3.0-*"
   },
 
   "packOptions": {
@@ -52,6 +52,6 @@
     },
     "summary": "WarHub Armoury Model BattleScribe File helpers.",
     "tags": [ "WarHub", "wham", "armoury", "model", "BattleScribe", "files" ],
-    "releaseNotes": "v0.2.2: update versioning.\nv0.2.3: added PCL profile 111 support.\nv0.2.5: Aligned with RemoteDataSource name/namespace changes and BattleScribeFileHandler changes."
+    "releaseNotes": "v0.2.2: update versioning.\nv0.2.3: added PCL profile 111 support.\nv0.2.5: Aligned with RemoteDataSource name/namespace changes and BattleScribeFileHandler changes.\nv0.3.0: NetCoreApp TFM support."
   }
 }

@@ -1,13 +1,13 @@
 ﻿{
-  "version": "0.2.2-*",
+  "version": "0.3.0-*",
   "description": "wham Builders.Implementations provides implementation of Builder structures that follow and update wham (WarHub.Armoury.Model) roster data according to active modifiers, conditions etc.",
   "authors": [ "WarHub" ],
 
   "dependencies": {
-    "WarHub.Armoury.Model": "0.2.5-*",
-    "WarHub.Armoury.Model.Builders": "0.2.2-*",
-    "WarHub.Armoury.Model.ConditionResolvers": "0.2.2-*",
-    "WarHub.Armoury.Model.ModifierAppliers": "0.2.2-*",
+    "WarHub.Armoury.Model": "0.3.0-*",
+    "WarHub.Armoury.Model.Builders": "0.3.0-*",
+    "WarHub.Armoury.Model.ConditionResolvers": "0.3.0-*",
+    "WarHub.Armoury.Model.ModifierAppliers": "0.3.0-*",
     "WarHub.Mvvm": "1.0.1"
   },
 
@@ -56,6 +56,6 @@
     },
     "summary": "WarHub Armoury Model modifier and condition handling library.",
     "tags": [ "WarHub", "wham", "armoury", "model", "catalogue", "modifier", "condition", "changetracking" ],
-    "releaseNotes": "0.2.2: added portable profile 259 support."
+    "releaseNotes": "0.2.2: added portable profile 259 support.\nv0.3.0: NetCoreApp TFM support."
   }
 }

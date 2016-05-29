@@ -1,10 +1,10 @@
 ﻿{
-  "version": "0.2.2-*",
+  "version": "0.3.0-*",
   "description": "wham ModifierAppliers provides utilities which apply modifiers on appropriate roster node Builder.",
   "authors": [ "WarHub" ],
 
   "dependencies": {
-    "WarHub.Armoury.Model": "0.2.5-*"
+    "WarHub.Armoury.Model": "0.3.0-*"
   },
 
   "frameworks": {
@@ -51,6 +51,6 @@
     },
     "summary": "WarHub Armoury Model modifiers resolution library.",
     "tags": [ "wham", "warhub", "armoury", "modifiers", "applying" ],
-    "releaseNotes": "0.2.2: added portable profile 259 support."
+    "releaseNotes": "0.2.2: added portable profile 259 support.\nv0.3.0: NetCoreApp TFM support."
   }
 }
