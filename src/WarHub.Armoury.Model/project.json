@@ -1,8 +1,20 @@
 {
   "version": "0.2.5-*",
   "description": "wham main package. Top level abstraction of roster building model in C#.",
-  "authors": ["WarHub"],
+  "authors": [ "WarHub" ],
+
   "frameworks": {
+    "netcoreapp1.0": {
+      "imports": "dnxcore50",
+      "dependencies": {
+        "Microsoft.NETCore.App": {
+          "type": "platform",
+          "version": "1.0.0-rc2-3002702"
+        },
+        "System.Xml.XmlSerializer": "4.0.10"
+      }
+    },
+
     "netcore45": {
       "frameworkAssemblies": {
         "System": "",
@@ -21,6 +33,7 @@
         "System.Xml.XmlSerializer": ""
       }
     },
+
     ".NETPortable,Version=v4.5,Profile=Profile259": {
       "frameworkAssemblies": {
         "System": "",
@@ -40,6 +53,7 @@
       }
     }
   },
+
   "packOptions": {
     "licenseUrl": "https://github.com/WarHub/wham/blob/master/LICENSE",
     "owners": [ "WarHub" ],

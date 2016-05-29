@@ -1,8 +1,19 @@
 ﻿{
   "version": "0.2.5-*",
-  "description": "wham BattleScribe Files: Helper classes to easily handle zipped/unzipped formats.",
+  "description": "wham BattleScribe Files provides helper classes to easily handle zipped/unzipped datafile formats.",
   "authors": [ "WarHub" ],
+
   "frameworks": {
+    "netcoreapp1.0": {
+      "imports": "dnxcore50",
+      "dependencies": {
+        "Microsoft.NETCore.App": {
+          "type": "platform",
+          "version": "1.0.0-rc2-3002702"
+        }
+      }
+    },
+
     "netcore45": {
       "frameworkAssemblies": {
         "System": "",
@@ -13,37 +24,7 @@
         "System.IO.Compression": ""
       }
     },
-    "wpa81": {
-      "frameworkAssemblies": {
-        "System": "",
-        "System.Collections": "",
-        "System.Core": "",
-        "System.Diagnostics.Tools": "",
-        "System.IO": "",
-        "System.IO.Compression": "",
-        "System.Runtime": ""
-      }
-    },
-    "dnx451": {
-      "frameworkAssemblies": {
-        "System": "",
-        "System.Collections": "",
-        "System.Core": "",
-        "System.Diagnostics.Tools": "",
-        "System.IO": "",
-        "System.IO.Compression": ""
-      }
-    },
-    "net45": {
-      "frameworkAssemblies": {
-        "System": "",
-        "System.Collections": "",
-        "System.Core": "",
-        "System.Diagnostics.Tools": "",
-        "System.IO": "",
-        "System.IO.Compression": ""
-      }
-    },
+
     ".NETPortable,Version=v4.5,Profile=Profile111": {
       "frameworkAssemblies": {
         "System": "",
@@ -55,11 +36,13 @@
       }
     }
   },
+
   "dependencies": {
     "WarHub.Armoury.Model": "0.2.5-*",
     "WarHub.Armoury.Model.BattleScribeXml": "0.2.5-*",
     "WarHub.Armoury.Model.BattleScribe": "0.2.5-*"
   },
+
   "packOptions": {
     "licenseUrl": "https://github.com/WarHub/wham/blob/master/LICENSE",
     "owners": [ "WarHub" ],
@@ -67,7 +50,7 @@
       "type": "git",
       "url": "https://github.com/WarHub/wham"
     },
-    "summary": "WarHub Armoury Model file helpers.",
+    "summary": "WarHub Armoury Model BattleScribe File helpers.",
     "tags": [ "WarHub", "wham", "armoury", "model", "BattleScribe", "files" ],
     "releaseNotes": "v0.2.2: update versioning.\nv0.2.3: added PCL profile 111 support.\nv0.2.5: Aligned with RemoteDataSource name/namespace changes and BattleScribeFileHandler changes."
   }

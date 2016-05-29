@@ -4,24 +4,27 @@
   "authors": [ "WarHub" ],
 
   "testRunner": "xunit",
+
   "dependencies": {
-    "Microsoft.NETCore.App": {
-      "type": "platform",
-      "version": "1.0.0-rc2-*"
-    },
-    "NSubstitute": "1.10.0",
-    "WarHub.Armoury.Model": "0.2.2-*",
-    "WarHub.Armoury.Model.ConditionResolvers": "0.2.2-*",
     "xunit": "2.1.0",
-    "dotnet-test-xunit": "1.0.0-rc2-*"
+    "dotnet-test-xunit": "1.0.0-rc2-*",
+    "NSubstitute": "1.10.0",
+    "WarHub.Armoury.Model": "0.2.5-*",
+    "WarHub.Armoury.Model.ConditionResolvers": "0.2.2-*"
   },
+
   "frameworks": {
     "netcoreapp1.0": {
       "imports": [
-        "dotnet5.4",
-        "net45",
-        "portable-net451+win8"
-      ]
+        "dnxcore50",
+        "net45"
+      ],
+      "dependencies": {
+        "Microsoft.NETCore.App": {
+          "type": "platform",
+          "version": "1.0.0-rc2-3002702"
+        }
+      }
     }
   }
 }

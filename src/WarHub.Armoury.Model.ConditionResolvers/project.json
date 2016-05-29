@@ -1,8 +1,24 @@
 ﻿{
   "version": "0.2.2-*",
-  "description": "Provides wham (WarHub.Armoury.Model) Conditions' resolution utilities.",
+  "description": "wham ConditionResolvers provides condition evaluation utilities.",
   "authors": [ "WarHub" ],
+
+  "dependencies": {
+    "WarHub.Armoury.Model": "0.2.5-*",
+    "WarHub.Armoury.Model.Builders": "0.2.2-*"
+  },
+
   "frameworks": {
+    "netcoreapp1.0": {
+      "imports": "dnxcore50",
+      "dependencies": {
+        "Microsoft.NETCore.App": {
+          "type": "platform",
+          "version": "1.0.0-rc2-3002702"
+        }
+      }
+    },
+
     "netcore45": {
       "frameworkAssemblies": {
         "System": "",
@@ -15,15 +31,7 @@
         "System.Runtime.Extensions": ""
       }
     },
-    "dnx451": {
-      "frameworkAssemblies": {
-        "System.Collections": "",
-        "System.Core": "",
-        "System.Linq": "",
-        "System.ObjectModel": "",
-        "System.Runtime": ""
-      }
-    },
+
     ".NETPortable,Version=v4.5,Profile=Profile259": {
       "frameworkAssemblies": {
         "System.Collections": "",
@@ -34,10 +42,7 @@
       }
     }
   },
-  "dependencies": {
-    "WarHub.Armoury.Model": "0.2.2-*",
-    "WarHub.Armoury.Model.Builders": "0.2.2-*"
-  },
+
   "packOptions": {
     "licenseUrl": "https://github.com/WarHub/wham/blob/master/LICENSE",
     "owners": [ "WarHub" ],

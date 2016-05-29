@@ -4,24 +4,27 @@
   "authors": [ "WarHub" ],
 
   "testRunner": "xunit",
+
   "dependencies": {
-    "Microsoft.NETCore.App": {
-      "type": "platform",
-      "version": "1.0.0-rc2-*"
-    },
-    "WarHub.Armoury.Model": "0.2.2-*",
-    "WarHub.Armoury.Model.BattleScribeXml": "0.2.2-*",
-    "WarHub.Armoury.Model.BattleScribe.Files": "0.2.2-*",
     "xunit": "2.1.0",
-    "dotnet-test-xunit": "1.0.0-rc2-*"
+    "dotnet-test-xunit": "1.0.0-rc2-*",
+    "WarHub.Armoury.Model": "0.2.5-*",
+    "WarHub.Armoury.Model.BattleScribeXml": "0.2.5-*",
+    "WarHub.Armoury.Model.BattleScribe.Files": "0.2.5-*"
   },
+
   "frameworks": {
     "netcoreapp1.0": {
       "imports": [
-        "dotnet5.4",
-        "net45",
+        "dnxcore50",
         "portable-net45+win8"
-      ]
+      ],
+      "dependencies": {
+        "Microsoft.NETCore.App": {
+          "type": "platform",
+          "version": "1.0.0-rc2-3002702"
+        }
+      }
     }
   }
 }
