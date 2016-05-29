@@ -250,7 +250,9 @@ namespace WarHub.Armoury.Model.EntryTreeTests
             var group = Substitute.For<IGroup>();
             group.Id.Value.Returns(entryId);
             group.Entries.GetEnumerator().Returns(_ => subentries.GetEnumerator());
+            group.Entries.Count.Returns(subentries.Count);
             group.Groups.GetEnumerator().Returns(_ => subgroups.GetEnumerator());
+            group.Groups.Count.Returns(subgroups.Count);
             return group;
         }
 
