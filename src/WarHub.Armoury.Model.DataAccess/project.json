@@ -1,5 +1,5 @@
 {
-  "version": "0.3.1-*",
+  "version": "0.3.2-*",
   "description": "wham DataAccess library provides portable data storage and data access API, to allow cross-platform, simple experience with wham libs.",
   "authors": [ "WarHub" ],
   "frameworks": {
@@ -43,8 +43,8 @@
     }
   },
   "dependencies": {
-    "WarHub.Armoury.Model": "0.3.0-*",
-    "WarHub.Armoury.Model.BattleScribe.Files": "0.3.0-*",
+    "WarHub.Armoury.Model": "0.3.2-*",
+    "WarHub.Armoury.Model.BattleScribe.Files": "0.3.2-*",
     "PCLStorage": "1.0.2"
   },
   "packOptions": {

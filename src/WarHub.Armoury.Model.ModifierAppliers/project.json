@@ -1,10 +1,10 @@
 {
-  "version": "0.3.1-*",
+  "version": "0.3.2-*",
   "description": "wham ModifierAppliers provides utilities which apply modifiers on appropriate roster node Builder.",
   "authors": [ "WarHub" ],
 
   "dependencies": {
-    "WarHub.Armoury.Model": "0.3.0-*"
+    "WarHub.Armoury.Model": "0.3.2-*"
   },
 
   "frameworks": {

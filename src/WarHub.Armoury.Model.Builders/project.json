@@ -1,11 +1,11 @@
 {
-  "version": "0.3.1-*",
+  "version": "0.3.2-*",
   "description": "wham Builders provides abstraction of structures that follow and update wham roster data according to active modifiers, conditions etc.",
   "authors": [ "WarHub" ],
 
   "dependencies": {
-    "WarHub.Armoury.Model": "0.3.0-*",
-    "WarHub.Armoury.Model.EntryTree": "0.3.0-*"
+    "WarHub.Armoury.Model": "0.3.2-*",
+    "WarHub.Armoury.Model.EntryTree": "0.3.2-*"
   },
 
   "frameworks": {

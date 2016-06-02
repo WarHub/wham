@@ -1,5 +1,5 @@
 {
-  "version": "0.3.1-*",
+  "version": "0.3.2-*",
   "description": "wham BattleScribe Files provides helper classes to easily handle zipped/unzipped datafile formats.",
   "authors": [ "WarHub" ],
 
@@ -38,9 +38,9 @@
   },
 
   "dependencies": {
-    "WarHub.Armoury.Model": "0.3.0-*",
-    "WarHub.Armoury.Model.BattleScribeXml": "0.3.0-*",
-    "WarHub.Armoury.Model.BattleScribe": "0.3.0-*"
+    "WarHub.Armoury.Model": "0.3.2-*",
+    "WarHub.Armoury.Model.BattleScribeXml": "0.3.2-*",
+    "WarHub.Armoury.Model.BattleScribe": "0.3.2-*"
   },
 
   "packOptions": {

@@ -1,5 +1,5 @@
 {
-  "version": "0.3.1-*",
+  "version": "0.3.2-*",
   "description": "wham main package. Top level abstraction of roster building model in C#.",
   "authors": [ "WarHub" ],
 

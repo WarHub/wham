@@ -1,5 +1,5 @@
 {
-  "version": "0.3.1-*",
+  "version": "0.3.2-*",
   "description": "wham BattleScribe XML data format mapping. Provides simple mapping classes as well as a mechanism to parse all IDs into Guid struct.",
   "authors": [ "WarHub" ],
 
@@ -59,7 +59,7 @@
     }
   },
   "dependencies": {
-    "WarHub.Armoury.Model": "0.3.0-*"
+    "WarHub.Armoury.Model": "0.3.2-*"
   },
   "packOptions": {
     "licenseUrl": "https://github.com/WarHub/wham/blob/master/LICENSE",

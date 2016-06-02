@@ -1,5 +1,5 @@
 {
-  "version": "0.3.1-*",
+  "version": "0.3.2-*",
   "description": "wham BattleScribe data format binding.",
   "authors": [ "WarHub" ],
 
@@ -61,8 +61,8 @@
     }
   },
   "dependencies": {
-    "WarHub.Armoury.Model": "0.3.0-*",
-    "WarHub.Armoury.Model.BattleScribeXml": "0.3.0-*"
+    "WarHub.Armoury.Model": "0.3.2-*",
+    "WarHub.Armoury.Model.BattleScribeXml": "0.3.2-*"
   },
   "packOptions": {
     "licenseUrl": "https://github.com/WarHub/wham/blob/master/LICENSE",

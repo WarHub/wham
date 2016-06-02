@@ -1,11 +1,11 @@
 {
-  "version": "0.3.1-*",
+  "version": "0.3.2-*",
   "description": "wham ConditionResolvers provides condition evaluation utilities.",
   "authors": [ "WarHub" ],
 
   "dependencies": {
-    "WarHub.Armoury.Model": "0.3.0-*",
-    "WarHub.Armoury.Model.Builders": "0.3.0-*"
+    "WarHub.Armoury.Model": "0.3.2-*",
+    "WarHub.Armoury.Model.Builders": "0.3.2-*"
   },
 
   "frameworks": {
