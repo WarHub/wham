@@ -1,5 +1,5 @@
-﻿{
-  "version": "0.3.0-*",
+{
+  "version": "0.3.1-*",
   "description": "wham Builders provides abstraction of structures that follow and update wham roster data according to active modifiers, conditions etc.",
   "authors": [ "WarHub" ],
 

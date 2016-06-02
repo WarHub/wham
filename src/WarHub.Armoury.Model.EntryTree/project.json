@@ -1,5 +1,5 @@
-﻿{
-  "version": "0.3.0-*",
+{
+  "version": "0.3.1-*",
   "description": "wham EntryTree provides tree structure of entry/entrygroup choices in given entry. Helpful for immediate resolution which group was parent for some child selection.",
   "authors": [ "WarHub" ],
 

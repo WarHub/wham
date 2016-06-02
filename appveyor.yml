@@ -4,7 +4,7 @@
   branches:
     except:
       - stable
-  version: 0.3.0-{branch}-build{build}
+  version: 0.3.1-{branch}-build{build}
   skip_tags: true
   configuration:
     - Debug
@@ -60,7 +60,7 @@
   branches:
     only:
       - stable
-  version: 0.3.0-{branch}-build{build}
+  version: 0.3.1-{branch}-build{build}
   configuration: Release
   cache:
     - '%USERPROFILE%\.nuget\packages' -> appveyor.yml

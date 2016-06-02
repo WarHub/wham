@@ -1,5 +1,5 @@
 {
-  "version": "0.3.0-*",
+  "version": "0.3.1-*",
   "description": "wham DataAccess library provides portable data storage and data access API, to allow cross-platform, simple experience with wham libs.",
   "authors": [ "WarHub" ],
   "frameworks": {
