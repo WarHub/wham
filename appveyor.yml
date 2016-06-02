@@ -1,23 +1,37 @@
 # configuration for all except 'stable' branch
-# Build in Debug
+# Build in Debug, publish to MyGet
 -
   branches:
     except:
       - stable
   version: 0.3.0-{branch}-build{build}
-  configuration: Debug
+  skip_tags: true
+  configuration:
+    - Debug
+    - Release
   cache:
-    - C:\Users\appveyor\.nuget\packages -> appveyor.yml
+    - '%USERPROFILE%\.nuget\packages' -> appveyor.yml
   before_build:
     - ps: dotnet --info
     - ps: dotnet restore
-    - ps: $env:DOTNET_BUILD_VERSION="$env:APPVEYOR_REPO_BRANCH-build-$env:APPVEYOR_BUILD_NUMBER"
+    - ps: $env:PACKAGE_SUFFIX = 'ci-' + $env:APPVEYOR_REPO_BRANCH + '-build' + "$env:APPVEYOR_BUILD_NUMBER".PadLeft(6, "0")
     - ps: echo "`$env:DOTNET_BUILD_VERSION='$env:DOTNET_BUILD_VERSION'"
   build:
     verbosity: minimal
+  after_build:
+    - ps: >
+        if (-not $env:APPVEYOR_PULL_REQUEST_NUMBER) {
+          foreach($srcdir in (Get-Item src/*/project.json))
+          {
+            Push-Location $srcdir
+            echo "dotnet pack --no-build -c Debug --version-suffix $env:PACKAGE_SUFFIX $srcdir" 
+            dotnet pack --no-build -c Debug --version-suffix $env:PACKAGE_SUFFIX
+            Pop-Location
+          }
+        }
   test_script:
     - ps: >
-        foreach ($testdir in (gi tests/*/project.json | Split-Path))
+        foreach ($testdir in (Get-Item tests/*/project.json))
         {
           Push-Location $testdir
           dotnet test --no-build
@@ -29,6 +43,16 @@
       on_build_success: true
       on_build_failure: true
       on_build_status_changed: true
+  artifacts:
+    - path: '**\*.nupkg'
+  deploy:
+    provider: NuGet
+    server: https://www.myget.org/F/warhub/api/v2
+    symbol_server: https://www.myget.org/F/warhub/symbols/api/v2/package
+    api_key:
+      secure: zir2+Fju3dWWwtAJzFuDJdCZC328XUVdSq1eyBVHFcdGvSzHvnzOI7ljkRy9Z1AI
+    skip_symbols: false
+    artifact: /.*\.nupkg/
 
 # configuration for all except 'stable' branch
 # Build in Release, publish to Nuget
@@ -36,22 +60,21 @@
   branches:
     only:
       - stable
-  version: 0.3.0-build{build}
+  version: 0.3.0-{branch}-build{build}
   configuration: Release
   cache:
-    - C:\Users\appveyor\.nuget\packages -> appveyor.yml
+    - '%USERPROFILE%\.nuget\packages' -> appveyor.yml
   before_build:
     - ps: dotnet --info
     - ps: dotnet restore
-    - ps: echo "`$env:DOTNET_BUILD_VERSION='$env:DOTNET_BUILD_VERSION'"
   build:
     verbosity: minimal
   after_build:
     - ps: >
-        foreach($srcdir in (gi src/*/project.json | Split-Path))
+        foreach($srcdir in (Get-Item src/*/project.json))
         {
           Push-Location $srcdir
-          dotnet pack --no-build
+          dotnet pack --no-build -c Release
           Pop-Location
         }
   test_script:
