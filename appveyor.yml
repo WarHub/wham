@@ -15,26 +15,27 @@
     - ps: dotnet --info
     - ps: dotnet restore
     - ps: $env:PACKAGE_SUFFIX = 'ci-' + $env:APPVEYOR_REPO_BRANCH + '-build' + "$env:APPVEYOR_BUILD_NUMBER".PadLeft(6, "0")
-    - ps: echo "`$env:DOTNET_BUILD_VERSION='$env:DOTNET_BUILD_VERSION'"
+    - ps: echo "`$env:PACKAGE_SUFFIX='$env:PACKAGE_SUFFIX'"
   build:
     verbosity: minimal
   after_build:
     - ps: >
         if (-not $env:APPVEYOR_PULL_REQUEST_NUMBER) {
-          foreach($srcdir in (Get-Item src/*/project.json))
+          foreach($projfile in (Get-Item src/*/project.json))
           {
-            Push-Location $srcdir
-            echo "dotnet pack --no-build -c Debug --version-suffix $env:PACKAGE_SUFFIX $srcdir" 
+            Push-Location $projfile.Directory
+            echo "dotnet pack --no-build -c Debug --version-suffix $env:PACKAGE_SUFFIX $projfile" 
             dotnet pack --no-build -c Debug --version-suffix $env:PACKAGE_SUFFIX
             Pop-Location
           }
         }
   test_script:
     - ps: >
-        foreach ($testdir in (Get-Item tests/*/project.json))
+        foreach ($projfile in (Get-Item tests/*/project.json))
         {
-          Push-Location $testdir
-          dotnet test --no-build
+          Push-Location $projfile.Directory
+          echo "dotnet test --no-build -c $env:CONFIGURATION $projfile"
+          dotnet test --no-build -c $env:CONFIGURATION
           Pop-Location
         }
   notifications:
@@ -71,18 +72,20 @@
     verbosity: minimal
   after_build:
     - ps: >
-        foreach($srcdir in (Get-Item src/*/project.json))
+        foreach($projfile in (Get-Item src/*/project.json))
         {
-          Push-Location $srcdir
+          Push-Location $projfile.Directory
+          echo "dotnet pack --no-build -c Release $projfile" 
           dotnet pack --no-build -c Release
           Pop-Location
         }
   test_script:
     - ps: >
-        foreach ($testdir in (gi tests/*/project.json | Split-Path))
+        foreach ($projfile in (Get-Item tests/*/project.json))
         {
-          Push-Location $testdir
-          dotnet test --no-build
+          Push-Location $projfile.Directory
+          echo "dotnet test --no-build -c $env:CONFIGURATION $projfile"
+          dotnet test --no-build -c $env:CONFIGURATION
           Pop-Location
         }
   notifications:
