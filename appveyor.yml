@@ -10,7 +10,7 @@
     - Debug
     - Release
   cache:
-    - '%USERPROFILE%\.nuget\packages' -> appveyor.yml
+    - %USERPROFILE%\.nuget\packages -> appveyor.yml
   before_build:
     - ps: dotnet --info
     - ps: dotnet restore
@@ -63,7 +63,7 @@
   version: 0.3.1-{branch}-build{build}
   configuration: Release
   cache:
-    - '%USERPROFILE%\.nuget\packages' -> appveyor.yml
+    - %USERPROFILE%\.nuget\packages -> appveyor.yml
   before_build:
     - ps: dotnet --info
     - ps: dotnet restore
