@@ -21,7 +21,7 @@
     verbosity: minimal
   after_build:
     - ps: >
-        if (-not $env:APPVEYOR_PULL_REQUEST_NUMBER) {
+        if (-not $env:APPVEYOR_PULL_REQUEST_NUMBER -and $env:CONFIGURATION -eq 'Debug') {
           foreach($projfile in (Get-Item src/*/project.json))
           {
             Push-Location $projfile.Directory
@@ -55,6 +55,8 @@
       secure: zir2+Fju3dWWwtAJzFuDJdCZC328XUVdSq1eyBVHFcdGvSzHvnzOI7ljkRy9Z1AI
     skip_symbols: false
     artifact: /.*\.nupkg/
+    on:
+      configuration: Debug
 
 # configuration for all except 'stable' branch
 # Build in Release, publish to Nuget
@@ -85,8 +87,8 @@
         foreach ($projfile in (Get-Item tests/*/project.json))
         {
           Push-Location $projfile.Directory
-          echo "dotnet test --no-build -c $env:CONFIGURATION $projfile"
-          dotnet test --no-build -c $env:CONFIGURATION
+          echo "dotnet test --no-build -c Release $projfile"
+          dotnet test --no-build -c Release
           Pop-Location
         }
   notifications:
