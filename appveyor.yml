@@ -14,7 +14,8 @@
   before_build:
     - ps: dotnet --info
     - ps: dotnet restore
-    - ps: $env:PACKAGE_SUFFIX = 'ci-' + $env:APPVEYOR_REPO_BRANCH + '-build' + "$env:APPVEYOR_BUILD_NUMBER".PadLeft(6, "0")
+    - ps: >-
+        $env:PACKAGE_SUFFIX = 'ci-' + ($env:APPVEYOR_REPO_BRANCH -replace '^(.{0,6}).*$', '$1') + '-build' + "$env:APPVEYOR_BUILD_NUMBER".PadLeft(5, "0")
     - ps: echo "`$env:PACKAGE_SUFFIX='$env:PACKAGE_SUFFIX'"
   build:
     verbosity: minimal
@@ -48,7 +49,7 @@
     - path: '**\*.nupkg'
   deploy:
     provider: NuGet
-    server: https://www.myget.org/F/warhub/api/v2
+    server: https://www.myget.org/F/warhub/api/v2/package
     symbol_server: https://www.myget.org/F/warhub/symbols/api/v2/package
     api_key:
       secure: zir2+Fju3dWWwtAJzFuDJdCZC328XUVdSq1eyBVHFcdGvSzHvnzOI7ljkRy9Z1AI
