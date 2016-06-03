@@ -1,4 +1,4 @@
-﻿{
+{
   "version": "1.0.0-*",
   "description": "WarHub.Armoury.Model.BattleScribeXml package unit tests.",
   "authors": [ "WarHub" ],
@@ -8,8 +8,8 @@
   "dependencies": {
     "xunit": "2.1.0",
     "dotnet-test-xunit": "1.0.0-rc2-*",
-    "WarHub.Armoury.Model": "0.3.0-*",
-    "WarHub.Armoury.Model.BattleScribeXml": "0.3.0-*"
+    "WarHub.Armoury.Model": "0.3.2-*",
+    "WarHub.Armoury.Model.BattleScribeXml": "0.3.2-*"
   },
 
   "frameworks": {
