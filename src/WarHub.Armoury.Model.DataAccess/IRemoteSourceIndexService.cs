@@ -11,6 +11,12 @@ namespace WarHub.Armoury.Model.DataAccess
     /// </summary>
     public interface IRemoteSourceIndexService
     {
+        /// <summary>
+        ///     Gets last indexing task created. If no task was run yet (because ie. index was
+        ///     succesfully loaded from file), this is an empty completed task.
+        /// </summary>
+        Task LastIndexingTask { get; }
+
         IObservableReadonlySet<RemoteSource> SourceInfos { get; }
 
         void AddSource(RemoteSource info);

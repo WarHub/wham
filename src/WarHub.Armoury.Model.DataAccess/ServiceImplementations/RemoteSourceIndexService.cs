@@ -12,11 +12,17 @@ namespace WarHub.Armoury.Model.DataAccess.ServiceImplementations
 
     public class RemoteSourceIndexService : IRemoteSourceIndexService
     {
-        public RemoteSourceIndexService(IRemoteSourceIndexStore indexStore, ILog log)
+        public RemoteSourceIndexService(IRemoteSourceIndexStore indexStore, ILog log, bool autoStartLoadingIndex = true)
         {
             IndexStore = indexStore;
             Log = log;
+            if (autoStartLoadingIndex)
+            {
+                LastIndexingTask = LoadIndexAsync();
+            }
         }
+
+        public Task LastIndexingTask { get; private set; } = Task.FromResult(0);
 
         protected RemoteSourceIndex Index { get; } = new RemoteSourceIndex();
 
@@ -54,7 +60,7 @@ namespace WarHub.Armoury.Model.DataAccess.ServiceImplementations
         public async Task ReloadIndexAsync()
         {
             SourceInfos.Clear();
-            await LoadIndexAsync();
+            await (LastIndexingTask = LoadIndexAsync());
         }
 
         protected async Task LoadIndexAsync()
