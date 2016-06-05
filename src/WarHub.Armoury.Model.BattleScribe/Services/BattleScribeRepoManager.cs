@@ -109,7 +109,7 @@ namespace WarHub.Armoury.Model.BattleScribe.Services
             }
             if (isReadOnly)
             {
-                return await LoadRosterReadonlyAsync(rosterInfo, progress);
+                return await LoadRosterReadonlyAsync(rosterInfo);
             }
             if (SystemIndex.GameSystemInfo == null)
             {
@@ -129,6 +129,33 @@ namespace WarHub.Armoury.Model.BattleScribe.Services
             using (var stream = await RepoStorageService.GetRosterOutputStreamAsync(rosterInfo))
             {
                 SerializationService.SaveRoster(stream, roster);
+            }
+        }
+
+        public async Task SaveCatalogueAsync(CatalogueInfo catalogueInfo)
+        {
+            CheckGameSystemGuid(catalogueInfo);
+            ICatalogue catalogue;
+            if (!LoadedCatalogues.TryGetValue(catalogueInfo, out catalogue))
+            {
+                throw new StorageException("Catalogue not loaded");
+            }
+            using (var stream = await RepoStorageService.GetCatalogueOutputStreamAsync(catalogueInfo))
+            {
+                SerializationService.SaveCatalogue(stream, catalogue);
+            }
+        }
+
+        public async Task SaveGameSystemAsync(GameSystemInfo gameSystemInfo)
+        {
+            CheckGameSystemGuid(gameSystemInfo);
+            if (GameSystem == null)
+            {
+                throw new StorageException("GameSystem not loaded");
+            }
+            using (var stream = await RepoStorageService.GetGameSystemOutputStreamAsync(gameSystemInfo))
+            {
+                SerializationService.SaveGameSystem(stream, GameSystem);
             }
         }
 
@@ -168,7 +195,7 @@ namespace WarHub.Armoury.Model.BattleScribe.Services
         private void CheckGameSystemGuid(RosterInfo rosterInfo)
         {
             if (rosterInfo == null)
-                throw new ArgumentNullException();
+                throw new ArgumentNullException(nameof(rosterInfo));
             if (SystemIndex.GameSystemRawId != rosterInfo.GameSystemRawId)
             {
                 throw new ArgumentException(
@@ -179,11 +206,22 @@ namespace WarHub.Armoury.Model.BattleScribe.Services
         private void CheckGameSystemGuid(CatalogueInfo catalogueInfo)
         {
             if (catalogueInfo == null)
-                throw new ArgumentNullException();
+                throw new ArgumentNullException(nameof(catalogueInfo));
             if (SystemIndex.GameSystemRawId != catalogueInfo.GameSystemRawId)
             {
                 throw new ArgumentException(
                     "Catalogue doesn't belong to this manager - wrong RepoManager!");
+            }
+        }
+
+        private void CheckGameSystemGuid(GameSystemInfo gameSystemInfo)
+        {
+            if (gameSystemInfo == null)
+                throw new ArgumentNullException(nameof(gameSystemInfo));
+            if (SystemIndex.GameSystemRawId != gameSystemInfo.RawId)
+            {
+                throw new ArgumentException(
+                    "GameSystem doesn't belong to this manager - wrong RepoManager!");
             }
         }
 
@@ -233,7 +271,7 @@ namespace WarHub.Armoury.Model.BattleScribe.Services
                     .FirstOrDefault(info => info.RawId.Equals(catId, StringComparison.OrdinalIgnoreCase));
                 if (catalogueInfo == null)
                 {
-                    throw new RequriedDataMissingException("Cannot open roster. One of the catalogues" +
+                    throw new RequiredDataMissingException("Cannot open roster. One of the catalogues" +
                                                            $" is missing (catalogue id = '{catId}').");
                 }
                 progress?.Report(new LoadRosterProgressInfo(catalogueInfo.Name, loaded, requiredCatalogueIds.Count));
@@ -247,8 +285,7 @@ namespace WarHub.Armoury.Model.BattleScribe.Services
             return roster;
         }
 
-        private async Task<IRoster> LoadRosterReadonlyAsync(RosterInfo rosterInfo,
-            IProgress<LoadRosterProgressInfo> progress)
+        private async Task<IRoster> LoadRosterReadonlyAsync(RosterInfo rosterInfo)
         {
             LoadStreamedRosterCallback load = SerializationService.LoadRosterReadonly;
             var roster = await RepoStorageService.LoadRosterAsync(rosterInfo, load);

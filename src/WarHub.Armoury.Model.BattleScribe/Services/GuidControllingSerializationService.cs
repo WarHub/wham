@@ -84,19 +84,49 @@ namespace WarHub.Armoury.Model.BattleScribe.Services
             return roster;
         }
 
-        public void SaveRoster(Stream outputStream, IRoster iRoster)
+        public void SaveRoster(Stream outputStream, IRoster roster)
         {
             if (outputStream == null)
                 throw new ArgumentNullException(nameof(outputStream));
-            if (iRoster == null)
-                throw new ArgumentNullException(nameof(iRoster));
-            if (!(iRoster is Roster))
+            if (roster == null)
+                throw new ArgumentNullException(nameof(roster));
+            var bsRoster = roster as Roster;
+            if (bsRoster == null)
             {
                 throw new NotSupportedException("Roster object is not BattleScribe.Roster"
                                                 + " and cannot be serialized by this service.");
             }
-            var roster = (Roster) iRoster;
-            BattleScribeXmlSerializer.SerializeFormatted(roster.XmlBackend, outputStream);
+            BattleScribeXmlSerializer.SerializeFormatted(bsRoster.XmlBackend, outputStream);
+        }
+
+        public void SaveCatalogue(Stream outputStream, ICatalogue catalogue)
+        {
+            if (outputStream == null)
+                throw new ArgumentNullException(nameof(outputStream));
+            if (catalogue == null)
+                throw new ArgumentNullException(nameof(catalogue));
+            var bsCatalogue = catalogue as Catalogue;
+            if (bsCatalogue == null)
+            {
+                throw new NotSupportedException("Catalogue object is not BattleScribe.Catalogue"
+                                                + " and cannot be serialized by this service.");
+            }
+            BattleScribeXmlSerializer.SerializeFormatted(bsCatalogue.XmlBackend, outputStream);
+        }
+
+        public void SaveGameSystem(Stream outputStream, IGameSystem gameSystem)
+        {
+            if (outputStream == null)
+                throw new ArgumentNullException(nameof(outputStream));
+            if (gameSystem == null)
+                throw new ArgumentNullException(nameof(gameSystem));
+            var bsGameSystem = gameSystem as GameSystem;
+            if (bsGameSystem == null)
+            {
+                throw new NotSupportedException("GameSystem object is not BattleScribe.GameSystem"
+                                                + " and cannot be serialized by this service.");
+            }
+            BattleScribeXmlSerializer.SerializeFormatted(bsGameSystem.XmlBackend, outputStream);
         }
 
         internal static List<string> ListRequiredCatalogueIds(XmlRoster xmlRoster)

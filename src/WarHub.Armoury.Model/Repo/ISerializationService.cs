@@ -94,5 +94,21 @@ namespace WarHub.Armoury.Model.Repo
         /// <param name="roster">Roster to be serialized.</param>
         /// <exception cref="ArgumentNullException">When any argument is null.</exception>
         void SaveRoster(Stream outputStream, IRoster roster);
+
+        /// <summary>
+        ///     Serializes catalogue to xml stream.
+        /// </summary>
+        /// <param name="outputStream">Stream to which serialization is done.</param>
+        /// <param name="catalogue">Catalogue to be serialized.</param>
+        /// <exception cref="ArgumentNullException">When any argument is null.</exception>
+        void SaveCatalogue(Stream outputStream, ICatalogue catalogue);
+
+        /// <summary>
+        ///     Serializes game system to xml stream.
+        /// </summary>
+        /// <param name="outputStream">Stream to which serialization is done.</param>
+        /// <param name="gameSystem">Game system to be serialized.</param>
+        /// <exception cref="ArgumentNullException">When any argument is null.</exception>
+        void SaveGameSystem(Stream outputStream, IGameSystem gameSystem);
     }
 }

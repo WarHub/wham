@@ -7,6 +7,8 @@ Our chat room:
 
 NuGet packages: [WarHub NuGet](https://www.nuget.org/profiles/warhub)
 
+MyGet packages (Continuous Integration channel): [WarHub MyGet](https://www.myget.org/feed/Packages/warhub)
+
 ## Overview
 
 WarHub.Armoury.Model: *Top level abstraction of roster building model in C#.*

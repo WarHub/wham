@@ -8,18 +8,18 @@ namespace WarHub.Armoury.Model.Repo
     /// <summary>
     ///     Thrown when an object/method requires data which is not accessible or not yet loaded.
     /// </summary>
-    public class RequriedDataMissingException : InvalidOperationException
+    public class RequiredDataMissingException : InvalidOperationException
     {
-        public RequriedDataMissingException()
+        public RequiredDataMissingException()
         {
         }
 
-        public RequriedDataMissingException(string message)
+        public RequiredDataMissingException(string message)
             : base(message)
         {
         }
 
-        public RequriedDataMissingException(string message, Exception innerException)
+        public RequiredDataMissingException(string message, Exception innerException)
             : base(message, innerException)
         {
         }

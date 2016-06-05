@@ -88,5 +88,21 @@ namespace WarHub.Armoury.Model.Repo
         /// <returns></returns>
         /// <exception cref="ArgumentNullException">If argument is null.</exception>
         Task SaveRosterAsync(RosterInfo rosterInfo);
+
+        /// <summary>
+        ///     Saves described catalogue in its current state.
+        /// </summary>
+        /// <param name="catalogueInfo">Info describing catalogue to be saved.</param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentNullException">If argument is null.</exception>
+        Task SaveCatalogueAsync(CatalogueInfo catalogueInfo);
+
+        /// <summary>
+        ///     Saves described game system in its current state.
+        /// </summary>
+        /// <param name="gameSystemInfo">Info describing game system to be saved.</param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentNullException">If argument is null.</exception>
+        Task SaveGameSystemAsync(GameSystemInfo gameSystemInfo);
     }
 }
