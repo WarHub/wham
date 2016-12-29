@@ -55,13 +55,6 @@
     <xs:attribute name="page" type="xs:string" use="optional" />
   </xs:attributeGroup>
 
-  <xs:attributeGroup name="BaseInfoAttGroup">
-    <xs:attribute name="id" type="cs:idtype" use="required" />
-    <xs:attribute name="name" type="xs:string" use="optional" />
-    <xs:attributeGroup ref="cs:BookReferenceAttGroup" />
-    <xs:attribute name="hidden" type="xs:boolean" use="required" />
-  </xs:attributeGroup>
-
   <xs:group name="BasicEntryNodeGroup">
     <xs:sequence>
       <xs:element name="profiles" type="cs:ProfileList" />
@@ -75,7 +68,10 @@
     <xs:sequence>
       <xs:group ref="cs:BasicEntryNodeGroup" />
     </xs:sequence>
-    <xs:attributeGroup ref="cs:BaseInfoAttGroup" />
+    <xs:attribute name="id" type="cs:idtype" use="required" />
+    <xs:attribute name="name" type="xs:string" use="optional" />
+    <xs:attributeGroup ref="cs:BookReferenceAttGroup" />
+    <xs:attribute name="hidden" type="xs:boolean" use="required" />
   </xs:complexType>
   
   <!--profile-->
@@ -217,8 +213,8 @@
           <xs:element name="costs" type="cs:CostList" />
         </xs:sequence>
         <xs:attribute name="collective" type="xs:boolean" use="required" />
-        <xs:attribute name="type" type="cs:SelectionEntryKind" use="required" />
         <xs:attribute name="categoryEntryId" type="cs:idtype" use="optional" />
+        <xs:attribute name="type" type="cs:SelectionEntryKind" use="required" />
       </xs:extension>
     </xs:complexContent>
   </xs:complexType>
@@ -432,10 +428,10 @@
     </xs:sequence>
     <xs:attribute name="id" type="cs:idtype" use="required" />
     <xs:attribute name="name" type="xs:string" use="required" />
+    <xs:attributeGroup ref="cs:BookReferenceAttGroup" />
     <xs:attribute name="revision" type="xs:nonNegativeInteger" />
     <xs:attribute name="battleScribeVersion" type="xs:string" />
     <xs:attributeGroup ref="cs:AuthorInfoAttGroup" />
-    <xs:attributeGroup ref="cs:BookReferenceAttGroup" />
   </xs:complexType>
   
   <xs:complexType name="Catalogue">

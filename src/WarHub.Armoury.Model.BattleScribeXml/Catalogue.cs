@@ -89,6 +89,10 @@ namespace WarHub.Armoury.Model.BattleScribeXml {
         
         private string nameField;
         
+        private string bookField;
+        
+        private string pageField;
+        
         private string revisionField;
         
         private string battleScribeVersionField;
@@ -98,10 +102,6 @@ namespace WarHub.Armoury.Model.BattleScribeXml {
         private string authorContactField;
         
         private string authorUrlField;
-        
-        private string bookField;
-        
-        private string pageField;
         
         /// <remarks/>
         [System.Xml.Serialization.XmlArrayAttribute(Order=0)]
@@ -270,6 +270,28 @@ namespace WarHub.Armoury.Model.BattleScribeXml {
         }
         
         /// <remarks/>
+        [System.Xml.Serialization.XmlAttributeAttribute()]
+        public string book {
+            get {
+                return this.bookField;
+            }
+            set {
+                this.bookField = value;
+            }
+        }
+        
+        /// <remarks/>
+        [System.Xml.Serialization.XmlAttributeAttribute()]
+        public string page {
+            get {
+                return this.pageField;
+            }
+            set {
+                this.pageField = value;
+            }
+        }
+        
+        /// <remarks/>
         [System.Xml.Serialization.XmlAttributeAttribute(DataType="nonNegativeInteger")]
         public string revision {
             get {
@@ -321,28 +343,6 @@ namespace WarHub.Armoury.Model.BattleScribeXml {
             }
             set {
                 this.authorUrlField = value;
-            }
-        }
-        
-        /// <remarks/>
-        [System.Xml.Serialization.XmlAttributeAttribute()]
-        public string book {
-            get {
-                return this.bookField;
-            }
-            set {
-                this.bookField = value;
-            }
-        }
-        
-        /// <remarks/>
-        [System.Xml.Serialization.XmlAttributeAttribute()]
-        public string page {
-            get {
-                return this.pageField;
-            }
-            set {
-                this.pageField = value;
             }
         }
     }
@@ -1080,6 +1080,10 @@ namespace WarHub.Armoury.Model.BattleScribeXml {
         
         private string nameField;
         
+        private string bookField;
+        
+        private string pageField;
+        
         private bool hiddenField;
         
         /// <remarks/>
@@ -1149,6 +1153,28 @@ namespace WarHub.Armoury.Model.BattleScribeXml {
             }
             set {
                 this.nameField = value;
+            }
+        }
+        
+        /// <remarks/>
+        [System.Xml.Serialization.XmlAttributeAttribute()]
+        public string book {
+            get {
+                return this.bookField;
+            }
+            set {
+                this.bookField = value;
+            }
+        }
+        
+        /// <remarks/>
+        [System.Xml.Serialization.XmlAttributeAttribute()]
+        public string page {
+            get {
+                return this.pageField;
+            }
+            set {
+                this.pageField = value;
             }
         }
         
@@ -1433,9 +1459,9 @@ namespace WarHub.Armoury.Model.BattleScribeXml {
         
         private bool collectiveField;
         
-        private SelectionEntryKind typeField;
-        
         private string categoryEntryIdField;
+        
+        private SelectionEntryKind typeField;
         
         /// <remarks/>
         [System.Xml.Serialization.XmlArrayAttribute(Order=0)]
@@ -1510,23 +1536,23 @@ namespace WarHub.Armoury.Model.BattleScribeXml {
         
         /// <remarks/>
         [System.Xml.Serialization.XmlAttributeAttribute()]
-        public SelectionEntryKind type {
-            get {
-                return this.typeField;
-            }
-            set {
-                this.typeField = value;
-            }
-        }
-        
-        /// <remarks/>
-        [System.Xml.Serialization.XmlAttributeAttribute()]
         public string categoryEntryId {
             get {
                 return this.categoryEntryIdField;
             }
             set {
                 this.categoryEntryIdField = value;
+            }
+        }
+        
+        /// <remarks/>
+        [System.Xml.Serialization.XmlAttributeAttribute()]
+        public SelectionEntryKind type {
+            get {
+                return this.typeField;
+            }
+            set {
+                this.typeField = value;
             }
         }
     }
