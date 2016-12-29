@@ -5,8 +5,8 @@ namespace WarHub.Armoury.Model.BattleScribeXml
 {
     using GuidMapping;
 
-    public interface ICharacteristic : IIdentified, INamed, IGuidControllable
-    {
-        string Value { get; set; }
-    }
+    //public interface ICharacteristic : IIdentified, INamed, IGuidControllable
+    //{
+    //    //string Value { get; set; }
+    //}
 }

@@ -5,10 +5,10 @@ namespace WarHub.Armoury.Model.BattleScribeXml.GuidMapping
 {
     internal static class InfoFormatter
     {
-        public static string CatalogueInfo(Catalogue catalogue)
-        {
-            return CatalogueInfo(catalogue.Name, catalogue.Id);
-        }
+        //public static string CatalogueInfo(Catalogue catalogue)
+        //{
+        //    return CatalogueInfo(catalogue.Name, catalogue.Id);
+        //}
 
         public static string CatalogueInfo(string catalogueId)
         {
@@ -16,10 +16,10 @@ namespace WarHub.Armoury.Model.BattleScribeXml.GuidMapping
                 '{', catalogueId, '}');
         }
 
-        public static string CatalogueInfo(Force link)
-        {
-            return CatalogueInfo(link.CatalogueName, link.CatalogueId);
-        }
+        //public static string CatalogueInfo(Force link)
+        //{
+        //    return CatalogueInfo(link.CatalogueName, link.CatalogueId);
+        //}
 
         public static string CatalogueInfo(string catalogueName, string catalogueId)
         {
@@ -27,10 +27,10 @@ namespace WarHub.Armoury.Model.BattleScribeXml.GuidMapping
                 catalogueName, '{', catalogueId, '}');
         }
 
-        public static string GameSystemInfo(GameSystem gameSystem)
-        {
-            return GameSystemInfo(gameSystem.Name, gameSystem.Id);
-        }
+        //public static string GameSystemInfo(GameSystem gameSystem)
+        //{
+        //    return GameSystemInfo(gameSystem.Name, gameSystem.Id);
+        //}
 
         public static string GameSystemInfo(string gameSystemName, string gameSystemId)
         {
@@ -44,10 +44,10 @@ namespace WarHub.Armoury.Model.BattleScribeXml.GuidMapping
                 '{', gameSystemId, '}');
         }
 
-        public static string RosterInfo(Roster roster)
-        {
-            return string.Format("Roster '{0}' id={1}{2}{3}",
-                roster.Name, '{', roster.Id, '}');
-        }
+        //public static string RosterInfo(Roster roster)
+        //{
+        //    return string.Format("Roster '{0}' id={1}{2}{3}",
+        //        roster.Name, '{', roster.Id, '}');
+        //}
     }
 }

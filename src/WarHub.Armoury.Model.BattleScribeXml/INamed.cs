@@ -5,6 +5,6 @@ namespace WarHub.Armoury.Model.BattleScribeXml
 {
     public interface INamed
     {
-        string Name { get; set; }
+        //string Name { get; set; }
     }
 }

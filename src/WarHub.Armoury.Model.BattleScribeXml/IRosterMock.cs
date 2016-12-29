@@ -7,12 +7,12 @@ namespace WarHub.Armoury.Model.BattleScribeXml
     using System.Collections.Generic;
     using GuidMapping;
 
-    public interface IRosterMock : INamed, IBookIndexed, IGuidControllable
-    {
-        string Id { get; set; }
+    //public interface IRosterMock : INamed, IBookIndexed, IGuidControllable
+    //{
+    //    //string Id { get; set; }
 
-        List<Guid> Guids { get; set; }
+    //    //List<Guid> Guids { get; set; }
 
-        bool Hidden { get; set; }
-    }
+    //    //bool Hidden { get; set; }
+    //}
 }

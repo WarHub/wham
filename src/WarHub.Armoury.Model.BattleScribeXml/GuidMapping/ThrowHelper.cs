@@ -5,50 +5,50 @@ namespace WarHub.Armoury.Model.BattleScribeXml.GuidMapping
 {
     internal static class ThrowHelper
     {
-        public static void ThrowForAlreadyProcessed(
-            GameSystem toProcess,
-            GameSystem alreadyProcessed)
-        {
-            ThrowForAlreadyProcessed(
-                InfoFormatter.GameSystemInfo(toProcess),
-                InfoFormatter.GameSystemInfo(alreadyProcessed));
-        }
+        //public static void ThrowForAlreadyProcessed(
+        //    GameSystem toProcess,
+        //    GameSystem alreadyProcessed)
+        //{
+        //    ThrowForAlreadyProcessed(
+        //        InfoFormatter.GameSystemInfo(toProcess),
+        //        InfoFormatter.GameSystemInfo(alreadyProcessed));
+        //}
 
-        public static void ThrowForAlreadyProcessed(
-            Catalogue toProcess,
-            Catalogue alreadyProcessed)
-        {
-            ThrowForAlreadyProcessed(
-                InfoFormatter.CatalogueInfo(toProcess),
-                InfoFormatter.CatalogueInfo(alreadyProcessed));
-        }
+        //public static void ThrowForAlreadyProcessed(
+        //    Catalogue toProcess,
+        //    Catalogue alreadyProcessed)
+        //{
+        //    ThrowForAlreadyProcessed(
+        //        InfoFormatter.CatalogueInfo(toProcess),
+        //        InfoFormatter.CatalogueInfo(alreadyProcessed));
+        //}
 
-        public static void ThrowForAlreadyProcessed(
-            Roster toProcess,
-            Roster alreadyProcessed)
-        {
-            ThrowForAlreadyProcessed(
-                InfoFormatter.RosterInfo(toProcess),
-                InfoFormatter.RosterInfo(alreadyProcessed));
-        }
+        //public static void ThrowForAlreadyProcessed(
+        //    Roster toProcess,
+        //    Roster alreadyProcessed)
+        //{
+        //    ThrowForAlreadyProcessed(
+        //        InfoFormatter.RosterInfo(toProcess),
+        //        InfoFormatter.RosterInfo(alreadyProcessed));
+        //}
 
-        public static void ThrowForBadGameSystem(string exceptionSourceInfo,
-            GameSystem gameSystem, string neededGstInfo)
-        {
-            var msg = string.Format("{0} can't be processed using {1}. {2} is needed",
-                exceptionSourceInfo,
-                InfoFormatter.GameSystemInfo(gameSystem),
-                neededGstInfo);
-            throw new ProcessingFailedException(msg);
-        }
+        //public static void ThrowForBadGameSystem(string exceptionSourceInfo,
+        //    GameSystem gameSystem, string neededGstInfo)
+        //{
+        //    var msg = string.Format("{0} can't be processed using {1}. {2} is needed",
+        //        exceptionSourceInfo,
+        //        InfoFormatter.GameSystemInfo(gameSystem),
+        //        neededGstInfo);
+        //    throw new ProcessingFailedException(msg);
+        //}
 
-        public static void ThrowForCatalogueNotLoaded(Roster roster, Force link)
-        {
-            var msg = string.Format("{0} (for not-Readonly mode) requires {1} to be loaded first.",
-                InfoFormatter.RosterInfo(roster),
-                InfoFormatter.CatalogueInfo(link));
-            throw new ProcessingFailedException(msg);
-        }
+        //public static void ThrowForCatalogueNotLoaded(Roster roster, Force link)
+        //{
+        //    var msg = string.Format("{0} (for not-Readonly mode) requires {1} to be loaded first.",
+        //        InfoFormatter.RosterInfo(roster),
+        //        InfoFormatter.CatalogueInfo(link));
+        //    throw new ProcessingFailedException(msg);
+        //}
 
         public static void ThrowForNoGameSystem(string exceptionSourceInfo, string gstInfo)
         {
@@ -58,20 +58,20 @@ namespace WarHub.Armoury.Model.BattleScribeXml.GuidMapping
             throw new ProcessingFailedException(msg);
         }
 
-        public static void ThrowForNotProcessed(Roster roster)
-        {
-            ThrowForNotProcessed(InfoFormatter.RosterInfo(roster));
-        }
+        //public static void ThrowForNotProcessed(Roster roster)
+        //{
+        //    ThrowForNotProcessed(InfoFormatter.RosterInfo(roster));
+        //}
 
-        public static void ThrowForNotProcessed(Catalogue catalogue)
-        {
-            ThrowForNotProcessed(InfoFormatter.CatalogueInfo(catalogue));
-        }
+        //public static void ThrowForNotProcessed(Catalogue catalogue)
+        //{
+        //    ThrowForNotProcessed(InfoFormatter.CatalogueInfo(catalogue));
+        //}
 
-        public static void ThrowForNotProcessed(GameSystem gameSystem)
-        {
-            ThrowForNotProcessed(InfoFormatter.GameSystemInfo(gameSystem));
-        }
+        //public static void ThrowForNotProcessed(GameSystem gameSystem)
+        //{
+        //    ThrowForNotProcessed(InfoFormatter.GameSystemInfo(gameSystem));
+        //}
 
         private static void ThrowForAlreadyProcessed(string toProcessInfo, string alreadyProcessedInfo)
         {

@@ -6,32 +6,32 @@ namespace WarHub.Armoury.Model.BattleScribeXml
     using System.Collections.Generic;
     using GuidMapping;
 
-    public interface IEntryBase : IIdentified, INamed, IGuidControllable
-    {
-        int MinSelections { get; set; }
+    //public interface IEntryBase : IIdentified, INamed, IGuidControllable
+    //{
+    //    int MinSelections { get; set; }
 
-        int MaxSelections { get; set; }
+    //    int MaxSelections { get; set; }
 
-        int MinInForce { get; set; }
+    //    int MinInForce { get; set; }
 
-        int MaxInForce { get; set; }
+    //    int MaxInForce { get; set; }
 
-        int MinInRoster { get; set; }
+    //    int MinInRoster { get; set; }
 
-        int MaxInRoster { get; set; }
+    //    int MaxInRoster { get; set; }
 
-        decimal MinPoints { get; set; }
+    //    decimal MinPoints { get; set; }
 
-        decimal MaxPoints { get; set; }
+    //    decimal MaxPoints { get; set; }
 
-        bool Collective { get; set; }
+    //    bool Collective { get; set; }
 
-        bool Hidden { get; set; }
+    //    bool Hidden { get; set; }
 
-        List<Entry> Entries { get; set; }
+    //    List<Entry> Entries { get; set; }
 
-        List<EntryGroup> EntryGroups { get; set; }
+    //    List<EntryGroup> EntryGroups { get; set; }
 
-        LinkList Links { get; set; }
-    }
+    //    LinkList Links { get; set; }
+    //}
 }

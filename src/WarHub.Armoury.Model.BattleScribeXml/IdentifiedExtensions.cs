@@ -10,8 +10,8 @@ namespace WarHub.Armoury.Model.BattleScribeXml
     {
         public static TIdentified SetNewGuid<TIdentified>(this TIdentified identified) where TIdentified : IIdentified
         {
-            identified.Guid = Guid.NewGuid();
-            identified.Id = identified.Guid.ToString(SampleDataInfos.GuidFormat);
+            //identified.Guid = Guid.NewGuid();
+            //identified.Id = identified.Guid.ToString(SampleDataInfos.GuidFormat);
             return identified;
         }
     }

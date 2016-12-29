@@ -8,8 +8,8 @@ namespace WarHub.Armoury.Model.BattleScribeXml
 
     public interface IIdentified : INotifyGuidChanged
     {
-        Guid Guid { get; set; }
+        //Guid Guid { get; set; }
 
-        string Id { get; set; }
+        //string Id { get; set; }
     }
 }

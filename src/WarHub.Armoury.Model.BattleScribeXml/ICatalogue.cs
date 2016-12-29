@@ -5,12 +5,12 @@ namespace WarHub.Armoury.Model.BattleScribeXml
 {
     using GuidMapping;
 
-    public interface ICatalogue : IIdentified, INamed, IAuthorable, IGuidControllable
-    {
-        uint Revision { get; set; }
+    //public interface ICatalogue : IIdentified, INamed, IAuthorable, IGuidControllable
+    //{
+    //    uint Revision { get; set; }
 
-        string BattleScribeVersion { get; set; }
+    //    string BattleScribeVersion { get; set; }
 
-        string Books { get; set; }
-    }
+    //    string Books { get; set; }
+    //}
 }

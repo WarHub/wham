@@ -3,15 +3,15 @@
 
 namespace WarHub.Armoury.Model.BattleScribeXml.GuidMapping
 {
-    public interface IGuidControllable
-    {
-        GuidController Controller { get; }
+    //public interface IGuidControllable
+    //{
+    //    GuidController Controller { get; }
 
-        /// <summary>
-        ///     Sets Controller property, parses all ids (subscribing controller to changes) and
-        ///     processes all children.
-        /// </summary>
-        /// <param name="controller"></param>
-        void Process(GuidController controller);
-    }
+    //    /// <summary>
+    //    ///     Sets Controller property, parses all ids (subscribing controller to changes) and
+    //    ///     processes all children.
+    //    /// </summary>
+    //    /// <param name="controller"></param>
+    //    void Process(GuidController controller);
+    //}
 }
