@@ -1,50 +1,22 @@
 {
-  "version": "0.3.2-*",
+  "version": "0.4.0-*",
   "description": "wham Builders.Implementations provides implementation of Builder structures that follow and update wham (WarHub.Armoury.Model) roster data according to active modifiers, conditions etc.",
   "authors": [ "WarHub" ],
 
-  "dependencies": {
-    "WarHub.Armoury.Model": "0.3.2-*",
-    "WarHub.Armoury.Model.Builders": "0.3.2-*",
-    "WarHub.Armoury.Model.ConditionResolvers": "0.3.2-*",
-    "WarHub.Armoury.Model.ModifierAppliers": "0.3.2-*",
-    "WarHub.Mvvm": "1.0.1"
-  },
-
   "frameworks": {
-    "netcoreapp1.0": {
+    "netstandard1.2": {
       "imports": [
-        "dnxcore50",
-        "portable-net45+win8"
-      ],
-      "dependencies": {
-        "Microsoft.NETCore.App": {
-          "type": "platform",
-          "version": "1.0.0-rc2-3002702"
-        }
-      }
-    },
-
-    "netcore45": {
-      "frameworkAssemblies": {
-        "System": "",
-        "System.Collections": "",
-        "System.Core": "",
-        "System.Diagnostics.Debug": "",
-        "System.Linq": "",
-        "System.Reflection": "",
-        "System.Runtime": ""
-      }
-    },
-
-    ".NETPortable,Version=v4.5,Profile=Profile259": {
-      "frameworkAssemblies": {
-        "System.Collections": "",
-        "System.Diagnostics.Debug": "",
-        "System.Linq": "",
-        "System.Runtime": ""
-      }
+        "portable-net45+win8+wp8"
+      ]
     }
+  },
+  "dependencies": {
+    "NETStandard.Library": "1.6.1",
+    "WarHub.Armoury.Model": "0.4.0-*",
+    "WarHub.Armoury.Model.Builders": "0.4.0-*",
+    "WarHub.Armoury.Model.ConditionResolvers": "0.4.0-*",
+    "WarHub.Armoury.Model.ModifierAppliers": "0.4.0-*",
+    "WarHub.Mvvm": "1.0.1"
   },
 
   "packOptions": {

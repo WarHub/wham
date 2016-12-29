@@ -1,68 +1,15 @@
 {
-  "version": "0.3.2-*",
+  "version": "0.4.0-*",
   "description": "wham BattleScribe data format binding.",
   "authors": [ "WarHub" ],
 
   "frameworks": {
-    "netcoreapp1.0": {
-      "imports": "dnxcore50",
-      "dependencies": {
-        "Microsoft.NETCore.App": {
-          "type": "platform",
-          "version": "1.0.0-rc2-3002702"
-        }
-      }
-    },
-
-    "netcore45": {
-      "frameworkAssemblies": {
-        "System": "",
-        "System.Collections": "",
-        "System.ComponentModel": "",
-        "System.Core": "",
-        "System.Diagnostics.Debug": "",
-        "System.IO": "",
-        "System.Linq": "",
-        "System.ObjectModel": "",
-        "System.Reflection": "",
-        "System.Reflection.Extensions": "",
-        "System.Runtime": "",
-        "System.Text.Encoding": "",
-        "System.Text.RegularExpressions": "",
-        "System.Threading": "",
-        "System.Threading.Tasks": "",
-        "System.Xml": "",
-        "System.Xml.ReaderWriter": "",
-        "System.Xml.XmlSerializer": ""
-      }
-    },
-
-    ".NETPortable,Version=v4.5,Profile=Profile259": {
-      "frameworkAssemblies": {
-        "System": "",
-        "System.Collections": "",
-        "System.ComponentModel": "",
-        "System.Core": "",
-        "System.Diagnostics.Debug": "",
-        "System.IO": "",
-        "System.Linq": "",
-        "System.ObjectModel": "",
-        "System.Reflection": "",
-        "System.Reflection.Extensions": "",
-        "System.Runtime": "",
-        "System.Text.Encoding": "",
-        "System.Text.RegularExpressions": "",
-        "System.Threading": "",
-        "System.Threading.Tasks": "",
-        "System.Xml": "",
-        "System.Xml.ReaderWriter": "",
-        "System.Xml.XmlSerializer": ""
-      }
-    }
+    "netstandard1.2": {}
   },
   "dependencies": {
-    "WarHub.Armoury.Model": "0.3.2-*",
-    "WarHub.Armoury.Model.BattleScribeXml": "0.3.2-*"
+    "NETStandard.Library": "1.6.1",
+    "WarHub.Armoury.Model": "0.4.0-*",
+    "WarHub.Armoury.Model.BattleScribeXml": "0.4.0-*"
   },
   "packOptions": {
     "licenseUrl": "https://github.com/WarHub/wham/blob/master/LICENSE",

@@ -1,52 +1,22 @@
 {
-  "version": "0.3.2-*",
+  "version": "0.4.0-*",
   "description": "wham DataAccess library provides portable data storage and data access API, to allow cross-platform, simple experience with wham libs.",
   "authors": [ "WarHub" ],
+
   "frameworks": {
-    "netcore45": {
-      "frameworkAssemblies": {
-        "System": "",
-        "System.Collections": "",
-        "System.ComponentModel": "",
-        "System.Core": "",
-        "System.IO": "",
-        "System.Linq": "",
-        "System.Net.Http": "",
-        "System.ObjectModel": "",
-        "System.Reflection": "",
-        "System.Reflection.Extensions": "",
-        "System.Runtime": "",
-        "System.Threading.Tasks": "",
-        "System.Xml": "",
-        "System.Xml.ReaderWriter": "",
-        "System.Xml.XmlSerializer": ""
-      }
-    },
-    ".NETPortable,Version=v4.5,Profile=Profile111": {
-      "frameworkAssemblies": {
-        "System": "",
-        "System.Collections": "",
-        "System.ComponentModel": "",
-        "System.Core": "",
-        "System.IO": "",
-        "System.Linq": "",
-        "System.Net.Http": "",
-        "System.ObjectModel": "",
-        "System.Reflection": "",
-        "System.Reflection.Extensions": "",
-        "System.Runtime": "",
-        "System.Threading.Tasks": "",
-        "System.Xml": "",
-        "System.Xml.ReaderWriter": "",
-        "System.Xml.XmlSerializer": ""
-      }
-    }
+    "netstandard1.2": {
+      "imports": [
+        "portable-net45+win8+wp8"
+      ]
+    } 
   },
   "dependencies": {
-    "WarHub.Armoury.Model": "0.3.2-*",
-    "WarHub.Armoury.Model.BattleScribe.Files": "0.3.2-*",
+    "NETStandard.Library": "1.6.1",
+    "WarHub.Armoury.Model": "0.4.0-*",
+    "WarHub.Armoury.Model.BattleScribe.Files": "0.4.0-*",
     "PCLStorage": "1.0.2"
   },
+
   "packOptions": {
     "licenseUrl": "https://github.com/WarHub/wham/blob/master/LICENSE",
     "owners": [ "WarHub" ],

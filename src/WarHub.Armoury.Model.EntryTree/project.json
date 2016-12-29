@@ -1,43 +1,15 @@
 {
-  "version": "0.3.2-*",
+  "version": "0.4.0-*",
   "description": "wham EntryTree provides tree structure of entry/entrygroup choices in given entry. Helpful for immediate resolution which group was parent for some child selection.",
   "authors": [ "WarHub" ],
 
   "dependencies": {
-    "WarHub.Armoury.Model": "0.3.2-*"
+    "NETStandard.Library": "1.6.1",
+    "WarHub.Armoury.Model": "0.4.0-*"
   },
 
   "frameworks": {
-    "netcoreapp1.0": {
-      "imports": "dnxcore50",
-      "dependencies": {
-        "Microsoft.NETCore.App": {
-          "type": "platform",
-          "version": "1.0.0-rc2-3002702"
-        }
-      }
-    },
-
-    "netcore45": {
-      "frameworkAssemblies": {
-        "System": "",
-        "System.Collections": "",
-        "System.Core": "",
-        "System.Diagnostics.Debug": "",
-        "System.Linq": "",
-        "System.Reflection": "",
-        "System.Runtime": ""
-      }
-    },
-
-    ".NETPortable,Version=v4.5,Profile=Profile259": {
-      "frameworkAssemblies": {
-        "System.Collections": "",
-        "System.Diagnostics.Debug": "",
-        "System.Linq": "",
-        "System.Runtime": ""
-      }
-    }
+    "netstandard1.2": {}
   },
 
   "packOptions": {

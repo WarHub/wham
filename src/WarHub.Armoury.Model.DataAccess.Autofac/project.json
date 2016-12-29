@@ -1,51 +1,21 @@
 {
-  "version": "0.3.2-*",
+  "version": "0.4.0-*",
   "description": "wham DataAccess Autofac Module. Provides IoC configuration for DataAccess library.",
   "authors": [ "WarHub" ],
+
   "frameworks": {
-    "netcore45": {
-      "frameworkAssemblies": {
-        "System": "",
-        "System.Collections": "",
-        "System.ComponentModel": "",
-        "System.Core": "",
-        "System.IO": "",
-        "System.Linq": "",
-        "System.Net.Http": "",
-        "System.ObjectModel": "",
-        "System.Reflection": "",
-        "System.Reflection.Extensions": "",
-        "System.Runtime": "",
-        "System.Threading.Tasks": "",
-        "System.Xml": "",
-        "System.Xml.ReaderWriter": "",
-        "System.Xml.XmlSerializer": ""
-      }
-    },
-    ".NETPortable,Version=v4.5,Profile=Profile111": {
-      "frameworkAssemblies": {
-        "System": "",
-        "System.Collections": "",
-        "System.ComponentModel": "",
-        "System.Core": "",
-        "System.IO": "",
-        "System.Linq": "",
-        "System.Net.Http": "",
-        "System.ObjectModel": "",
-        "System.Reflection": "",
-        "System.Reflection.Extensions": "",
-        "System.Runtime": "",
-        "System.Threading.Tasks": "",
-        "System.Xml": "",
-        "System.Xml.ReaderWriter": "",
-        "System.Xml.XmlSerializer": ""
-      }
+    "netstandard1.2": {
+      "imports": [
+        "portable-net45+win8+wp8"
+      ]
     }
   },
   "dependencies": {
-    "Autofac": "3.5.2",
-    "WarHub.Armoury.Model.DataAccess": "0.3.2-*"
+    "NETStandard.Library": "1.6.1",
+    "Autofac": "4.2.1",
+    "WarHub.Armoury.Model.DataAccess": "0.4.0-*"
   },
+
   "packOptions": {
     "licenseUrl": "https://github.com/WarHub/wham/blob/master/LICENSE",
     "owners": [ "WarHub" ],
