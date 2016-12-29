@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xs:schema attributeFormDefault="unqualified" elementFormDefault="qualified" xmlns:xs="http://www.w3.org/2001/XMLSchema"
            targetNamespace="http://www.battlescribe.net/schema/catalogueSchema"
-           xmlns="http://www.battlescribe.net/schema/catalogueSchema">
+           xmlns:cs="http://www.battlescribe.net/schema/catalogueSchema">
   
-  <!--schema for BattleScribe (c) Jon Taylor, version 2.00, datafiles (catalogues and game systems)-->
+  <!--schema for BattleScribe [version 2.00, (c) Jon Taylor] datafiles (catalogues and game systems)-->
+  <!--schema file author: Amadeusz Sadowski-->
 
   <xs:simpleType name="idtype">
     <xs:restriction base="xs:string" />
@@ -11,88 +12,92 @@
   
   <!--profile types-->
   <xs:complexType name="characteristicTypetype">
-    <xs:attribute name="id" type="idtype" />
+    <xs:attribute name="id" type="cs:idtype" />
     <xs:attribute name="name" type="xs:string" />
   </xs:complexType>
 
   <xs:complexType name="characteristicTypestype">
     <xs:sequence>
-      <xs:element name="characteristicType" type="characteristicTypetype" minOccurs="0" maxOccurs="unbounded" />
+      <xs:element name="characteristicType" type="cs:characteristicTypetype" minOccurs="0" maxOccurs="unbounded" />
     </xs:sequence>
   </xs:complexType>
 
   <xs:complexType name="profileTypetype">
     <xs:sequence>
-      <xs:element name="characteristicTypes" type="characteristicTypestype" />
+      <xs:element name="characteristicTypes" type="cs:characteristicTypestype" />
     </xs:sequence>
-    <xs:attribute name="id" type="idtype" />
+    <xs:attribute name="id" type="cs:idtype" />
     <xs:attribute name="name" type="xs:string" />
   </xs:complexType>
 
   <xs:complexType name="profileTypestype">
     <xs:sequence>
-      <xs:element name="profileType" type="profileTypetype" minOccurs="0" maxOccurs="unbounded" />
+      <xs:element name="profileType" type="cs:profileTypetype" minOccurs="0" maxOccurs="unbounded" />
     </xs:sequence>
   </xs:complexType>
   
   <!--cost type-->
   <xs:complexType name="costTypetype">
-    <xs:attribute name="id" type="idtype" use="required" />
+    <xs:attribute name="id" type="cs:idtype" use="required" />
     <xs:attribute name="name" type="xs:string" use="required" />
     <xs:attribute name="defaultCostLimit" type="xs:decimal" use="required" fixed="0.0" />
   </xs:complexType>
 
   <xs:complexType name="costTypestype">
     <xs:sequence>
-      <xs:element name="costType" type="costTypetype" minOccurs="0" maxOccurs="unbounded" />
+      <xs:element name="costType" type="cs:costTypetype" minOccurs="0" maxOccurs="unbounded" />
     </xs:sequence>
   </xs:complexType>
   
   <!--basics-->
-  <xs:attributeGroup name="baseinfoattrgroup">
-    <xs:attribute name="id" type="idtype" use="required" />
-    <xs:attribute name="name" type="xs:string" use="required" />
+  <xs:attributeGroup name="BookReferenceAttGroup">
     <xs:attribute name="book" type="xs:string" use="optional" />
     <xs:attribute name="page" type="xs:string" use="optional" />
+  </xs:attributeGroup>
+
+  <xs:attributeGroup name="baseinfoattrgroup">
+    <xs:attribute name="id" type="cs:idtype" use="required" />
+    <xs:attribute name="name" type="xs:string" use="optional" />
+    <xs:attributeGroup ref="cs:BookReferenceAttGroup" />
     <xs:attribute name="hidden" type="xs:boolean" use="required" />
   </xs:attributeGroup>
 
   <xs:group name="basicinfonodes">
     <xs:sequence>
-      <xs:element name="profiles" type="profilestype" />
-      <xs:element name="rules" type="rulestype" />
-      <xs:element name="infoLinks" type="infoLinkstype" />
-      <xs:element name="modifiers" type="modifierstype" />
+      <xs:element name="profiles" type="cs:profilestype" />
+      <xs:element name="rules" type="cs:rulestype" />
+      <xs:element name="infoLinks" type="cs:infoLinkstype" />
+      <xs:element name="modifiers" type="cs:modifierstype" />
     </xs:sequence>
   </xs:group>
 
   <xs:complexType name="baseEntrytype">
     <xs:sequence>
-      <xs:group ref="basicinfonodes" />
+      <xs:group ref="cs:basicinfonodes" />
     </xs:sequence>
-    <xs:attributeGroup ref="baseinfoattrgroup" />
+    <xs:attributeGroup ref="cs:baseinfoattrgroup" />
   </xs:complexType>
   
   <!--profile-->
   <xs:complexType name="characteristictype">
     <xs:attribute name="name" type="xs:string" use="required" />
-    <xs:attribute name="characteristicTypeId" type="idtype" use="required" />
+    <xs:attribute name="characteristicTypeId" type="cs:idtype" use="required" />
     <xs:attribute name="value" type="xs:string" use="optional" />
   </xs:complexType>
 
   <xs:complexType name="characteristicstype">
     <xs:sequence>
-      <xs:element name="characteristic" type="characteristictype" minOccurs="0" maxOccurs="unbounded" />
+      <xs:element name="characteristic" type="cs:characteristictype" minOccurs="0" maxOccurs="unbounded" />
     </xs:sequence>
   </xs:complexType>
   
   <xs:complexType name="profiletype">
     <xs:complexContent>
-      <xs:extension base="baseEntrytype">
+      <xs:extension base="cs:baseEntrytype">
         <xs:sequence>
-          <xs:element name="characteristics" type="characteristicstype" />
+          <xs:element name="characteristics" type="cs:characteristicstype" />
         </xs:sequence>
-        <xs:attribute name="profileTypeId" type="idtype" use="required" />
+        <xs:attribute name="profileTypeId" type="cs:idtype" use="required" />
         <xs:attribute name="profileTypeName" type="xs:string" use="optional" />
       </xs:extension>
     </xs:complexContent>
@@ -100,16 +105,16 @@
 
   <xs:complexType name="profilestype">
     <xs:sequence>
-      <xs:element name="profile" type="profiletype" minOccurs="0" maxOccurs="unbounded" />
+      <xs:element name="profile" type="cs:profiletype" minOccurs="0" maxOccurs="unbounded" />
     </xs:sequence>
   </xs:complexType>
 
   <!--rule-->
   <xs:complexType name="ruletype">
     <xs:complexContent>
-      <xs:extension base="baseEntrytype">
+      <xs:extension base="cs:baseEntrytype">
         <xs:sequence>
-          <xs:element name="description" type="xs:string" />
+          <xs:element name="description" type="xs:string" minOccurs="0" />
         </xs:sequence>
       </xs:extension>
     </xs:complexContent>
@@ -117,7 +122,7 @@
 
   <xs:complexType name="rulestype">
     <xs:sequence>
-      <xs:element name="rule" type="ruletype" minOccurs="0" maxOccurs="unbounded" />
+      <xs:element name="rule" type="cs:ruletype" minOccurs="0" maxOccurs="unbounded" />
     </xs:sequence>
   </xs:complexType>
   
@@ -131,25 +136,25 @@
 
   <xs:complexType name="infoLinktype">
     <xs:complexContent>
-      <xs:extension base="baseEntrytype">
-        <xs:attribute name="targetId" type="idtype" use="required" />
-        <xs:attribute name="type" type="infolinktypeattrtype" />
+      <xs:extension base="cs:baseEntrytype">
+        <xs:attribute name="targetId" type="cs:idtype" use="required" />
+        <xs:attribute name="type" type="cs:infolinktypeattrtype" />
       </xs:extension>
     </xs:complexContent>
   </xs:complexType>
 
   <xs:complexType name="infoLinkstype">
     <xs:sequence>
-      <xs:element name="infoLink" type="infoLinktype" minOccurs="0" maxOccurs="unbounded" />
+      <xs:element name="infoLink" type="cs:infoLinktype" minOccurs="0" maxOccurs="unbounded" />
     </xs:sequence>
   </xs:complexType>
 
   <!--forceEntry-->
   <xs:complexType name="categoryEntrytype">
     <xs:complexContent>
-      <xs:extension base="baseEntrytype">
+      <xs:extension base="cs:baseEntrytype">
         <xs:sequence>
-          <xs:element name="constraints" type="constraintstype" />
+          <xs:element name="constraints" type="cs:constraintstype" />
         </xs:sequence>
       </xs:extension>
     </xs:complexContent>
@@ -157,17 +162,17 @@
 
   <xs:complexType name="categoryEntriestype">
     <xs:sequence>
-      <xs:element name="categoryEntry" type="categoryEntrytype" minOccurs="0" maxOccurs="unbounded" />
+      <xs:element name="categoryEntry" type="cs:categoryEntrytype" minOccurs="0" maxOccurs="unbounded" />
     </xs:sequence>
   </xs:complexType>
 
   <xs:complexType name="forceEntrytype">
     <xs:complexContent>
-      <xs:extension base="baseEntrytype">
+      <xs:extension base="cs:baseEntrytype">
         <xs:sequence>
-          <xs:element name="constraints" type="constraintstype" />
-          <xs:element name="categoryEntries" type="categoryEntriestype" />
-          <xs:element name="forceEntries" type="forceEntriestype" />
+          <xs:element name="constraints" type="cs:constraintstype" />
+          <xs:element name="categoryEntries" type="cs:categoryEntriestype" />
+          <xs:element name="forceEntries" type="cs:forceEntriestype" />
         </xs:sequence>
       </xs:extension>
     </xs:complexContent>
@@ -175,20 +180,20 @@
 
   <xs:complexType name="forceEntriestype">
     <xs:sequence>
-      <xs:element name="forceEntry" type="forceEntrytype" minOccurs="0" maxOccurs="unbounded" />
+      <xs:element name="forceEntry" type="cs:forceEntrytype" minOccurs="0" maxOccurs="unbounded" />
     </xs:sequence>
   </xs:complexType>
   
   <!--costs-->
   <xs:complexType name="costtype">
     <xs:attribute name="name" type="xs:string" use="required" />
-    <xs:attribute name="costTypeId" type="idtype" use="required" />
+    <xs:attribute name="costTypeId" type="cs:idtype" use="required" />
     <xs:attribute name="value" type="xs:decimal" use="required" />
   </xs:complexType>
 
   <xs:complexType name="coststype">
     <xs:sequence>
-      <xs:element name="cost" type="costtype" minOccurs="0" maxOccurs="unbounded" />
+      <xs:element name="cost" type="cs:costtype" minOccurs="0" maxOccurs="unbounded" />
     </xs:sequence>
   </xs:complexType>
 
@@ -203,45 +208,46 @@
   
   <xs:complexType name="selectionEntrytype">
     <xs:complexContent>
-      <xs:extension base="baseEntrytype">
+      <xs:extension base="cs:baseEntrytype">
         <xs:sequence>
-          <xs:element name="constraints" type="constraintstype" />
-          <xs:element name="selectionEntries" type="selectionEntriestype" />
-          <xs:element name="selectionEntryGroups" type="selectionEntryGroupstype" />
-          <xs:element name="entryLinks" type="entryLinkstype" />
-          <xs:element name="costs" type="coststype" />
+          <xs:element name="constraints" type="cs:constraintstype" />
+          <xs:element name="selectionEntries" type="cs:selectionEntriestype" />
+          <xs:element name="selectionEntryGroups" type="cs:selectionEntryGroupstype" />
+          <xs:element name="entryLinks" type="cs:entryLinkstype" />
+          <xs:element name="costs" type="cs:coststype" />
         </xs:sequence>
         <xs:attribute name="collective" type="xs:boolean" use="required" />
-        <xs:attribute name="type" type="selectionEntryTypeattrvaluetype" use="required" />
+        <xs:attribute name="type" type="cs:selectionEntryTypeattrvaluetype" use="required" />
+        <xs:attribute name="categoryEntryId" type="cs:idtype" use="optional" />
       </xs:extension>
     </xs:complexContent>
   </xs:complexType>
 
   <xs:complexType name="selectionEntriestype">
     <xs:sequence>
-      <xs:element name="selectionEntry" type="selectionEntrytype" minOccurs="0" maxOccurs="unbounded" />
+      <xs:element name="selectionEntry" type="cs:selectionEntrytype" minOccurs="0" maxOccurs="unbounded" />
     </xs:sequence>
   </xs:complexType>
 
   <!--selectionEntryGroup-->
   <xs:complexType name="selectionEntryGrouptype">
     <xs:complexContent>
-      <xs:extension base="baseEntrytype">
+      <xs:extension base="cs:baseEntrytype">
         <xs:sequence>
-          <xs:element name="constraints" type="constraintstype" />
-          <xs:element name="selectionEntries" type="selectionEntriestype" />
-          <xs:element name="selectionEntryGroups" type="selectionEntryGroupstype" />
-          <xs:element name="entryLinks" type="entryLinkstype" />
+          <xs:element name="constraints" type="cs:constraintstype" />
+          <xs:element name="selectionEntries" type="cs:selectionEntriestype" />
+          <xs:element name="selectionEntryGroups" type="cs:selectionEntryGroupstype" />
+          <xs:element name="entryLinks" type="cs:entryLinkstype" />
         </xs:sequence>
         <xs:attribute name="collective" type="xs:boolean" use="required" />
-        <xs:attribute name="defaultSelectionEntryId" type="idtype" use="optional" />
+        <xs:attribute name="defaultSelectionEntryId" type="cs:idtype" use="optional" />
       </xs:extension>
     </xs:complexContent>
   </xs:complexType>
 
   <xs:complexType name="selectionEntryGroupstype">
     <xs:sequence>
-      <xs:element name="selectionEntryGroup" type="selectionEntryGrouptype" minOccurs="0" maxOccurs="unbounded" />
+      <xs:element name="selectionEntryGroup" type="cs:selectionEntryGrouptype" minOccurs="0" maxOccurs="unbounded" />
     </xs:sequence>
   </xs:complexType>
 
@@ -255,52 +261,61 @@
   
   <xs:complexType name="entryLinktype">
     <xs:complexContent>
-      <xs:extension base="baseEntrytype">
+      <xs:extension base="cs:baseEntrytype">
         <xs:sequence>
-          <xs:element name="constraints" type="constraintstype" />
+          <xs:element name="constraints" type="cs:constraintstype" />
         </xs:sequence>
-        <xs:attribute name="targetId" type="idtype" use="required" />
-        <xs:attribute name="type" type="entryLinkTypeattrvaluetype" use="required" />
+        <xs:attribute name="targetId" type="cs:idtype" use="required" />
+        <xs:attribute name="type" type="cs:entryLinkTypeattrvaluetype" use="required" />
       </xs:extension>
     </xs:complexContent>
   </xs:complexType>
 
   <xs:complexType name="entryLinkstype">
     <xs:sequence>
-      <xs:element name="entryLink" type="entryLinktype" minOccurs="0" maxOccurs="unbounded" />
+      <xs:element name="entryLink" type="cs:entryLinktype" minOccurs="0" maxOccurs="unbounded" />
     </xs:sequence>
   </xs:complexType>
 
   <xs:complexType name="rootentryLinktype">
     <xs:complexContent>
-      <xs:extension base="entryLinktype">
-        <xs:attribute name="categoryEntryId" type="idtype" use="required" />
+      <xs:extension base="cs:entryLinktype">
+        <xs:attribute name="categoryEntryId" type="cs:idtype" use="required" />
       </xs:extension>
     </xs:complexContent>
   </xs:complexType>
 
   <xs:complexType name="rootentryLinkstype">
     <xs:sequence>
-      <xs:element name="entryLink" type="rootentryLinktype" minOccurs="0" maxOccurs="unbounded" />
+      <xs:element name="entryLink" type="cs:rootentryLinktype" minOccurs="0" maxOccurs="unbounded" />
     </xs:sequence>
   </xs:complexType>
-
-  <!--constraints-->
-  <xs:complexType name="constrainttype">
-    <xs:attribute name="field" type="xs:string" /><!--TODO is this enumeration?-->
+  
+  <!--selector base-->
+  <xs:complexType name="baseSelectortype">
+    <!--TODO is this enumeration?-->
+    <xs:attribute name="field" type="xs:string" />
     <xs:attribute name="scope" type="xs:string" use="required" />
     <xs:attribute name="value" type="xs:decimal" use="required" />
     <xs:attribute name="percentValue" type="xs:boolean" use="required" />
     <xs:attribute name="shared" type="xs:boolean" use="required" />
     <xs:attribute name="includeChildSelections" type="xs:boolean" use="required" />
     <xs:attribute name="includeChildForces" type="xs:boolean" use="required" />
-    <xs:attribute name="id" type="idtype" use="required" />
-    <xs:attribute name="type" type="constraintTypeattrvaluetype" use="required" />
+  </xs:complexType>
+
+  <!--constraints-->
+  <xs:complexType name="constrainttype">
+    <xs:complexContent>
+      <xs:extension base="cs:baseSelectortype">
+        <xs:attribute name="id" type="cs:idtype" use="required" />
+        <xs:attribute name="type" type="cs:constraintTypeattrvaluetype" use="required" />
+      </xs:extension>
+    </xs:complexContent>
   </xs:complexType>
 
   <xs:complexType name="constraintstype">
     <xs:sequence>
-      <xs:element name="constraint" type="constrainttype" minOccurs="0" maxOccurs="unbounded" />
+      <xs:element name="constraint" type="cs:constrainttype" minOccurs="0" maxOccurs="unbounded" />
     </xs:sequence>
   </xs:complexType>
 
@@ -314,18 +329,18 @@
   <!--modifier-->
   <xs:complexType name="modifiertype">
     <xs:sequence>
-      <xs:element name="repeats" type="repeatstype" />
-      <xs:element name="conditions" type="conditionstype" />
-      <xs:element name="conditionGroups" type="conditionGroupstype" />
+      <xs:element name="repeats" type="cs:repeatstype" />
+      <xs:element name="conditions" type="cs:conditionstype" />
+      <xs:element name="conditionGroups" type="cs:conditionGroupstype" />
     </xs:sequence>
-    <xs:attribute name="type" type="modifierTypeattrvaluetype" use="required" />
+    <xs:attribute name="type" type="cs:modifierTypeattrvaluetype" use="required" />
     <xs:attribute name="field" type="xs:string" use="required" />
     <xs:attribute name="value" type="xs:string" use="required" />
   </xs:complexType>
 
   <xs:complexType name="modifierstype">
     <xs:sequence>
-      <xs:element name="modifier" type="modifiertype" minOccurs="0" maxOccurs="unbounded" />
+      <xs:element name="modifier" type="cs:modifiertype" minOccurs="0" maxOccurs="unbounded" />
     </xs:sequence>
   </xs:complexType>
 
@@ -338,17 +353,72 @@
     </xs:restriction>
   </xs:simpleType>
 
+  <!--repeat-->
+  <xs:complexType name="repeattype">
+    <xs:complexContent>
+      <xs:extension base="cs:baseSelectortype">
+        <xs:attribute name="childId" type="cs:idtype" use="required" />
+        <xs:attribute name="repeats" type="xs:positiveInteger" use="required" />
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  
   <xs:complexType name="repeatstype">
-    <!--TODO-->
+    <xs:sequence>
+      <xs:element name="repeat" type="cs:repeattype" minOccurs="0" maxOccurs="unbounded" />
+    </xs:sequence>
+  </xs:complexType>
+
+  <!--condition--> 
+  <xs:complexType name="conditiontype">
+    <xs:complexContent>
+      <xs:extension base="cs:baseSelectortype">
+        <xs:attribute name="childId" type="cs:idtype" use="required" />
+        <xs:attribute name="type" type="cs:conditionTypeattrvaluetype" use="required" />
+      </xs:extension>
+    </xs:complexContent>
   </xs:complexType>
 
   <xs:complexType name="conditionstype">
-    <!--TODO-->
+    <xs:sequence>
+      <xs:element name="condition" type="cs:conditiontype" minOccurs="0" maxOccurs="unbounded" />
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:simpleType name="conditionTypeattrvaluetype">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="lessThan" />
+      <xs:enumeration value="greaterThan" />
+      <xs:enumeration value="equalTo" />
+      <xs:enumeration value="notEqualTo" />
+      <xs:enumeration value="atLeast" />
+      <xs:enumeration value="atMost" />
+      <xs:enumeration value="instanceOf" />
+      <xs:enumeration value="notInstanceOf" />
+    </xs:restriction>
+  </xs:simpleType>
+
+  <!--condition group-->
+  <xs:complexType name="conditionGrouptype">
+    <xs:sequence>
+      <xs:element name="conditions" type="cs:conditionstype" />
+      <xs:element name="conditionGroups" type="cs:conditionGroupstype" />
+    </xs:sequence>
+    <xs:attribute name="type" type="cs:conditiongroupTypeattrvaluetype" use="required" />
   </xs:complexType>
 
   <xs:complexType name="conditionGroupstype">
-    <!--TODO-->
+    <xs:sequence>
+      <xs:element name="conditionGroup" type="cs:conditionGrouptype" minOccurs="0" maxOccurs="unbounded" />
+    </xs:sequence>
   </xs:complexType>
+
+  <xs:simpleType name="conditiongroupTypeattrvaluetype">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="and" />
+      <xs:enumeration value="or" />
+    </xs:restriction>
+  </xs:simpleType>
 
   <!--datablob-->
 
@@ -360,30 +430,31 @@
   
   <xs:complexType name="datablobType">
     <xs:sequence>
-      <xs:element name="profiles" type="profilestype" />
-      <xs:element name="rules" type="rulestype" />
-      <xs:element name="infoLinks" type="infoLinkstype" />
-      <xs:element name="costTypes" type="costTypestype" />
-      <xs:element name="profileTypes" type="profileTypestype" />
-      <xs:element name="forceEntries" type="forceEntriestype" />
-      <xs:element name="selectionEntries" type="selectionEntriestype" />
-      <xs:element name="entryLinks" type="rootentryLinkstype" />
-      <xs:element name="sharedSelectionEntries" type="selectionEntriestype" />
-      <xs:element name="sharedSelectionEntryGroups" type="selectionEntryGroupstype" />
-      <xs:element name="sharedRules" type="rulestype" />
-      <xs:element name="sharedProfiles" type="profilestype" />
+      <xs:element name="profiles" type="cs:profilestype" />
+      <xs:element name="rules" type="cs:rulestype" />
+      <xs:element name="infoLinks" type="cs:infoLinkstype" />
+      <xs:element name="costTypes" type="cs:costTypestype" />
+      <xs:element name="profileTypes" type="cs:profileTypestype" />
+      <xs:element name="forceEntries" type="cs:forceEntriestype" />
+      <xs:element name="selectionEntries" type="cs:selectionEntriestype" />
+      <xs:element name="entryLinks" type="cs:rootentryLinkstype" />
+      <xs:element name="sharedSelectionEntries" type="cs:selectionEntriestype" />
+      <xs:element name="sharedSelectionEntryGroups" type="cs:selectionEntryGroupstype" />
+      <xs:element name="sharedRules" type="cs:rulestype" />
+      <xs:element name="sharedProfiles" type="cs:profilestype" />
     </xs:sequence>
-    <xs:attribute name="id" type="idtype" use="required" />
+    <xs:attribute name="id" type="cs:idtype" use="required" />
     <xs:attribute name="name" type="xs:string" use="required" />
     <xs:attribute name="revision" type="xs:nonNegativeInteger" />
     <xs:attribute name="battleScribeVersion" type="xs:string" />
-    <xs:attributeGroup ref="datablobAuthorInfoattrgroup" />
+    <xs:attributeGroup ref="cs:datablobAuthorInfoattrgroup" />
+    <xs:attributeGroup ref="cs:BookReferenceAttGroup" />
   </xs:complexType>
   
   <xs:complexType name="cataloguetype">
     <xs:complexContent>
-      <xs:extension base="datablobType">
-        <xs:attribute name="gameSystemId" type="idtype" use="required" />
+      <xs:extension base="cs:datablobType">
+        <xs:attribute name="gameSystemId" type="cs:idtype" use="required" />
         <xs:attribute name="gameSystemRevision" type="xs:nonNegativeInteger" />
       </xs:extension>
     </xs:complexContent>
@@ -391,328 +462,10 @@
 
   <xs:complexType name="gamesystemtype">
     <xs:complexContent>
-      <xs:extension base="datablobType" />
+      <xs:extension base="cs:datablobType" />
     </xs:complexContent>
   </xs:complexType>
 
-  <!--<xs:element name="catalogue">
-               <xs:complexType>
-                     <xs:sequence>
-                           <xs:element name="profiles"></xs:element>
-                           <xs:element name="rules">
-                                 <xs:complexType>
-                                       <xs:sequence>
-                                             <xs:element name="rule" maxOccurs="unbounded">
-                                                   <xs:complexType>
-                                                         <xs:sequence>
-                                                               <xs:element name="profiles"></xs:element>
-                                                               <xs:element name="rules"></xs:element>
-                                                               <xs:element name="infoLinks"></xs:element>
-                                                               <xs:element name="modifiers">
-                                                                     <xs:complexType>
-                                                                           <xs:sequence>
-                                                                                 <xs:element name="modifier">
-                                                                                       <xs:complexType>
-                                                                                             <xs:sequence>
-                                                                                                   <xs:element name="repeats"></xs:element>
-                                                                                                   <xs:element name="conditions">
-                                                                                                         <xs:complexType>
-                                                                                                               <xs:sequence>
-                                                                                                                     <xs:element name="condition">
-                                                                                                                           <xs:complexType>
-                                                                                                                                 <xs:attribute name="value" type="xs:int"></xs:attribute>
-                                                                                                                                 <xs:attribute name="field" type="xs:string"></xs:attribute>
-                                                                                                                                 <xs:attribute name="type" type="xs:string"></xs:attribute>
-                                                                                                                                 <xs:attribute name="childId" type="xs:string"></xs:attribute>
-                                                                                                                                 <xs:attribute name="includeChildForces" type="xs:string"></xs:attribute>
-                                                                                                                                 <xs:attribute name="includeChildSelections" type="xs:string"></xs:attribute>
-                                                                                                                                 <xs:attribute name="shared" type="xs:string"></xs:attribute>
-                                                                                                                                 <xs:attribute name="percentValue" type="xs:string"></xs:attribute>
-                                                                                                                                 <xs:attribute name="scope" type="xs:string"></xs:attribute>
-                                                                                                                           </xs:complexType>
-                                                                                                                     </xs:element>
-                                                                                                               </xs:sequence>
-                                                                                                         </xs:complexType>
-                                                                                                   </xs:element>
-                                                                                                   <xs:element name="conditionGroups"></xs:element>
-                                                                                             </xs:sequence>
-                                                                                             <xs:attribute name="value" type="xs:string"></xs:attribute>
-                                                                                             <xs:attribute name="field" type="xs:string"></xs:attribute>
-                                                                                             <xs:attribute name="type" type="xs:string"></xs:attribute>
-                                                                                       </xs:complexType>
-                                                                                 </xs:element>
-                                                                           </xs:sequence>
-                                                                     </xs:complexType>
-                                                               </xs:element>
-                                                               <xs:element name="description" type="xs:string"></xs:element>
-                                                         </xs:sequence>
-                                                         <xs:attribute name="id" type="xs:string"></xs:attribute>
-                                                         <xs:attribute name="hidden" type="xs:string"></xs:attribute>
-                                                         <xs:attribute name="name" type="xs:string"></xs:attribute>
-                                                         <xs:attribute name="book" type="xs:string"></xs:attribute>
-                                                   </xs:complexType>
-                                             </xs:element>
-                                       </xs:sequence>
-                                 </xs:complexType>
-                           </xs:element>
-                           <xs:element name="infoLinks"></xs:element>
-                           <xs:element name="costTypes"></xs:element>
-                           <xs:element name="profileTypes"></xs:element>
-                           <xs:element name="forceEntries">
-                                 <xs:complexType>
-                                       <xs:sequence>
-                                             <xs:element name="forceEntry" maxOccurs="unbounded">
-                                                   <xs:complexType>
-                                                         <xs:sequence>
-                                                               <xs:element name="profiles"></xs:element>
-                                                               <xs:element name="rules"></xs:element>
-                                                               <xs:element name="infoLinks"></xs:element>
-                                                               <xs:element name="modifiers"></xs:element>
-                                                               <xs:element name="constraints"></xs:element>
-                                                               <xs:element name="categoryEntries">
-                                                                     <xs:complexType>
-                                                                           <xs:sequence>
-                                                                                 <xs:element name="categoryEntry" maxOccurs="unbounded">
-                                                                                       <xs:complexType>
-                                                                                             <xs:sequence>
-                                                                                                   <xs:element name="profiles"></xs:element>
-                                                                                                   <xs:element name="rules"></xs:element>
-                                                                                                   <xs:element name="infoLinks"></xs:element>
-                                                                                                   <xs:element name="modifiers"></xs:element>
-                                                                                                   <xs:element name="constraints">
-                                                                                                         <xs:complexType>
-                                                                                                               <xs:sequence>
-                                                                                                                     <xs:element name="constraint" maxOccurs="unbounded">
-                                                                                                                           <xs:complexType>
-                                                                                                                                 <xs:attribute name="id" type="xs:string"></xs:attribute>
-                                                                                                                                 <xs:attribute name="value" type="xs:int"></xs:attribute>
-                                                                                                                                 <xs:attribute name="field" type="xs:string"></xs:attribute>
-                                                                                                                                 <xs:attribute name="type" type="xs:string"></xs:attribute>
-                                                                                                                                 <xs:attribute name="includeChildForces" type="xs:string"></xs:attribute>
-                                                                                                                                 <xs:attribute name="includeChildSelections" type="xs:string"></xs:attribute>
-                                                                                                                                 <xs:attribute name="shared" type="xs:string"></xs:attribute>
-                                                                                                                                 <xs:attribute name="percentValue" type="xs:string"></xs:attribute>
-                                                                                                                                 <xs:attribute name="scope" type="xs:string"></xs:attribute>
-                                                                                                                           </xs:complexType>
-                                                                                                                     </xs:element>
-                                                                                                               </xs:sequence>
-                                                                                                         </xs:complexType>
-                                                                                                   </xs:element>
-                                                                                             </xs:sequence>
-                                                                                             <xs:attribute name="id" type="xs:string"></xs:attribute>
-                                                                                             <xs:attribute name="hidden" type="xs:string"></xs:attribute>
-                                                                                             <xs:attribute name="name" type="xs:string"></xs:attribute>
-                                                                                       </xs:complexType>
-                                                                                 </xs:element>
-                                                                           </xs:sequence>
-                                                                     </xs:complexType>
-                                                               </xs:element>
-                                                               <xs:element name="forceEntries"></xs:element>
-                                                         </xs:sequence>
-                                                         <xs:attribute name="id" type="xs:string"></xs:attribute>
-                                                         <xs:attribute name="hidden" type="xs:string"></xs:attribute>
-                                                         <xs:attribute name="name" type="xs:string"></xs:attribute>
-                                                   </xs:complexType>
-                                             </xs:element>
-                                       </xs:sequence>
-                                 </xs:complexType>
-                           </xs:element>
-                           <xs:element name="selectionEntries"></xs:element>
-                           <xs:element name="entryLinks">
-                                 <xs:complexType>
-                                       <xs:sequence>
-                                             <xs:element name="entryLink" maxOccurs="unbounded">
-                                                   <xs:complexType>
-                                                         <xs:sequence>
-                                                               <xs:element name="profiles"></xs:element>
-                                                               <xs:element name="rules"></xs:element>
-                                                               <xs:element name="infoLinks"></xs:element>
-                                                               <xs:element name="modifiers"></xs:element>
-                                                               <xs:element name="constraints"></xs:element>
-                                                         </xs:sequence>
-                                                         <xs:attribute name="id" type="xs:string"></xs:attribute>
-                                                         <xs:attribute name="hidden" type="xs:string"></xs:attribute>
-                                                         <xs:attribute name="name" type="xs:string"></xs:attribute>
-                                                         <xs:attribute name="type" type="xs:string"></xs:attribute>
-                                                         <xs:attribute name="categoryEntryId" type="xs:string"></xs:attribute>
-                                                         <xs:attribute name="targetId" type="xs:string"></xs:attribute>
-                                                   </xs:complexType>
-                                             </xs:element>
-                                       </xs:sequence>
-                                 </xs:complexType>
-                           </xs:element>
-                           <xs:element name="sharedSelectionEntries">
-                                 <xs:complexType>
-                                       <xs:sequence>
-                                             <xs:element name="selectionEntry" maxOccurs="unbounded">
-                                                   <xs:complexType>
-                                                         <xs:sequence>
-                                                               <xs:element name="profiles"></xs:element>
-                                                               <xs:element name="rules"></xs:element>
-                                                               <xs:element name="infoLinks"></xs:element>
-                                                               <xs:element name="modifiers"></xs:element>
-                                                               <xs:element name="constraints"></xs:element>
-                                                               <xs:element name="selectionEntries"></xs:element>
-                                                               <xs:element name="selectionEntryGroups"></xs:element>
-                                                               <xs:element name="entryLinks"></xs:element>
-                                                               <xs:element name="costs">
-                                                                     <xs:complexType>
-                                                                           <xs:sequence>
-                                                                                 <xs:element name="cost">
-                                                                                       <xs:complexType>
-                                                                                             <xs:attribute name="name" type="xs:string"></xs:attribute>
-                                                                                             <xs:attribute name="value" type="xs:int"></xs:attribute>
-                                                                                             <xs:attribute name="costTypeId" type="xs:string"></xs:attribute>
-                                                                                       </xs:complexType>
-                                                                                 </xs:element>
-                                                                           </xs:sequence>
-                                                                     </xs:complexType>
-                                                               </xs:element>
-                                                         </xs:sequence>
-                                                         <xs:attribute name="id" type="xs:string"></xs:attribute>
-                                                         <xs:attribute name="hidden" type="xs:string"></xs:attribute>
-                                                         <xs:attribute name="name" type="xs:string"></xs:attribute>
-                                                         <xs:attribute name="book" type="xs:string"></xs:attribute>
-                                                         <xs:attribute name="type" type="xs:string"></xs:attribute>
-                                                         <xs:attribute name="collective" type="xs:string"></xs:attribute>
-                                                   </xs:complexType>
-                                             </xs:element>
-                                       </xs:sequence>
-                                 </xs:complexType>
-                           </xs:element>
-                           <xs:element name="sharedSelectionEntryGroups">
-                                 <xs:complexType>
-                                       <xs:sequence>
-                                             <xs:element name="selectionEntryGroup" maxOccurs="unbounded">
-                                                   <xs:complexType>
-                                                         <xs:sequence>
-                                                               <xs:element name="profiles"></xs:element>
-                                                               <xs:element name="rules"></xs:element>
-                                                               <xs:element name="infoLinks"></xs:element>
-                                                               <xs:element name="modifiers"></xs:element>
-                                                               <xs:element name="constraints">
-                                                                     <xs:complexType>
-                                                                           <xs:sequence>
-                                                                                 <xs:element name="constraint">
-                                                                                       <xs:complexType>
-                                                                                             <xs:attribute name="id" type="xs:string"></xs:attribute>
-                                                                                             <xs:attribute name="value" type="xs:int"></xs:attribute>
-                                                                                             <xs:attribute name="field" type="xs:string"></xs:attribute>
-                                                                                             <xs:attribute name="type" type="xs:string"></xs:attribute>
-                                                                                             <xs:attribute name="includeChildForces" type="xs:string"></xs:attribute>
-                                                                                             <xs:attribute name="includeChildSelections" type="xs:string"></xs:attribute>
-                                                                                             <xs:attribute name="shared" type="xs:string"></xs:attribute>
-                                                                                             <xs:attribute name="percentValue" type="xs:string"></xs:attribute>
-                                                                                             <xs:attribute name="scope" type="xs:string"></xs:attribute>
-                                                                                       </xs:complexType>
-                                                                                 </xs:element>
-                                                                           </xs:sequence>
-                                                                     </xs:complexType>
-                                                               </xs:element>
-                                                               <xs:element name="selectionEntries"></xs:element>
-                                                               <xs:element name="selectionEntryGroups"></xs:element>
-                                                               <xs:element name="entryLinks">
-                                                                     <xs:complexType>
-                                                                           <xs:sequence>
-                                                                                 <xs:element name="entryLink" maxOccurs="unbounded">
-                                                                                       <xs:complexType>
-                                                                                             <xs:sequence>
-                                                                                                   <xs:element name="profiles"></xs:element>
-                                                                                                   <xs:element name="rules"></xs:element>
-                                                                                                   <xs:element name="infoLinks"></xs:element>
-                                                                                                   <xs:element name="modifiers"></xs:element>
-                                                                                                   <xs:element name="constraints"></xs:element>
-                                                                                             </xs:sequence>
-                                                                                             <xs:attribute name="id" type="xs:string"></xs:attribute>
-                                                                                             <xs:attribute name="hidden" type="xs:string"></xs:attribute>
-                                                                                             <xs:attribute name="name" type="xs:string"></xs:attribute>
-                                                                                             <xs:attribute name="type" type="xs:string"></xs:attribute>
-                                                                                             <xs:attribute name="targetId" type="xs:string"></xs:attribute>
-                                                                                       </xs:complexType>
-                                                                                 </xs:element>
-                                                                           </xs:sequence>
-                                                                     </xs:complexType>
-                                                               </xs:element>
-                                                         </xs:sequence>
-                                                         <xs:attribute name="id" type="xs:string"></xs:attribute>
-                                                         <xs:attribute name="hidden" type="xs:string"></xs:attribute>
-                                                         <xs:attribute name="name" type="xs:string"></xs:attribute>
-                                                         <xs:attribute name="book" type="xs:string"></xs:attribute>
-                                                         <xs:attribute name="collective" type="xs:string"></xs:attribute>
-                                                         <xs:attribute name="defaultSelectionEntryId" type="xs:string"></xs:attribute>
-                                                   </xs:complexType>
-                                             </xs:element>
-                                       </xs:sequence>
-                                 </xs:complexType>
-                           </xs:element>
-                           <xs:element name="sharedRules">
-                                 <xs:complexType>
-                                       <xs:sequence>
-                                             <xs:element name="rule" maxOccurs="unbounded">
-                                                   <xs:complexType>
-                                                         <xs:sequence>
-                                                               <xs:element name="profiles"></xs:element>
-                                                               <xs:element name="rules"></xs:element>
-                                                               <xs:element name="infoLinks"></xs:element>
-                                                               <xs:element name="modifiers"></xs:element>
-                                                               <xs:element name="description" type="xs:string"></xs:element>
-                                                         </xs:sequence>
-                                                         <xs:attribute name="id" type="xs:string"></xs:attribute>
-                                                         <xs:attribute name="hidden" type="xs:string"></xs:attribute>
-                                                         <xs:attribute name="name" type="xs:string"></xs:attribute>
-                                                         <xs:attribute name="book" type="xs:string"></xs:attribute>
-                                                   </xs:complexType>
-                                             </xs:element>
-                                       </xs:sequence>
-                                 </xs:complexType>
-                           </xs:element>
-                           <xs:element name="sharedProfiles">
-                                 <xs:complexType>
-                                       <xs:sequence>
-                                             <xs:element name="profile" maxOccurs="unbounded">
-                                                   <xs:complexType>
-                                                         <xs:sequence>
-                                                               <xs:element name="profiles"></xs:element>
-                                                               <xs:element name="rules"></xs:element>
-                                                               <xs:element name="infoLinks"></xs:element>
-                                                               <xs:element name="modifiers"></xs:element>
-                                                               <xs:element name="characteristics">
-                                                                     <xs:complexType>
-                                                                           <xs:sequence>
-                                                                                 <xs:element name="characteristic">
-                                                                                       <xs:complexType>
-                                                                                             <xs:attribute name="name" type="xs:string"></xs:attribute>
-                                                                                             <xs:attribute name="value" type="xs:string"></xs:attribute>
-                                                                                             <xs:attribute name="characteristicTypeId" type="xs:string"></xs:attribute>
-                                                                                       </xs:complexType>
-                                                                                 </xs:element>
-                                                                           </xs:sequence>
-                                                                     </xs:complexType>
-                                                               </xs:element>
-                                                         </xs:sequence>
-                                                         <xs:attribute name="id" type="xs:string"></xs:attribute>
-                                                         <xs:attribute name="hidden" type="xs:string"></xs:attribute>
-                                                         <xs:attribute name="name" type="xs:string"></xs:attribute>
-                                                         <xs:attribute name="book" type="xs:string"></xs:attribute>
-                                                         <xs:attribute name="profileTypeName" type="xs:string"></xs:attribute>
-                                                         <xs:attribute name="profileTypeId" type="xs:string"></xs:attribute>
-                                                   </xs:complexType>
-                                             </xs:element>
-                                       </xs:sequence>
-                                 </xs:complexType>
-                           </xs:element>
-                     </xs:sequence>
-                     <xs:attribute name="id" type="xs:string"></xs:attribute>
-                     <xs:attribute name="gameSystemRevision" type="xs:int"></xs:attribute>
-                     <xs:attribute name="gameSystemId" type="xs:string"></xs:attribute>
-                     <xs:attribute name="authorUrl" type="xs:string"></xs:attribute>
-                     <xs:attribute name="authorContact" type="xs:string"></xs:attribute>
-                     <xs:attribute name="authorName" type="xs:string"></xs:attribute>
-                     <xs:attribute name="battleScribeVersion" type="xs:int"></xs:attribute>
-                     <xs:attribute name="revision" type="xs:int"></xs:attribute>
-                     <xs:attribute name="name" type="xs:string"></xs:attribute>
-               </xs:complexType>
-         </xs:element>-->
-  <xs:element name="catalogue" type="cataloguetype" />
-  <xs:element name="gameSystem" type="gamesystemtype" />
+  <xs:element name="catalogue" type="cs:cataloguetype" />
+  <xs:element name="gameSystem" type="cs:gamesystemtype" />
 </xs:schema>
