@@ -49,17 +49,17 @@ namespace WarHub.Armoury.Model.BattleScribeXmlTests
             ReadWriteFactoryTestHelper<DataIndex>(TestData.IndexFilename);
         }
 
-        //[Fact]
-        //public void GameSystemFormatAsBattleScribeTest()
-        //{
-        //    FormatAsBattleScribeTestHelper<GameSystem>(TestData.GameSystemFilename);
-        //}
+        [Fact]
+        public void GameSystemFormatAsBattleScribeTest()
+        {
+            FormatAsBattleScribeTestHelper<GameSystem>(TestData.GameSystemFilename);
+        }
 
-        //[Fact]
-        //public void GameSystemReadWriteTest()
-        //{
-        //    ReadWriteFactoryTestHelper<GameSystem>(TestData.GameSystemFilename);
-        //}
+        [Fact]
+        public void GameSystemReadWriteTest()
+        {
+            ReadWriteFactoryTestHelper<GameSystem>(TestData.GameSystemFilename);
+        }
 
         private static void RemoveDir()
         {

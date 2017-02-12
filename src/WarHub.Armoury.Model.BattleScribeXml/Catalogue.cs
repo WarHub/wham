@@ -5,9 +5,13 @@ namespace WarHub.Armoury.Model.BattleScribeXml
 {
     using System.Xml.Serialization;
 
-    [XmlRoot("catalogue", Namespace = "http://www.battlescribe.net/schema/catalogueSchema", IsNullable = false)]
-    public partial class Catalogue : Datablob
+    [XmlRoot("catalogue", Namespace = CatalogueXmlNamespace, IsNullable = false)]
+    public class Catalogue : Datablob, IXmlProperties
     {
+        public const string CatalogueXmlNamespace = "http://www.battlescribe.net/schema/catalogueSchema";
+
+        public string DefaultXmlNamespace => CatalogueXmlNamespace;
+
         [XmlAttribute("gameSystemId")]
         public string GameSystemId { get; set; }
 
