@@ -28,21 +28,21 @@ namespace WarHub.Armoury.Model.BattleScribeXml
 
         [XmlArray("repositoryUrls")]
         [XmlArrayItem(ElementName = "repositoryUrl")]
-        public List<string> RepositoryUrls { get; set; } = new List<string>(0);
+        public List<string> RepositoryUrls { get; } = new List<string>(0);
 
         [XmlArray("dataIndexEntries")]
-        public List<DataIndexEntry> DataIndexEntries { get; set; } = new List<DataIndexEntry>();
+        public List<DataIndexEntry> DataIndexEntries { get; } = new List<DataIndexEntry>();
 
         public static DataIndex CreateFromSourceIndex(RemoteSourceDataIndex index)
         {
-            return new DataIndex
+            var dataIndex = new DataIndex
             {
                 BattleScribeVersion = index.OriginProgramVersion,
                 Name = index.Name,
-                IndexUrl = index.IndexUri.ToString(),
-                DataIndexEntries = new List<DataIndexEntry>(
-                    index.RemoteDataInfos.Select(x => DataIndexEntry.CreateFromInfo(x)))
+                IndexUrl = index.IndexUri.ToString()
             };
+            dataIndex.DataIndexEntries.AddRange(index.RemoteDataInfos.Select(DataIndexEntry.CreateFromInfo));
+            return dataIndex;
         }
 
         /// <summary>

@@ -3,6 +3,7 @@
 
 namespace WarHub.Armoury.Model.BattleScribeXml
 {
+    using System.Collections.Generic;
     using System.Xml.Serialization;
 
     [XmlRoot("roster", Namespace = RosterXmlNamespace, IsNullable = false)]
@@ -29,13 +30,13 @@ namespace WarHub.Armoury.Model.BattleScribeXml
         public uint GameSystemRevision { get; set; }
 
         [XmlArray("costs", Order = 0)]
-        public Cost[] Costs { get; set; }
+        public List<Cost> Costs { get; } = new List<Cost>(0);
 
         [XmlArray("costLimits", Order = 1)]
-        public CostLimit[] CostLimits { get; set; }
+        public List<CostLimit> CostLimits { get; } = new List<CostLimit>(0);
 
         [XmlArray("forces", Order = 2)]
-        public Force[] Forces { get; set; }
+        public List<Force> Forces { get; } = new List<Force>(0);
 
         public string DefaultXmlNamespace => RosterXmlNamespace;
     }

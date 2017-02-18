@@ -1,11 +1,12 @@
 namespace WarHub.Armoury.Model.BattleScribeXml
 {
+    using System.Collections.Generic;
     using System.Xml.Serialization;
 
     [XmlType("category")]
     public class Category : RosterElementBase
     {
         [XmlArray("selections", Order = 2)]
-        public Selection[] Selections { get; set; }
+        public List<Selection> Selections { get; } = new List<Selection>(0);
     }
 }

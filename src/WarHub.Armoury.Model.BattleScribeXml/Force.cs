@@ -3,6 +3,7 @@
 
 namespace WarHub.Armoury.Model.BattleScribeXml
 {
+    using System.Collections.Generic;
     using System.Xml.Serialization;
 
     [XmlType("force")]
@@ -18,9 +19,9 @@ namespace WarHub.Armoury.Model.BattleScribeXml
         public string CatalogueName { get; set; }
 
         [XmlArray("categories", Order = 2)]
-        public Category[] Categories { get; set; }
+        public List<Category> Categories { get; } = new List<Category>(0);
 
         [XmlArray("forces", Order = 3)]
-        public Force[] Forces { get; set; }
+        public List<Force> Forces { get; } = new List<Force>(0);
     }
 }

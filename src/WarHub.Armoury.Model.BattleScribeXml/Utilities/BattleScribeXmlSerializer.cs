@@ -13,7 +13,7 @@ namespace WarHub.Armoury.Model.BattleScribeXml
     /// <summary>
     ///     Provides convenient and (precisely) formatted (de)serialization of xml data objects.
     /// </summary>
-    public class BattleScribeXmlSerializer
+    public static class BattleScribeXmlSerializer
     {
         /// <summary>
         ///     Convenience method. Serializes simultaneously formatting output using

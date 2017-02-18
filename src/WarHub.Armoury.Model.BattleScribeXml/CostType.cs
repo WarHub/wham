@@ -5,11 +5,6 @@ namespace WarHub.Armoury.Model.BattleScribeXml
     [XmlType("costType")]
     public class CostType
     {
-        public CostType()
-        {
-            DefaultCostLimit = 0.0m;
-        }
-
         [XmlAttribute("id")]
         public string Id { get; set; }
 

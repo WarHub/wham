@@ -3,6 +3,7 @@
 
 namespace WarHub.Armoury.Model.BattleScribeXml
 {
+    using System.Collections.Generic;
     using System.Xml.Serialization;
 
     [XmlType("selection")]
@@ -24,9 +25,9 @@ namespace WarHub.Armoury.Model.BattleScribeXml
         public SelectionEntryKind Type { get; set; }
 
         [XmlArray("selections", Order = 2)]
-        public Selection[] Selections { get; set; }
+        public List<Selection> Selections { get; } = new List<Selection>(0);
 
         [XmlArray("costs", Order = 3)]
-        public Cost[] Costs { get; set; }
+        public List<Cost> Costs { get; } = new List<Cost>(0);
     }
 }

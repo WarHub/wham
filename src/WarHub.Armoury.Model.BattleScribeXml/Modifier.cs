@@ -1,18 +1,19 @@
 namespace WarHub.Armoury.Model.BattleScribeXml
 {
+    using System.Collections.Generic;
     using System.Xml.Serialization;
 
     [XmlType("modifier")]
     public class Modifier
     {
         [XmlArray("repeats", Order = 0)]
-        public Repeat[] Repeats { get; set; }
+        public List<Repeat> Repeats { get; } = new List<Repeat>(0);
 
         [XmlArray("conditions", Order = 1)]
-        public Condition[] Conditions { get; set; }
+        public List<Condition> Conditions { get; } = new List<Condition>(0);
 
         [XmlArray("conditionGroups", Order = 2)]
-        public ConditionGroup[] ConditionGroups { get; set; }
+        public List<ConditionGroup> ConditionGroups { get; } = new List<ConditionGroup>(0);
 
         [XmlAttribute("type")]
         public ModifierKind Type { get; set; }

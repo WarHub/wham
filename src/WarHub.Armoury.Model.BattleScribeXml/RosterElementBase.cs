@@ -3,6 +3,7 @@
 
 namespace WarHub.Armoury.Model.BattleScribeXml
 {
+    using System.Collections.Generic;
     using System.Xml.Serialization;
 
     [XmlInclude(typeof(Force))]
@@ -20,9 +21,9 @@ namespace WarHub.Armoury.Model.BattleScribeXml
         public string EntryId { get; set; }
 
         [XmlArray("rules", Order = 0)]
-        public Rule[] Rules { get; set; }
+        public List<Rule> Rules { get; } = new List<Rule>(0);
 
         [XmlArray("profiles", Order = 1)]
-        public Profile[] Profiles { get; set; }
+        public List<Profile> Profiles { get; } = new List<Profile>(0);
     }
 }

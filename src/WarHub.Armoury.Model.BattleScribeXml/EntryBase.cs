@@ -1,5 +1,6 @@
 namespace WarHub.Armoury.Model.BattleScribeXml
 {
+    using System.Collections.Generic;
     using System.Xml.Serialization;
 
     [XmlInclude(typeof(EntryLink))]
@@ -13,16 +14,16 @@ namespace WarHub.Armoury.Model.BattleScribeXml
     public partial class EntryBase
     {
         [XmlArray("profiles", Order = 0)]
-        public Profile[] Profiles { get; set; }
+        public List<Profile> Profiles { get; } = new List<Profile>(0);
 
         [XmlArray("rules", Order = 1)]
-        public Rule[] Rules { get; set; }
+        public List<Rule> Rules { get; } = new List<Rule>(0);
 
         [XmlArray("infoLinks", Order = 2)]
-        public InfoLink[] InfoLinks { get; set; }
+        public List<InfoLink> InfoLinks { get; } = new List<InfoLink>(0);
 
         [XmlArray("modifiers", Order = 3)]
-        public Modifier[] Modifiers { get; set; }
+        public List<Modifier> Modifiers { get; } = new List<Modifier>(0);
 
         [XmlAttribute("id")]
         public string Id { get; set; }
