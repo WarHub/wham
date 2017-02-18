@@ -10,12 +10,12 @@ namespace WarHub.Armoury.Model.BattleScribeXml
     {
         public const string CatalogueXmlNamespace = "http://www.battlescribe.net/schema/catalogueSchema";
 
-        public string DefaultXmlNamespace => CatalogueXmlNamespace;
-
         [XmlAttribute("gameSystemId")]
         public string GameSystemId { get; set; }
 
         [XmlAttribute("gameSystemRevision")]
         public uint GameSystemRevision { get; set; }
+
+        public string DefaultXmlNamespace => CatalogueXmlNamespace;
     }
 }

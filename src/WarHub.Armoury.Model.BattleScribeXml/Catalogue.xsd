@@ -193,6 +193,19 @@
     </xs:sequence>
   </xs:complexType>
 
+  <!--cost limits-->
+  <xs:complexType name="CostLimit">
+    <xs:complexContent>
+      <xs:extension base="cs:Cost" />
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="CostLimitList">
+    <xs:sequence>
+      <xs:element name="costLimit" type="cs:CostLimit" minOccurs="0" maxOccurs="unbounded" />
+    </xs:sequence>
+  </xs:complexType>
+
   <!--selectionEntry-->
   <xs:simpleType name="SelectionEntryKind">
     <xs:restriction base="xs:string">
@@ -402,7 +415,78 @@
       <xs:enumeration value="or" />
     </xs:restriction>
   </xs:simpleType>
+  
+  <!--roster element base-->
+  <xs:complexType name="RosterElementBase">
+    <xs:sequence>
+      <xs:element name="rules" type="cs:RuleList" />
+      <xs:element name="profiles" type="cs:ProfileList" />
+    </xs:sequence>
+    <xs:attribute name="id" type="cs:idtype" use="required" />
+    <xs:attribute name="name" type="xs:string" use="required" />
+    <xs:attribute name="entryId" type="cs:idtype" use="required" />
+  </xs:complexType>
+  
+  <!--force-->
+  <xs:complexType name="Force">
+    <xs:complexContent>
+      <xs:extension base="cs:RosterElementBase">
+        <xs:sequence>
+          <xs:element name="categories" type="cs:CategoryList" />
+          <xs:element name="forces" type="cs:ForceList" />
+        </xs:sequence>
+        <xs:attribute name="catalogueId" type="cs:idtype" use="required" />
+        <xs:attribute name="catalogueRevision" type="xs:nonNegativeInteger" />
+        <xs:attribute name="catalogueName" type="xs:string" />
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
 
+  <xs:complexType name="ForceList">
+    <xs:sequence>
+      <xs:element name="force" type="cs:Force" minOccurs="0" maxOccurs="unbounded" />
+    </xs:sequence>
+  </xs:complexType>
+
+  <!--category-->
+  <xs:complexType name="Category">
+    <xs:complexContent>
+      <xs:extension base="cs:RosterElementBase">
+        <xs:sequence>
+          <xs:element name="selections" type="cs:SelectionList" />
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="CategoryList">
+    <xs:sequence>
+      <xs:element name="category" type="cs:Category" minOccurs="0" maxOccurs="unbounded" />
+    </xs:sequence>
+  </xs:complexType>
+  
+  <!--selection-->
+  <xs:complexType name="Selection">
+    <xs:complexContent>
+      <xs:extension base="cs:RosterElementBase">
+        <xs:sequence>
+          <xs:element name="selections" type="cs:SelectionList" />
+          <xs:element name="costs" type="cs:CostList" />
+        </xs:sequence>
+        <xs:attribute name="entryGroupId" type="cs:idtype" use="required" />
+        <xs:attributeGroup ref="cs:BookReferenceAttGroup" />
+        <xs:attribute name="number" type="xs:nonNegativeInteger" use="required" />
+        <xs:attribute name="type" type="cs:SelectionEntryKind" use="required" />
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="SelectionList">
+    <xs:sequence>
+      <xs:element name="selection" type="cs:Selection" minOccurs="0" maxOccurs="unbounded" />
+    </xs:sequence>
+  </xs:complexType>
+  
   <!--datablob-->
 
   <xs:attributeGroup name="AuthorInfoAttGroup" >
@@ -433,7 +517,21 @@
     <xs:attribute name="battleScribeVersion" type="xs:string" />
     <xs:attributeGroup ref="cs:AuthorInfoAttGroup" />
   </xs:complexType>
-  
+
+  <xs:complexType name="Roster">
+    <xs:sequence>
+      <xs:element name="costs" type="cs:CostList" />
+      <xs:element name="costLimits" type="cs:CostLimitList" />
+      <xs:element name="forces" type="cs:ForceList" />
+    </xs:sequence>
+    <xs:attribute name="id" type="cs:idtype" use="required" />
+    <xs:attribute name="name" type="xs:string" use="required" />
+    <xs:attribute name="battleScribeVersion" type="xs:string" />
+    <xs:attribute name="gameSystemId" type="cs:idtype" use="required" />
+    <xs:attribute name="gameSystemName" type="xs:string" />
+    <xs:attribute name="gameSystemRevision" type="xs:nonNegativeInteger" />
+  </xs:complexType>
+
   <xs:complexType name="Catalogue">
     <xs:complexContent>
       <xs:extension base="cs:Datablob">
@@ -449,6 +547,7 @@
     </xs:complexContent>
   </xs:complexType>
 
+  <xs:element name="roster" type="cs:Roster" />
   <xs:element name="catalogue" type="cs:Catalogue" />
   <xs:element name="gameSystem" type="cs:GameSystem" />
 </xs:schema>

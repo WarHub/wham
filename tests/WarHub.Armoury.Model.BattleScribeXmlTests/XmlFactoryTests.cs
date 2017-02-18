@@ -7,12 +7,20 @@ namespace WarHub.Armoury.Model.BattleScribeXmlTests
     using System.IO;
     using BattleScribeXml;
     using Xunit;
+    using XmlSerializer = System.Xml.Serialization.XmlSerializer;
 
     public class XmlFactoryTests : IDisposable
     {
         public XmlFactoryTests()
         {
             CreateDir();
+            var serializers = new[]
+            {
+                new XmlSerializer(typeof(GameSystem)),
+                new XmlSerializer(typeof(Catalogue)),
+                new XmlSerializer(typeof(Roster)),
+                new XmlSerializer(typeof(DataIndex))
+            };
         }
 
         public void Dispose()
@@ -30,11 +38,6 @@ namespace WarHub.Armoury.Model.BattleScribeXmlTests
         public void CatalogueReadWriteTest()
         {
             ReadWriteFactoryTestHelper<Catalogue>(TestData.CatalogueFilename);
-        }
-
-        private static void CreateDir()
-        {
-            Directory.CreateDirectory(TestData.OutputDir);
         }
 
         [Fact]
@@ -61,22 +64,27 @@ namespace WarHub.Armoury.Model.BattleScribeXmlTests
             ReadWriteFactoryTestHelper<GameSystem>(TestData.GameSystemFilename);
         }
 
+        [Fact]
+        public void RosterFormatAsBattleScribeTest()
+        {
+            FormatAsBattleScribeTestHelper<Roster>(TestData.RosterFilename);
+        }
+
+        [Fact]
+        public void RosterReadWriteTest()
+        {
+            ReadWriteFactoryTestHelper<Roster>(TestData.RosterFilename);
+        }
+
+        private static void CreateDir()
+        {
+            Directory.CreateDirectory(TestData.OutputDir);
+        }
+
         private static void RemoveDir()
         {
             Directory.Delete(TestData.OutputDir, true);
         }
-
-        //[Fact]
-        //public void RosterFormatAsBattleScribeTest()
-        //{
-        //    FormatAsBattleScribeTestHelper<Roster>(TestData.RosterFilename);
-        //}
-
-        //[Fact]
-        //public void RosterReadWriteTest()
-        //{
-        //    ReadWriteFactoryTestHelper<Roster>(TestData.RosterFilename);
-        //}
 
         private static void FormatAsBattleScribeTestHelper<T>(string filename)
             where T : IXmlProperties
@@ -85,10 +93,10 @@ namespace WarHub.Armoury.Model.BattleScribeXmlTests
             T deserializedObject;
             using (Stream readStream = File.OpenRead(inputPath))
             {
-                deserializedObject = XmlSerializer.Deserialize<T>(readStream);
+                deserializedObject = BattleScribeXml.XmlSerializer.Deserialize<T>(readStream);
             }
             Stream writeStream = new MemoryStream(); // disposed later by StreamReader
-            XmlSerializer.SerializeFormatted(deserializedObject, writeStream);
+            BattleScribeXml.XmlSerializer.SerializeFormatted(deserializedObject, writeStream);
             writeStream.Position = 0;
             //assertion
             using (var inputReader = new StreamReader(File.OpenRead(inputPath)))
@@ -120,12 +128,12 @@ namespace WarHub.Armoury.Model.BattleScribeXmlTests
             T testObject;
             using (var readStream = File.OpenRead(inputPath))
             {
-                testObject = XmlSerializer.Deserialize<T>(readStream);
+                testObject = BattleScribeXml.XmlSerializer.Deserialize<T>(readStream);
             }
             Assert.True(Directory.Exists(TestData.OutputDir));
             using (var writeStream = File.Create(outputPath))
             {
-                XmlSerializer.Serialize(testObject, writeStream);
+                BattleScribeXml.XmlSerializer.Serialize(testObject, writeStream);
             }
         }
     }

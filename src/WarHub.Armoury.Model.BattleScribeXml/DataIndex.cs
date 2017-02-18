@@ -9,10 +9,10 @@ namespace WarHub.Armoury.Model.BattleScribeXml
     using System.Xml.Serialization;
     using Repo;
 
-    [XmlRoot("dataIndex", Namespace = BSDataIndexXMLNamespace)]
+    [XmlRoot("dataIndex", Namespace = BsDataIndexXmlNamespace)]
     public sealed class DataIndex : IXmlProperties, INamed
     {
-        private const string BSDataIndexXMLNamespace =
+        public const string BsDataIndexXmlNamespace =
             "http://www.battlescribe.net/schema/dataIndexSchema";
 
         [XmlAttribute("battleScribeVersion")]
@@ -24,7 +24,7 @@ namespace WarHub.Armoury.Model.BattleScribeXml
         [XmlAttribute("indexUrl")]
         public string IndexUrl { get; set; }
 
-        public string DefaultXmlNamespace => BSDataIndexXMLNamespace;
+        public string DefaultXmlNamespace => BsDataIndexXmlNamespace;
 
         [XmlArray("repositoryUrls")]
         [XmlArrayItem(ElementName = "repositoryUrl")]
