@@ -5,15 +5,16 @@ namespace WarHub.Armoury.Model.BattleScribeXmlTests
 {
     using System;
     using System.IO;
+    using System.Xml.Serialization;
     using BattleScribeXml;
     using Xunit;
-    using XmlSerializer = System.Xml.Serialization.XmlSerializer;
 
     public class XmlFactoryTests : IDisposable
     {
         public XmlFactoryTests()
         {
             CreateDir();
+            // ReSharper disable once UnusedVariable
             var serializers = new[]
             {
                 new XmlSerializer(typeof(GameSystem)),
@@ -93,10 +94,10 @@ namespace WarHub.Armoury.Model.BattleScribeXmlTests
             T deserializedObject;
             using (Stream readStream = File.OpenRead(inputPath))
             {
-                deserializedObject = BattleScribeXml.XmlSerializer.Deserialize<T>(readStream);
+                deserializedObject = BattleScribeXmlSerializer.Deserialize<T>(readStream);
             }
             Stream writeStream = new MemoryStream(); // disposed later by StreamReader
-            BattleScribeXml.XmlSerializer.SerializeFormatted(deserializedObject, writeStream);
+            BattleScribeXmlSerializer.SerializeFormatted(deserializedObject, writeStream);
             writeStream.Position = 0;
             //assertion
             using (var inputReader = new StreamReader(File.OpenRead(inputPath)))
@@ -128,12 +129,12 @@ namespace WarHub.Armoury.Model.BattleScribeXmlTests
             T testObject;
             using (var readStream = File.OpenRead(inputPath))
             {
-                testObject = BattleScribeXml.XmlSerializer.Deserialize<T>(readStream);
+                testObject = BattleScribeXmlSerializer.Deserialize<T>(readStream);
             }
             Assert.True(Directory.Exists(TestData.OutputDir));
             using (var writeStream = File.Create(outputPath))
             {
-                BattleScribeXml.XmlSerializer.Serialize(testObject, writeStream);
+                BattleScribeXmlSerializer.Serialize(testObject, writeStream);
             }
         }
     }

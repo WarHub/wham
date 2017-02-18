@@ -7,12 +7,15 @@ namespace WarHub.Armoury.Model.BattleScribe.Services
     using System.Collections.Generic;
     using System.IO;
     using System.Threading.Tasks;
+    using BattleScribeXml;
     using BattleScribeXml.GuidMapping;
     using Repo;
+    using Catalogue = BattleScribe.Catalogue;
+    using GameSystem = BattleScribe.GameSystem;
+    using Roster = BattleScribe.Roster;
     using XmlGameSystem = BattleScribeXml.GameSystem;
     using XmlCatalogue = BattleScribeXml.Catalogue;
     using XmlRoster = BattleScribeXml.Roster;
-    using BattleScribeXmlSerializer = BattleScribeXml.XmlSerializer;
 
     public sealed class GuidControllingSerializationService : ISerializationService
     {
@@ -131,7 +134,7 @@ namespace WarHub.Armoury.Model.BattleScribe.Services
 
         internal static List<string> ListRequiredCatalogueIds(XmlRoster xmlRoster)
         {
-            return RequirementExtractor.ListRequiredCatalogues(xmlRoster);
+            return RequirementExtractor.GetRequiredCatalogues(xmlRoster);
         }
 
         internal XmlRoster DeserializeRoster(Stream rosterXmlStream)

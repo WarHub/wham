@@ -13,7 +13,7 @@ namespace WarHub.Armoury.Model.BattleScribeXml
     /// <summary>
     ///     Provides convenient and (precisely) formatted (de)serialization of xml data objects.
     /// </summary>
-    public class XmlSerializer
+    public class BattleScribeXmlSerializer
     {
         /// <summary>
         ///     Convenience method. Serializes simultaneously formatting output using
@@ -71,7 +71,7 @@ namespace WarHub.Armoury.Model.BattleScribeXml
         }
 
         /// <summary>
-        ///     Encloses XmlSerializer.Serialize using XmlWriter with these settings: CloseOutput =
+        ///     Encloses BattleScribeXmlSerializer.Serialize using XmlWriter with these settings: CloseOutput =
         ///     false, Encoding = UTF8, Indent = true, OmitXmlDeclaration = false
         /// </summary>
         /// <typeparam name="T">Type of serialized object.</typeparam>

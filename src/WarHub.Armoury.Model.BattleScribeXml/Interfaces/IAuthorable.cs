@@ -11,4 +11,6 @@ namespace WarHub.Armoury.Model.BattleScribeXml
 
         string AuthorUrl { get; set; }
     }
+
+    public partial class Datablob : IAuthorable { }
 }

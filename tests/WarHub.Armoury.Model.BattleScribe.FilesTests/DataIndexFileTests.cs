@@ -21,7 +21,7 @@ namespace WarHub.Armoury.Model.BattleScribe.FilesTests
             index.RepositoryUrls = null;
             using (var memoryStream = new MemoryStream())
             {
-                XmlSerializer.Serialize(index, memoryStream);
+                BattleScribeXmlSerializer.Serialize(index, memoryStream);
                 memoryStream.Seek(0, SeekOrigin.Begin);
 
                 Assert.Throws<InvalidDataException>(
@@ -35,7 +35,7 @@ namespace WarHub.Armoury.Model.BattleScribe.FilesTests
             var index = CreateSampleDataIndex();
             using (var memoryStream = new MemoryStream())
             {
-                XmlSerializer.Serialize(index, memoryStream);
+                BattleScribeXmlSerializer.Serialize(index, memoryStream);
                 memoryStream.Seek(0, SeekOrigin.Begin);
 
                 Assert.Throws<NotSupportedException>(

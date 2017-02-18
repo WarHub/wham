@@ -55,7 +55,7 @@ namespace WarHub.Armoury.Model.BattleScribe.Files
         /// <exception cref="InvalidDataException">On error reading index content.</exception>
         public static RemoteSourceDataIndex ReadBattleScribeIndex(Stream stream)
         {
-            var index = XmlSerializer.Deserialize<DataIndex>(stream);
+            var index = BattleScribeXmlSerializer.Deserialize<DataIndex>(stream);
             try
             {
                 return index.CreateSourceIndex();
@@ -68,7 +68,7 @@ namespace WarHub.Armoury.Model.BattleScribe.Files
                     using (var memoryStream = new MemoryStream())
                     using (var reader = new StreamReader(memoryStream))
                     {
-                        XmlSerializer.Serialize(index, memoryStream);
+                        BattleScribeXmlSerializer.Serialize(index, memoryStream);
                         memoryStream.Seek(0, SeekOrigin.Begin);
                         indexString = reader.ReadToEnd();
                     }

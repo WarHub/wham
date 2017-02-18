@@ -9,4 +9,10 @@ namespace WarHub.Armoury.Model.BattleScribeXml
 
         string Page { get; set; }
     }
+
+    public partial class Datablob : IBookIndexed { }
+
+    public partial class EntryBase : IBookIndexed { }
+
+    public partial class Selection : IBookIndexed { }
 }

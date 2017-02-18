@@ -6,7 +6,7 @@ namespace WarHub.Armoury.Model.BattleScribeXml
     using System.Xml.Serialization;
 
     [XmlType("selection")]
-    public class Selection : RosterElementBase
+    public partial class Selection : RosterElementBase
     {
         [XmlAttribute("entryGroupId")]
         public string EntryGroupId { get; set; }

@@ -4,12 +4,12 @@
 namespace WarHub.Armoury.Model.BattleScribeXml
 {
     using System;
-    using GuidMapping;
 
-    public interface IIdentified : INotifyGuidChanged
+    public class ProcessingFailedException : ArgumentException
     {
-        //Guid Guid { get; set; }
-
-        //string Id { get; set; }
+        public ProcessingFailedException(string message)
+            : base(message)
+        {
+        }
     }
 }

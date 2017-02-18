@@ -7,7 +7,7 @@ namespace WarHub.Armoury.Model.BattleScribeXml
 
     [XmlInclude(typeof(GameSystem))]
     [XmlInclude(typeof(Catalogue))]
-    public class Datablob
+    public partial class Datablob
     {
         [XmlArray("profiles", Order = 0)]
         public Profile[] Profiles { get; set; }

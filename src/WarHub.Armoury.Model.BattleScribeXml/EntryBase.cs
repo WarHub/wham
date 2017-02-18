@@ -10,7 +10,7 @@ namespace WarHub.Armoury.Model.BattleScribeXml
     [XmlInclude(typeof(InfoLink))]
     [XmlInclude(typeof(Rule))]
     [XmlInclude(typeof(Profile))]
-    public class EntryBase
+    public partial class EntryBase
     {
         [XmlArray("profiles", Order = 0)]
         public Profile[] Profiles { get; set; }
