@@ -19,6 +19,12 @@ namespace WarHub.Armoury.Model.BattleScribeXml
             {
                 throw new ArgumentNullException(nameof(selector));
             }
+            return forceList.SelectWithNestedForcesInternal(selector);
+        }
+
+        private static IEnumerable<TResult> SelectWithNestedForcesInternal<TResult>(this IEnumerable<Force> forceList,
+            Func<Force, TResult> selector)
+        {
             foreach (var force in forceList)
             {
                 yield return selector(force);
