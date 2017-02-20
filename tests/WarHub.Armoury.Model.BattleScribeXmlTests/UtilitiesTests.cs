@@ -1,10 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿// WarHub licenses this file to you under the MIT license.
+// See LICENSE file in the project root for more information.
 
 namespace WarHub.Armoury.Model.BattleScribeXmlTests
 {
+    using System;
+    using System.Collections;
+    using System.Collections.Generic;
+    using System.Linq;
     using BattleScribeXml;
     using Xunit;
 
@@ -23,42 +25,111 @@ namespace WarHub.Armoury.Model.BattleScribeXmlTests
         [Fact]
         public void SelectWithNestedForces_SelectorNullException()
         {
-            IEnumerable<Force> collection = Enumerable.Empty<Force>();
+            var collection = Enumerable.Empty<Force>();
             Func<Force, string> selector = null;
             // ReSharper disable once ExpressionIsAlwaysNull
             Assert.Throws<ArgumentNullException>(() => collection.SelectWithNestedForces(selector));
         }
 
         [Theory]
-        public void SelectWithNestedForces_CorrectCount()
+        [ClassData(typeof(TestPacks))]
+        public void SelectWithNestedForces_CorrectCount(ForcesTestPack pack)
         {
-            var pack = Forces1;
             var count = pack.Forces.SelectWithNestedForces(x => x).Count();
 
             Assert.Equal(pack.Count, count);
         }
 
-        private struct ForcesTestPack
+        public class TestPacks : IEnumerable<object[]>
+        {
+            public IEnumerable<object[]> ForceDataRows { get; } =
+                new[]
+                {
+                    new object[] {Forces0},
+                    new object[] {Forces1},
+                    new object[] {Forces2},
+                    new object[] {Forces3}
+                };
+
+            private static ForcesTestPack Forces0 =>
+                new ForcesTestPack
+                {
+                    Forces = new Force[]
+                    {
+                    },
+                    Count = 0
+                };
+
+            private static ForcesTestPack Forces1 =>
+                new ForcesTestPack
+                {
+                    Forces = new[]
+                    {
+                        new Force()
+                    },
+                    Count = 1
+                };
+
+            private static ForcesTestPack Forces2 =>
+                new ForcesTestPack
+                {
+                    Forces = new[]
+                    {
+                        new Force
+                        {
+                            Forces =
+                            {
+                                new Force(),
+                                new Force(),
+                                new Force(),
+                                new Force()
+                            }
+                        }
+                    },
+                    Count = 5
+                };
+
+            private static ForcesTestPack Forces3 =>
+                new ForcesTestPack
+                {
+                    Forces = new[]
+                    {
+                        new Force(),
+                        new Force
+                        {
+                            Forces =
+                            {
+                                new Force(),
+                                new Force
+                                {
+                                    Forces =
+                                    {
+                                        new Force(),
+                                        new Force()
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    Count = 6
+                };
+
+            public IEnumerator<object[]> GetEnumerator()
+            {
+                return ForceDataRows.GetEnumerator();
+            }
+
+            IEnumerator IEnumerable.GetEnumerator()
+            {
+                return GetEnumerator();
+            }
+        }
+
+        public struct ForcesTestPack
         {
             public IEnumerable<Force> Forces { get; set; }
 
             public int Count { get; set; }
         }
-
-        private static ForcesTestPack Forces1 =>
-            new ForcesTestPack
-            {
-                Forces = new[]
-            {
-                new Force
-                {
-                    Forces =
-                    {
-                        new Force()
-                    }
-                }
-            },
-                Count = 2
-            };
     }
 }

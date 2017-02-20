@@ -9,26 +9,8 @@ namespace WarHub.Armoury.Model.BattleScribeXmlTests
     using BattleScribeXml;
     using Xunit;
 
-    public class XmlFactoryTests : IDisposable
+    public class BattleScribeXmlSerializerTests : IClassFixture<BattleScribeXmlSerializerTests.XmlDataFixture>
     {
-        public XmlFactoryTests()
-        {
-            CreateDir();
-            // ReSharper disable once UnusedVariable
-            var serializers = new[]
-            {
-                new XmlSerializer(typeof(GameSystem)),
-                new XmlSerializer(typeof(Catalogue)),
-                new XmlSerializer(typeof(Roster)),
-                new XmlSerializer(typeof(DataIndex))
-            };
-        }
-
-        public void Dispose()
-        {
-            RemoveDir();
-        }
-
         [Fact]
         public void CatalogueFormatAsBattleScribeTest()
         {
@@ -75,16 +57,6 @@ namespace WarHub.Armoury.Model.BattleScribeXmlTests
         public void RosterReadWriteTest()
         {
             ReadWriteFactoryTestHelper<Roster>(TestData.RosterFilename);
-        }
-
-        private static void CreateDir()
-        {
-            Directory.CreateDirectory(TestData.OutputDir);
-        }
-
-        private static void RemoveDir()
-        {
-            Directory.Delete(TestData.OutputDir, true);
         }
 
         private static void FormatAsBattleScribeTestHelper<T>(string filename)
@@ -135,6 +107,37 @@ namespace WarHub.Armoury.Model.BattleScribeXmlTests
             using (var writeStream = File.Create(outputPath))
             {
                 BattleScribeXmlSerializer.Serialize(testObject, writeStream);
+            }
+        }
+
+        public class XmlDataFixture : IDisposable
+        {
+            public XmlDataFixture()
+            {
+                CreateDir();
+                // ReSharper disable once UnusedVariable
+                var serializers = new[]
+                {
+                    new XmlSerializer(typeof(GameSystem)),
+                    new XmlSerializer(typeof(Catalogue)),
+                    new XmlSerializer(typeof(Roster)),
+                    new XmlSerializer(typeof(DataIndex))
+                };
+            }
+
+            public void Dispose()
+            {
+                RemoveDir();
+            }
+
+            private static void CreateDir()
+            {
+                Directory.CreateDirectory(TestData.OutputDir);
+            }
+
+            private static void RemoveDir()
+            {
+                Directory.Delete(TestData.OutputDir, true);
             }
         }
     }
