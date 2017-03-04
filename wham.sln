@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
-VisualStudioVersion = 14.0.25123.0
+VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "WarHub.Armoury.Model", "src\WarHub.Armoury.Model\WarHub.Armoury.Model.xproj", "{64425601-EF61-413F-81B5-AE538D630009}"
 EndProject
@@ -43,6 +43,8 @@ EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "WarHub.Armoury.Model.ConditionResolversTests", "tests\WarHub.Armoury.Model.ConditionResolversTests\WarHub.Armoury.Model.ConditionResolversTests.xproj", "{EB4B0183-5FF4-4CD3-86D8-5A89C492DBA3}"
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "WarHub.Armoury.Model.EntryTreeTests", "tests\WarHub.Armoury.Model.EntryTreeTests\WarHub.Armoury.Model.EntryTreeTests.xproj", "{18234E6C-1262-4F2B-BD55-C081450F8D5E}"
+EndProject
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "WarHub.Armoury.Model.Source", "src\WarHub.Armoury.Model.Source\WarHub.Armoury.Model.Source.xproj", "{B3B0A8B2-BB2F-4CED-A26C-FE0E02EC0D12}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -312,6 +314,22 @@ Global
 		{18234E6C-1262-4F2B-BD55-C081450F8D5E}.Release|x64.Build.0 = Release|Any CPU
 		{18234E6C-1262-4F2B-BD55-C081450F8D5E}.Release|x86.ActiveCfg = Release|Any CPU
 		{18234E6C-1262-4F2B-BD55-C081450F8D5E}.Release|x86.Build.0 = Release|Any CPU
+		{B3B0A8B2-BB2F-4CED-A26C-FE0E02EC0D12}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B3B0A8B2-BB2F-4CED-A26C-FE0E02EC0D12}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B3B0A8B2-BB2F-4CED-A26C-FE0E02EC0D12}.Debug|ARM.ActiveCfg = Debug|Any CPU
+		{B3B0A8B2-BB2F-4CED-A26C-FE0E02EC0D12}.Debug|ARM.Build.0 = Debug|Any CPU
+		{B3B0A8B2-BB2F-4CED-A26C-FE0E02EC0D12}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{B3B0A8B2-BB2F-4CED-A26C-FE0E02EC0D12}.Debug|x64.Build.0 = Debug|Any CPU
+		{B3B0A8B2-BB2F-4CED-A26C-FE0E02EC0D12}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{B3B0A8B2-BB2F-4CED-A26C-FE0E02EC0D12}.Debug|x86.Build.0 = Debug|Any CPU
+		{B3B0A8B2-BB2F-4CED-A26C-FE0E02EC0D12}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B3B0A8B2-BB2F-4CED-A26C-FE0E02EC0D12}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B3B0A8B2-BB2F-4CED-A26C-FE0E02EC0D12}.Release|ARM.ActiveCfg = Release|Any CPU
+		{B3B0A8B2-BB2F-4CED-A26C-FE0E02EC0D12}.Release|ARM.Build.0 = Release|Any CPU
+		{B3B0A8B2-BB2F-4CED-A26C-FE0E02EC0D12}.Release|x64.ActiveCfg = Release|Any CPU
+		{B3B0A8B2-BB2F-4CED-A26C-FE0E02EC0D12}.Release|x64.Build.0 = Release|Any CPU
+		{B3B0A8B2-BB2F-4CED-A26C-FE0E02EC0D12}.Release|x86.ActiveCfg = Release|Any CPU
+		{B3B0A8B2-BB2F-4CED-A26C-FE0E02EC0D12}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -333,5 +351,6 @@ Global
 		{1AD9D659-A39C-4333-90D2-C4D53D34828E} = {8C4E7D04-65AF-421E-9432-7741ADAF4714}
 		{EB4B0183-5FF4-4CD3-86D8-5A89C492DBA3} = {8C4E7D04-65AF-421E-9432-7741ADAF4714}
 		{18234E6C-1262-4F2B-BD55-C081450F8D5E} = {8C4E7D04-65AF-421E-9432-7741ADAF4714}
+		{B3B0A8B2-BB2F-4CED-A26C-FE0E02EC0D12} = {6055CEFB-2A8B-45E3-B6D7-B9DB2A4FE612}
 	EndGlobalSection
 EndGlobal

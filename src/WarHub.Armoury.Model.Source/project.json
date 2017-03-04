@@ -1,0 +1,26 @@
+{
+  "version": "0.4.0-*",
+  "description": "wham Source package. Enables manipulation of SourceTree/-Document structures on syntax level.",
+  "authors": [ "WarHub" ],
+
+  "frameworks": {
+    "netstandard1.2": {}
+  },
+  "dependencies": {
+    "NETStandard.Library": "1.6.1",
+    "System.Collections.Immutable": "1.3.0",
+    "WarHub.Armoury.Model": "0.4.0-*"
+  },
+
+  "packOptions": {
+    "licenseUrl": "https://github.com/WarHub/wham/blob/master/LICENSE",
+    "owners": [ "WarHub" ],
+    "repository": {
+      "type": "git",
+      "url": "https://github.com/WarHub/wham"
+    },
+    "summary": "WarHub Armoury Model - Top level abstraction of tabletop datafiles.",
+    "tags": [ "WarHub", "WarHub.Armoury.Model", "wham", "wargame", "roster", "battlescribe" ],
+    "releaseNotes": ""
+  }
+}
