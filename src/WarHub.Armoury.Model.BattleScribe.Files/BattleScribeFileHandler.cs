@@ -6,9 +6,8 @@ namespace WarHub.Armoury.Model.BattleScribe.Files
     using System.IO;
     using System.Threading.Tasks;
     using Repo;
-    using Services;
 
-    public class BattleScribeFileHandler : IBattleScribeFileHandler
+    public class BattleScribeFileHandler
     {
         public BattleScribeFileHandler(IRepoStorageService repoStorageService)
         {

@@ -10,8 +10,7 @@
   "dependencies": {
     "NETStandard.Library": "1.6.1",
     "WarHub.Armoury.Model": "0.4.0-*",
-    "WarHub.Armoury.Model.BattleScribeXml": "0.4.0-*",
-    "WarHub.Armoury.Model.BattleScribe": "0.4.0-*"
+    "WarHub.Armoury.Model.BattleScribeXml": "0.4.0-*"
   },
 
   "packOptions": {

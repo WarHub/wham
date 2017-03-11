@@ -18,7 +18,7 @@ namespace WarHub.Armoury.Model.BattleScribe.FilesTests
         {
             var index = CreateSampleDataIndex();
             index.IndexUrl = null;
-            index.RepositoryUrls = null;
+            index.RepositoryUrls.Clear();
             using (var memoryStream = new MemoryStream())
             {
                 BattleScribeXmlSerializer.Serialize(index, memoryStream);
@@ -50,7 +50,7 @@ namespace WarHub.Armoury.Model.BattleScribe.FilesTests
             {
                 BattleScribeVersion = battleScribeVersion,
                 Name = "Test index",
-                DataIndexEntries = new List<DataIndexEntry>
+                DataIndexEntries =
                 {
                     new DataIndexEntry
                     {
@@ -72,7 +72,7 @@ namespace WarHub.Armoury.Model.BattleScribe.FilesTests
                     }
                 },
                 IndexUrl = "http://example.com/battlescribeindex/sample/index.bsi",
-                RepositoryUrls = new List<string>
+                RepositoryUrls = 
                 {
                     "http://example-mirror.com/index.bsi",
                     "http://example-mirror.uk/index.bsi"
