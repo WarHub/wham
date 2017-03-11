@@ -1,36 +1,31 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.25420.1
+# Visual Studio 15
+VisualStudioVersion = 15.0.26228.4
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "WarHub.Armoury.Model", "src\WarHub.Armoury.Model\WarHub.Armoury.Model.xproj", "{64425601-EF61-413F-81B5-AE538D630009}"
-EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "WarHub.Armoury.Model.BattleScribeXml", "src\WarHub.Armoury.Model.BattleScribeXml\WarHub.Armoury.Model.BattleScribeXml.xproj", "{31C63724-B173-480B-BD3F-ACE0D3EC6402}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{6055CEFB-2A8B-45E3-B6D7-B9DB2A4FE612}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{A11F905B-21EA-4CB2-95CF-9FDCB7BE4AE2}"
-	ProjectSection(SolutionItems) = preProject
-		global.json = global.json
-	EndProjectSection
-EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "WarHub.Armoury.Model.BattleScribe.Files", "src\WarHub.Armoury.Model.BattleScribe.Files\WarHub.Armoury.Model.BattleScribe.Files.xproj", "{C2603F6B-0D06-4A31-96B2-54D05A168C46}"
-EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "WarHub.Armoury.Model.EntryTree", "src\WarHub.Armoury.Model.EntryTree\WarHub.Armoury.Model.EntryTree.xproj", "{896768DC-DD36-4919-B51F-F717AF98D499}"
-EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "WarHub.Armoury.Model.DataAccess", "src\WarHub.Armoury.Model.DataAccess\WarHub.Armoury.Model.DataAccess.xproj", "{ABB37C29-C44B-4ABB-9E2D-963472E1B08B}"
-EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "WarHub.Armoury.Model.DataAccess.Autofac", "src\WarHub.Armoury.Model.DataAccess.Autofac\WarHub.Armoury.Model.DataAccess.Autofac.xproj", "{901D8292-D6E1-472D-A413-91C599D823F2}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{8C4E7D04-65AF-421E-9432-7741ADAF4714}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "WarHub.Armoury.Model.BattleScribe.FilesTests", "tests\WarHub.Armoury.Model.BattleScribe.FilesTests\WarHub.Armoury.Model.BattleScribe.FilesTests.xproj", "{FEDAC8AF-2D01-4C3A-837A-01C58A14523D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WarHub.Armoury.Model", "src\WarHub.Armoury.Model\WarHub.Armoury.Model.csproj", "{64425601-EF61-413F-81B5-AE538D630009}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "WarHub.Armoury.Model.BattleScribeXmlTests", "tests\WarHub.Armoury.Model.BattleScribeXmlTests\WarHub.Armoury.Model.BattleScribeXmlTests.xproj", "{1AD9D659-A39C-4333-90D2-C4D53D34828E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WarHub.Armoury.Model.BattleScribeXml", "src\WarHub.Armoury.Model.BattleScribeXml\WarHub.Armoury.Model.BattleScribeXml.csproj", "{31C63724-B173-480B-BD3F-ACE0D3EC6402}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "WarHub.Armoury.Model.EntryTreeTests", "tests\WarHub.Armoury.Model.EntryTreeTests\WarHub.Armoury.Model.EntryTreeTests.xproj", "{18234E6C-1262-4F2B-BD55-C081450F8D5E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WarHub.Armoury.Model.BattleScribe.Files", "src\WarHub.Armoury.Model.BattleScribe.Files\WarHub.Armoury.Model.BattleScribe.Files.csproj", "{C2603F6B-0D06-4A31-96B2-54D05A168C46}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "WarHub.Armoury.Model.Source", "src\WarHub.Armoury.Model.Source\WarHub.Armoury.Model.Source.xproj", "{B3B0A8B2-BB2F-4CED-A26C-FE0E02EC0D12}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WarHub.Armoury.Model.EntryTree", "src\WarHub.Armoury.Model.EntryTree\WarHub.Armoury.Model.EntryTree.csproj", "{896768DC-DD36-4919-B51F-F717AF98D499}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WarHub.Armoury.Model.DataAccess", "src\WarHub.Armoury.Model.DataAccess\WarHub.Armoury.Model.DataAccess.csproj", "{ABB37C29-C44B-4ABB-9E2D-963472E1B08B}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WarHub.Armoury.Model.DataAccess.Autofac", "src\WarHub.Armoury.Model.DataAccess.Autofac\WarHub.Armoury.Model.DataAccess.Autofac.csproj", "{901D8292-D6E1-472D-A413-91C599D823F2}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WarHub.Armoury.Model.BattleScribe.FilesTests", "tests\WarHub.Armoury.Model.BattleScribe.FilesTests\WarHub.Armoury.Model.BattleScribe.FilesTests.csproj", "{FEDAC8AF-2D01-4C3A-837A-01C58A14523D}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WarHub.Armoury.Model.BattleScribeXmlTests", "tests\WarHub.Armoury.Model.BattleScribeXmlTests\WarHub.Armoury.Model.BattleScribeXmlTests.csproj", "{1AD9D659-A39C-4333-90D2-C4D53D34828E}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WarHub.Armoury.Model.EntryTreeTests", "tests\WarHub.Armoury.Model.EntryTreeTests\WarHub.Armoury.Model.EntryTreeTests.csproj", "{18234E6C-1262-4F2B-BD55-C081450F8D5E}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WarHub.Armoury.Model.Source", "src\WarHub.Armoury.Model.Source\WarHub.Armoury.Model.Source.csproj", "{B3B0A8B2-BB2F-4CED-A26C-FE0E02EC0D12}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

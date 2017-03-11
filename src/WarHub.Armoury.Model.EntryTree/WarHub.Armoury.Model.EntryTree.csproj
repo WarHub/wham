@@ -1,0 +1,30 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <Description>wham EntryTree provides tree structure of entry/entrygroup choices in given entry. Helpful for immediate resolution which group was parent for some child selection.</Description>
+    <VersionPrefix>0.4.0</VersionPrefix>
+    <Authors>WarHub</Authors>
+    <TargetFramework>netstandard1.2</TargetFramework>
+    <AssemblyName>WarHub.Armoury.Model.EntryTree</AssemblyName>
+    <PackageId>WarHub.Armoury.Model.EntryTree</PackageId>
+    <PackageTags>wham;warhub;tree;entry;entrygroup;group</PackageTags>
+    <PackageReleaseNotes>v0.2.2: added portable profile 259 support.
+
+v0.3.0: NetCoreApp TFM support.</PackageReleaseNotes>
+    <PackageLicenseUrl>https://github.com/WarHub/wham/blob/master/LICENSE</PackageLicenseUrl>
+    <RepositoryType>git</RepositoryType>
+    <RepositoryUrl>https://github.com/WarHub/wham</RepositoryUrl>
+    <NetStandardImplicitPackageVersion>1.6.1</NetStandardImplicitPackageVersion>
+    <GenerateAssemblyTitleAttribute>false</GenerateAssemblyTitleAttribute>
+    <GenerateAssemblyDescriptionAttribute>false</GenerateAssemblyDescriptionAttribute>
+    <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
+    <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
+    <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
+    <GenerateAssemblyCopyrightAttribute>false</GenerateAssemblyCopyrightAttribute>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\WarHub.Armoury.Model\WarHub.Armoury.Model.csproj" />
+  </ItemGroup>
+
+</Project>

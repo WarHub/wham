@@ -1,0 +1,32 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <Description>wham main package. Top level abstraction of roster building model in C#.</Description>
+    <VersionPrefix>0.4.0</VersionPrefix>
+    <Authors>WarHub</Authors>
+    <TargetFramework>netstandard1.2</TargetFramework>
+    <AssemblyName>WarHub.Armoury.Model</AssemblyName>
+    <PackageId>WarHub.Armoury.Model</PackageId>
+    <PackageTags>WarHub;WarHub.Armoury.Model;wham;wargame;roster;battlescribe</PackageTags>
+    <PackageReleaseNotes>v0.2.2: Added IRepoManagerLocator implementation.
+
+v0.2.5: added IDataIndexService, RemoteSource and RemoteSourceDataIndex into Repo namespace.
+
+v0.3.0: NetCoreApp TFM support.</PackageReleaseNotes>
+    <PackageLicenseUrl>https://github.com/WarHub/wham/blob/master/LICENSE</PackageLicenseUrl>
+    <RepositoryType>git</RepositoryType>
+    <RepositoryUrl>https://github.com/WarHub/wham</RepositoryUrl>
+    <NetStandardImplicitPackageVersion>1.6.1</NetStandardImplicitPackageVersion>
+    <GenerateAssemblyTitleAttribute>false</GenerateAssemblyTitleAttribute>
+    <GenerateAssemblyDescriptionAttribute>false</GenerateAssemblyDescriptionAttribute>
+    <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
+    <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
+    <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
+    <GenerateAssemblyCopyrightAttribute>false</GenerateAssemblyCopyrightAttribute>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="System.Xml.XmlSerializer" Version="4.0.11" />
+  </ItemGroup>
+
+</Project>

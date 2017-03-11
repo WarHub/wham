@@ -1,0 +1,35 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <Description>wham BattleScribe Files provides helper classes to easily handle zipped/unzipped datafile formats.</Description>
+    <VersionPrefix>0.4.0</VersionPrefix>
+    <Authors>WarHub</Authors>
+    <TargetFramework>netstandard1.2</TargetFramework>
+    <AssemblyName>WarHub.Armoury.Model.BattleScribe.Files</AssemblyName>
+    <PackageId>WarHub.Armoury.Model.BattleScribe.Files</PackageId>
+    <PackageTags>WarHub;wham;armoury;model;BattleScribe;files</PackageTags>
+    <PackageReleaseNotes>v0.2.2: update versioning.
+
+v0.2.3: added PCL profile 111 support.
+
+v0.2.5: Aligned with RemoteDataSource name/namespace changes and BattleScribeFileHandler changes.
+
+v0.3.0: NetCoreApp TFM support.</PackageReleaseNotes>
+    <PackageLicenseUrl>https://github.com/WarHub/wham/blob/master/LICENSE</PackageLicenseUrl>
+    <RepositoryType>git</RepositoryType>
+    <RepositoryUrl>https://github.com/WarHub/wham</RepositoryUrl>
+    <NetStandardImplicitPackageVersion>1.6.1</NetStandardImplicitPackageVersion>
+    <GenerateAssemblyTitleAttribute>false</GenerateAssemblyTitleAttribute>
+    <GenerateAssemblyDescriptionAttribute>false</GenerateAssemblyDescriptionAttribute>
+    <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
+    <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
+    <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
+    <GenerateAssemblyCopyrightAttribute>false</GenerateAssemblyCopyrightAttribute>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\WarHub.Armoury.Model\WarHub.Armoury.Model.csproj" />
+    <ProjectReference Include="..\WarHub.Armoury.Model.BattleScribeXml\WarHub.Armoury.Model.BattleScribeXml.csproj" />
+  </ItemGroup>
+
+</Project>
