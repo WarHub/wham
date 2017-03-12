@@ -3,6 +3,7 @@
 
 namespace WarHub.Armoury.Model.Source
 {
+    using System;
     using System.Collections.Immutable;
 
     public abstract class SourceTree
@@ -10,20 +11,84 @@ namespace WarHub.Armoury.Model.Source
         public abstract SourceNode GetRootNode();
     }
 
-    public abstract class SourceNode
+    public class CharacteristicNode : BattleScribeSourceNode
     {
-        protected SourceNode(SourceTree tree)
+        public CharacteristicNode(SourceTree tree, BattleScribeSourceNode parent, ImmutableSourceNode immutable) : base(tree)
         {
-            Tree = tree;
+            Immutable = immutable;
+        }
+        
+        public IdToken CharacteristicId { get; }
+
+        public TextToken Value { get; }
+
+        public TextToken Name { get; }
+
+        public override SourceNode Parent => throw new NotImplementedException();
+
+        public override SourceNodeKind NodeKind => throw new NotImplementedException();
+
+        public override SourceNodeList<SourceNode> Children => throw new NotImplementedException();
+
+        private ImmutableSourceNode Immutable { get; }
+
+        internal override int GetSlotCount()
+        {
+            throw new NotImplementedException();
         }
 
-        protected SourceTree Tree { get; }
+        internal override SourceNode GetSlotNode(int index)
+        {
+            throw new NotImplementedException();
+        }
+    }
 
-        public abstract SourceNode Parent { get; }
+    public class ImmutableCharacteristicNode : ImmutableSourceNode
+    {
+        public override ImmutableArray<ImmutableSourceNode> Children => ImmutableArray<ImmutableSourceNode>.Empty;
 
-        public abstract SourceNodeKind NodeKind { get; }
+        public override SourceNodeKind NodeKind => SourceNodeKind.Unspecified;
 
-        public abstract SourceNodeList Children { get; }
+        public IdToken CharacteristicId { get; }
+
+        public TextToken Value { get; }
+
+        public TextToken Name { get; }
+    }
+
+    public class ImmutableCharacteristicTypeNode : ImmutableSourceNode
+    {
+        public override ImmutableArray<ImmutableSourceNode> Children => ImmutableArray<ImmutableSourceNode>.Empty;
+
+        public override SourceNodeKind NodeKind => SourceNodeKind.Unspecified;
+
+        public IdToken CharacteristicId { get; }
+
+        public TextToken Name { get; }
+    }
+
+    public class IdToken
+    {
+
+    }
+
+    public class IntegerToken
+    {
+
+    }
+
+    public class TextToken
+    {
+
+    }
+    
+    public abstract class BattleScribeSourceNode : SourceNode
+    {
+        public BattleScribeSourceNode(SourceTree tree) : base(tree)
+        {
+        }
+
+        public override string ModelLanguage => "BattleScribe";
     }
 
     public abstract class ImmutableSourceNode
@@ -31,24 +96,5 @@ namespace WarHub.Armoury.Model.Source
         public abstract ImmutableArray<ImmutableSourceNode> Children { get; }
 
         public abstract SourceNodeKind NodeKind { get; }
-    }
-
-    public struct SourceNodeList
-    {
-    }
-
-    /// <summary>
-    /// Represents the kind of <see cref="SourceNode"/>. Wrapper class for string.
-    /// </summary>
-    public struct SourceNodeKind
-    {
-        public SourceNodeKind(string stringValue)
-        {
-            StringValue = stringValue;
-        }
-
-        public static readonly SourceNodeKind Unspecified = default(SourceNodeKind);
-
-        public string StringValue { get; }
     }
 }
