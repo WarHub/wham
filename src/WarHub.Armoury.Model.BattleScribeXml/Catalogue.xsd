@@ -3,7 +3,7 @@
            targetNamespace="http://www.battlescribe.net/schema/catalogueSchema"
            xmlns:cs="http://www.battlescribe.net/schema/catalogueSchema">
   
-  <!--schema for BattleScribe [version 2.00, (c) Jon Taylor] datafiles (catalogues and game systems)-->
+  <!--schema for BattleScribe [version 2.01, (c) Jon Taylor] datafiles (catalogues and game systems)-->
   <!--schema file author: Amadeusz Sadowski-->
 
   <xs:simpleType name="idtype">
@@ -40,7 +40,7 @@
   <xs:complexType name="CostType">
     <xs:attribute name="id" type="cs:idtype" use="required" />
     <xs:attribute name="name" type="xs:string" use="required" />
-    <xs:attribute name="defaultCostLimit" type="xs:decimal" use="required" fixed="0.0" />
+    <xs:attribute name="defaultCostLimit" type="xs:decimal" use="required" />
   </xs:complexType>
 
   <xs:complexType name="CostTypeList">
@@ -144,8 +144,8 @@
       <xs:extension base="cs:EntryBase">
         <xs:sequence>
           <xs:element name="constraints" type="cs:ConstraintList" />
-          <xs:element name="categoryEntries" type="cs:CategoryEntryList" />
           <xs:element name="forceEntries" type="cs:ForceEntryList" />
+          <xs:element name="categoryLinks" type="cs:CategoryLinkList" />
         </xs:sequence>
       </xs:extension>
     </xs:complexContent>
