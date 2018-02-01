@@ -121,29 +121,6 @@
       <xs:element name="rule" type="cs:Rule" minOccurs="0" maxOccurs="unbounded" />
     </xs:sequence>
   </xs:complexType>
-  
-  <!--infoLink-->
-  <xs:simpleType name="InfoLinkKind">
-    <xs:restriction base="xs:string">
-      <xs:enumeration value="profile" />
-      <xs:enumeration value="rule" />
-    </xs:restriction>
-  </xs:simpleType>
-
-  <xs:complexType name="InfoLink">
-    <xs:complexContent>
-      <xs:extension base="cs:EntryBase">
-        <xs:attribute name="targetId" type="cs:idtype" use="required" />
-        <xs:attribute name="type" type="cs:InfoLinkKind" />
-      </xs:extension>
-    </xs:complexContent>
-  </xs:complexType>
-
-  <xs:complexType name="InfoLinkList">
-    <xs:sequence>
-      <xs:element name="infoLink" type="cs:InfoLink" minOccurs="0" maxOccurs="unbounded" />
-    </xs:sequence>
-  </xs:complexType>
 
   <!--forceEntry-->
   <xs:complexType name="CategoryEntry">
@@ -220,12 +197,14 @@
       <xs:extension base="cs:EntryBase">
         <xs:sequence>
           <xs:element name="constraints" type="cs:ConstraintList" />
+          <xs:element name="categoryLinks" type="cs:CategoryLinkList" />
           <xs:element name="selectionEntries" type="cs:SelectionEntryList" />
           <xs:element name="selectionEntryGroups" type="cs:SelectionEntryGroupList" />
           <xs:element name="entryLinks" type="cs:EntryLinkList" />
           <xs:element name="costs" type="cs:CostList" />
         </xs:sequence>
         <xs:attribute name="collective" type="xs:boolean" use="required" />
+        <!--below attribute is deprecated and will probably be removed in future-->
         <xs:attribute name="categoryEntryId" type="cs:idtype" use="optional" />
         <xs:attribute name="type" type="cs:SelectionEntryKind" use="required" />
       </xs:extension>
@@ -244,6 +223,7 @@
       <xs:extension base="cs:EntryBase">
         <xs:sequence>
           <xs:element name="constraints" type="cs:ConstraintList" />
+          <xs:element name="categoryLinks" type="cs:CategoryLinkList" />
           <xs:element name="selectionEntries" type="cs:SelectionEntryList" />
           <xs:element name="selectionEntryGroups" type="cs:SelectionEntryGroupList" />
           <xs:element name="entryLinks" type="cs:EntryLinkList" />
@@ -257,6 +237,48 @@
   <xs:complexType name="SelectionEntryGroupList">
     <xs:sequence>
       <xs:element name="selectionEntryGroup" type="cs:SelectionEntryGroup" minOccurs="0" maxOccurs="unbounded" />
+    </xs:sequence>
+  </xs:complexType>
+  
+  <!--infoLink-->
+  <xs:simpleType name="InfoLinkKind">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="profile" />
+      <xs:enumeration value="rule" />
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:complexType name="InfoLink">
+    <xs:complexContent>
+      <xs:extension base="cs:EntryBase">
+        <xs:attribute name="targetId" type="cs:idtype" use="required" />
+        <xs:attribute name="type" type="cs:InfoLinkKind" />
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="InfoLinkList">
+    <xs:sequence>
+      <xs:element name="infoLink" type="cs:InfoLink" minOccurs="0" maxOccurs="unbounded" />
+    </xs:sequence>
+  </xs:complexType>
+  
+  <!--categoryLink-->
+  <xs:complexType name="CategoryLink">
+    <xs:complexContent>
+      <xs:extension base="cs:EntryBase">
+        <xs:sequence>
+          <xs:element name="constraints" type="cs:ConstraintList" />
+        </xs:sequence>
+        <xs:attribute name="targetId" type="cs:idtype" use="required" />
+        <xs:attribute name="primary" type="xs:boolean" use="required" />
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="CategoryLinkList">
+    <xs:sequence>
+      <xs:element name="categoryLink" type="cs:CategoryLink" minOccurs="0" maxOccurs="unbounded" />
     </xs:sequence>
   </xs:complexType>
 
@@ -273,6 +295,7 @@
       <xs:extension base="cs:EntryBase">
         <xs:sequence>
           <xs:element name="constraints" type="cs:ConstraintList" />
+          <xs:element name="categoryLinks" type="cs:CategoryLinkList" />
         </xs:sequence>
         <xs:attribute name="targetId" type="cs:idtype" use="required" />
         <xs:attribute name="type" type="cs:EntryLinkKind" use="required" />
@@ -355,6 +378,7 @@
       <xs:extension base="cs:SelectorBase">
         <xs:attribute name="childId" type="cs:idtype" use="required" />
         <xs:attribute name="repeats" type="xs:positiveInteger" use="required" />
+        <xs:attribute name="roundUp" type="xs:boolean" use="required" />
       </xs:extension>
     </xs:complexContent>
   </xs:complexType>
@@ -502,6 +526,7 @@
       <xs:element name="infoLinks" type="cs:InfoLinkList" />
       <xs:element name="costTypes" type="cs:CostTypeList" />
       <xs:element name="profileTypes" type="cs:ProfileTypeList" />
+      <xs:element name="categoryEntries" type="cs:CategoryEntryList" />
       <xs:element name="forceEntries" type="cs:ForceEntryList" />
       <xs:element name="selectionEntries" type="cs:SelectionEntryList" />
       <xs:element name="entryLinks" type="cs:EntryLinkList" />
