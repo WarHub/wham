@@ -1,89 +1,38 @@
 # configuration for all except 'stable' branch
 # Build in Debug, publish to MyGet
-image: Visual Studio 2017
--
-  branches:
-    except:
-      - stable
-  version: 0.5.0-{branch}-build{build}
-  skip_tags: true
-  configuration:
-    - Debug
-    - Release
-  cache:
-    - C:\Users\appveyor\.nuget\packages -> appveyor.yml
-  before_build:
-    - ps: dotnet --info
-    - ps: dotnet restore wham.sln
-    - ps: >-
-        $env:PACKAGE_SUFFIX = 'ci-' + ($env:APPVEYOR_REPO_BRANCH -replace '^(.{0,6}).*$', '$1') + '-build' + "$env:APPVEYOR_BUILD_NUMBER".PadLeft(5, "0")
-    - ps: echo "`$env:PACKAGE_SUFFIX='$env:PACKAGE_SUFFIX'"
-  build:
-    project: wham.sln
-    verbosity: minimal
-  notifications:
-    - provider: Webhook
-      url: https://webhooks.gitter.im/e/ed65900fc71d1cd43a2e
-      on_build_success: true
-      on_build_failure: true
-      on_build_status_changed: true
-  artifacts:
-    - path: '**\*.nupkg'
-  deploy:
-    provider: NuGet
-    server: https://www.myget.org/F/warhub/api/v2/package
-    symbol_server: https://www.myget.org/F/warhub/symbols/api/v2/package
-    api_key:
-      secure: zir2+Fju3dWWwtAJzFuDJdCZC328XUVdSq1eyBVHFcdGvSzHvnzOI7ljkRy9Z1AI
-    skip_symbols: false
-    artifact: /.*\.nupkg/
-    on:
-      configuration: Debug
 
-# configuration for all except 'stable' branch
-# Build in Release, publish to Nuget
--
-  branches:
-    only:
-      - stable
-  version: 0.4.0-{branch}-build{build}
-  configuration: Release
-  cache:
-    - C:\Users\appveyor\.nuget\packages -> appveyor.yml
-  before_build:
-    - ps: dotnet --info
-    - ps: dotnet restore
-  build:
-    verbosity: minimal
-  after_build:
-    - ps: >
-        foreach($projfile in (Get-Item src/*/project.json))
-        {
-          Push-Location $projfile.Directory
-          echo "dotnet pack --no-build -c Release $projfile" 
-          dotnet pack --no-build -c Release
-          Pop-Location
-        }
-  test_script:
-    - ps: >
-        foreach ($projfile in (Get-Item tests/*/project.json))
-        {
-          Push-Location $projfile.Directory
-          echo "dotnet test --no-build -c Release $projfile"
-          dotnet test --no-build -c Release
-          Pop-Location
-        }
-  notifications:
-    - provider: Webhook
-      url: https://webhooks.gitter.im/e/ed65900fc71d1cd43a2e
-      on_build_success: true
-      on_build_failure: true
-      on_build_status_changed: true
-  artifacts:
-    - path: '**\*.nupkg'
-  deploy:
-    provider: NuGet
-    api_key:
-      secure: Qiw6Qq0ZTIhBoy4L1QT3whagCQAKK6/KcjxDz6XhzHuTnmLr4sdPtRvx2AHc5zGp
-    skip_symbols: false
-    artifact: /.*\.nupkg/
+image: Visual Studio 2017
+version: 0.5.0-{branch}-build{build}
+skip_tags: true
+configuration:
+- Debug
+- Release
+cache:
+- C:\Users\appveyor\.nuget\packages -> appveyor.yml
+before_build:
+- ps: dotnet --info
+- ps: dotnet restore wham.sln
+- ps: >-
+    $env:PACKAGE_SUFFIX = 'ci-' + ($env:APPVEYOR_REPO_BRANCH -replace '^(.{0,6}).*$', '$1') + '-build' + "$env:APPVEYOR_BUILD_NUMBER".PadLeft(5, "0")
+- ps: echo "`$env:PACKAGE_SUFFIX='$env:PACKAGE_SUFFIX'"
+build:
+project: wham.sln
+verbosity: minimal
+notifications:
+- provider: Webhook
+    url: https://webhooks.gitter.im/e/ed65900fc71d1cd43a2e
+    on_build_success: true
+    on_build_failure: true
+    on_build_status_changed: true
+artifacts:
+- path: '**\*.nupkg'
+deploy:
+provider: NuGet
+server: https://www.myget.org/F/warhub/api/v2/package
+symbol_server: https://www.myget.org/F/warhub/symbols/api/v2/package
+api_key:
+    secure: zir2+Fju3dWWwtAJzFuDJdCZC328XUVdSq1eyBVHFcdGvSzHvnzOI7ljkRy9Z1AI
+skip_symbols: false
+artifact: /.*\.nupkg/
+on:
+    configuration: Debug
