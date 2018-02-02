@@ -5,34 +5,34 @@ image: Visual Studio 2017
 version: 0.5.0-{branch}-build{build}
 skip_tags: true
 configuration:
-- Debug
-- Release
+  - Debug
+  - Release
 cache:
-- C:\Users\appveyor\.nuget\packages -> appveyor.yml
+  - C:\Users\appveyor\.nuget\packages -> appveyor.yml
 before_build:
-- ps: dotnet --info
-- ps: dotnet restore wham.sln
-- ps: >-
-    $env:PACKAGE_SUFFIX = 'ci-' + ($env:APPVEYOR_REPO_BRANCH -replace '^(.{0,6}).*$', '$1') + '-build' + "$env:APPVEYOR_BUILD_NUMBER".PadLeft(5, "0")
-- ps: echo "`$env:PACKAGE_SUFFIX='$env:PACKAGE_SUFFIX'"
+  - ps: dotnet --info
+  - ps: dotnet restore wham.sln
+  - ps: >-
+      $env:PACKAGE_SUFFIX = 'ci-' + ($env:APPVEYOR_REPO_BRANCH -replace '^(.{0,6}).*$', '$1') + '-build' + "$env:APPVEYOR_BUILD_NUMBER".PadLeft(5, "0")
+  - ps: echo "`$env:PACKAGE_SUFFIX='$env:PACKAGE_SUFFIX'"
 build:
 project: wham.sln
 verbosity: minimal
 notifications:
-- provider: Webhook
+  - provider: Webhook
     url: https://webhooks.gitter.im/e/ed65900fc71d1cd43a2e
     on_build_success: true
     on_build_failure: true
     on_build_status_changed: true
 artifacts:
-- path: '**\*.nupkg'
+  - path: '**\*.nupkg'
 deploy:
 provider: NuGet
 server: https://www.myget.org/F/warhub/api/v2/package
 symbol_server: https://www.myget.org/F/warhub/symbols/api/v2/package
 api_key:
-    secure: zir2+Fju3dWWwtAJzFuDJdCZC328XUVdSq1eyBVHFcdGvSzHvnzOI7ljkRy9Z1AI
+  secure: zir2+Fju3dWWwtAJzFuDJdCZC328XUVdSq1eyBVHFcdGvSzHvnzOI7ljkRy9Z1AI
 skip_symbols: false
 artifact: /.*\.nupkg/
 on:
-    configuration: Debug
+  configuration: Debug
