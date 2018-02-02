@@ -1,5 +1,6 @@
 # configuration for all except 'stable' branch
 # Build in Debug, publish to MyGet
+image: Visual Studio 2017
 -
   branches:
     except:
