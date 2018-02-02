@@ -28,12 +28,12 @@ notifications:
 artifacts:
   - path: '**\*.nupkg'
 deploy:
-provider: NuGet
-server: https://www.myget.org/F/warhub/api/v2/package
-symbol_server: https://www.myget.org/F/warhub/symbols/api/v2/package
-api_key:
-  secure: zir2+Fju3dWWwtAJzFuDJdCZC328XUVdSq1eyBVHFcdGvSzHvnzOI7ljkRy9Z1AI
-skip_symbols: false
-artifact: /.*\.nupkg/
-on:
-  configuration: Debug
+  - provider: NuGet
+    server: https://www.myget.org/F/warhub/api/v2/package
+    symbol_server: https://www.myget.org/F/warhub/symbols/api/v2/package
+    api_key:
+      secure: zir2+Fju3dWWwtAJzFuDJdCZC328XUVdSq1eyBVHFcdGvSzHvnzOI7ljkRy9Z1AI
+    skip_symbols: false
+    artifact: /.*\.nupkg/
+    on:
+      configuration: Debug
