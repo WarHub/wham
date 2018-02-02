@@ -4,7 +4,7 @@
   branches:
     except:
       - stable
-  version: 0.4.0-{branch}-build{build}
+  version: 0.5.0-{branch}-build{build}
   skip_tags: true
   configuration:
     - Debug
@@ -13,32 +13,13 @@
     - C:\Users\appveyor\.nuget\packages -> appveyor.yml
   before_build:
     - ps: dotnet --info
-    - ps: dotnet restore
+    - ps: dotnet restore wham.sln
     - ps: >-
         $env:PACKAGE_SUFFIX = 'ci-' + ($env:APPVEYOR_REPO_BRANCH -replace '^(.{0,6}).*$', '$1') + '-build' + "$env:APPVEYOR_BUILD_NUMBER".PadLeft(5, "0")
     - ps: echo "`$env:PACKAGE_SUFFIX='$env:PACKAGE_SUFFIX'"
   build:
+    project: wham.sln
     verbosity: minimal
-  after_build:
-    - ps: >
-        if (-not $env:APPVEYOR_PULL_REQUEST_NUMBER -and $env:CONFIGURATION -eq 'Debug') {
-          foreach($projfile in (Get-Item src/*/project.json))
-          {
-            Push-Location $projfile.Directory
-            echo "dotnet pack --no-build -c Debug --version-suffix $env:PACKAGE_SUFFIX $projfile" 
-            dotnet pack --no-build -c Debug --version-suffix $env:PACKAGE_SUFFIX
-            Pop-Location
-          }
-        }
-  test_script:
-    - ps: >
-        foreach ($projfile in (Get-Item tests/*/project.json))
-        {
-          Push-Location $projfile.Directory
-          echo "dotnet test --no-build -c $env:CONFIGURATION $projfile"
-          dotnet test --no-build -c $env:CONFIGURATION
-          Pop-Location
-        }
   notifications:
     - provider: Webhook
       url: https://webhooks.gitter.im/e/ed65900fc71d1cd43a2e
