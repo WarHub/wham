@@ -45,7 +45,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration.Tests
         [Fact]
         public void FactoryMethod_GivenNoItems_CreatesValidNode()
         {
-            var container = NodeFactory.Container(containerId, containerName);
+            var container = GeneratedCode.NodeFactory.Container(containerId, containerName);
 
             Assert.Empty(container.Items);
         }
