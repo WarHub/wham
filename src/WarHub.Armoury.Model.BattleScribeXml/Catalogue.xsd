@@ -5,6 +5,8 @@
   
   <!--schema for BattleScribe [version 2.01, (c) Jon Taylor] datafiles (catalogues and game systems)-->
   <!--schema file author: Amadeusz Sadowski-->
+  <!--for game system, replace xmlns:cs and targetNamespace with http://www.battlescribe.net/schema/gameSystemSchema-->
+  <!--for roster, replace xmlns:cs and targetNamespace with http://www.battlescribe.net/schema/rosterSchema-->
 
   <xs:simpleType name="idtype">
     <xs:restriction base="xs:string" />
@@ -456,6 +458,7 @@
     <xs:complexContent>
       <xs:extension base="cs:RosterElementBase">
         <xs:sequence>
+          <xs:element name="selections" type="cs:SelectionList" />
           <xs:element name="categories" type="cs:CategoryList" />
           <xs:element name="forces" type="cs:ForceList" />
         </xs:sequence>
@@ -476,9 +479,6 @@
   <xs:complexType name="Category">
     <xs:complexContent>
       <xs:extension base="cs:RosterElementBase">
-        <xs:sequence>
-          <xs:element name="selections" type="cs:SelectionList" />
-        </xs:sequence>
       </xs:extension>
     </xs:complexContent>
   </xs:complexType>
@@ -496,8 +496,9 @@
         <xs:sequence>
           <xs:element name="selections" type="cs:SelectionList" />
           <xs:element name="costs" type="cs:CostList" />
+          <xs:element name="categoryLinks" type="cs:CategoryLinkList" />
         </xs:sequence>
-        <xs:attribute name="entryGroupId" type="cs:idtype" use="required" />
+        <xs:attribute name="entryGroupId" type="cs:idtype" use="optional" />
         <xs:attributeGroup ref="cs:BookReferenceAttGroup" />
         <xs:attribute name="number" type="xs:nonNegativeInteger" use="required" />
         <xs:attribute name="type" type="cs:SelectionEntryKind" use="required" />
