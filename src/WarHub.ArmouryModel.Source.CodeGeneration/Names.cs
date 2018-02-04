@@ -56,8 +56,10 @@
         public const string ToImmutableRecursive = "ToImmutableRecursive";
         public const string ToSerializationProxy = "ToSerializationProxy";
 
+        public const string XmlElement = "XmlElement";
         public const string XmlArray = "XmlArray";
         public const string XmlAttribute = "XmlAttribute";
+        public const string XmlRoot = "XmlRoot";
         public const string XmlType = "XmlType";
         public const string NotSupportedExceptionFull = "System.NotSupportedException";
         public const string Update = "Update";

@@ -42,9 +42,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                     TypeSymbol.Locations.First())
                 .FirstAncestorOrSelf<ClassDeclarationSyntax>();
 
-            var attributeLists = TypeSymbol.Locations
-                .SelectMany(l => NodeFromLocation(l).FirstAncestorOrSelf<ClassDeclarationSyntax>().AttributeLists)
-                .ToImmutableArray();
+            var attributeLists = GetClassAttributeLists().ToImmutableArray();
 
             var properties =
                 GetCustomBaseTypesAndSelf(TypeSymbol)
@@ -94,6 +92,17 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
             return l.SourceTree.GetRoot().FindNode(l.SourceSpan);
         }
 
+        private IEnumerable<AttributeListSyntax> GetClassAttributeLists()
+        {
+            var xmlAttributeNames = new[] { Names.XmlType, Names.XmlRoot };
+            var attributes = TypeSymbol.Locations
+                .SelectMany(l => NodeFromLocation(l).FirstAncestorOrSelf<ClassDeclarationSyntax>().AttributeLists)
+                .SelectMany(list => list.Attributes)
+                .ToImmutableArray();
+            var xmlAttributes = attributes.Where(att => xmlAttributeNames.Any(name => att.IsNamed(name)));
+            return xmlAttributes.Select(att => SyntaxFactory.AttributeList().AddAttributes(att));
+        }
+
         private CoreDescriptor.Entry CreateRecordEntry(IPropertySymbol symbol, PropertyDeclarationSyntax syntax)
         {
             if (symbol.Type is INamedTypeSymbol namedType
@@ -113,7 +122,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                 symbol,
                 syntax.Identifier.WithoutTrivia(),
                 typeSyntax,
-                syntax.AttributeLists.ToImmutableArray());
+                GetPropertyAttributeLists(syntax).ToImmutableArray());
         }
 
         private CoreDescriptor.Entry CreateCollectionEntry(IPropertySymbol symbol, PropertyDeclarationSyntax syntax)
@@ -124,7 +133,14 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                 symbol,
                 syntax.Identifier.WithoutTrivia(),
                 (NameSyntax)typeSyntax,
-                syntax.AttributeLists.ToImmutableArray());
+                GetPropertyAttributeLists(syntax).ToImmutableArray());
+        }
+        private static IEnumerable<AttributeListSyntax> GetPropertyAttributeLists(PropertyDeclarationSyntax syntax)
+        {
+            var xmlAttributeNames = new[] { Names.XmlArray, Names.XmlAttribute, Names.XmlElement };
+            var attributes = syntax.AttributeLists.SelectMany(list => list.Attributes);
+            var xmlAttributes = attributes.Where(att => xmlAttributeNames.Any(name => att.IsNamed(name)));
+            return xmlAttributes.Select(att => SyntaxFactory.AttributeList().AddAttributes(att));
         }
 
         private INamedTypeSymbol GetNamedTypeSymbol(SyntaxNode node)

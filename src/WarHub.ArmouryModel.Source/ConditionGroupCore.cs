@@ -10,10 +10,10 @@ namespace WarHub.ArmouryModel.Source
         [XmlAttribute("type")]
         public ConditionGroupKind Type { get; }
 
-        [XmlArray("conditions", Order = 0)]
+        [XmlArray("conditions")]
         public ImmutableArray<ConditionCore> Conditions { get; }
 
-        [XmlArray("conditionGroups", Order = 1)]
+        [XmlArray("conditionGroups")]
         public ImmutableArray<ConditionGroupCore> ConditionGroups { get; }
     }
 }

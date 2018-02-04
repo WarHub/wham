@@ -22,10 +22,13 @@ namespace WarHub.ArmouryModel.Source
         [XmlAttribute("type")]
         public SelectionEntryKind Type { get; }
 
-        [XmlArray("selections", Order = 0)]
+        [XmlArray("selections")]
         public ImmutableArray<SelectionCore> Selections { get; }
 
-        [XmlArray("costs", Order = 1)]
+        [XmlArray("costs")]
         public ImmutableArray<CostCore> Costs { get; }
+
+        [XmlArray("categoryLinks")]
+        public ImmutableArray<CategoryLinkCore> CategoryLinks { get; }
     }
 }

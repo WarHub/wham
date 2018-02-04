@@ -21,16 +21,16 @@ namespace WarHub.ArmouryModel.Source
         [XmlAttribute("hidden")]
         public bool IsHidden { get; }
 
-        [XmlArray("profiles", Order = 0)]
+        [XmlArray("profiles")]
         public ImmutableArray<ProfileCore> Profiles { get; }
 
-        [XmlArray("rules", Order = 1)]
+        [XmlArray("rules")]
         public ImmutableArray<RuleCore> Rules { get; }
 
-        [XmlArray("infoLinks", Order = 2)]
+        [XmlArray("infoLinks")]
         public ImmutableArray<InfoLinkCore> InfoLinks { get; }
 
-        [XmlArray("modifiers", Order = 3)]
+        [XmlArray("modifiers")]
         public ImmutableArray<ModifierCore> Modifiers { get; }
     }
 }

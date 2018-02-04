@@ -15,10 +15,10 @@ namespace WarHub.ArmouryModel.Source
         [XmlAttribute("entryId")]
         public string EntryId { get; }
 
-        [XmlArray("rules", Order = 0)]
+        [XmlArray("rules")]
         public ImmutableArray<RuleCore> Rules { get; }
 
-        [XmlArray("profiles", Order = 1)]
+        [XmlArray("profiles")]
         public ImmutableArray<ProfileCore> Profiles { get; }
     }
 }

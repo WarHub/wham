@@ -13,7 +13,7 @@ namespace WarHub.ArmouryModel.Source
         [XmlAttribute("type")]
         public SelectionEntryKind Type { get; }
 
-        [XmlArray("costs", Order = 0)]
+        [XmlArray("costs")]
         public ImmutableArray<CostCore> Costs { get; }
     }
 }

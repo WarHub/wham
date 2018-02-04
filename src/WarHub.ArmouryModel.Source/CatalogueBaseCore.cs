@@ -33,40 +33,43 @@ namespace WarHub.ArmouryModel.Source
         [XmlAttribute("authorUrl")]
         public string AuthorUrl { get; }
 
-        [XmlArray("profiles", Order = 0)]
+        [XmlArray("profiles")]
         public ImmutableArray<ProfileCore> Profiles { get; }
 
-        [XmlArray("rules", Order = 1)]
+        [XmlArray("rules")]
         public ImmutableArray<RuleCore> Rules { get; }
 
-        [XmlArray("infoLinks", Order = 2)]
+        [XmlArray("infoLinks")]
         public ImmutableArray<InfoLinkCore> InfoLinks { get; }
 
-        [XmlArray("costTypes", Order = 3)]
+        [XmlArray("costTypes")]
         public ImmutableArray<CostTypeCore> CostTypes { get; }
 
-        [XmlArray("profileTypes", Order = 4)]
+        [XmlArray("profileTypes")]
         public ImmutableArray<ProfileTypeCore> ProfileTypes { get; }
 
-        [XmlArray("forceEntries", Order = 5)]
+        [XmlArray("categoryEntries")]
+        public ImmutableArray<CategoryEntryCore> CategoryEntries { get; }
+
+        [XmlArray("forceEntries")]
         public ImmutableArray<ForceEntryCore> ForceEntries { get; }
 
-        [XmlArray("selectionEntries", Order = 6)]
+        [XmlArray("selectionEntries")]
         public ImmutableArray<SelectionEntryCore> SelectionEntries { get; }
 
-        [XmlArray("entryLinks", Order = 7)]
+        [XmlArray("entryLinks")]
         public ImmutableArray<EntryLinkCore> EntryLinks { get; }
 
-        [XmlArray("sharedSelectionEntries", Order = 8)]
+        [XmlArray("sharedSelectionEntries")]
         public ImmutableArray<SelectionEntryCore> SharedSelectionEntries { get; }
 
-        [XmlArray("sharedSelectionEntryGroups", Order = 9)]
+        [XmlArray("sharedSelectionEntryGroups")]
         public ImmutableArray<SelectionEntryGroupCore> SharedSelectionEntryGroups { get; }
 
-        [XmlArray("sharedRules", Order = 10)]
+        [XmlArray("sharedRules")]
         public ImmutableArray<RuleCore> SharedRules { get; }
 
-        [XmlArray("sharedProfiles", Order = 11)]
+        [XmlArray("sharedProfiles")]
         public ImmutableArray<ProfileCore> SharedProfiles { get; }
     }
 }

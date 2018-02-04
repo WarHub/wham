@@ -7,13 +7,13 @@ namespace WarHub.ArmouryModel.Source
     [XmlType("forceEntry")]
     public partial class ForceEntryCore : EntryBaseCore
     {
-        [XmlArray("constraints", Order = 0)]
+        [XmlArray("constraints")]
         public ImmutableArray<ConstraintCore> Constraints { get; }
 
-        [XmlArray("categoryEntries", Order = 1)]
-        public ImmutableArray<CategoryEntryCore> CategoryEntries { get; }
-
-        [XmlArray("forceEntries", Order = 2)]
+        [XmlArray("forceEntries")]
         public ImmutableArray<ForceEntryCore> ForceEntries { get; }
+
+        [XmlArray("categoryLinks")]
+        public ImmutableArray<CategoryLinkCore> CategoryLinks { get; }
     }
 }

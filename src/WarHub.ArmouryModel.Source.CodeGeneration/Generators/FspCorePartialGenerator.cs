@@ -30,18 +30,10 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
         {
             return
                 StructDeclaration(Names.FastSerializationProxy)
-                .WithAttributeLists(
-                    GenerateAttributeLists())
+                .AddAttributeLists(Descriptor.CoreTypeAttributeLists)
                 .AddModifiers(SyntaxKind.PublicKeyword)
                 .AddMembers(
                     GetFastSerializationProxyMembers());
-        }
-
-        private SyntaxList<AttributeListSyntax> GenerateAttributeLists()
-        {
-            var attributes = Descriptor.CoreTypeAttributeLists.SelectMany(list => list.Attributes);
-            var xmlAttributes = attributes.Where(att => att.IsNamed(Names.XmlType));
-            return List(xmlAttributes.Select(att => AttributeList(SingletonSeparatedList(att))));
         }
 
         private MemberDeclarationSyntax GetToSerializationProxyMethod()
@@ -106,8 +98,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                     PropertyDeclaration(
                         propertyType,
                         entry.Identifier)
-                    .WithAttributeLists(
-                        GetPropertyAttributes())
+                    .AddAttributeLists(entry.AttributeLists)
                     .AddModifiers(SyntaxKind.PublicKeyword)
                     .AddAccessorListAccessors(
                         AccessorDeclaration(SyntaxKind.GetAccessorDeclaration)
@@ -123,12 +114,6 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                                     ParseTypeName(Names.NotSupportedExceptionFull))
                                 .WithArgumentList(
                                     ArgumentList()))));
-                SyntaxList<AttributeListSyntax> GetPropertyAttributes()
-                {
-                    var attributes = entry.AttributeLists.SelectMany(list => list.Attributes);
-                    var xmlAttributes = attributes.Where(att => att.IsNamed(Names.XmlAttribute) || att.IsNamed(Names.XmlArray));
-                    return List(xmlAttributes.Select(att => AttributeList(SingletonSeparatedList(att))));
-                }
             }
         }
     }

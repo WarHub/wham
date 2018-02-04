@@ -1,7 +1,15 @@
-﻿using System.Collections.Immutable;
+﻿using System;
+using System.Collections.Immutable;
 
 namespace WarHub.ArmouryModel.Source
 {
+    public interface IXmlSerializable
+    {
+        Type GetSerializationType();
+        object GetSerializableObject();
+
+    }
+
     internal static class SerializationExtensions
     {
         // generate similar for every type

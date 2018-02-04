@@ -13,4 +13,14 @@
     <DotNetCliToolReference Include="dotnet-xunit" Version="2.3.1" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\WarHub.ArmouryModel.Source\WarHub.ArmouryModel.Source.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="XmlTestDatafiles\*">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>

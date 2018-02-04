@@ -16,10 +16,13 @@ namespace WarHub.ArmouryModel.Source
         [XmlAttribute("catalogueName")]
         public string CatalogueName { get; }
 
-        [XmlArray("categories", Order = 0)]
+        [XmlArray("selections")]
+        public ImmutableArray<SelectionCore> Selections { get; }
+
+        [XmlArray("categories")]
         public ImmutableArray<CategoryCore> Categories { get; }
 
-        [XmlArray("forces", Order = 1)]
+        [XmlArray("forces")]
         public ImmutableArray<ForceCore> Forces { get; }
     }
 }

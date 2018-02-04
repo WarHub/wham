@@ -44,8 +44,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
         {
             return
                 ClassDeclaration(Names.Builder)
-                .WithAttributeLists(
-                    GetBuilderClassAttributes())
+                .AddAttributeLists(Descriptor.CoreTypeAttributeLists)
                 .AddModifiers(
                     SyntaxKind.PublicKeyword,
                     SyntaxKind.PartialKeyword)
@@ -59,12 +58,6 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                 return List<MemberDeclarationSyntax>()
                     .AddRange(Descriptor.Entries.SelectMany(GetPropertyMembers))
                     .Add(GetBuilderToImmutableMethod());
-            }
-            SyntaxList<AttributeListSyntax> GetBuilderClassAttributes()
-            {
-                var attributes = Descriptor.CoreTypeAttributeLists.SelectMany(list => list.Attributes);
-                var xmlAttributes = attributes.Where(att => att.IsNamed(Names.XmlType));
-                return List(xmlAttributes.Select(att => AttributeList(SingletonSeparatedList(att))));
             }
             BaseListSyntax GetBuilderBaseList()
             {
@@ -89,8 +82,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                     PropertyDeclaration(
                         entry.Type,
                         entry.Identifier)
-                    .WithAttributeLists(
-                        GetPropertyAttributes())
+                    .AddAttributeLists(entry.AttributeLists)
                     .AddModifiers(SyntaxKind.PublicKeyword)
                     .AddAccessorListAccessors(
                         AccessorDeclaration(SyntaxKind.GetAccessorDeclaration)
@@ -114,8 +106,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                     PropertyDeclaration(
                         collectionEntry.ToListOfBuilderType(),
                         collectionEntry.Identifier)
-                    .WithAttributeLists(
-                        GetPropertyAttributes())
+                    .AddAttributeLists(entry.AttributeLists)
                     .AddModifiers(SyntaxKind.PublicKeyword)
                     .AddAccessorListAccessors(
                         CreateGetter(),
@@ -146,12 +137,6 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                                 IdentifierName(fieldName),
                                 IdentifierName("value")));
                 }
-            }
-            SyntaxList<AttributeListSyntax> GetPropertyAttributes()
-            {
-                var attributes = entry.AttributeLists.SelectMany(list => list.Attributes);
-                var xmlAttributes = attributes.Where(att => att.IsNamed(Names.XmlAttribute) || att.IsNamed(Names.XmlArray));
-                return List(xmlAttributes.Select(att => AttributeList(SingletonSeparatedList(att))));
             }
         }
 

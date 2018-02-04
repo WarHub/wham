@@ -60,6 +60,26 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
             return syntax.AddModifiers(modifier.Select(Token).ToArray());
         }
 
+        public static PropertyDeclarationSyntax AddAttributeLists(this PropertyDeclarationSyntax syntax, IEnumerable<AttributeListSyntax> lists)
+        {
+            return syntax.AddAttributeLists(lists.ToArray());
+        }
+
+        public static ClassDeclarationSyntax AddAttributeLists(this ClassDeclarationSyntax syntax, IEnumerable<AttributeListSyntax> lists)
+        {
+            return syntax.AddAttributeLists(lists.ToArray());
+        }
+
+        public static StructDeclarationSyntax AddAttributeLists(this StructDeclarationSyntax syntax, IEnumerable<AttributeListSyntax> lists)
+        {
+            return syntax.AddAttributeLists(lists.ToArray());
+        }
+
+        public static MethodDeclarationSyntax AddAttributeLists(this MethodDeclarationSyntax syntax, IEnumerable<AttributeListSyntax> lists)
+        {
+            return syntax.AddAttributeLists(lists.ToArray());
+        }
+
         public static ConstructorDeclarationSyntax AddParameterListParameters(this ConstructorDeclarationSyntax syntax, IEnumerable<ParameterSyntax> parameters)
         {
             return syntax.AddParameterListParameters(parameters.ToArray());

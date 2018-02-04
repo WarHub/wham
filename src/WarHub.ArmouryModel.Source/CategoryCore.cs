@@ -7,7 +7,5 @@ namespace WarHub.ArmouryModel.Source
     [XmlType("category")]
     public partial class CategoryCore : RosterElementBaseCore
     {
-        [XmlArray("selections", Order = 0)]
-        public ImmutableArray<SelectionCore> Selections { get; }
     }
 }

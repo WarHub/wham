@@ -27,13 +27,13 @@ namespace WarHub.ArmouryModel.Source
         [XmlAttribute("gameSystemRevision")]
         public int GameSystemRevision { get; }
 
-        [XmlArray("costs", Order = 0)]
+        [XmlArray("costs")]
         public ImmutableArray<CostCore> Costs { get; }
 
-        [XmlArray("costLimits", Order = 1)]
+        [XmlArray("costLimits")]
         public ImmutableArray<CostLimitCore> CostLimits { get; }
 
-        [XmlArray("forces", Order = 2)]
+        [XmlArray("forces")]
         public ImmutableArray<ForceCore> Forces { get; }
 
         public string DefaultXmlNamespace => RosterXmlNamespace;

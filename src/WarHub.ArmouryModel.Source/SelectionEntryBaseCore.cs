@@ -9,16 +9,19 @@ namespace WarHub.ArmouryModel.Source
         [XmlAttribute("collective")]
         public bool Collective { get; }
 
-        [XmlArray("constraints", Order = 0)]
+        [XmlArray("constraints")]
         public ImmutableArray<ConstraintCore> Constraints { get; }
 
-        [XmlArray("selectionEntries", Order = 1)]
+        [XmlArray("categoryLinks")]
+        public ImmutableArray<CategoryLinkCore> CategoryLinks { get; }
+
+        [XmlArray("selectionEntries")]
         public ImmutableArray<SelectionEntryCore> SelectionEntries { get; }
 
-        [XmlArray("selectionEntryGroups", Order = 2)]
+        [XmlArray("selectionEntryGroups")]
         public ImmutableArray<SelectionEntryGroupCore> SelectionEntryGroups { get; }
 
-        [XmlArray("entryLinks", Order = 3)]
+        [XmlArray("entryLinks")]
         public ImmutableArray<EntryLinkCore> EntryLinks { get; }
     }
 }

@@ -16,13 +16,13 @@ namespace WarHub.ArmouryModel.Source
         [XmlAttribute("value")]
         public string Value { get; }
 
-        [XmlArray("repeats", Order = 0)]
+        [XmlArray("repeats")]
         public ImmutableArray<RepeatCore> Repeats { get; }
 
-        [XmlArray("conditions", Order = 1)]
+        [XmlArray("conditions")]
         public ImmutableArray<ConditionCore> Conditions { get; }
 
-        [XmlArray("conditionGroups", Order = 2)]
+        [XmlArray("conditionGroups")]
         public ImmutableArray<ConditionGroupCore> ConditionGroups { get; }
     }
 }

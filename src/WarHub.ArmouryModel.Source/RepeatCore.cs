@@ -11,5 +11,8 @@ namespace WarHub.ArmouryModel.Source
 
         [XmlAttribute("repeats")]
         public int Repeats { get; }
+
+        [XmlAttribute("roundUp")]
+        public bool IsRoundUp { get; }
     }
 }

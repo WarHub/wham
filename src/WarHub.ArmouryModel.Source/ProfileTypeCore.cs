@@ -13,7 +13,7 @@ namespace WarHub.ArmouryModel.Source
         [XmlAttribute("name")]
         public string Name { get; }
 
-        [XmlArray("characteristicTypes", Order = 0)]
+        [XmlArray("characteristicTypes")]
         public ImmutableArray<CharacteristicTypeCore> CharacteristicTypes { get; }
     }
 }
