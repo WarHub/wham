@@ -1,5 +1,7 @@
 ﻿using System;
 using System.IO;
+using System.Text;
+using System.Xml;
 using System.Xml.Serialization;
 using Xunit;
 
@@ -7,6 +9,31 @@ namespace WarHub.ArmouryModel.Source.Tests
 {
     public class SerializationTestBase : IClassFixture<SerializationTestBase.XmlDataFixture>
     {
+        protected XmlWriterSettings XmlWriterSettings => LazyXmlWriterSettings.Value;
+
+        protected XmlSerializerNamespaces RosterNamespaces => LazyRosterNamespaces.Value;
+
+        protected XmlSerializerNamespaces CatalogueNamespaces => LazyCatalogueNamespaces.Value;
+
+        protected XmlSerializerNamespaces GameSystemNamespaces => LazyGameSystemNamespaces.Value;
+
+        private Lazy<XmlWriterSettings> LazyXmlWriterSettings { get; }
+            = new Lazy<XmlWriterSettings>(CreateXmlWriterSettings);
+
+        private static XmlWriterSettings CreateXmlWriterSettings()
+        {
+            return BattleScribeXml.XmlWriterSettings;
+        }
+
+        private Lazy<XmlSerializerNamespaces> LazyRosterNamespaces { get; }
+            = new Lazy<XmlSerializerNamespaces>(CreateRosterXmlSerializerNamespaces);
+
+        private Lazy<XmlSerializerNamespaces> LazyCatalogueNamespaces { get; }
+            = new Lazy<XmlSerializerNamespaces>(CreateCatalogueXmlSerializerNamespaces);
+
+        private Lazy<XmlSerializerNamespaces> LazyGameSystemNamespaces { get; }
+            = new Lazy<XmlSerializerNamespaces>(CreateGameSystemXmlSerializerNamespaces);
+
         protected RosterNode DeserializeRoster(Stream stream)
         {
             var serializer = new XmlSerializer(typeof(RosterCore.Builder));
@@ -33,7 +60,10 @@ namespace WarHub.ArmouryModel.Source.Tests
             var serializer = new XmlSerializer(typeof(GameSystemCore.FastSerializationProxy));
             var castNode = (GameSystemNode)node;
             var fse = castNode.Core.ToSerializationProxy();
-            serializer.Serialize(stream, fse);
+            using (var writer = XmlWriter.Create(stream, XmlWriterSettings))
+            {
+                serializer.Serialize(writer, fse, GameSystemNamespaces);
+            }
         }
 
         protected void SerializeCatalogue(SourceNode node, Stream stream)
@@ -41,7 +71,10 @@ namespace WarHub.ArmouryModel.Source.Tests
             var serializer = new XmlSerializer(typeof(CatalogueCore.FastSerializationProxy));
             var castNode = (CatalogueNode)node;
             var fse = castNode.Core.ToSerializationProxy();
-            serializer.Serialize(stream, fse);
+            using (var writer = XmlWriter.Create(stream, XmlWriterSettings))
+            {
+                serializer.Serialize(writer, fse, CatalogueNamespaces);
+            }
         }
 
         protected void SerializeRoster(SourceNode node, Stream stream)
@@ -49,7 +82,31 @@ namespace WarHub.ArmouryModel.Source.Tests
             var serializer = new XmlSerializer(typeof(RosterCore.FastSerializationProxy));
             var castNode = (RosterNode)node;
             var fse = castNode.Core.ToSerializationProxy();
-            serializer.Serialize(stream, fse);
+            using (var writer = XmlWriter.Create(stream, XmlWriterSettings))
+            {
+                serializer.Serialize(writer, fse, RosterNamespaces);
+            }
+        }
+
+        private static XmlSerializerNamespaces CreateRosterXmlSerializerNamespaces()
+        {
+            var namespaces = new XmlSerializerNamespaces();
+            namespaces.Add("", RosterCore.RosterXmlNamespace);
+            return namespaces;
+        }
+
+        private static XmlSerializerNamespaces CreateCatalogueXmlSerializerNamespaces()
+        {
+            var namespaces = new XmlSerializerNamespaces();
+            namespaces.Add("", CatalogueCore.CatalogueXmlNamespace);
+            return namespaces;
+        }
+
+        private static XmlSerializerNamespaces CreateGameSystemXmlSerializerNamespaces()
+        {
+            var namespaces = new XmlSerializerNamespaces();
+            namespaces.Add("", GameSystemCore.GameSystemXmlNamespace);
+            return namespaces;
         }
 
         public static class XmlTestData
@@ -91,7 +148,7 @@ namespace WarHub.ArmouryModel.Source.Tests
 
             private static void RemoveDir()
             {
-                Directory.Delete(XmlTestData.OutputDir, true);
+                //Directory.Delete(XmlTestData.OutputDir, true);
             }
         }
     }
