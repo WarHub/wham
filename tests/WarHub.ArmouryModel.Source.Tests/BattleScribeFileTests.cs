@@ -1,7 +1,6 @@
 ﻿using Microsoft.XmlDiffPatch;
 using System;
 using System.IO;
-using System.Text;
 using System.Xml;
 using Xunit;
 
@@ -61,7 +60,7 @@ namespace WarHub.ArmouryModel.Source.Tests
             }
             bool AreXmlEqual()
             {
-                var differ = new XmlDiff(XmlDiffOptions.None | XmlDiffOptions.IgnoreXmlDecl);
+                var differ = new XmlDiff(XmlDiffOptions.None);
                 //using (var diffStream = new MemoryStream())
                 using (var diffStream = File.Create(output + ".diff"))
                 {
@@ -73,32 +72,5 @@ namespace WarHub.ArmouryModel.Source.Tests
                 }
             }
         }
-    }
-
-    public static class BattleScribeXml
-    {
-        public static Encoding Encoding { get; } = new BattleScribeXmlEncoding();
-
-        public static XmlWriterSettings XmlWriterSettings => InternalXmlWriterSettings.Clone();
-
-        static XmlWriterSettings InternalXmlWriterSettings { get; } = new XmlWriterSettings
-        {
-            CloseOutput = false,
-            Encoding = Encoding,
-            NewLineChars = "\n",
-            NewLineHandling = NewLineHandling.Replace,
-            Indent = true,
-            OmitXmlDeclaration = false,
-        };
-    }
-
-    public class BattleScribeXmlEncoding : UTF8Encoding
-    {
-        public BattleScribeXmlEncoding() : base(encoderShouldEmitUTF8Identifier: false)
-        {
-        }
-        public override string HeaderName => WebName;
-        public override string BodyName => WebName;
-        public override string WebName => base.WebName.ToUpperInvariant();
     }
 }

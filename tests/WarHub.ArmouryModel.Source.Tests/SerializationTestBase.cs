@@ -60,7 +60,7 @@ namespace WarHub.ArmouryModel.Source.Tests
             var serializer = new XmlSerializer(typeof(GameSystemCore.FastSerializationProxy));
             var castNode = (GameSystemNode)node;
             var fse = castNode.Core.ToSerializationProxy();
-            using (var writer = XmlWriter.Create(stream, XmlWriterSettings))
+            using (var writer = BattleScribeConformantXmlWriter.Create(stream, XmlWriterSettings))
             {
                 serializer.Serialize(writer, fse, GameSystemNamespaces);
             }
@@ -71,7 +71,7 @@ namespace WarHub.ArmouryModel.Source.Tests
             var serializer = new XmlSerializer(typeof(CatalogueCore.FastSerializationProxy));
             var castNode = (CatalogueNode)node;
             var fse = castNode.Core.ToSerializationProxy();
-            using (var writer = XmlWriter.Create(stream, XmlWriterSettings))
+            using (var writer = BattleScribeConformantXmlWriter.Create(stream, XmlWriterSettings))
             {
                 serializer.Serialize(writer, fse, CatalogueNamespaces);
             }
@@ -82,7 +82,7 @@ namespace WarHub.ArmouryModel.Source.Tests
             var serializer = new XmlSerializer(typeof(RosterCore.FastSerializationProxy));
             var castNode = (RosterNode)node;
             var fse = castNode.Core.ToSerializationProxy();
-            using (var writer = XmlWriter.Create(stream, XmlWriterSettings))
+            using (var writer = BattleScribeConformantXmlWriter.Create(stream, XmlWriterSettings))
             {
                 serializer.Serialize(writer, fse, RosterNamespaces);
             }
