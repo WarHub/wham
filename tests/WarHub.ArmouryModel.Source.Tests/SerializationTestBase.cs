@@ -9,21 +9,11 @@ namespace WarHub.ArmouryModel.Source.Tests
 {
     public class SerializationTestBase : IClassFixture<SerializationTestBase.XmlDataFixture>
     {
-        protected XmlWriterSettings XmlWriterSettings => LazyXmlWriterSettings.Value;
-
         protected XmlSerializerNamespaces RosterNamespaces => LazyRosterNamespaces.Value;
 
         protected XmlSerializerNamespaces CatalogueNamespaces => LazyCatalogueNamespaces.Value;
 
         protected XmlSerializerNamespaces GameSystemNamespaces => LazyGameSystemNamespaces.Value;
-
-        private Lazy<XmlWriterSettings> LazyXmlWriterSettings { get; }
-            = new Lazy<XmlWriterSettings>(CreateXmlWriterSettings);
-
-        private static XmlWriterSettings CreateXmlWriterSettings()
-        {
-            return BattleScribeXml.XmlWriterSettings;
-        }
 
         private Lazy<XmlSerializerNamespaces> LazyRosterNamespaces { get; }
             = new Lazy<XmlSerializerNamespaces>(CreateRosterXmlSerializerNamespaces);
@@ -60,7 +50,7 @@ namespace WarHub.ArmouryModel.Source.Tests
             var serializer = new XmlSerializer(typeof(GameSystemCore.FastSerializationProxy));
             var castNode = (GameSystemNode)node;
             var fse = castNode.Core.ToSerializationProxy();
-            using (var writer = BattleScribeConformantXmlWriter.Create(stream, XmlWriterSettings))
+            using (var writer = BattleScribeConformantXmlWriter.Create(stream))
             {
                 serializer.Serialize(writer, fse, GameSystemNamespaces);
             }
@@ -71,7 +61,7 @@ namespace WarHub.ArmouryModel.Source.Tests
             var serializer = new XmlSerializer(typeof(CatalogueCore.FastSerializationProxy));
             var castNode = (CatalogueNode)node;
             var fse = castNode.Core.ToSerializationProxy();
-            using (var writer = BattleScribeConformantXmlWriter.Create(stream, XmlWriterSettings))
+            using (var writer = BattleScribeConformantXmlWriter.Create(stream))
             {
                 serializer.Serialize(writer, fse, CatalogueNamespaces);
             }
@@ -82,7 +72,7 @@ namespace WarHub.ArmouryModel.Source.Tests
             var serializer = new XmlSerializer(typeof(RosterCore.FastSerializationProxy));
             var castNode = (RosterNode)node;
             var fse = castNode.Core.ToSerializationProxy();
-            using (var writer = BattleScribeConformantXmlWriter.Create(stream, XmlWriterSettings))
+            using (var writer = BattleScribeConformantXmlWriter.Create(stream))
             {
                 serializer.Serialize(writer, fse, RosterNamespaces);
             }

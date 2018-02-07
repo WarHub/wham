@@ -1,8 +1,14 @@
 ﻿using System.IO;
+using System.Threading.Tasks;
 using System.Xml;
 
 namespace WarHub.ArmouryModel.Source.Tests
 {
+
+    /// <summary>
+    /// XmlWriter that encodes quotes and apostrophes conforming to BattleScribe format;
+    /// both are escaped in attributes and in elements' text.
+    /// </summary>
     public sealed class BattleScribeConformantXmlWriter : XmlWriter
     {
         public BattleScribeConformantXmlWriter(XmlWriter writer)
@@ -12,9 +18,16 @@ namespace WarHub.ArmouryModel.Source.Tests
 
         private XmlWriter BaseWriter { get; }
 
+        public new static XmlWriter Create(Stream stream)
+        {
+            var bsTextWriter = new BattleScribeConformantTextWriter(new StreamWriter(stream));
+            return new BattleScribeConformantXmlWriter(Create(bsTextWriter, BattleScribeXml.XmlWriterSettings));
+        }
+
         public new static XmlWriter Create(Stream stream, XmlWriterSettings settings)
         {
-            return new BattleScribeConformantXmlWriter(XmlWriter.Create(stream, settings));
+            var bsTextWriter = new BattleScribeConformantTextWriter(new StreamWriter(stream));
+            return new BattleScribeConformantXmlWriter(Create(bsTextWriter, settings));
         }
 
         protected override void Dispose(bool disposing)
