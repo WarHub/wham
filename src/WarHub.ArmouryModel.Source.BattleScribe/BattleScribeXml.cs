@@ -2,13 +2,20 @@
 using System.Text;
 using System.Xml;
 
-namespace WarHub.ArmouryModel.Source.Tests
+namespace WarHub.ArmouryModel.Source.BattleScribe
 {
+    /// <summary>
+    /// BattleScribe-output-conformance helper class. Provides methods and properties that
+    /// enable fully compliant serialization.
+    /// </summary>
     public static class BattleScribeXml
     {
+        /// <summary>
+        /// Gets BattleScribe conformant XmlWriter settings.
+        /// </summary>
         public static XmlWriterSettings XmlWriterSettings => InternalXmlWriterSettings.Clone();
 
-        static XmlWriterSettings InternalXmlWriterSettings { get; } = new XmlWriterSettings
+        internal static XmlWriterSettings InternalXmlWriterSettings { get; } = new XmlWriterSettings
         {
             CloseOutput = false,
             NewLineChars = "\n",
@@ -17,12 +24,11 @@ namespace WarHub.ArmouryModel.Source.Tests
             OmitXmlDeclaration = false
         };
 
-        public static void WriteBattleScribeStartDocument(this Stream stream)
-        {
-            var text = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n";
-            var writer = new StreamWriter(stream) { AutoFlush = true };
-            writer.Write(text);
-        }
+        /// <summary>
+        /// Encodes XML element text in a format 100% conformant with BattleScribe output.
+        /// This means that every one of the five entity-escapable characters is escaped:
+        /// &amp;, &quot;, &apos;, &gt;, and &lt;
+        /// </summary>
         public static class Encoder
         {
             const char amp = '&';
@@ -39,6 +45,11 @@ namespace WarHub.ArmouryModel.Source.Tests
             const string aposString = "&apos;";
             static readonly char[] xmlEscaped = new[] { amp, lt, gt, apos, quot };
 
+            /// <summary>
+            /// Escapes all XML entity-escapable characters and replaces CRLF with just LF.
+            /// </summary>
+            /// <param name="text">Text to be escaped.</param>
+            /// <returns>XML-escaped text with LF line endings.</returns>
             public static string Encode(string text)
             {
                 var sb = new StringBuilder(text.Length);

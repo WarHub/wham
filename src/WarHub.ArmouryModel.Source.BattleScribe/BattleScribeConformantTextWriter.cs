@@ -2,7 +2,7 @@
 using System.IO;
 using System.Text;
 
-namespace WarHub.ArmouryModel.Source.Tests
+namespace WarHub.ArmouryModel.Source.BattleScribe
 {
     /// <summary>
     /// Replaces " />" with "/>" on the fly. Fixes non-conforming formatting of XmlWriter.

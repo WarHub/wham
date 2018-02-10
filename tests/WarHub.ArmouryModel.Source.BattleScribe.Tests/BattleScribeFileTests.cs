@@ -4,15 +4,18 @@ using System.IO;
 using System.Xml;
 using Xunit;
 
-namespace WarHub.ArmouryModel.Source.Tests
+namespace WarHub.ArmouryModel.Source.BattleScribe.Tests
 {
     public class BattleScribeFileTests : SerializationTestBase
     {
         [Fact]
         [Trait("XmlSerialization", "ReadWriteTest")]
-        public void ReadWriteGameSystem()
+        public void ReadWriteGamesystem()
         {
-            ReadWriteXml(XmlTestData.GameSystemFilename, SerializeGameSystem, DeserializeGameSystem);
+            ReadWriteXml(
+                XmlTestData.GamesystemFilename,
+                (n,s) => (n as GamesystemNode).Serialize(s),
+                s => s.DeserializeGamesystem());
         }
 
         [Theory]
@@ -21,14 +24,20 @@ namespace WarHub.ArmouryModel.Source.Tests
         [InlineData(XmlTestData.Catalogue2Filename)]
         public void ReadWriteCatalogue(string filename)
         {
-            ReadWriteXml(filename, SerializeCatalogue, DeserializeCatalogue);
+            ReadWriteXml(
+                filename,
+                (n, s) => (n as CatalogueNode).Serialize(s),
+                s => s.DeserializeCatalogue());
         }
 
         [Fact]
         [Trait("XmlSerialization", "ReadWriteTest")]
         public void ReadWriteRoster()
         {
-            ReadWriteXml(XmlTestData.RosterFilename, SerializeRoster, DeserializeRoster);
+            ReadWriteXml(
+                XmlTestData.RosterFilename,
+                (n, s) => (n as RosterNode).Serialize(s),
+                s => s.DeserializeRoster());
         }
 
         private static void ReadWriteXml(string filename, Action<SourceNode, Stream> serialize, Func<Stream, SourceNode> deserialize)
@@ -39,10 +48,7 @@ namespace WarHub.ArmouryModel.Source.Tests
             Serialize(readNode);
             var areXmlEqual = AreXmlEqual();
             Assert.True(areXmlEqual);
-
-
-
-
+            
             SourceNode Deserialize()
             {
                 using (var stream = File.OpenRead(input))

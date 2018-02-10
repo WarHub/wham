@@ -2,7 +2,7 @@
 using System.Threading.Tasks;
 using System.Xml;
 
-namespace WarHub.ArmouryModel.Source.Tests
+namespace WarHub.ArmouryModel.Source.BattleScribe
 {
 
     /// <summary>
@@ -20,8 +20,7 @@ namespace WarHub.ArmouryModel.Source.Tests
 
         public new static XmlWriter Create(Stream stream)
         {
-            var bsTextWriter = new BattleScribeConformantTextWriter(new StreamWriter(stream));
-            return new BattleScribeConformantXmlWriter(Create(bsTextWriter, BattleScribeXml.XmlWriterSettings));
+            return Create(stream, BattleScribeXml.InternalXmlWriterSettings);
         }
 
         public new static XmlWriter Create(Stream stream, XmlWriterSettings settings)
