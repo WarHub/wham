@@ -116,7 +116,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                 return
                     MethodDeclaration(nodeType, prefix + entry.Identifier)
                     .AddModifiers(SyntaxKind.PublicKeyword)
-                    .MutateIf(IsDerived, x => x.AddModifiers(SyntaxKind.NewKeyword))
+                    .MutateIf(Descriptor.DerivedEntries.Contains(entry), x => x.AddModifiers(SyntaxKind.NewKeyword))
                     .AddParameterListParameters(parameters)
                     .AddBodyStatements(
                         ReturnStatement(

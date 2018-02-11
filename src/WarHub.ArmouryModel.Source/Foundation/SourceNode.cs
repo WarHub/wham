@@ -4,6 +4,10 @@ using System.Linq;
 
 namespace WarHub.ArmouryModel.Source
 {
+    /// <summary>
+    /// Base class of all Source nodes, providing an interface and base implementation of many of it's methods.
+    /// This class is abstract.
+    /// </summary>
     public abstract class SourceNode
     {
         public SourceNode(NodeCore core, SourceNode parent)
@@ -18,16 +22,36 @@ namespace WarHub.ArmouryModel.Source
 
         internal NodeCore Core { get; }
 
+        /// <summary>
+        /// Gets the kind of this node.
+        /// </summary>
+        public abstract SourceKind Kind { get; }
+
+
+        /// <summary>
+        /// Traverses ancestry path and returns each node beginning with this node's parent, if any.
+        /// May yield no results if this node is a root node.
+        /// </summary>
+        /// <returns>Enumeration of this node's ancestors.</returns>
         public IEnumerable<SourceNode> Ancestors()
         {
             return AncestorsCore(includeSelf: false);
         }
 
+        /// <summary>
+        /// Traverses ancestry path and returns each node beginning with this node.
+        /// This will always yield at least this node.
+        /// </summary>
+        /// <returns>Enumeration of this node and its ancestors.</returns>
         public IEnumerable<SourceNode> AncestorsAndSelf()
         {
             return AncestorsCore(includeSelf: true);
         }
 
+        /// <summary>
+        /// Enumerates all children of this node.
+        /// </summary>
+        /// <returns>Enumeration of this node's children.</returns>
         public IEnumerable<SourceNode> Children()
         {
             for (int i = 0; i < ChildrenCount; i++)
@@ -36,6 +60,11 @@ namespace WarHub.ArmouryModel.Source
             }
         }
 
+        /// <summary>
+        /// Determines if the <paramref name="node"/> is any of this node's descendants.
+        /// </summary>
+        /// <param name="node">Node to be checked of being a descendant.</param>
+        /// <returns>True if this node is an ancestor of given <paramref name="node"/>.</returns>
         public bool Contains(SourceNode node)
         {
             while ((node = node?.Parent) != null)
@@ -48,16 +77,36 @@ namespace WarHub.ArmouryModel.Source
             return false;
         }
 
+        /// <summary>
+        /// Traverses all descendants of this node depth-first. <paramref name="descendIntoChildren"/>'s default
+        /// value null is the same as if it always returned null (x => true).
+        /// </summary>
+        /// <param name="descendIntoChildren">Predicate to decide if node's children should be visited.</param>
+        /// <returns>Enumeration of traversal.</returns>
         public IEnumerable<SourceNode> Descendants(Func<SourceNode, bool> descendIntoChildren = null)
         {
             return DescendantsCore(descendIntoChildren, includeSelf: false);
         }
 
+        /// <summary>
+        /// Traverses all descendants of this node depth-first. <paramref name="descendIntoChildren"/>'s default
+        /// value null is the same as if it always returned null (x => true). At the beginning this node is returned.
+        /// </summary>
+        /// <param name="descendIntoChildren">Predicate to decide if node's children should be visited.</param>
+        /// <returns>Enumeration of traversal.</returns>
         public IEnumerable<SourceNode> DescendantsAndSelf(Func<SourceNode, bool> descendIntoChildren = null)
         {
             return DescendantsCore(descendIntoChildren, includeSelf: true);
         }
 
+        /// <summary>
+        /// Traverses ancestry path up to the root and finds first node that is assignable to
+        /// <typeparamref name="TNode"/> type and satisfying provided <paramref name="predicate"/>.
+        /// First visited node is this node.
+        /// </summary>
+        /// <typeparam name="TNode">Type of node to return.</typeparam>
+        /// <param name="predicate">Determines if the node should be returned.</param>
+        /// <returns>First ancestor (or self) that satisfies both conditions.</returns>
         public TNode FirstAncestorOrSelf<TNode>(Func<TNode, bool> predicate) where TNode : class
         {
             var node = this;
@@ -70,6 +119,43 @@ namespace WarHub.ArmouryModel.Source
                 node = node.Parent;
             }
             return null;
+        }
+
+        /// <summary>
+        /// Enumerates containers of children in this node. Implementation is used
+        /// to provide the very basic and totally inefficient implementation of
+        /// <see cref="ChildrenCount"/> and <see cref="GetChild(int)"/>. It is advised
+        /// to provide a specialized and optimized implementation of these members.
+        /// </summary>
+        /// <returns></returns>
+        protected internal abstract IEnumerable<IContainer<SourceNode>> ChildrenLists();
+
+        /// <summary>
+        /// Gets the total count of children of this node. <see cref="SourceNode"/>'s basic
+        /// implementation is very inefficient. It is advised that deriving classes provide
+        /// a specialized and optimized implementation of this member.
+        /// </summary>
+        protected internal virtual int ChildrenCount => ChildrenLists().Sum(list => list.SlotCount);
+
+        /// <summary>
+        /// Retrieves this node's child from given <paramref name="index"/>. <see cref="SourceNode"/>'s basic
+        /// implementation is very inefficient. It is advised that deriving classes provide
+        /// a specialized and optimized implementation of this member.
+        /// </summary>
+        /// <param name="index">The index from which to retrieve child</param>
+        /// <returns>Child from the given index.</returns>
+        /// <exception cref="ArgumentOutOfRangeException">When index is out of range.</exception>
+        protected internal virtual SourceNode GetChild(int index)
+        {
+            foreach (var list in ChildrenLists())
+            {
+                index -= list.SlotCount;
+                if (index < 0)
+                {
+                    return list.GetNodeSlot(index + list.SlotCount);
+                }
+            }
+            throw new ArgumentOutOfRangeException(nameof(index));
         }
 
         private IEnumerable<SourceNode> AncestorsCore(bool includeSelf)
@@ -111,23 +197,6 @@ namespace WarHub.ArmouryModel.Source
                     stack.Push((0, node));
                 }
             }
-        }
-
-        protected internal abstract IEnumerable<IContainer<SourceNode>> ChildrenLists();
-
-        protected internal virtual int ChildrenCount => ChildrenLists().Sum(list => list.SlotCount);
-
-        protected internal virtual SourceNode GetChild(int index)
-        {
-            foreach (var list in ChildrenLists())
-            {
-                index -= list.SlotCount;
-                if (index < 0)
-                {
-                    return list.GetNodeSlot(index + list.SlotCount);
-                }
-            }
-            throw new ArgumentOutOfRangeException(nameof(index));
         }
     }
 }

@@ -119,11 +119,31 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
 
         private IEnumerable<PropertyDeclarationSyntax> GenerateProperties()
         {
+            if (!IsAbstract)
+            {
+                yield return CreateKindProperty();
+            }
             yield return CreateCoreProperty();
             yield return CreateExplicitInterfaceCoreProperty();
             foreach (var property in Descriptor.DeclaredEntries.Select(CreateSimpleProperty, CreateCollectionProperty))
             {
                 yield return property;
+            }
+            PropertyDeclarationSyntax CreateKindProperty()
+            {
+                var kindString = Descriptor.CoreTypeIdentifier.Text.StripSuffixes();
+                return
+                    PropertyDeclaration(
+                        IdentifierName(Names.SourceKind),
+                        Names.Kind)
+                    .AddModifiers(
+                        SyntaxKind.PublicKeyword,
+                        SyntaxKind.OverrideKeyword)
+                    .WithExpressionBodyFull(
+                        MemberAccessExpression(
+                            SyntaxKind.SimpleMemberAccessExpression,
+                            IdentifierName(Names.SourceKind),
+                            IdentifierName(kindString)));
             }
             PropertyDeclarationSyntax CreateCoreProperty()
             {
