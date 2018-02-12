@@ -137,7 +137,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
         }
         private static IEnumerable<AttributeListSyntax> GetPropertyAttributeLists(PropertyDeclarationSyntax syntax)
         {
-            var xmlAttributeNames = new[] { Names.XmlArray, Names.XmlAttribute, Names.XmlElement };
+            var xmlAttributeNames = new[] { Names.XmlArray, Names.XmlAttribute, Names.XmlElement, Names.XmlText };
             var attributes = syntax.AttributeLists.SelectMany(list => list.Attributes);
             var xmlAttributes = attributes.Where(att => xmlAttributeNames.Any(name => att.IsNamed(name)));
             return xmlAttributes.Select(att => SyntaxFactory.AttributeList().AddAttributes(att));

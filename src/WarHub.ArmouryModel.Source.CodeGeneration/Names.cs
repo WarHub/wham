@@ -62,6 +62,7 @@
         public const string XmlAttribute = "XmlAttribute";
         public const string XmlRoot = "XmlRoot";
         public const string XmlType = "XmlType";
+        public const string XmlText = "XmlText";
         public const string NotSupportedExceptionFull = "System.NotSupportedException";
         public const string Update = "Update";
         public const string UpdateWith = "UpdateWith";
