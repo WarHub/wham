@@ -2,7 +2,7 @@
 using System.Threading.Tasks;
 using System.Xml;
 
-namespace WarHub.ArmouryModel.Source.BattleScribe
+namespace WarHub.ArmouryModel.Source.BattleScribe.Utilities
 {
 
     /// <summary>
@@ -16,11 +16,20 @@ namespace WarHub.ArmouryModel.Source.BattleScribe
             BaseWriter = writer;
         }
 
+        internal static XmlWriterSettings InternalXmlWriterSettings { get; } = new XmlWriterSettings
+        {
+            CloseOutput = false,
+            NewLineChars = "\n",
+            NewLineHandling = NewLineHandling.Replace,
+            Indent = true,
+            OmitXmlDeclaration = false
+        };
+
         private XmlWriter BaseWriter { get; }
 
         public new static XmlWriter Create(Stream stream)
         {
-            return Create(stream, BattleScribeXml.InternalXmlWriterSettings);
+            return Create(stream, InternalXmlWriterSettings);
         }
 
         public new static XmlWriter Create(Stream stream, XmlWriterSettings settings)
@@ -45,7 +54,7 @@ namespace WarHub.ArmouryModel.Source.BattleScribe
                 case WriteState.Attribute:
                 case WriteState.Element:
                     {
-                        var raw = BattleScribeXml.Encoder.Encode(text);
+                        var raw = BattleScribeXmlEncoder.Encode(text);
                         BaseWriter.WriteRaw(raw);
                     }
                     break;

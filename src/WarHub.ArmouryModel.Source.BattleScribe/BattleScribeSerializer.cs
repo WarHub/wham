@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Xml.Serialization;
+using WarHub.ArmouryModel.Source.BattleScribe.Utilities;
 
 namespace WarHub.ArmouryModel.Source.BattleScribe
 {
@@ -10,7 +11,7 @@ namespace WarHub.ArmouryModel.Source.BattleScribe
     /// Caches namespaces and serializers required for serialization and deserialization,
     /// and provides methods for performing those operations in strongly typed fashion.
     /// </summary>
-    public class BattleScribeSerializer
+    public class BattleScribeXmlSerializer
     {
         private Lazy<XmlSerializerNamespaces> LazyGamesystemNamespaces { get; }
             = new Lazy<XmlSerializerNamespaces>(CreateGamesystemXmlSerializerNamespaces);

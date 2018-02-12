@@ -4,11 +4,11 @@ using System.IO;
 namespace WarHub.ArmouryModel.Source.BattleScribe
 {
     /// <summary>
-    /// Provides extension methods that wrap methods from <see cref="BattleScribeSerializer"/>.
+    /// Provides extension methods that wrap methods from <see cref="BattleScribeXmlSerializer"/>.
     /// </summary>
     public static class BattleScribeSerializationExtensions
     {
-        private static Lazy<BattleScribeSerializer> BSSerializer { get; } = new Lazy<BattleScribeSerializer>();
+        private static Lazy<BattleScribeXmlSerializer> BSSerializer { get; } = new Lazy<BattleScribeXmlSerializer>();
 
         public static GamesystemNode DeserializeGamesystem(this Stream stream)
         {
