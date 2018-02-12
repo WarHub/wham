@@ -1,1 +1,0 @@
-xsd Catalogue.xsd /c /e:catalogue /order /n:WarHub.Armoury.Model.BattleScribeXml

@@ -1,0 +1,20 @@
+<Project>
+
+  <PropertyGroup>
+    <Authors>Amadeusz Sadowski</Authors>
+    <PackageLicenseUrl>https://github.com/WarHub/wham/blob/master/LICENSE</PackageLicenseUrl>
+    <PackageProjectUrl>https://github.com/WarHub/wham</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/WarHub/wham</RepositoryUrl>
+    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+    <Copyright>Copyright © 2018 Amadeusz Sadowski</Copyright>
+    <RepositoryType>git</RepositoryType>
+    <Company>WarHub</Company>
+    <Version>0.5.0</Version>
+    <PackageVersion>0.5.0-manual</PackageVersion>
+    <AssemblyVersion></AssemblyVersion>
+    <FileVersion></FileVersion>
+    <InformationalVersion></InformationalVersion>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+  </PropertyGroup>
+  
+</Project>

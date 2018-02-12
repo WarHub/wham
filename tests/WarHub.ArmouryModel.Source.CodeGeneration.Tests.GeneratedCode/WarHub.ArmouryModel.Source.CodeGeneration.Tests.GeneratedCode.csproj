@@ -1,0 +1,34 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <LangVersion>latest</LangVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="..\..\src\WarHub.ArmouryModel.Source\Foundation\ArrayElement.cs" Link="Foundation\ArrayElement.cs" />
+    <Compile Include="..\..\src\WarHub.ArmouryModel.Source\Foundation\IBuildable.cs" Link="Foundation\IBuildable.cs" />
+    <Compile Include="..\..\src\WarHub.ArmouryModel.Source\Foundation\IBuilder.cs" Link="Foundation\IBuilder.cs" />
+    <Compile Include="..\..\src\WarHub.ArmouryModel.Source\Foundation\IContainer.cs" Link="Foundation\IContainer.cs" />
+    <Compile Include="..\..\src\WarHub.ArmouryModel.Source\Foundation\ICore.cs" Link="Foundation\ICore.cs" />
+    <Compile Include="..\..\src\WarHub.ArmouryModel.Source\Foundation\ImmutableExtensions.cs" Link="Foundation\ImmutableExtensions.cs" />
+    <Compile Include="..\..\src\WarHub.ArmouryModel.Source\Foundation\INodeWithCore.cs" Link="Foundation\INodeWithCore.cs" />
+    <Compile Include="..\..\src\WarHub.ArmouryModel.Source\Foundation\LazyNodeList.cs" Link="Foundation\LazyNodeList.cs" />
+    <Compile Include="..\..\src\WarHub.ArmouryModel.Source\Foundation\NodeCollectionContainerProxy.cs" Link="Foundation\NodeCollectionContainerProxy.cs" />
+    <Compile Include="..\..\src\WarHub.ArmouryModel.Source\Foundation\NodeCore.cs" Link="Foundation\NodeCore.cs" />
+    <Compile Include="..\..\src\WarHub.ArmouryModel.Source\Foundation\NodeList.cs" Link="Foundation\NodeList.cs" />
+    <Compile Include="..\..\src\WarHub.ArmouryModel.Source\Foundation\SerializationExtensions.cs" Link="Foundation\SerializationExtensions.cs" />
+    <Compile Include="..\..\src\WarHub.ArmouryModel.Source\Foundation\SourceNode.cs" Link="Foundation\SourceNode.cs" />
+    <Compile Include="..\..\src\WarHub.ArmouryModel.Source\Foundation\SourceTree.cs" Link="Foundation\SourceTree.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\WarHub.ArmouryModel.Source.CodeGeneration\WarHub.ArmouryModel.Source.CodeGeneration.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="CodeGeneration.Roslyn.BuildTime" Version="0.4.11" />
+    <DotNetCliToolReference Include="dotnet-codegen" Version="0.4.11" />
+  </ItemGroup>
+
+</Project>
