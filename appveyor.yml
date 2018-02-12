@@ -14,7 +14,6 @@ init:
       $env:release_branch = $env:APPVEYOR_REPO_BRANCH.StartsWith("stable")
       echo "release_branch='$env:release_branch'"
   - ps: dotnet --info
-  - ps: dotnet restore wham.sln
  # setting versions
   - ps: |
       # extract x.y.z from version, join them and generate suffix in form {branch}-build00000 where branch has all non-character replaced with '-' and up to 10 chars
