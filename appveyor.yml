@@ -45,9 +45,8 @@ dotnet_csproj:
   informational_version: '$(ASM_INFORMATIONAL_VERSION)'
 before_build:
   - cat src\Directory.Build.props
-build:
-  project: wham.sln
-  verbosity: minimal
+build_script:
+  - msbuild /v:m /t:Restore,Build /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
 notifications:
   - provider: Webhook
     url: https://webhooks.gitter.im/e/ed65900fc71d1cd43a2e
