@@ -1,6 +1,3 @@
-# configuration for all except 'stable' branch
-# Build in Debug, publish to MyGet
-
 image: Visual Studio 2017
 version: 0.5.0-{branch}-build{build}
 skip_tags: true
@@ -10,12 +7,44 @@ configuration:
 cache:
   - '%LocalAppData%\NuGet\Cache'    # NuGet < v3
   - '%LocalAppData%\NuGet\v3-cache' # NuGet v3
-before_build:
+init:
+# checking if release branch
+  - ps: |
+      # set release_branch
+      $env:release_branch = $env:APPVEYOR_REPO_BRANCH.StartsWith("stable")
+      echo "release_branch='$env:release_branch'"
   - ps: dotnet --info
   - ps: dotnet restore wham.sln
-  - ps: >-
-      $env:PACKAGE_SUFFIX = 'ci-' + ($env:APPVEYOR_REPO_BRANCH -replace '^(.{0,6}).*$', '$1') + '-build' + "$env:APPVEYOR_BUILD_NUMBER".PadLeft(5, "0")
-  - ps: echo "`$env:PACKAGE_SUFFIX='$env:PACKAGE_SUFFIX'"
+ # setting versions
+  - ps: |
+      # extract x.y.z from version, join them and generate suffix in form {branch}-build00000 where branch has all non-character replaced with '-' and up to 10 chars
+      $major = $env:APPVEYOR_BUILD_VERSION -replace '^(\d*)\.(\d*)\.(\d*).*$', '$1'
+      $minor = $env:APPVEYOR_BUILD_VERSION -replace '^(\d*)\.(\d*)\.(\d*).*$', '$2'
+      $patch = $env:APPVEYOR_BUILD_VERSION -replace '^(\d*)\.(\d*)\.(\d*).*$', '$3'
+      $version_base = "$major.$minor.$patch"
+      $version_suffix = (($env:APPVEYOR_REPO_BRANCH -replace '[^\w\d]', '-')[0..9] -join "") + '-build' + "$env:APPVEYOR_BUILD_NUMBER".PadLeft(5, "0")
+      # set versions
+      $env:ASM_VERSION = "$major.0.0.0"
+      $env:ASM_FILE_VERSION = "$version_base.$env:APPVEYOR_BUILD_NUMBER"
+      $env:ASM_INFORMATIONAL_VERSION = "$version_base-$version_suffix"
+      $env:PACKAGE_VERSION = if ($env:release_branch -eq $True) { "$version_base" } else { "$env:ASM_INFORMATIONAL_VERSION" }
+      # print
+      echo "version_base='$version_base'"
+      echo "version_suffix='$version_suffix'"
+      echo "PACKAGE_VERSION='$env:PACKAGE_VERSION'"
+      echo "ASM_VERSION='$env:ASM_VERSION'"
+      echo "ASM_FILE_VERSION='$env:ASM_FILE_VERSION'"
+      echo "ASM_INFORMATIONAL_VERSION='$env:ASM_INFORMATIONAL_VERSION'"
+dotnet_csproj:
+  patch: true
+  file: '**\*.props'
+  version: '$(ASM_VERSION)'
+  assembly_version: '$(ASM_VERSION)'
+  package_version: '$(PACKAGE_VERSION)'
+  file_version: '$(ASM_FILE_VERSION)'
+  informational_version: '$(ASM_INFORMATIONAL_VERSION)'
+before_build:
+  - cat src\Directory.Build.props
 build:
   project: wham.sln
   verbosity: minimal
@@ -37,3 +66,12 @@ deploy:
     artifact: /.*\.nupkg/
     on:
       configuration: Debug
+      release_branch: false
+  - provider: NuGet
+    api_key:
+      secure: fZIteIAxcxCICf9XQzv6dY3E1CUyErebh6Um+mzb7v3vXvvTAbHxgTyYr7srzO/i
+    skip_symbols: false
+    artifact: /.*\.nupkg/
+    on:
+      configuration: Release
+      release_branch: true

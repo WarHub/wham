@@ -3,6 +3,16 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
   </PropertyGroup>
+
+  <PropertyGroup>
+    <Summary>Provides BattleScribe compatibility/convenience layer for wham (WarHub.ArmouryModel) library.</Summary>
+    <Description>
+      Provides BattleScribe compatibility/convenience layer for wham (WarHub.ArmouryModel) library. Commonly used types:
+      * WarHub.ArmouryModel.Source.BattleScribe.BattleScribeXml (for static convenient methods loading datafiles)
+      * WarHub.ArmouryModel.Source.BattleScribe.BattleScribeSerializer for instance methods (de)serializing data objects
+    </Description>
+    <PackageTags>warhub armoury armourymodel wham battlescribe roster catalogue gamesystem cat catz gst gstz ros rosz datafile wh40k 40k bsdata battle scribe</PackageTags>
+  </PropertyGroup>
   
   <ItemGroup>
     <ProjectReference Include="..\WarHub.ArmouryModel.Source\WarHub.ArmouryModel.Source.csproj" />

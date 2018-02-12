@@ -1,9 +1,12 @@
-# wham
+# wham - WarHub.ArmouryModel
 
-## Links
+C# cornerstone library for wargame datafile tools.
 
-Our chat room:
-[![Join the chat at https://gitter.im/WarHub/wham](https://badges.gitter.im/WarHub/wham.svg)](https://gitter.im/WarHub/wham?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+[![NuGet package](https://img.shields.io/nuget/v/Amadevus.RecordGenerator.svg)](https://www.nuget.org/packages?q=warhub+armourymodel)
+[![Build status](https://img.shields.io/appveyor/ci/amis92/wham.svg)](https://ci.appveyor.com/project/amis92/wham/branch/master)
+[![MyGet package](https://img.shields.io/myget/warhub/v/WarHub.ArmouryModel.Source.svg?label=myget-ci)](https://www.myget.org/feed/Packages/warhub)
+[![Join the chat at gitter!](https://img.shields.io/gitter/room/WarHub/wham.svg)](https://gitter.im/WarHub/wham?utm_source=badge&utm_medium=badge&utm_content=badge)
+[![License](https://img.shields.io/github/license/WarHub/wham.svg)](https://github.com/WarHub/wham/blob/master/LICENSE)
 
 NuGet packages: [WarHub NuGet](https://www.nuget.org/profiles/warhub)
 
@@ -11,9 +14,9 @@ MyGet packages (Continuous Integration channel): [WarHub MyGet](https://www.myge
 
 ## Overview
 
-WarHub.Armoury.Model: *Top level abstraction of roster building model in C#.*
+`WarHub.ArmouryModel.Source` is a NETStandard 2.0 library that provides means to manage and interact with wargaming data files (game systems, catalogues) and rosters.
 
-This library provides means to manage and interact with wargaming data files (game systems, catalogues) and rosters.
+`WarHub.ArmouryModel.Source.BattleScribe` provides convenient methods to load and save BattleScribe XML datafiles.
 
 ## Development
 
