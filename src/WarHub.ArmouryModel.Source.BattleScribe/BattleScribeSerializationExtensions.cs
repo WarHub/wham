@@ -25,6 +25,11 @@ namespace WarHub.ArmouryModel.Source.BattleScribe
             return BSSerializer.Value.DeserializeRoster(stream);
         }
 
+        public static DataIndexNode DeserializeDataIndex(this Stream stream)
+        {
+            return BSSerializer.Value.DeserializeDataIndex(stream);
+        }
+
         public static void Serialize(this GamesystemNode node, Stream stream)
         {
             BSSerializer.Value.SerializeGamesystem(node, stream);
@@ -40,6 +45,11 @@ namespace WarHub.ArmouryModel.Source.BattleScribe
             BSSerializer.Value.SerializeRoster(node, stream);
         }
 
+        public static void Serialize(this DataIndexNode node, Stream stream)
+        {
+            BSSerializer.Value.SerializeDataIndex(node, stream);
+        }
+
         public static GamesystemCore.FastSerializationProxy GetSerializationProxy(this GamesystemNode node)
         {
             return node.Core.ToSerializationProxy();
@@ -51,6 +61,11 @@ namespace WarHub.ArmouryModel.Source.BattleScribe
         }
 
         public static RosterCore.FastSerializationProxy GetSerializationProxy(this RosterNode node)
+        {
+            return node.Core.ToSerializationProxy();
+        }
+
+        public static DataIndexCore.FastSerializationProxy GetSerializationProxy(this DataIndexNode node)
         {
             return node.Core.ToSerializationProxy();
         }

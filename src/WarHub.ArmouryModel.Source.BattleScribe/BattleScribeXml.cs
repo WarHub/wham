@@ -78,5 +78,29 @@ namespace WarHub.ArmouryModel.Source.BattleScribe
         {
             return stream.DeserializeRoster();
         }
+
+
+        /// <summary>
+        /// Loads BattleScribe data index from (unzipped) .xml file from <paramref name="path"/>.
+        /// </summary>
+        /// <param name="path">Filepath to (unzipped) data index file.</param>
+        /// <returns>Data index data model.</returns>
+        public static DataIndexNode LoadDataIndex(string path)
+        {
+            using (var stream = File.OpenRead(path))
+            {
+                return stream.DeserializeDataIndex();
+            }
+        }
+
+        /// <summary>
+        /// Loads BattleScribe data index from (unzipped) .xml file <paramref name="stream"/>.
+        /// </summary>
+        /// <param name="stream">Stream of data index file content.</param>
+        /// <returns>Data index data model.</returns>
+        public static DataIndexNode LoadDataIndex(Stream stream)
+        {
+            return stream.DeserializeDataIndex();
+        }
     }
 }

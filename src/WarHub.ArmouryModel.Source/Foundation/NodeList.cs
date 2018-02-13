@@ -2,9 +2,11 @@
 using System.Collections;
 using System.Collections.Immutable;
 using System.Linq;
+using System.Diagnostics;
 
 namespace WarHub.ArmouryModel.Source
 {
+    [DebuggerDisplay("Count = {Count}")]
     public partial struct NodeList<TItem> : IReadOnlyList<TItem> where TItem : SourceNode
     {
         // TODO a lot of optimizations here

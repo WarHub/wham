@@ -22,6 +22,9 @@ namespace WarHub.ArmouryModel.Source.BattleScribe
         private Lazy<XmlSerializerNamespaces> LazyRosterNamespaces { get; }
             = new Lazy<XmlSerializerNamespaces>(CreateRosterXmlSerializerNamespaces);
 
+        private Lazy<XmlSerializerNamespaces> LazyDataIndexNamespaces { get; }
+            = new Lazy<XmlSerializerNamespaces>(CreateDataIndexXmlSerializerNamespaces);
+
         private Lazy<XmlSerializer> LazyGamesystemSerializer { get; }
             = new Lazy<XmlSerializer>(CreateGamesystemSerializer);
 
@@ -31,6 +34,9 @@ namespace WarHub.ArmouryModel.Source.BattleScribe
         private Lazy<XmlSerializer> LazyRosterSerializer { get; }
             = new Lazy<XmlSerializer>(CreateRosterSerializer);
 
+        private Lazy<XmlSerializer> LazyDataIndexSerializer { get; }
+            = new Lazy<XmlSerializer>(CreateDataIndexSerializer);
+
         private Lazy<XmlSerializer> LazyGamesystemDeserializer { get; }
             = new Lazy<XmlSerializer>(CreateGamesystemDeserializer);
 
@@ -39,6 +45,9 @@ namespace WarHub.ArmouryModel.Source.BattleScribe
 
         private Lazy<XmlSerializer> LazyRosterDeserializer { get; }
             = new Lazy<XmlSerializer>(CreateRosterDeserializer);
+
+        private Lazy<XmlSerializer> LazyDataIndexDeserializer { get; }
+            = new Lazy<XmlSerializer>(CreateDataIndexDeserializer);
 
         public GamesystemNode DeserializeGamesystem(Stream stream)
         {
@@ -55,6 +64,12 @@ namespace WarHub.ArmouryModel.Source.BattleScribe
         public RosterNode DeserializeRoster(Stream stream)
         {
             var builder = (RosterCore.Builder)LazyRosterDeserializer.Value.Deserialize(stream);
+            return builder.ToImmutable().ToNode();
+        }
+
+        public DataIndexNode DeserializeDataIndex(Stream stream)
+        {
+            var builder = (DataIndexCore.Builder)LazyDataIndexDeserializer.Value.Deserialize(stream);
             return builder.ToImmutable().ToNode();
         }
 
@@ -85,17 +100,30 @@ namespace WarHub.ArmouryModel.Source.BattleScribe
             }
         }
 
+        public void SerializeDataIndex(DataIndexNode node, Stream stream)
+        {
+            var fse = node.GetSerializationProxy();
+            using (var writer = BattleScribeConformantXmlWriter.Create(stream))
+            {
+                LazyDataIndexSerializer.Value.Serialize(writer, fse, LazyDataIndexNamespaces.Value);
+            }
+        }
+
         public static XmlSerializer CreateGamesystemSerializer() => new XmlSerializer(typeof(GamesystemCore.FastSerializationProxy));
 
         public static XmlSerializer CreateCatalogueSerializer() => new XmlSerializer(typeof(CatalogueCore.FastSerializationProxy));
 
         public static XmlSerializer CreateRosterSerializer() => new XmlSerializer(typeof(RosterCore.FastSerializationProxy));
 
+        public static XmlSerializer CreateDataIndexSerializer() => new XmlSerializer(typeof(DataIndexCore.FastSerializationProxy));
+
         public static XmlSerializer CreateGamesystemDeserializer() => new XmlSerializer(typeof(GamesystemCore.Builder));
 
         public static XmlSerializer CreateCatalogueDeserializer() => new XmlSerializer(typeof(CatalogueCore.Builder));
 
         public static XmlSerializer CreateRosterDeserializer() => new XmlSerializer(typeof(RosterCore.Builder));
+
+        public static XmlSerializer CreateDataIndexDeserializer() => new XmlSerializer(typeof(DataIndexCore.Builder));
 
         public static XmlSerializerNamespaces CreateGamesystemXmlSerializerNamespaces()
         {
@@ -115,6 +143,13 @@ namespace WarHub.ArmouryModel.Source.BattleScribe
         {
             var namespaces = new XmlSerializerNamespaces();
             namespaces.Add("", RosterCore.RosterXmlNamespace);
+            return namespaces;
+        }
+
+        public static XmlSerializerNamespaces CreateDataIndexXmlSerializerNamespaces()
+        {
+            var namespaces = new XmlSerializerNamespaces();
+            namespaces.Add("", DataIndexCore.DataIndexXmlNamespace);
             return namespaces;
         }
     }
