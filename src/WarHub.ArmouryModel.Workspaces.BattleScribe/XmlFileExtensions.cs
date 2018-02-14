@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.IO;
 
 namespace WarHub.ArmouryModel.Workspaces.BattleScribe
 {
@@ -65,5 +66,14 @@ namespace WarHub.ArmouryModel.Workspaces.BattleScribe
                 [DataIndex] = XmlDocumentKind.DataIndex,
                 [DataIndexZipped] = XmlDocumentKind.DataIndex,
             }.ToImmutableDictionary(StringComparer.OrdinalIgnoreCase);
+
+        public static XmlDocumentKind GetXmlDocumentKind(this FileInfo file) => GetKind(file.Extension);
+
+        public static XmlDocumentKind GetXmlDocumentKind(this string path) => GetKind(Path.GetExtension(path));
+
+        private static XmlDocumentKind GetKind(string extension)
+        {
+            return KindsByExtensions.TryGetValue(extension, out var kind) ? kind : XmlDocumentKind.Unknown;
+        }
     }
 }

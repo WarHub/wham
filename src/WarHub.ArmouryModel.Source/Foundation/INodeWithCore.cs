@@ -1,6 +1,6 @@
 ﻿namespace WarHub.ArmouryModel.Source
 {
-    internal interface INodeWithCore<TCore>
+    public interface INodeWithCore<TCore>
     {
         TCore Core { get; }
     }

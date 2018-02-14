@@ -1,4 +1,5 @@
-﻿using System.Collections.Immutable;
+﻿using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
 
@@ -9,10 +10,18 @@ namespace WarHub.ArmouryModel.Workspaces.BattleScribe
     /// </summary>
     public class XmlWorkspace
     {
-        public XmlWorkspace(ImmutableDictionary<XmlDocumentKind, ImmutableArray<XmlDocument>> files)
+        private XmlWorkspace(IEnumerable<FileInfo> files)
         {
-            DocumentsByKind = files;
-            Documents = files.Values.SelectMany(x => x).ToImmutableArray();
+            Documents =
+                files
+                .Select(file => new XmlDocument(file.GetXmlDocumentKind(), file, this))
+                .ToImmutableArray();
+            DocumentsByKind =
+                Documents
+                .GroupBy(doc => doc.Kind)
+                .ToImmutableDictionary(
+                    group => group.Key,
+                    group => group.ToImmutableArray());
         }
 
         public ImmutableArray<XmlDocument> Documents { get; }
@@ -29,11 +38,7 @@ namespace WarHub.ArmouryModel.Workspaces.BattleScribe
         public static XmlWorkspace CreateFromDirectory(string path, SearchOption searchOption = SearchOption.TopDirectoryOnly)
         {
             var dirInfo = new DirectoryInfo(path);
-            var files = dirInfo.EnumerateFiles("*", searchOption)
-                .Select(file => XmlFileExtensions.KindsByExtensions.TryGetValue(file.Extension, out var kind) ? (file, kind) : (null, XmlDocumentKind.Unknown))
-                .Where(x => x.kind != XmlDocumentKind.Unknown)
-                .GroupBy(x => x.kind, x => x.file)
-                .ToImmutableDictionary(x => x.Key, group => ImmutableArray.CreateRange(group.Select(file => new XmlDocument(group.Key, file))));
+            var files = dirInfo.EnumerateFiles("*", searchOption);
             return new XmlWorkspace(files);
         }
     }

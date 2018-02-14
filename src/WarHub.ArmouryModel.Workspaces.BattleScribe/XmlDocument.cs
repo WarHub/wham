@@ -10,10 +10,11 @@ namespace WarHub.ArmouryModel.Workspaces.BattleScribe
     {
         private readonly FileInfo file;
 
-        public XmlDocument(XmlDocumentKind key, FileInfo file)
+        public XmlDocument(XmlDocumentKind key, FileInfo file, XmlWorkspace workspace)
         {
             Kind = key;
             this.file = file;
+            Workspace = workspace;
             Path = file.FullName;
             Name = file.Name;
         }
@@ -32,7 +33,7 @@ namespace WarHub.ArmouryModel.Workspaces.BattleScribe
         /// Gets the kind of this document.
         /// </summary>
         public XmlDocumentKind Kind { get; }
-
+        public XmlWorkspace Workspace { get; }
         private WeakReference<SourceNode> WeakRoot { get; } = new WeakReference<SourceNode>(null);
 
         /// <summary>

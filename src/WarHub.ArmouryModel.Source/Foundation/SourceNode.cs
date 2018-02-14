@@ -8,13 +8,15 @@ namespace WarHub.ArmouryModel.Source
     /// Base class of all Source nodes, providing an interface and base implementation of many of it's methods.
     /// This class is abstract.
     /// </summary>
-    public abstract class SourceNode
+    public abstract class SourceNode : INodeWithCore<NodeCore>
     {
         public SourceNode(NodeCore core, SourceNode parent)
         {
             Core = core;
             Parent = parent;
         }
+
+        NodeCore INodeWithCore<NodeCore>.Core => Core;
 
         protected SourceNode Parent { get; }
 
