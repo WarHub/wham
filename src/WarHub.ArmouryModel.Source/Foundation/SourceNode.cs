@@ -14,13 +14,16 @@ namespace WarHub.ArmouryModel.Source
         {
             Core = core;
             Parent = parent;
+            Tree = parent?.Tree;
         }
+
+        private int? _indexInParent;
 
         NodeCore INodeWithCore<NodeCore>.Core => Core;
 
         protected SourceNode Parent { get; }
 
-        // TODO SourceTree?
+        internal SourceTree Tree { get; set; }
 
         internal NodeCore Core { get; }
 
@@ -29,6 +32,10 @@ namespace WarHub.ArmouryModel.Source
         /// </summary>
         public abstract SourceKind Kind { get; }
 
+        /// <summary>
+        /// Gets index in parent, or -1 if no parent.
+        /// </summary>
+        public int IndexInParent => _indexInParent ?? CalculateAndSaveIndexInParent();
 
         /// <summary>
         /// Traverses ancestry path and returns each node beginning with this node's parent, if any.
@@ -198,6 +205,30 @@ namespace WarHub.ArmouryModel.Source
                 {
                     stack.Push((0, node));
                 }
+            }
+        }
+
+        private int CalculateAndSaveIndexInParent()
+        {
+            var indexInParent = CalculateIndex();
+            _indexInParent = indexInParent;
+            return indexInParent;
+            int CalculateIndex()
+            {
+                if (Parent == null)
+                {
+                    return -1;
+                }
+                int index = 0;
+                foreach (var sibling in Parent.Children())
+                {
+                    if (ReferenceEquals(this, sibling))
+                    {
+                        break;
+                    }
+                    index++;
+                }
+                return index;
             }
         }
     }

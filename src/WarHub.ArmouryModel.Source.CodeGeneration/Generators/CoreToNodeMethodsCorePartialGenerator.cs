@@ -51,6 +51,10 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
             {
                 yield return DerivedToNodeMethod();
             }
+            if (!IsAbstract)
+            {
+                yield return ToNodeCoreMethod();
+            }
             if (IsAbstract)
             {
                 yield return AbstractToNodeMethod();
@@ -65,6 +69,20 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                         derivedToNodeName)
                     .AddModifiers(SyntaxKind.ProtectedKeyword, SyntaxKind.SealedKeyword, SyntaxKind.OverrideKeyword)
                     .Mutate(AddToNodeParameters)
+                    .Mutate(x => ForwardExpressionToNode(x, Names.ToNode));
+            }
+            MethodDeclarationSyntax ToNodeCoreMethod()
+            {
+                return
+                    MethodDeclaration(
+                        IdentifierName(Names.SourceNode),
+                        Names.ToNodeCore)
+                    .AddModifiers(SyntaxKind.ProtectedKeyword, SyntaxKind.SealedKeyword, SyntaxKind.OverrideKeyword)
+                    .AddParameterListParameters(
+                        Parameter(
+                            Identifier(parentLocal))
+                        .WithType(
+                            IdentifierName(Names.SourceNode)))
                     .Mutate(x => ForwardExpressionToNode(x, Names.ToNode));
             }
             MethodDeclarationSyntax AbstractToNodeMethod()

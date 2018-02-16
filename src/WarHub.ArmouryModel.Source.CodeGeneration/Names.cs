@@ -53,6 +53,7 @@
         public const string ToBuilder = "ToBuilder";
         public const string ToBuildersList = "ToBuildersList";
         public const string ToNode = "ToNode";
+        public const string ToNodeCore = "ToNodeCore";
         public const string ToImmutable = "ToImmutable";
         public const string ToImmutableRecursive = "ToImmutableRecursive";
         public const string ToSerializationProxy = "ToSerializationProxy";
