@@ -137,7 +137,10 @@ namespace WarHub.ArmouryModel.Source
         /// to provide a specialized and optimized implementation of these members.
         /// </summary>
         /// <returns></returns>
-        protected internal abstract IEnumerable<IContainer<SourceNode>> ChildrenLists();
+        protected internal virtual IEnumerable<IContainer<SourceNode>> ChildrenLists()
+        {
+            return Enumerable.Empty<IContainer<SourceNode>>();
+        }
 
         /// <summary>
         /// Gets the total count of children of this node. <see cref="SourceNode"/>'s basic

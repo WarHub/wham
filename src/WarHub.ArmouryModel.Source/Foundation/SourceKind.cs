@@ -13,7 +13,8 @@
         CategoryEntry,
         ForceEntry,
         DataIndexEntry,
-        DataRepositoryUrl,
+        DataIndexRepositoryUrl,
+        Metadata,
 
         // selectors + modifiers
         Condition,
@@ -44,5 +45,6 @@
         Gamesystem,
         Roster,
         DataIndex,
+        Datablob,
     }
 }

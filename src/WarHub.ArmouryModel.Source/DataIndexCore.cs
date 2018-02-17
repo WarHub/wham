@@ -19,19 +19,11 @@ namespace WarHub.ArmouryModel.Source
         public string IndexUrl { get; set; }
 
         [XmlArray("repositoryUrls")]
-        public ImmutableArray<DataRepositoryUrlCore> RepositoryUrls { get; }
+        public ImmutableArray<DataIndexRepositoryUrlCore> RepositoryUrls { get; }
 
         [XmlArray("dataIndexEntries")]
         public ImmutableArray<DataIndexEntryCore> DataIndexEntries { get; }
 
         public string DefaultXmlNamespace => DataIndexXmlNamespace;
-    }
-
-    [WhamNodeCore]
-    [XmlType("repositoryUrl")]
-    public partial class DataRepositoryUrlCore
-    {
-        [XmlText]
-        public string Value { get; }
     }
 }

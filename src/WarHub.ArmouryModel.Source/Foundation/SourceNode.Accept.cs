@@ -4,6 +4,9 @@ using System.Text;
 
 namespace WarHub.ArmouryModel.Source
 {
+    // this partial is separated to allow unit testing Source lib,
+    // which requires SourceVisitor partial (other parts are generated)
+
     partial class SourceNode
     {
 
