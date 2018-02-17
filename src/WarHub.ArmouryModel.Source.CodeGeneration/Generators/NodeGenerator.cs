@@ -131,7 +131,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
             }
             PropertyDeclarationSyntax CreateKindProperty()
             {
-                var kindString = Descriptor.CoreTypeIdentifier.Text.StripSuffixes();
+                var kindString = Descriptor.RawModelName;
                 return
                     PropertyDeclaration(
                         IdentifierName(Names.SourceKind),

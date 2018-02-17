@@ -25,6 +25,8 @@
         public const string SourceNode = "SourceNode";
         public const string SourceTree = "SourceTree";
         public const string SourceKind = "SourceKind";
+        public const string SourceVisitor = "SourceVisitor";
+        public const string SourceVisitorTypeParameter = "TResult";
 
         public const string ArrayNonGenericFull = "System.Array";
         public const string ICollectionNonGenericFull = "System.Collections.ICollection";
@@ -79,6 +81,9 @@
         public const string GetChild = "GetChild";
         public const string GetNodeSlot = "GetNodeSlot";
         public const string Count = "Count";
+        public const string Accept = "Accept";
+        public const string DefaultVisit = "DefaultVisit";
+        public const string Visit = "Visit";
         public const string ArgumentOutOfRangeExceptionFull = "System.ArgumentOutOfRangeException";
     }
 }

@@ -73,10 +73,13 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                 yield return NodeCollectionConvenienceMethodsGenerator.Generate(descriptor, cancellationToken);
                 yield return CollectionConversionExtensionsPartialGenerator.Generate(descriptor, cancellationToken);
                 yield return NodeConvenienceMethodsGenerator.Generate(descriptor, cancellationToken);
+                yield return NodeAcceptSourceVisitorPartialGenerator.Generate(descriptor, cancellationToken);
                 if (descriptor.TypeSymbol.IsAbstract)
                 {
                     yield break;
                 }
+                yield return SourceVisitorVisitPartialGenerator.Generate(descriptor, cancellationToken);
+                yield return SourceVisitorGenericVisitPartialGenerator.Generate(descriptor, cancellationToken);
                 yield return NodeFactoryPartialGenerator.Generate(descriptor, cancellationToken);
 
                 bool IsNodeTypeAlreadyDeclared()

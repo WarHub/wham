@@ -39,7 +39,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                 return
                     MethodDeclaration(
                         Descriptor.GetNodeTypeIdentifierName(),
-                        Descriptor.CoreTypeIdentifier.ValueText.StripSuffixes())
+                        Descriptor.RawModelName)
                     .AddModifiers(
                         SyntaxKind.PublicKeyword,
                         SyntaxKind.StaticKeyword)

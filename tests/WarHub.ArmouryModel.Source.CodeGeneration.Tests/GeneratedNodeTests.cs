@@ -1,9 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.Immutable;
+﻿using System.Collections.Immutable;
 using System.Linq;
 using WarHub.ArmouryModel.Source.CodeGeneration.Tests.GeneratedCode;
 using Xunit;
+using static WarHub.ArmouryModel.Source.CodeGeneration.Tests.TestHelpers;
 
 namespace WarHub.ArmouryModel.Source.CodeGeneration.Tests
 {
@@ -327,53 +326,6 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration.Tests
             // act
             var actual = item.FirstAncestorOrSelf<RecursiveContainerNode>(x => x.Name == name2);
             Assert.Same(expected, actual);
-        }
-
-        private static RootContainerNode EmptyRootNode
-            => new RootContainerCore.Builder().ToImmutable().ToNode();
-
-        private static ItemNode EmptyItemNode
-            => new ItemCore.Builder().ToImmutable().ToNode();
-
-        private static ContainerNode EmptyContainerNode
-            => new ContainerCore.Builder().ToImmutable().ToNode();
-
-        private static RecursiveContainerNode EmptyRecursiveNode
-            => new RecursiveContainerCore.Builder().ToImmutable().ToNode();
-
-        private class SymmetricTree
-        {
-            public static RootContainerNode Create()
-            {
-                var leaf = EmptyItemNode;
-                var container = EmptyContainerNode;
-                var root = EmptyRootNode
-                    .AddLeftContainers(
-                        container.AddItems(leaf, leaf),
-                        container.AddItems(leaf))
-                    .AddRightContainers(
-                        container.AddItems(leaf),
-                        container.AddItems(leaf, leaf));
-                return root;
-            }
-
-            public static IEnumerable<Action<SourceNode>> ValidateElements(bool includeSelf)
-            {
-                if (includeSelf)
-                {
-                    yield return x => Assert.IsType<RootContainerNode>(x);
-                }
-                yield return x => Assert.IsType<ContainerNode>(x);
-                yield return x => Assert.IsType<ItemNode>(x);
-                yield return x => Assert.IsType<ItemNode>(x);
-                yield return x => Assert.IsType<ContainerNode>(x);
-                yield return x => Assert.IsType<ItemNode>(x);
-                yield return x => Assert.IsType<ContainerNode>(x);
-                yield return x => Assert.IsType<ItemNode>(x);
-                yield return x => Assert.IsType<ContainerNode>(x);
-                yield return x => Assert.IsType<ItemNode>(x);
-                yield return x => Assert.IsType<ItemNode>(x);
-            }
         }
     }
 }

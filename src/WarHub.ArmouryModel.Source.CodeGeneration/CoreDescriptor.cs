@@ -13,6 +13,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
             this.TypeSymbol = TypeSymbol;
             this.CoreType = CoreType;
             this.CoreTypeIdentifier = CoreTypeIdentifier;
+            this.RawModelName = CoreTypeIdentifier.ValueText.StripSuffixes();
             this.Entries = Entries;
             this.CoreTypeAttributeLists = CoreTypeAttributeLists;
             DeclaredEntries = Entries
@@ -28,6 +29,11 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
         public NameSyntax CoreType { get; }
 
         public SyntaxToken CoreTypeIdentifier { get; }
+
+        /// <summary>
+        /// Gets raw (un-suffixed with Core or Node) model name.
+        /// </summary>
+        public string RawModelName { get; }
 
         public ImmutableArray<Entry> Entries { get; }
 
