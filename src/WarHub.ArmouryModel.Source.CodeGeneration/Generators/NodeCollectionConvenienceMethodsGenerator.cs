@@ -52,11 +52,10 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                 ExpressionSyntax CreateNodesExpression()
                 {
                     return
-                        InvocationExpression(
-                            MemberAccessExpression(
-                                SyntaxKind.SimpleMemberAccessExpression,
-                                IdentifierName(nodesParamName),
-                                IdentifierName(Names.ToNodeList)));
+                        IdentifierName(nodesParamName)
+                        .MemberAccess(
+                            IdentifierName(Names.ToNodeList))
+                        .InvokeWithArguments();
                 }
             }
             MethodDeclarationSyntax CreateAddParams()
@@ -76,14 +75,11 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                 ExpressionSyntax CreateNodesExpression()
                 {
                     return
-                        InvocationExpression(
-                            MemberAccessExpression(
-                                SyntaxKind.SimpleMemberAccessExpression,
-                                entry.IdentifierName,
-                                IdentifierName(Names.AddRange)))
-                        .AddArgumentListArguments(
-                            Argument(
-                                IdentifierName(nodesParamName)));
+                        entry.IdentifierName
+                        .MemberAccess(
+                            IdentifierName(Names.AddRange))
+                        .InvokeWithArguments(
+                            IdentifierName(nodesParamName));
                 }
             }
             MethodDeclarationSyntax CreateAddEnumerable()
@@ -100,15 +96,11 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                 ExpressionSyntax CreateNodesExpression()
                 {
                     return
-                        InvocationExpression(
-                            MemberAccessExpression(
-                                SyntaxKind.SimpleMemberAccessExpression,
-                                entry.IdentifierName,
-                                IdentifierName(Names.AddRange)),
-                            ArgumentList(
-                                SingletonSeparatedList(
-                                    Argument(
-                                        IdentifierName(nodesParamName)))));
+                        entry.IdentifierName
+                        .MemberAccess(
+                            IdentifierName(Names.AddRange))
+                        .InvokeWithArguments(
+                            IdentifierName(nodesParamName));
                 }
             }
             MethodDeclarationSyntax CreateMutator(string prefix, IEnumerable<ParameterSyntax> parameters, ExpressionSyntax nodesExpression)
@@ -120,10 +112,8 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                     .AddParameterListParameters(parameters)
                     .AddBodyStatements(
                         ReturnStatement(
-                            InvocationExpression(
-                                IdentifierName(Names.WithPrefix + entry.Identifier))
-                            .AddArgumentListArguments(
-                                Argument(nodesExpression))));
+                            IdentifierName(Names.WithPrefix + entry.Identifier)
+                            .InvokeWithArguments(nodesExpression)));
             }
         }
     }

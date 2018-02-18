@@ -56,10 +56,8 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                     ExpressionStatement(
                         AssignmentExpression(
                             SyntaxKind.SimpleAssignmentExpression,
-                            MemberAccessExpression(
-                                SyntaxKind.SimpleMemberAccessExpression,
-                                ThisExpression(),
-                                entry.IdentifierName),
+                            ThisExpression()
+                            .MemberAccess(entry.IdentifierName),
                             entry.IdentifierName));
             }
         }
@@ -67,11 +65,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
         private IEnumerable<MethodDeclarationSyntax> GenerateUpdateMethods()
         {
             var abstractBaseUpdateName = Names.Update + Descriptor.CoreTypeIdentifier.Text;
-            var arguments = Descriptor.Entries
-                .Select(x =>
-                {
-                    return Argument(x.IdentifierName);
-                });
+            var arguments = Descriptor.Entries.Select(x => x.IdentifierName).ToArray();
             var parameters = Descriptor.Entries
                 .Select(CreateParameter)
                 .ToImmutableArray();
@@ -83,7 +77,12 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                     x => x.AddModifiers(SyntaxKind.NewKeyword))
                 .AddParameterListParameters(parameters)
                 .AddBodyStatements(
-                    UpdateBodyStatements());
+                    ReturnStatement(
+                        IsAbstract ?
+                        IdentifierName(abstractBaseUpdateName)
+                        .InvokeWithArguments(arguments) :
+                        ObjectCreationExpression(Descriptor.CoreType)
+                        .WithArguments(arguments)));
             if (IsAbstract)
             {
                 yield return
@@ -104,27 +103,8 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                         Descriptor.DerivedEntries.Select(CreateParameter))
                     .AddBodyStatements(
                         ReturnStatement(
-                            InvocationExpression(
-                                IdentifierName(Names.Update))
-                            .AddArgumentListArguments(arguments)));
-            }
-            IEnumerable<StatementSyntax> UpdateBodyStatements()
-            {
-                if (IsAbstract)
-                {
-                    yield return
-                        ReturnStatement(
-                            InvocationExpression(
-                                IdentifierName(abstractBaseUpdateName))
-                            .AddArgumentListArguments(arguments));
-                }
-                else
-                {
-                    yield return
-                        ReturnStatement(
-                            ObjectCreationExpression(Descriptor.CoreType)
-                            .AddArgumentListArguments(arguments));
-                }
+                            IdentifierName(Names.Update)
+                            .InvokeWithArguments(arguments)));
             }
         }
 
@@ -133,7 +113,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
             return Descriptor.Entries.Select(CreateRecordMutator);
             MethodDeclarationSyntax CreateRecordMutator(CoreDescriptor.Entry entry)
             {
-                var arguments = Descriptor.Entries.Select(x => Argument(x.IdentifierName));
+                var arguments = Descriptor.Entries.Select(x => x.IdentifierName);
                 var mutator =
                     MethodDeclaration(
                         Descriptor.CoreType,
@@ -147,9 +127,8 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                         .WithType(entry.Type))
                     .AddBodyStatements(
                         ReturnStatement(
-                            InvocationExpression(
-                                IdentifierName(Names.Update))
-                            .AddArgumentListArguments(arguments)));
+                            IdentifierName(Names.Update)
+                            .InvokeWithArguments(arguments)));
                 return mutator;
 
                 SyntaxToken GetMutatorIdentifier()

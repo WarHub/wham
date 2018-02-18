@@ -103,18 +103,13 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                     .AddAccessorListAccessors(
                         AccessorDeclaration(SyntaxKind.GetAccessorDeclaration)
                         .WithExpressionBodyFull(
-                            MemberAccessExpression(
-                                SyntaxKind.SimpleMemberAccessExpression,
-                                IdentifierName(propertyName),
-                                entry.IdentifierName)
-                            .MutateIf<ExpressionSyntax>(
+                            IdentifierName(propertyName)
+                            .MemberAccess(entry.IdentifierName)
+                            .MutateIf(
                                 entry.IsComplex,
-                                x =>
-                                InvocationExpression(
-                                    MemberAccessExpression(
-                                        SyntaxKind.SimpleMemberAccessExpression,
-                                        x,
-                                        IdentifierName(Names.ToSerializationProxy))))),
+                                x => x.MemberAccess(
+                                    IdentifierName(Names.ToSerializationProxy))
+                                    .InvokeWithArguments())),
                         AccessorDeclaration(SyntaxKind.SetAccessorDeclaration)
                         .WithExpressionBodyFull(
                             ThrowExpression(

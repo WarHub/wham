@@ -56,15 +56,14 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
             ExpressionSyntax CreateReturnExpression()
             {
                 return
-                    InvocationExpression(
-                        MemberAccessExpression(
-                            SyntaxKind.SimpleMemberAccessExpression,
-                            IdentifierName(paramName),
-                            GenericName(
-                                Identifier(Names.ToCoreArray))
-                            .AddTypeArgumentListArguments(
-                                Descriptor.CoreType,
-                                Descriptor.GetNodeTypeIdentifierName())));
+                    IdentifierName(paramName)
+                    .MemberAccess(
+                        GenericName(
+                            Identifier(Names.ToCoreArray))
+                        .AddTypeArgumentListArguments(
+                            Descriptor.CoreType,
+                            Descriptor.GetNodeTypeIdentifierName()))
+                    .InvokeWithArguments();
             }
         }
 
@@ -99,18 +98,15 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
             ExpressionSyntax CreateReturnExpression()
             {
                 return
-                    InvocationExpression(
-                        MemberAccessExpression(
-                            SyntaxKind.SimpleMemberAccessExpression,
-                            IdentifierName(coresParamName),
-                            GenericName(
-                                Identifier(Names.ToNodeList))
-                            .AddTypeArgumentListArguments(
-                                Descriptor.GetNodeTypeIdentifierName(),
-                                Descriptor.CoreType)))
-                    .AddArgumentListArguments(
-                        Argument(
-                            IdentifierName(parentParamName)));
+                    IdentifierName(coresParamName)
+                    .MemberAccess(
+                        GenericName(
+                            Identifier(Names.ToNodeList))
+                        .AddTypeArgumentListArguments(
+                            Descriptor.GetNodeTypeIdentifierName(),
+                            Descriptor.CoreType))
+                    .InvokeWithArguments(
+                            IdentifierName(parentParamName));
             }
         }
 
@@ -139,15 +135,14 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
             ExpressionSyntax CreateReturnExpression()
             {
                 return
-                    InvocationExpression(
-                        MemberAccessExpression(
-                            SyntaxKind.SimpleMemberAccessExpression,
-                            IdentifierName(buildersParamName),
-                            GenericName(
-                                Identifier(Names.ToImmutableRecursive))
-                            .AddTypeArgumentListArguments(
-                                Descriptor.CoreType.ToNestedBuilderType(),
-                                Descriptor.CoreType)));
+                    IdentifierName(buildersParamName)
+                    .MemberAccess(
+                        GenericName(
+                            Identifier(Names.ToImmutableRecursive))
+                        .AddTypeArgumentListArguments(
+                            Descriptor.CoreType.ToNestedBuilderType(),
+                            Descriptor.CoreType))
+                    .InvokeWithArguments();
             }
         }
 
@@ -176,15 +171,14 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
             ExpressionSyntax CreateReturnExpression()
             {
                 return
-                    InvocationExpression(
-                        MemberAccessExpression(
-                            SyntaxKind.SimpleMemberAccessExpression,
-                            IdentifierName(coresParamName),
-                            GenericName(
-                                Identifier(Names.ToBuildersList))
-                            .AddTypeArgumentListArguments(
-                                Descriptor.CoreType,
-                                Descriptor.CoreType.ToNestedBuilderType())));
+                    IdentifierName(coresParamName)
+                    .MemberAccess(
+                        GenericName(
+                            Identifier(Names.ToBuildersList))
+                        .AddTypeArgumentListArguments(
+                            Descriptor.CoreType,
+                            Descriptor.CoreType.ToNestedBuilderType()))
+                    .InvokeWithArguments();
             }
         }
     }

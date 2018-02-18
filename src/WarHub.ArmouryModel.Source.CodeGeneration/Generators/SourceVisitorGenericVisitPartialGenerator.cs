@@ -43,14 +43,11 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                         Descriptor.GetNodeTypeIdentifierName()))
                 .AddBodyStatements(
                     ReturnStatement(
-                        InvocationExpression(
-                            MemberAccessExpression(
-                                SyntaxKind.SimpleMemberAccessExpression,
-                                ThisExpression(),
-                                IdentifierName(Names.DefaultVisit)))
-                        .AddArgumentListArguments(
-                            Argument(
-                                IdentifierName(node)))));
+                        ThisExpression()
+                        .MemberAccess(
+                            IdentifierName(Names.DefaultVisit))
+                        .InvokeWithArguments(
+                            IdentifierName(node))));
         }
     }
 }

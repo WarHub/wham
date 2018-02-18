@@ -97,14 +97,12 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                     .AddModifiers(SyntaxKind.PublicKeyword)
                     .WithExpressionBodyFull(
                         ConditionalExpression(
-                            MemberAccessExpression(
-                                SyntaxKind.SimpleMemberAccessExpression,
-                                IdentifierName(enumerablePropName),
+                            IdentifierName(enumerablePropName)
+                            .MemberAccess(
                                 IdentifierName(nameof(System.Collections.Immutable.ImmutableArray<int>.IsDefault))),
                             LiteralExpression(SyntaxKind.NumericLiteralExpression, Literal(0)),
-                            MemberAccessExpression(
-                                SyntaxKind.SimpleMemberAccessExpression,
-                                IdentifierName(enumerablePropName),
+                            IdentifierName(enumerablePropName)
+                            .MemberAccess(
                                 IdentifierName(nameof(System.Collections.Immutable.ImmutableArray<int>.Length)))));
             }
             MemberDeclarationSyntax CreateIndexer()
@@ -121,15 +119,14 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                             PredefinedType(
                                 Token(SyntaxKind.IntKeyword))))
                     .WithExpressionBodyFull(
-                        InvocationExpression(
-                            MemberAccessExpression(
-                                SyntaxKind.SimpleMemberAccessExpression,
-                                ElementAccessExpression(
-                                    IdentifierName(enumerablePropName))
-                                .AddArgumentListArguments(
-                                    Argument(
-                                        IdentifierName(indexParamName))),
-                                IdentifierName(Names.ToSerializationProxy))));
+                        ElementAccessExpression(
+                            IdentifierName(enumerablePropName))
+                        .AddArgumentListArguments(
+                            Argument(
+                                IdentifierName(indexParamName)))
+                        .MemberAccess(
+                            IdentifierName(Names.ToSerializationProxy))
+                        .InvokeWithArguments());
             }
             MemberDeclarationSyntax CreateAddMethod()
             {
@@ -180,9 +177,8 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                     .AddModifiers(SyntaxKind.PublicKeyword)
                     .AddBodyStatements(
                         IfStatement(
-                            MemberAccessExpression(
-                                SyntaxKind.SimpleMemberAccessExpression,
-                                IdentifierName(enumerablePropName),
+                            IdentifierName(enumerablePropName)
+                            .MemberAccess(
                                 IdentifierName(nameof(System.Collections.Immutable.ImmutableArray<int>.IsDefaultOrEmpty))),
                             YieldStatement(SyntaxKind.YieldBreakStatement)),
                         ForEachStatement(
@@ -191,11 +187,10 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                             IdentifierName(enumerablePropName),
                             YieldStatement(
                                 SyntaxKind.YieldReturnStatement,
-                                InvocationExpression(
-                                    MemberAccessExpression(
-                                        SyntaxKind.SimpleMemberAccessExpression,
-                                        IdentifierName(itemVarName),
-                                        IdentifierName(Names.ToSerializationProxy))))));
+                                IdentifierName(itemVarName)
+                                .MemberAccess(
+                                    IdentifierName(Names.ToSerializationProxy))
+                                .InvokeWithArguments())));
             }
             MemberDeclarationSyntax CreateExplicitInterafceGetEnumeratorMethod()
             {

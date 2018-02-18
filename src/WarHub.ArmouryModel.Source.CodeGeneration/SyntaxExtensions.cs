@@ -180,6 +180,21 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
             return InvocationExpression(expr).AddArgumentListArguments(args.Select(Argument).ToArray());
         }
 
+        public static ExpressionSyntax InvokeWithArguments(this ExpressionSyntax expr, IEnumerable<ExpressionSyntax> args)
+        {
+            return InvocationExpression(expr).AddArgumentListArguments(args.Select(Argument).ToArray());
+        }
+
+        public static ObjectCreationExpressionSyntax WithArguments(this ObjectCreationExpressionSyntax expr, params ExpressionSyntax[] args)
+        {
+            return expr.AddArgumentListArguments(args.Select(Argument));
+        }
+
+        public static ObjectCreationExpressionSyntax WithArguments(this ObjectCreationExpressionSyntax expr, IEnumerable<ExpressionSyntax> args)
+        {
+            return expr.AddArgumentListArguments(args.Select(Argument));
+        }
+
         public static bool IsNamed(this AttributeSyntax attribute, string name)
         {
             return attribute.Name is IdentifierNameSyntax id && (id.Identifier.Text == name || id.Identifier.Text == name + "Attribute");

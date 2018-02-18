@@ -143,13 +143,12 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
             }
             MethodDeclarationSyntax ForwardExpressionToNode(MethodDeclarationSyntax method, string targetName)
             {
-                return method
+                return
+                    method
                     .WithExpressionBodyFull(
-                        InvocationExpression(
-                            IdentifierName(targetName))
-                        .AddArgumentListArguments(
-                            Argument(
-                                IdentifierName(parentLocal))));
+                        IdentifierName(targetName)
+                        .InvokeWithArguments(
+                            IdentifierName(parentLocal)));
             }
         }
     }

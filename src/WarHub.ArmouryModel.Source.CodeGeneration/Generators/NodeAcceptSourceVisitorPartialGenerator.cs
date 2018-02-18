@@ -45,14 +45,11 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                         IdentifierName(Names.SourceVisitor)))
                 .AddBodyStatements(
                     ExpressionStatement(
-                        InvocationExpression(
-                            MemberAccessExpression(
-                                SyntaxKind.SimpleMemberAccessExpression,
-                                IdentifierName(visitor),
-                                IdentifierName(Names.Visit + Descriptor.RawModelName)))
-                        .AddArgumentListArguments(
-                            Argument(
-                                ThisExpression()))));
+                        IdentifierName(visitor)
+                        .MemberAccess(
+                            IdentifierName(Names.Visit + Descriptor.RawModelName))
+                        .InvokeWithArguments(
+                            ThisExpression())));
         }
 
         private MemberDeclarationSyntax AcceptGenericMethod()
@@ -76,14 +73,11 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                             IdentifierName(Names.SourceVisitorTypeParameter))))
                 .AddBodyStatements(
                     ReturnStatement(
-                        InvocationExpression(
-                            MemberAccessExpression(
-                                SyntaxKind.SimpleMemberAccessExpression,
-                                IdentifierName(visitor),
-                                IdentifierName(Names.Visit + Descriptor.RawModelName)))
-                        .AddArgumentListArguments(
-                            Argument(
-                                ThisExpression()))));
+                        IdentifierName(visitor)
+                        .MemberAccess(
+                            IdentifierName(Names.Visit + Descriptor.RawModelName))
+                        .InvokeWithArguments(
+                            ThisExpression())));
         }
     }
 }

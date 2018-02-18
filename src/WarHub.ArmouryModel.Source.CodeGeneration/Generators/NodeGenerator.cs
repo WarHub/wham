@@ -104,11 +104,12 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
             {
                 var complexCount = Descriptor.Entries.Where(x => x.IsComplex).Count();
                 var entries = Descriptor.Entries.OfType<CoreDescriptor.CollectionEntry>().ToImmutableArray();
-                return ExpressionStatement(
-                    AssignmentExpression(
-                        SyntaxKind.SimpleAssignmentExpression,
-                        IdentifierName(Names.ChildrenCount),
-                        SumNodeListLengthExpression()));
+                return
+                    ExpressionStatement(
+                        AssignmentExpression(
+                            SyntaxKind.SimpleAssignmentExpression,
+                            IdentifierName(Names.ChildrenCount),
+                            SumNodeListLengthExpression()));
 
                 ExpressionSyntax SumNodeListLengthExpression()
                 {
@@ -133,17 +134,12 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                         AssignmentExpression(
                             SyntaxKind.SimpleAssignmentExpression,
                             entry.IdentifierName,
-                            InvocationExpression(
-                                MemberAccessExpression(
-                                    SyntaxKind.SimpleMemberAccessExpression,
-                                    MemberAccessExpression(
-                                        SyntaxKind.SimpleMemberAccessExpression,
-                                        CorePropertyIdentifierName,
-                                        entry.IdentifierName),
-                                    IdentifierName(Names.ToNodeList)))
-                            .AddArgumentListArguments(
-                                Argument(
-                                    ThisExpression()))));
+                            CorePropertyIdentifierName
+                            .MemberAccess(entry.IdentifierName)
+                            .MemberAccess(
+                                IdentifierName(Names.ToNodeList))
+                            .InvokeWithArguments(
+                                ThisExpression())));
             }
         }
 
@@ -271,7 +267,8 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                             ObjectCreationExpression(
                                 Descriptor.GetNodeTypeIdentifierName())
                             .AddArgumentListArguments(
-                                Argument(IdentifierName(coreParameter)),
+                                Argument(
+                                    IdentifierName(coreParameter)),
                                 Argument(
                                     LiteralExpression(SyntaxKind.NullLiteralExpression)))));
             }
@@ -482,11 +479,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
 
         private ExpressionSyntax CountExpression(IdentifierNameSyntax listName)
         {
-            return
-                MemberAccessExpression(
-                    SyntaxKind.SimpleMemberAccessExpression,
-                    listName,
-                    IdentifierName(Names.Count));
+            return listName.MemberAccess(IdentifierName(Names.Count));
         }
     }
 }
