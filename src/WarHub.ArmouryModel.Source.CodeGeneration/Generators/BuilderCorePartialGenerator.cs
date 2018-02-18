@@ -74,13 +74,27 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
         {
             return entry is CoreDescriptor.CollectionEntry collectionEntry
                 ? CreateArrayProperty()
+                : entry is CoreDescriptor.ComplexEntry complexEntry
+                ? CreateComplexProperty()
                 : CreateSimpleProperty();
 
             IEnumerable<PropertyDeclarationSyntax> CreateSimpleProperty()
             {
                 yield return
+                    PropertyDeclaration(entry.Type, entry.Identifier)
+                    .AddAttributeLists(entry.AttributeLists)
+                    .AddModifiers(SyntaxKind.PublicKeyword)
+                    .AddAccessorListAccessors(
+                        AccessorDeclaration(SyntaxKind.GetAccessorDeclaration)
+                        .WithSemicolonTokenDefault(),
+                        AccessorDeclaration(SyntaxKind.SetAccessorDeclaration)
+                        .WithSemicolonTokenDefault());
+            }
+            IEnumerable<PropertyDeclarationSyntax> CreateComplexProperty()
+            {
+                yield return
                     PropertyDeclaration(
-                        entry.Type,
+                        complexEntry.Type.ToNestedBuilderType(),
                         entry.Identifier)
                     .AddAttributeLists(entry.AttributeLists)
                     .AddModifiers(SyntaxKind.PublicKeyword)
@@ -153,17 +167,25 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                         .AddArgumentListArguments(
                             Descriptor.Entries.Select(
                                 simpleEntry => Argument(simpleEntry.IdentifierName),
+                                CreateComplexArgument,
                                 CreateCollectionArgument))));
-
-            ArgumentSyntax CreateCollectionArgument(CoreDescriptor.CollectionEntry entry)
+            ArgumentSyntax CreateComplexArgument(CoreDescriptor.Entry entry)
             {
                 return
                     Argument(
-                        InvocationExpression(
-                            MemberAccessExpression(
-                                SyntaxKind.SimpleMemberAccessExpression,
-                                entry.IdentifierName,
-                                IdentifierName(Names.ToImmutableRecursive))));
+                        entry.IdentifierName
+                        .ConditionalMemberAccess(
+                            IdentifierName(Names.ToImmutable))
+                        .InvokeWithArguments());
+            }
+            ArgumentSyntax CreateCollectionArgument(CoreDescriptor.Entry entry)
+            {
+                return
+                    Argument(
+                        entry.IdentifierName
+                        .MemberAccess(
+                            IdentifierName(Names.ToImmutableRecursive))
+                        .InvokeWithArguments());
             }
         }
 
@@ -181,11 +203,13 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                         .WithInitializer(
                             InitializerExpression(SyntaxKind.ObjectInitializerExpression)
                             .AddExpressions(
-                                Descriptor.Entries.Select(
-                                    simpleEntry => CreateInitializerForEntry(simpleEntry),
-                                    collectionEntry => CreateInitializerForCollectionEntry(collectionEntry))
+                                Descriptor.Entries
+                                .Select(
+                                    CreateSimpleInitializer,
+                                    CreateComplexInitializer,
+                                    CreateCollectionInitializer)
                                 .ToArray()))));
-            ExpressionSyntax CreateInitializerForEntry(CoreDescriptor.Entry entry)
+            ExpressionSyntax CreateSimpleInitializer(CoreDescriptor.Entry entry)
             {
                 return
                     AssignmentExpression(
@@ -193,17 +217,27 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                         entry.IdentifierName,
                         entry.IdentifierName);
             }
-            ExpressionSyntax CreateInitializerForCollectionEntry(CoreDescriptor.CollectionEntry collectionEntry)
+            ExpressionSyntax CreateComplexInitializer(CoreDescriptor.ComplexEntry entry)
             {
                 return
                     AssignmentExpression(
                         SyntaxKind.SimpleAssignmentExpression,
-                        collectionEntry.IdentifierName,
-                        InvocationExpression(
-                            MemberAccessExpression(
-                                SyntaxKind.SimpleMemberAccessExpression,
-                                collectionEntry.IdentifierName,
-                                IdentifierName(Names.ToBuildersList))));
+                        entry.IdentifierName,
+                        entry.IdentifierName
+                        .ConditionalMemberAccess(
+                            IdentifierName(Names.ToBuilder))
+                        .InvokeWithArguments());
+            }
+            ExpressionSyntax CreateCollectionInitializer(CoreDescriptor.CollectionEntry entry)
+            {
+                return
+                    AssignmentExpression(
+                        SyntaxKind.SimpleAssignmentExpression,
+                        entry.IdentifierName,
+                        entry.IdentifierName
+                        .MemberAccess(
+                            IdentifierName(Names.ToBuildersList))
+                        .InvokeWithArguments());
             }
         }
     }

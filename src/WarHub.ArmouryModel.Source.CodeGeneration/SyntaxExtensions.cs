@@ -165,6 +165,21 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
             return syntax.WithSemicolonToken(Token(SyntaxKind.SemicolonToken));
         }
 
+        public static ExpressionSyntax MemberAccess(this ExpressionSyntax expr, SimpleNameSyntax name)
+        {
+            return MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression, expr, name);
+        }
+
+        public static ExpressionSyntax ConditionalMemberAccess(this ExpressionSyntax expr, SimpleNameSyntax name)
+        {
+            return ConditionalAccessExpression(expr, MemberBindingExpression(name));
+        }
+
+        public static ExpressionSyntax InvokeWithArguments(this ExpressionSyntax expr, params ExpressionSyntax[] args)
+        {
+            return InvocationExpression(expr).AddArgumentListArguments(args.Select(Argument).ToArray());
+        }
+
         public static bool IsNamed(this AttributeSyntax attribute, string name)
         {
             return attribute.Name is IdentifierNameSyntax id && (id.Identifier.Text == name || id.Identifier.Text == name + "Attribute");

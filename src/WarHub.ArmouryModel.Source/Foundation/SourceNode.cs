@@ -137,9 +137,9 @@ namespace WarHub.ArmouryModel.Source
         /// to provide a specialized and optimized implementation of these members.
         /// </summary>
         /// <returns></returns>
-        protected internal virtual IEnumerable<IContainer<SourceNode>> ChildrenLists()
+        protected internal virtual IEnumerable<NodeChildUnion> ChildrenLists()
         {
-            return Enumerable.Empty<IContainer<SourceNode>>();
+            return Enumerable.Empty<NodeChildUnion>();
         }
 
         /// <summary>
@@ -147,7 +147,7 @@ namespace WarHub.ArmouryModel.Source
         /// implementation is very inefficient. It is advised that deriving classes provide
         /// a specialized and optimized implementation of this member.
         /// </summary>
-        protected internal virtual int ChildrenCount => ChildrenLists().Sum(list => list.SlotCount);
+        protected internal virtual int ChildrenCount => ChildrenLists().Sum(list => list.Count);
 
         /// <summary>
         /// Retrieves this node's child from given <paramref name="index"/>. <see cref="SourceNode"/>'s basic
@@ -161,10 +161,10 @@ namespace WarHub.ArmouryModel.Source
         {
             foreach (var list in ChildrenLists())
             {
-                index -= list.SlotCount;
+                index -= list.Count;
                 if (index < 0)
                 {
-                    return list.GetNodeSlot(index + list.SlotCount);
+                    return list[index + list.Count];
                 }
             }
             throw new ArgumentOutOfRangeException(nameof(index));
@@ -233,6 +233,40 @@ namespace WarHub.ArmouryModel.Source
                 }
                 return index;
             }
+        }
+
+        public static implicit operator NodeChildUnion(SourceNode node) => new NodeChildUnion(node);
+
+        public struct NodeChildUnion
+        {
+            public NodeChildUnion(SourceNode singleChild)
+            {
+                SingleChild = singleChild;
+                List = default;
+            }
+            public NodeChildUnion(NodeList<SourceNode> list)
+            {
+                SingleChild = default;
+                List = list;
+            }
+
+            public bool IsSingle => SingleChild == null;
+            public bool IsList => SingleChild != null;
+            public int Count => IsSingle ? 1 : List.Count;
+            public SourceNode this[int index]
+            {
+                get
+                {
+                    return
+                        IsList ? List[index] :
+                        index == 0 ? SingleChild :
+                        throw new IndexOutOfRangeException(
+                            "This is a single element union, tried to access index " + index);
+                }
+            }
+
+            public SourceNode SingleChild { get; }
+            public NodeList<SourceNode> List { get; }
         }
     }
 }

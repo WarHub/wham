@@ -2,6 +2,7 @@
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
@@ -12,8 +13,10 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
     internal class CoreDescriptorBuilder
     {
         private const string ImmutableArrayMetadataName = "System.Collections.Immutable.ImmutableArray`1";
+        private const string WhamNodeCoreAttributeMetadataName = "WarHub.ArmouryModel.Source.WhamNodeCoreAttribute";
 
-        private static SymbolCache<INamedTypeSymbol> ImmutableArraySymbolCache;
+        private static SymbolCache<INamedTypeSymbol> ImmutableArraySymbolCache = new SymbolCache<INamedTypeSymbol>(ImmutableArrayMetadataName);
+        private static SymbolCache<INamedTypeSymbol> WhamNodeCoreAttributeSymbolCache = new SymbolCache<INamedTypeSymbol>(WhamNodeCoreAttributeMetadataName);
 
         public CoreDescriptorBuilder(TransformationContext context, CancellationToken cancellationToken)
         {
@@ -21,10 +24,8 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
             Compilation = context.Compilation;
             TypeDeclaration = (ClassDeclarationSyntax)context.ProcessingMember;
             CancellationToken = cancellationToken;
-            if (ImmutableArraySymbolCache.Compilation != Compilation)
-            {
-                ImmutableArraySymbolCache = CreateCache(Compilation.GetTypeByMetadataName(ImmutableArrayMetadataName), Compilation);
-            }
+            UpdateNamedTypeSymbolCache(ref ImmutableArraySymbolCache, Compilation);
+            UpdateNamedTypeSymbolCache(ref WhamNodeCoreAttributeSymbolCache, Compilation);
             TypeSymbol = GetNamedTypeSymbol(TypeDeclaration);
         }
 
@@ -105,36 +106,24 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
 
         private CoreDescriptor.Entry CreateRecordEntry(IPropertySymbol symbol, PropertyDeclarationSyntax syntax)
         {
-            if (symbol.Type is INamedTypeSymbol namedType
-                && namedType.Arity == 1
-                && namedType.OriginalDefinition == ImmutableArraySymbol)
+            var typeString = symbol.Type.ToDisplayString();
+            var typeSyntax = SyntaxFactory.ParseTypeName(typeString);
+            var typeIdentifier = syntax.Identifier.WithoutTrivia();
+            var attributes = GetPropertyAttributeLists(syntax).ToImmutableArray();
+            if (symbol.Type is INamedTypeSymbol namedType && namedType.SpecialType == SpecialType.None)
             {
-                return CreateCollectionEntry(symbol, syntax);
+                if (namedType.Arity == 1 && namedType.OriginalDefinition == ImmutableArraySymbol)
+                {
+                    return new CoreDescriptor.CollectionEntry(symbol, typeIdentifier, (NameSyntax)typeSyntax, attributes);
+                }
+                if (namedType.GetAttributes().Any(a => a.AttributeClass == WhamNodeCoreAttributeSymbolCache.Symbol))
+                {
+                    return new CoreDescriptor.ComplexEntry(symbol, typeIdentifier, (NameSyntax)typeSyntax, attributes);
+                }
             }
-            return CreateSimpleEntry(symbol, syntax);
+            return new CoreDescriptor.SimpleEntry(symbol, typeIdentifier, typeSyntax, attributes);
         }
-
-        private CoreDescriptor.Entry CreateSimpleEntry(IPropertySymbol symbol, PropertyDeclarationSyntax syntax)
-        {
-            var typeString = symbol.Type.ToDisplayString();
-            var typeSyntax = SyntaxFactory.ParseTypeName(typeString);
-            return new CoreDescriptor.SimpleEntry(
-                symbol,
-                syntax.Identifier.WithoutTrivia(),
-                typeSyntax,
-                GetPropertyAttributeLists(syntax).ToImmutableArray());
-        }
-
-        private CoreDescriptor.Entry CreateCollectionEntry(IPropertySymbol symbol, PropertyDeclarationSyntax syntax)
-        {
-            var typeString = symbol.Type.ToDisplayString();
-            var typeSyntax = SyntaxFactory.ParseTypeName(typeString);
-            return new CoreDescriptor.CollectionEntry(
-                symbol,
-                syntax.Identifier.WithoutTrivia(),
-                (NameSyntax)typeSyntax,
-                GetPropertyAttributeLists(syntax).ToImmutableArray());
-        }
+        
         private static IEnumerable<AttributeListSyntax> GetPropertyAttributeLists(PropertyDeclarationSyntax syntax)
         {
             var xmlAttributeNames = new[] { Names.XmlArray, Names.XmlAttribute, Names.XmlElement, Names.XmlText };
@@ -149,20 +138,36 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
             return namedTypeSymbol is IErrorTypeSymbol ? null : namedTypeSymbol;
         }
 
-        private static SymbolCache<T> CreateCache<T>(T symbol, CSharpCompilation compilation)
+        private static void UpdateNamedTypeSymbolCache(ref SymbolCache<INamedTypeSymbol> cache, CSharpCompilation compilation)
         {
-            return new SymbolCache<T>(symbol, compilation);
+            if (cache.Compilation != compilation)
+            {
+                cache = new SymbolCache<INamedTypeSymbol>(
+                    compilation.GetTypeByMetadataName(cache.FullMetadataName),
+                    compilation,
+                    cache.FullMetadataName);
+            }
         }
 
         private struct SymbolCache<T>
         {
-            public SymbolCache(T symbol, CSharpCompilation compilation)
+            public SymbolCache(string fullMetadataName)
             {
+                FullMetadataName = fullMetadataName;
+                Symbol = default(T);
+                Compilation = null;
+            }
+
+            public SymbolCache(T symbol, CSharpCompilation compilation, string fullMetadataName)
+            {
+                FullMetadataName = fullMetadataName;
                 Symbol = symbol;
                 Compilation = compilation;
             }
+
             public T Symbol { get; }
             public CSharpCompilation Compilation { get; }
+            public string FullMetadataName { get; }
 
             public void Deconstruct(out T symbol, out CSharpCompilation compilation)
             {

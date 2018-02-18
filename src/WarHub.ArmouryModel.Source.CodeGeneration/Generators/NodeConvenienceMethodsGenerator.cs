@@ -43,6 +43,8 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
             {
                 var type = entry is CoreDescriptor.CollectionEntry collectionEntry
                     ? collectionEntry.GetNodeTypeIdentifierName().ToNodeListType()
+                    : entry is CoreDescriptor.ComplexEntry complexEntry
+                    ? complexEntry.GetNodeTypeIdentifierName()
                     : entry.Type;
                 return
                     Parameter(entry.CamelCaseIdentifier)

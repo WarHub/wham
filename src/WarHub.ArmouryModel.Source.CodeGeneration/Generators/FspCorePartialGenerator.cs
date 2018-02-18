@@ -93,11 +93,11 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
             {
                 TypeSyntax propertyType = entry is CoreDescriptor.CollectionEntry collectionEntry
                     ? QualifiedName(collectionEntry.CollectionTypeParameter, IdentifierName(Names.FastSerializationEnumerable))
+                    : entry is CoreDescriptor.ComplexEntry complexEntry
+                    ? QualifiedName(complexEntry.Type, IdentifierName(Names.FastSerializationProxy))
                     : entry.Type;
                 return
-                    PropertyDeclaration(
-                        propertyType,
-                        entry.Identifier)
+                    PropertyDeclaration(propertyType, entry.Identifier)
                     .AddAttributeLists(entry.AttributeLists)
                     .AddModifiers(SyntaxKind.PublicKeyword)
                     .AddAccessorListAccessors(
@@ -106,7 +106,15 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                             MemberAccessExpression(
                                 SyntaxKind.SimpleMemberAccessExpression,
                                 IdentifierName(propertyName),
-                                entry.IdentifierName)),
+                                entry.IdentifierName)
+                            .MutateIf<ExpressionSyntax>(
+                                entry.IsComplex,
+                                x =>
+                                InvocationExpression(
+                                    MemberAccessExpression(
+                                        SyntaxKind.SimpleMemberAccessExpression,
+                                        x,
+                                        IdentifierName(Names.ToSerializationProxy))))),
                         AccessorDeclaration(SyntaxKind.SetAccessorDeclaration)
                         .WithExpressionBodyFull(
                             ThrowExpression(

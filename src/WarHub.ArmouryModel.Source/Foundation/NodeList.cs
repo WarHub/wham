@@ -31,6 +31,16 @@ namespace WarHub.ArmouryModel.Source
             }
         }
 
+        public static implicit operator NodeList<SourceNode>(NodeList<TItem> itemList)
+        {
+            return new NodeList<SourceNode>(itemList.Container);
+        }
+
+        public static implicit operator SourceNode.NodeChildUnion(NodeList<TItem> itemList)
+        {
+            return new NodeList<SourceNode>(itemList.Container);
+        }
+
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
     }
 

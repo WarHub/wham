@@ -13,18 +13,23 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
     {
         public static IEnumerable<T> Select<T>(
             this IEnumerable<CoreDescriptor.Entry> entries,
-            Func<CoreDescriptor.SimpleEntry, T> simpleEntrySelect,
-            Func<CoreDescriptor.CollectionEntry, T> collectionEntrySelect)
+            Func<CoreDescriptor.SimpleEntry, T> simpleSelect,
+            Func<CoreDescriptor.ComplexEntry, T> complexSelect,
+            Func<CoreDescriptor.CollectionEntry, T> collectionSelect)
         {
             foreach (var entry in entries)
             {
-                if (entry is CoreDescriptor.SimpleEntry simpleEntry)
+                if (entry is CoreDescriptor.SimpleEntry simple)
                 {
-                    yield return simpleEntrySelect(simpleEntry);
+                    yield return simpleSelect(simple);
                 }
-                else if (entry is CoreDescriptor.CollectionEntry collectionEntry)
+                else if (entry is CoreDescriptor.ComplexEntry complex)
                 {
-                    yield return collectionEntrySelect(collectionEntry);
+                    yield return complexSelect(complex);
+                }
+                else if (entry is CoreDescriptor.CollectionEntry collection)
+                {
+                    yield return collectionSelect(collection);
                 }
             }
         }
@@ -37,6 +42,11 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
         public static IdentifierNameSyntax GetNodeTypeIdentifierName(this CoreDescriptor descriptor)
         {
             return IdentifierName(descriptor.GetNodeTypeName());
+        }
+
+        public static IdentifierNameSyntax GetNodeTypeIdentifierName(this CoreDescriptor.ComplexEntry entry)
+        {
+            return IdentifierName(entry.Type.ToString().GetNodeTypeNameCore());
         }
 
         public static IdentifierNameSyntax GetNodeTypeIdentifierName(this CoreDescriptor.CollectionEntry entry)

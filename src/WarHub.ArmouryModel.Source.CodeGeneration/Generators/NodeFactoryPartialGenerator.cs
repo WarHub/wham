@@ -51,8 +51,8 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                 {
                     return
                         Descriptor.Entries
-                        .OfType<CoreDescriptor.SimpleEntry>()
-                        .Select(CreateSimpleParameter)
+                        .Where(x => !x.IsCollection)
+                        .Select(CreateSimpleParameter, CreateComplexParameter, null)
                         .Concat(
                             Descriptor.Entries
                             .OfType<CoreDescriptor.CollectionEntry>()
@@ -63,6 +63,13 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                     return
                         Parameter(entry.CamelCaseIdentifier)
                         .WithType(entry.Type);
+                }
+                ParameterSyntax CreateComplexParameter(CoreDescriptor.ComplexEntry entry)
+                {
+                    var type = entry.GetNodeTypeIdentifierName();
+                    return
+                        Parameter(entry.CamelCaseIdentifier)
+                        .WithType(type);
                 }
                 ParameterSyntax CreateCollectionParameter(CoreDescriptor.CollectionEntry entry)
                 {
@@ -78,34 +85,36 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                 {
                     return
                         ReturnStatement(
-                            InvocationExpression(
-                                CreateToNodeMemberAccess()));
-                }
-                ExpressionSyntax CreateToNodeMemberAccess()
-                {
-                    return
-                        MemberAccessExpression(
-                            SyntaxKind.SimpleMemberAccessExpression,
-                            CreateObjectCreation(),
-                            IdentifierName(Names.ToNode));
+                            CreateObjectCreation()
+                            .MemberAccess(
+                                IdentifierName(Names.ToNode))
+                            .InvokeWithArguments());
                 }
                 ExpressionSyntax CreateObjectCreation()
                 {
                     return
                         ObjectCreationExpression(Descriptor.CoreType)
                         .AddArgumentListArguments(
-                            Descriptor.Entries.Select(CreateArgument));
-                    ArgumentSyntax CreateArgument(CoreDescriptor.Entry entry)
+                            Descriptor.Entries.Select(CreateSimpleArgument, CreateComplexArgument, CreateCollectionArgument));
+                    ArgumentSyntax CreateSimpleArgument(CoreDescriptor.Entry entry)
+                    {
+                        return Argument(entry.CamelCaseIdentifierName);
+                    }
+                    ArgumentSyntax CreateComplexArgument(CoreDescriptor.Entry entry)
                     {
                         var argName = entry.CamelCaseIdentifierName;
-                        return entry is CoreDescriptor.SimpleEntry
-                            ? Argument(argName)
-                            : Argument(
-                                InvocationExpression(
-                                    MemberAccessExpression(
-                                        SyntaxKind.SimpleMemberAccessExpression,
-                                        argName,
-                                        IdentifierName(Names.ToCoreArray))));
+                        return 
+                            Argument(
+                                argName.ConditionalMemberAccess(IdentifierName(Names.Core)));
+                    }
+                    ArgumentSyntax CreateCollectionArgument(CoreDescriptor.Entry entry)
+                    {
+                        var argName = entry.CamelCaseIdentifierName;
+                        return
+                            Argument(
+                                argName
+                                .MemberAccess(IdentifierName(Names.ToCoreArray))
+                                .InvokeWithArguments());
                     }
                 }
             }

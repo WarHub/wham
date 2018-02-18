@@ -75,6 +75,10 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
             public SyntaxToken CamelCaseIdentifier { get; }
 
             public IdentifierNameSyntax CamelCaseIdentifierName { get; }
+
+            public abstract bool IsComplex { get; }
+            public abstract bool IsCollection { get; }
+            public abstract bool IsSimple { get; }
         }
 
         internal class SimpleEntry : Entry
@@ -83,6 +87,10 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                 : base(Symbol, Identifier, Type, AttributeLists)
             {
             }
+
+            public override bool IsSimple => true;
+            public override bool IsComplex => false;
+            public override bool IsCollection => false;
         }
 
         internal class CollectionEntry : Entry
@@ -97,7 +105,27 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                     .TypeArgumentList
                     .Arguments[0];
             }
+
             public NameSyntax CollectionTypeParameter { get; }
+
+            public override bool IsSimple => false;
+            public override bool IsComplex => false;
+            public override bool IsCollection => true;
+        }
+
+        internal class ComplexEntry : Entry
+        {
+            public ComplexEntry(IPropertySymbol Symbol, SyntaxToken Identifier, NameSyntax Type, ImmutableArray<AttributeListSyntax> AttributeLists)
+                : base(Symbol, Identifier, Type, AttributeLists)
+            {
+                this.Type = Type;
+            }
+
+            public new NameSyntax Type { get; }
+
+            public override bool IsSimple => false;
+            public override bool IsComplex => true;
+            public override bool IsCollection => false;
         }
     }
 }
