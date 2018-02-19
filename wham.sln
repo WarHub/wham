@@ -23,6 +23,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WarHub.ArmouryModel.Workspa
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BattleScribeLoader", "tests\BattleScribeLoader\BattleScribeLoader.csproj", "{8F8A94D2-076B-4751-A98B-9D19A95B3C12}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WarHub.ArmouryModel.CliTool", "src\WarHub.ArmouryModel.CliTool\WarHub.ArmouryModel.CliTool.csproj", "{674F56C5-F16F-4FE8-91E2-AA3B429BEDC4}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -163,6 +165,22 @@ Global
 		{8F8A94D2-076B-4751-A98B-9D19A95B3C12}.Release|x64.Build.0 = Release|Any CPU
 		{8F8A94D2-076B-4751-A98B-9D19A95B3C12}.Release|x86.ActiveCfg = Release|Any CPU
 		{8F8A94D2-076B-4751-A98B-9D19A95B3C12}.Release|x86.Build.0 = Release|Any CPU
+		{674F56C5-F16F-4FE8-91E2-AA3B429BEDC4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{674F56C5-F16F-4FE8-91E2-AA3B429BEDC4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{674F56C5-F16F-4FE8-91E2-AA3B429BEDC4}.Debug|ARM.ActiveCfg = Debug|Any CPU
+		{674F56C5-F16F-4FE8-91E2-AA3B429BEDC4}.Debug|ARM.Build.0 = Debug|Any CPU
+		{674F56C5-F16F-4FE8-91E2-AA3B429BEDC4}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{674F56C5-F16F-4FE8-91E2-AA3B429BEDC4}.Debug|x64.Build.0 = Debug|Any CPU
+		{674F56C5-F16F-4FE8-91E2-AA3B429BEDC4}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{674F56C5-F16F-4FE8-91E2-AA3B429BEDC4}.Debug|x86.Build.0 = Debug|Any CPU
+		{674F56C5-F16F-4FE8-91E2-AA3B429BEDC4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{674F56C5-F16F-4FE8-91E2-AA3B429BEDC4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{674F56C5-F16F-4FE8-91E2-AA3B429BEDC4}.Release|ARM.ActiveCfg = Release|Any CPU
+		{674F56C5-F16F-4FE8-91E2-AA3B429BEDC4}.Release|ARM.Build.0 = Release|Any CPU
+		{674F56C5-F16F-4FE8-91E2-AA3B429BEDC4}.Release|x64.ActiveCfg = Release|Any CPU
+		{674F56C5-F16F-4FE8-91E2-AA3B429BEDC4}.Release|x64.Build.0 = Release|Any CPU
+		{674F56C5-F16F-4FE8-91E2-AA3B429BEDC4}.Release|x86.ActiveCfg = Release|Any CPU
+		{674F56C5-F16F-4FE8-91E2-AA3B429BEDC4}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -176,6 +194,7 @@ Global
 		{F69E49A4-C234-4438-B98E-A0C4B71FA914} = {8C4E7D04-65AF-421E-9432-7741ADAF4714}
 		{799D6CEC-4827-4CC5-830C-38EC02DFCCC3} = {6055CEFB-2A8B-45E3-B6D7-B9DB2A4FE612}
 		{8F8A94D2-076B-4751-A98B-9D19A95B3C12} = {8C4E7D04-65AF-421E-9432-7741ADAF4714}
+		{674F56C5-F16F-4FE8-91E2-AA3B429BEDC4} = {6055CEFB-2A8B-45E3-B6D7-B9DB2A4FE612}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {DAF2775E-5311-44A8-B7CB-F4A55225705A}
