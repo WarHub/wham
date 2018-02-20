@@ -7,21 +7,21 @@ namespace WarHub.ArmouryModel.Source
     public partial class DataIndexEntryCore
     {
         [XmlAttribute("filePath")]
-        public string FilePath { get; set; }
+        public string FilePath { get; }
 
         [XmlAttribute("dataType")]
-        public DataIndexEntryKind DataType { get; set; }
+        public DataIndexEntryKind DataType { get; }
 
         [XmlAttribute("dataId")]
-        public string DataId { get; set; }
+        public string DataId { get; }
 
         [XmlAttribute("dataName")]
-        public string DataName { get; set; }
+        public string DataName { get; }
 
         [XmlAttribute("dataBattleScribeVersion")]
-        public string DataBattleScribeVersion { get; set; }
+        public string DataBattleScribeVersion { get; }
 
         [XmlAttribute("dataRevision")]
-        public int DataRevision { get; set; }
+        public int DataRevision { get; }
     }
 }

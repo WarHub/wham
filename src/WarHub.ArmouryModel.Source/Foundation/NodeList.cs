@@ -36,7 +36,7 @@ namespace WarHub.ArmouryModel.Source
             return new NodeList<SourceNode>(itemList.Container);
         }
 
-        public static implicit operator SourceNode.NodeChildUnion(NodeList<TItem> itemList)
+        public static implicit operator SourceNode.NodeOrList(NodeList<TItem> itemList)
         {
             return new NodeList<SourceNode>(itemList.Container);
         }

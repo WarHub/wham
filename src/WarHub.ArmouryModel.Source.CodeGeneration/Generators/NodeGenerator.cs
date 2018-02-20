@@ -54,7 +54,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                 .AddRange(
                     GenerateMutatorMethods())
                 .AddRange(
-                    GenerateSyntaxNodeOverrideMethods());
+                    GenerateSourceNodeOverrideMethods());
         }
 
         private ConstructorDeclarationSyntax GenerateConstructor()
@@ -359,21 +359,50 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
         }
 
 
-        private IEnumerable<MemberDeclarationSyntax> GenerateSyntaxNodeOverrideMethods()
+        private IEnumerable<MemberDeclarationSyntax> GenerateSourceNodeOverrideMethods()
         {
             if (IsAbstract)
             {
                 yield break;
             }
+            yield return NamedChildrenLists();
             yield return ChildrenLists();
             yield return ChildrenCount();
             yield return GetChild();
+            MemberDeclarationSyntax NamedChildrenLists()
+            {
+                return
+                    MethodDeclaration(
+                        CreateIEnumerableOf(
+                            IdentifierName(Names.NamedNodeOrList)),
+                        Names.NamedChildrenLists)
+                    .AddModifiers(SyntaxKind.PublicKeyword, SyntaxKind.OverrideKeyword)
+                    .AddBodyStatements(
+                        Descriptor.Entries
+                        .Where(x => !x.IsSimple)
+                        .Select(CreateStatement)
+                        .DefaultIfEmpty(
+                            ReturnBaseStatement(Names.NamedChildrenLists)));
+                StatementSyntax CreateStatement(CoreDescriptor.Entry entry)
+                {
+                    return
+                        YieldStatement(
+                            SyntaxKind.YieldReturnStatement,
+                            ObjectCreationExpression(
+                                IdentifierName(Names.NamedNodeOrList))
+                            .InvokeWithArguments(
+                                LiteralExpression(
+                                    SyntaxKind.StringLiteralExpression,
+                                    Literal(entry.Identifier.ValueText)),
+                                entry.IdentifierName));
+                }
+            }
             MemberDeclarationSyntax ChildrenLists()
             {
                 return
                     MethodDeclaration(
                         CreateIEnumerableOf(
-                            IdentifierName(Names.NodeChildUnion)),
+                            IdentifierName(Names.NodeOrList)),
                         Names.ChildrenLists)
                     .AddModifiers(
                         SyntaxKind.ProtectedKeyword,
@@ -384,16 +413,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                         .Where(x => !x.IsSimple)
                         .Select(CreateStatement)
                         .DefaultIfEmpty(
-                            YieldStatement(SyntaxKind.YieldBreakStatement)));
-                QualifiedNameSyntax CreateIEnumerableOf(TypeSyntax typeParameter)
-                {
-                    return
-                        QualifiedName(
-                            ParseName(Names.IEnumerableGenericNamespace),
-                            GenericName(
-                                Identifier(Names.IEnumerableGeneric))
-                            .AddTypeArgumentListArguments(typeParameter));
-                }
+                            ReturnBaseStatement(Names.ChildrenLists)));
                 StatementSyntax CreateStatement(CoreDescriptor.Entry entry)
                 {
                     return YieldStatement(SyntaxKind.YieldReturnStatement, entry.IdentifierName);
@@ -474,6 +494,24 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                                 SyntaxKind.AddExpression,
                                 indexIdentifierName,
                                 CountExpression(identifier))));
+            }
+            QualifiedNameSyntax CreateIEnumerableOf(TypeSyntax typeParameter)
+            {
+                return
+                    QualifiedName(
+                        ParseName(Names.IEnumerableGenericNamespace),
+                        GenericName(
+                            Identifier(Names.IEnumerableGeneric))
+                        .AddTypeArgumentListArguments(typeParameter));
+            }
+            StatementSyntax ReturnBaseStatement(string methodName)
+            {
+                return
+                    ReturnStatement(
+                        BaseExpression()
+                        .MemberAccess(
+                            IdentifierName(methodName))
+                        .InvokeWithArguments());
             }
         }
 

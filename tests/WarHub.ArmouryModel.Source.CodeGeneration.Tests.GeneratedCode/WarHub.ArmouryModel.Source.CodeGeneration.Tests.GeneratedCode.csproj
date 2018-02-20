@@ -14,6 +14,7 @@
     <Compile Include="..\..\src\WarHub.ArmouryModel.Source\Foundation\ImmutableExtensions.cs" Link="Foundation\ImmutableExtensions.cs" />
     <Compile Include="..\..\src\WarHub.ArmouryModel.Source\Foundation\INodeWithCore.cs" Link="Foundation\INodeWithCore.cs" />
     <Compile Include="..\..\src\WarHub.ArmouryModel.Source\Foundation\LazyNodeList.cs" Link="Foundation\LazyNodeList.cs" />
+    <Compile Include="..\..\src\WarHub.ArmouryModel.Source\Foundation\NamedNodeOrList.cs" Link="Foundation\NamedNodeOrList.cs" />
     <Compile Include="..\..\src\WarHub.ArmouryModel.Source\Foundation\NodeCollectionContainerProxy.cs" Link="Foundation\NodeCollectionContainerProxy.cs" />
     <Compile Include="..\..\src\WarHub.ArmouryModel.Source\Foundation\NodeCore.cs" Link="Foundation\NodeCore.cs" />
     <Compile Include="..\..\src\WarHub.ArmouryModel.Source\Foundation\NodeList.cs" Link="Foundation\NodeList.cs" />

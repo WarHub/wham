@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -130,6 +131,11 @@ namespace WarHub.ArmouryModel.Source
             return null;
         }
 
+        public virtual IEnumerable<NamedNodeOrList> NamedChildrenLists()
+        {
+            return Enumerable.Empty<NamedNodeOrList>();
+        }
+
         /// <summary>
         /// Enumerates containers of children in this node. Implementation is used
         /// to provide the very basic and totally inefficient implementation of
@@ -137,9 +143,9 @@ namespace WarHub.ArmouryModel.Source
         /// to provide a specialized and optimized implementation of these members.
         /// </summary>
         /// <returns></returns>
-        protected internal virtual IEnumerable<NodeChildUnion> ChildrenLists()
+        protected internal virtual IEnumerable<NodeOrList> ChildrenLists()
         {
-            return Enumerable.Empty<NodeChildUnion>();
+            return Enumerable.Empty<NodeOrList>();
         }
 
         /// <summary>
@@ -235,23 +241,23 @@ namespace WarHub.ArmouryModel.Source
             }
         }
 
-        public static implicit operator NodeChildUnion(SourceNode node) => new NodeChildUnion(node);
+        public static implicit operator NodeOrList(SourceNode node) => new NodeOrList(node);
 
-        public struct NodeChildUnion
+        public struct NodeOrList
         {
-            public NodeChildUnion(SourceNode singleChild)
+            public NodeOrList(SourceNode singleChild)
             {
                 SingleChild = singleChild;
                 List = default;
             }
-            public NodeChildUnion(NodeList<SourceNode> list)
+            public NodeOrList(NodeList<SourceNode> list)
             {
                 SingleChild = default;
                 List = list;
             }
 
-            public bool IsSingle => SingleChild == null;
-            public bool IsList => SingleChild != null;
+            public bool IsSingle => SingleChild != null;
+            public bool IsList => SingleChild == null;
             public int Count => IsSingle ? 1 : List.Count;
             public SourceNode this[int index]
             {

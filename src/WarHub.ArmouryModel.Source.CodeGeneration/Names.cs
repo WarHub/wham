@@ -27,7 +27,8 @@
         public const string SourceKind = "SourceKind";
         public const string SourceVisitor = "SourceVisitor";
         public const string SourceVisitorTypeParameter = "TResult";
-        public const string NodeChildUnion = "NodeChildUnion";
+        public const string NodeOrList = "NodeOrList";
+        public const string NamedNodeOrList = "NamedNodeOrList";
 
         public const string ArrayNonGenericFull = "System.Array";
         public const string ICollectionNonGenericFull = "System.Collections.ICollection";
@@ -79,6 +80,7 @@
         public const string Core = "Core";
         public const string ChildrenLists = "ChildrenLists";
         public const string ChildrenCount = "ChildrenCount";
+        public const string NamedChildrenLists = "NamedChildrenLists";
         public const string SlotCount = "SlotCount";
         public const string GetChild = "GetChild";
         public const string GetNodeSlot = "GetNodeSlot";

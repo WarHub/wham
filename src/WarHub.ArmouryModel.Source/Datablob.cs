@@ -66,6 +66,8 @@ namespace WarHub.ArmouryModel.Source
 
         public ImmutableArray<RosterCore> Rosters { get; }
 
+        public ImmutableArray<RuleCore> Rules { get; }
+
         public ImmutableArray<SelectionCore> Selections { get; }
 
         public ImmutableArray<SelectionEntryCore> SelectionEntries { get; }

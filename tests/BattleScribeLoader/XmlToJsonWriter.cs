@@ -28,7 +28,7 @@ namespace BattleScribeLoader
                         new MultiLineStringConverter()
                     }
             };
-            InvalidChars = Path.GetInvalidPathChars().Union(Path.GetInvalidFileNameChars()).ToArray();
+            InvalidChars = new [] { '"', '<', '>', '|', ':', '*', '?', '\\', '/' };
             var escaped = Regex.Escape(new string(InvalidChars));
             EscapingRegex = new Regex($@"[\s{escaped}]+");
         }
