@@ -195,6 +195,21 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
             return expr.AddArgumentListArguments(args.Select(Argument));
         }
 
+        public static ExpressionStatementSyntax AsStatement(this ExpressionSyntax expr)
+        {
+            return ExpressionStatement(expr);
+        }
+
+        public static AssignmentExpressionSyntax AssignTo(this ExpressionSyntax right, ExpressionSyntax left)
+        {
+            return AssignmentExpression(SyntaxKind.SimpleAssignmentExpression, left, right);
+        }
+
+        public static AssignmentExpressionSyntax Assign(this ExpressionSyntax left, ExpressionSyntax right)
+        {
+            return AssignmentExpression(SyntaxKind.SimpleAssignmentExpression, left, right);
+        }
+
         public static bool IsNamed(this AttributeSyntax attribute, string name)
         {
             return attribute.Name is IdentifierNameSyntax id && (id.Identifier.Text == name || id.Identifier.Text == name + "Attribute");

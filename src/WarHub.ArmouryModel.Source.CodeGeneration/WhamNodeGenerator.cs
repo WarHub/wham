@@ -65,9 +65,6 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
             IEnumerable<TypeDeclarationSyntax> GenerateNodePartials(CoreDescriptor descriptor)
             {
                 yield return CoreToNodeMethodsCorePartialGenerator.Generate(descriptor, cancellationToken);
-                //if (!IsNodeTypeAlreadyDeclared())
-                //{
-                //}
                 yield return BasicDeclarationNodeGenerator.Generate(descriptor, cancellationToken);
                 yield return NodeGenerator.Generate(descriptor, cancellationToken);
                 yield return NodeCollectionConvenienceMethodsGenerator.Generate(descriptor, cancellationToken);
@@ -81,16 +78,6 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                 yield return SourceVisitorVisitPartialGenerator.Generate(descriptor, cancellationToken);
                 yield return SourceVisitorGenericVisitPartialGenerator.Generate(descriptor, cancellationToken);
                 yield return NodeFactoryPartialGenerator.Generate(descriptor, cancellationToken);
-
-                //bool IsNodeTypeAlreadyDeclared()
-                //{
-                //    var semanticModel = context.SemanticModel;
-                //    var nodeTypeInfo = semanticModel.GetSpeculativeTypeInfo(
-                //        context.ProcessingMember.SpanStart,
-                //        SyntaxFactory.IdentifierName(descriptor.CoreTypeIdentifier.ValueText.GetNodeTypeNameCore()),
-                //        SpeculativeBindingOption.BindAsTypeOrNamespace);
-                //    return !(nodeTypeInfo.Type is IErrorTypeSymbol);
-                //}
             }
         }
     }

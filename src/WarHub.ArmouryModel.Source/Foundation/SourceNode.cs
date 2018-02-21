@@ -26,7 +26,7 @@ namespace WarHub.ArmouryModel.Source
 
         internal SourceTree Tree { get; set; }
 
-        internal NodeCore Core { get; }
+        protected internal NodeCore Core { get; }
 
         /// <summary>
         /// Gets the kind of this node.

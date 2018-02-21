@@ -64,7 +64,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
             return
                 ConstructorDeclaration(
                     Descriptor.GetNodeTypeName())
-                .AddModifiers(SyntaxKind.InternalKeyword)
+                .AddModifiers(SyntaxKind.ProtectedKeyword, SyntaxKind.InternalKeyword)
                 .AddParameterListParameters(
                     Parameter(
                         Identifier(coreLocal))
@@ -80,17 +80,15 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                             IdentifierName(coreLocal)),
                         Argument(
                             IdentifierName(parentLocal))))
-                .WithBody(
-                    Block(
-                        GetBodyStatements()));
+                .AddBodyStatements(
+                    GetBodyStatements());
             IEnumerable<StatementSyntax> GetBodyStatements()
             {
                 yield return
-                    ExpressionStatement(
-                        AssignmentExpression(
-                            SyntaxKind.SimpleAssignmentExpression,
-                            CorePropertyIdentifierName,
-                            IdentifierName(coreLocal)));
+                    CorePropertyIdentifierName
+                    .Assign(
+                        IdentifierName(coreLocal))
+                    .AsStatement();
                 foreach (var entry in Descriptor.DeclaredEntries.OfType<CoreDescriptor.CollectionEntry>())
                 {
                     yield return CreateCollectionInitialization(entry);
@@ -105,11 +103,10 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                 var complexCount = Descriptor.Entries.Where(x => x.IsComplex).Count();
                 var entries = Descriptor.Entries.OfType<CoreDescriptor.CollectionEntry>().ToImmutableArray();
                 return
-                    ExpressionStatement(
-                        AssignmentExpression(
-                            SyntaxKind.SimpleAssignmentExpression,
-                            IdentifierName(Names.ChildrenCount),
-                            SumNodeListLengthExpression()));
+                    IdentifierName(Names.ChildrenCount)
+                    .Assign(
+                        SumNodeListLengthExpression())
+                    .AsStatement();
 
                 ExpressionSyntax SumNodeListLengthExpression()
                 {
@@ -130,16 +127,14 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
             StatementSyntax CreateCollectionInitialization(CoreDescriptor.CollectionEntry entry)
             {
                 return
-                    ExpressionStatement(
-                        AssignmentExpression(
-                            SyntaxKind.SimpleAssignmentExpression,
-                            entry.IdentifierName,
-                            CorePropertyIdentifierName
-                            .MemberAccess(entry.IdentifierName)
-                            .MemberAccess(
-                                IdentifierName(Names.ToNodeList))
-                            .InvokeWithArguments(
-                                ThisExpression())));
+                    CorePropertyIdentifierName
+                    .MemberAccess(entry.IdentifierName)
+                    .MemberAccess(
+                        IdentifierName(Names.ToNodeList))
+                    .InvokeWithArguments(
+                        ThisExpression())
+                    .AssignTo(entry.IdentifierName)
+                    .AsStatement();
             }
         }
 
@@ -174,7 +169,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                     PropertyDeclaration(
                         Descriptor.CoreType,
                         CorePropertyIdentifier)
-                    .AddModifiers(SyntaxKind.InternalKeyword, SyntaxKind.NewKeyword)
+                    .AddModifiers(SyntaxKind.ProtectedKeyword, SyntaxKind.InternalKeyword, SyntaxKind.NewKeyword)
                     .AddAccessorListAccessors(
                         AccessorDeclaration(SyntaxKind.GetAccessorDeclaration)
                         .WithSemicolonTokenDefault());
@@ -200,7 +195,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                     PropertyDeclaration(
                         entry.Type,
                         entry.Identifier)
-                    .AddModifiers(SyntaxKind.PublicKeyword)
+                    .AddModifiers(SyntaxKind.PublicKeyword, SyntaxKind.VirtualKeyword)
                     .WithExpressionBodyFull(
                         CorePropertyIdentifierName
                         .MemberAccess(entry.IdentifierName));
@@ -212,7 +207,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                     PropertyDeclaration(
                         entry.GetNodeTypeIdentifierName(),
                         entry.Identifier)
-                    .AddModifiers(SyntaxKind.PublicKeyword)
+                    .AddModifiers(SyntaxKind.PublicKeyword, SyntaxKind.VirtualKeyword)
                     .AddAccessorListAccessors(
                         AccessorDeclaration(SyntaxKind.GetAccessorDeclaration)
                         .WithSemicolonTokenDefault());
@@ -224,7 +219,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                     PropertyDeclaration(
                         entry.GetNodeTypeIdentifierName().ToNodeListType(),
                         entry.Identifier)
-                    .AddModifiers(SyntaxKind.PublicKeyword)
+                    .AddModifiers(SyntaxKind.PublicKeyword, SyntaxKind.VirtualKeyword)
                     .AddAccessorListAccessors(
                         AccessorDeclaration(SyntaxKind.GetAccessorDeclaration)
                         .WithSemicolonTokenDefault());
@@ -240,7 +235,8 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
             {
                 yield return DerivedUpdateWithMethod();
             }
-            foreach (var withMethod in Descriptor.Entries.Select(WithForSimpleEntry, WithForComplexEntry, WithForCollectionEntry))
+            foreach (var withMethod in Descriptor.Entries
+                .Select(WithForSimpleEntry, WithForComplexEntry, WithForCollectionEntry))
             {
                 yield return withMethod;
             }
@@ -250,7 +246,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                     MethodDeclaration(
                         Descriptor.GetNodeTypeIdentifierName(),
                         Names.UpdateWith)
-                    .AddModifiers(SyntaxKind.InternalKeyword)
+                    .AddModifiers(SyntaxKind.ProtectedKeyword, SyntaxKind.InternalKeyword)
                     .AddParameterListParameters(
                         Parameter(
                             Identifier(coreParameter))
@@ -262,15 +258,14 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                         .WithSemicolonTokenDefault();
                 }
                 return methodSignatureBase
+                    .AddModifiers(SyntaxKind.VirtualKeyword)
                     .AddBodyStatements(
                         ReturnStatement(
                             ObjectCreationExpression(
                                 Descriptor.GetNodeTypeIdentifierName())
-                            .AddArgumentListArguments(
-                                Argument(
-                                    IdentifierName(coreParameter)),
-                                Argument(
-                                    LiteralExpression(SyntaxKind.NullLiteralExpression)))));
+                            .InvokeWithArguments(
+                                IdentifierName(coreParameter),
+                                LiteralExpression(SyntaxKind.NullLiteralExpression))));
             }
             MethodDeclarationSyntax DerivedUpdateWithMethod()
             {
@@ -278,7 +273,11 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                     MethodDeclaration(
                         IdentifierName(BaseType.Name.GetNodeTypeNameCore()),
                         Names.UpdateWith)
-                    .AddModifiers(SyntaxKind.InternalKeyword, SyntaxKind.SealedKeyword, SyntaxKind.OverrideKeyword)
+                    .AddModifiers(
+                        SyntaxKind.ProtectedKeyword,
+                        SyntaxKind.InternalKeyword,
+                        SyntaxKind.SealedKeyword,
+                        SyntaxKind.OverrideKeyword)
                     .AddParameterListParameters(
                         Parameter(
                             Identifier(coreParameter))
