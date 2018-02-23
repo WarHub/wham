@@ -11,7 +11,7 @@ namespace WarHub.ArmouryModel.CliTool.JsonUtilities
     {
         public DatablobNode Node { get; }
 
-        public SourceKind NodeKind { get; }
+        public SourceNode WrappedNode { get; }
 
         public ImmutableArray<ListFolder> Children { get; }
     }

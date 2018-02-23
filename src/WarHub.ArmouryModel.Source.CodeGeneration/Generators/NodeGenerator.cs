@@ -89,7 +89,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                     .Assign(
                         IdentifierName(coreLocal))
                     .AsStatement();
-                foreach (var entry in Descriptor.DeclaredEntries.OfType<CoreDescriptor.CollectionEntry>())
+                foreach (var entry in Descriptor.DeclaredEntries.Where(x => !x.IsSimple))
                 {
                     yield return CreateCollectionInitialization(entry);
                 }
@@ -124,13 +124,13 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                             (left, right) => BinaryExpression(SyntaxKind.AddExpression, left, right));
                 }
             }
-            StatementSyntax CreateCollectionInitialization(CoreDescriptor.CollectionEntry entry)
+            StatementSyntax CreateCollectionInitialization(CoreDescriptor.Entry entry)
             {
                 return
                     CorePropertyIdentifierName
                     .MemberAccess(entry.IdentifierName)
                     .MemberAccess(
-                        IdentifierName(Names.ToNodeList))
+                        IdentifierName(entry.IsCollection ? Names.ToNodeList : Names.ToNode))
                     .InvokeWithArguments(
                         ThisExpression())
                     .AssignTo(entry.IdentifierName)

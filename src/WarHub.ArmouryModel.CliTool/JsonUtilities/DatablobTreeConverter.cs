@@ -10,18 +10,19 @@ namespace WarHub.ArmouryModel.CliTool.JsonUtilities
 
     public class DatablobTreeConverter : SourceVisitor<NodeFolder>
     {
-        private static DatablobNode EmptyBlob { get; } = new DatablobCore.Builder().ToImmutable().ToNode();
+        private static DatablobNode EmptyBlob { get; }
+            = new DatablobCore.Builder { Meta = new MetadataCore.Builder() }.ToImmutable().ToNode();
 
         public override NodeFolder DefaultVisit(SourceNode node)
         {
             var blob = BlobWith(node);
-            return new NodeFolder(blob, node.Kind, ImmutableArray<ListFolder>.Empty);
+            return new NodeFolder(blob, node, ImmutableArray<ListFolder>.Empty);
         }
 
         public override NodeFolder VisitCatalogue(CatalogueNode node)
         {
             var result = VisitCatalogueBase(node);
-            return new NodeFolder(EmptyBlob.AddCatalogues(result.node), node.Kind, result.folders);
+            return new NodeFolder(EmptyBlob.AddCatalogues(result.node), node, result.folders);
         }
 
         public override NodeFolder VisitForce(ForceNode node)
@@ -37,7 +38,7 @@ namespace WarHub.ArmouryModel.CliTool.JsonUtilities
                 .WithProfiles()
                 .WithRules()
                 .WithSelections();
-            return new NodeFolder(EmptyBlob.AddForces(strippedNode), node.Kind, listFolders);
+            return new NodeFolder(EmptyBlob.AddForces(strippedNode), node, listFolders);
         }
 
         public override NodeFolder VisitForceEntry(ForceEntryNode node)
@@ -51,13 +52,13 @@ namespace WarHub.ArmouryModel.CliTool.JsonUtilities
                 .WithForceEntries()
                 .WithProfiles()
                 .WithRules();
-            return new NodeFolder(EmptyBlob.AddForceEntries(strippedNode), node.Kind, listFolders);
+            return new NodeFolder(EmptyBlob.AddForceEntries(strippedNode), node, listFolders);
         }
 
         public override NodeFolder VisitGamesystem(GamesystemNode node)
         {
             var result = VisitCatalogueBase(node);
-            return new NodeFolder(EmptyBlob.AddGamesystems(result.node), node.Kind, result.folders);
+            return new NodeFolder(EmptyBlob.AddGamesystems(result.node), node, result.folders);
         }
 
         public override NodeFolder VisitRoster(RosterNode node)
@@ -65,7 +66,7 @@ namespace WarHub.ArmouryModel.CliTool.JsonUtilities
             var strippedLists = ImmutableHashSet.Create(nameof(RosterNode.Forces));
             var listFolders = CreateListFolders(node, strippedLists);
             var strippedNode = node.WithForces();
-            return new NodeFolder(EmptyBlob.AddRosters(strippedNode), node.Kind, listFolders);
+            return new NodeFolder(EmptyBlob.AddRosters(strippedNode), node, listFolders);
         }
 
         public override NodeFolder VisitSelection(SelectionNode node)
@@ -79,19 +80,19 @@ namespace WarHub.ArmouryModel.CliTool.JsonUtilities
                 .WithProfiles()
                 .WithRules()
                 .WithSelections();
-            return new NodeFolder(EmptyBlob.AddSelections(strippedNode), node.Kind, listFolders);
+            return new NodeFolder(EmptyBlob.AddSelections(strippedNode), node, listFolders);
         }
 
         public override NodeFolder VisitSelectionEntry(SelectionEntryNode node)
         {
             var result = VisitSelectionEntryBase(node);
-            return new NodeFolder(EmptyBlob.AddSelectionEntries(result.node), node.Kind, result.folders);
+            return new NodeFolder(EmptyBlob.AddSelectionEntries(result.node), node, result.folders);
         }
 
         public override NodeFolder VisitSelectionEntryGroup(SelectionEntryGroupNode node)
         {
             var result = VisitSelectionEntryBase(node);
-            return new NodeFolder(EmptyBlob.AddSelectionEntryGroups(result.node), node.Kind, result.folders);
+            return new NodeFolder(EmptyBlob.AddSelectionEntryGroups(result.node), node, result.folders);
         }
 
         private (T node, ImmutableArray<ListFolder> folders) VisitCatalogueBase<T>(T node) where T : CatalogueBaseNode
@@ -148,23 +149,23 @@ namespace WarHub.ArmouryModel.CliTool.JsonUtilities
             return listFolders;
         }
 
-        private ListFolder CreateListFolder(NamedNodeOrList arg)
+        private ListFolder CreateListFolder(NamedNodeOrList nodeOrList)
         {
-            var names = arg.ToImmutableDictionary(x => x, x => x is INameableNode named ? named.Name : "");
+            var names = nodeOrList.ToImmutableDictionary(x => x, SelectName);
             var nameCounts = names.CountBy(x => x.Value).ToImmutableDictionary();
-            var folders = arg
+            var folders = nodeOrList
                 .Select(Visit)
                 .Select(AssignIdentifier)
                 .Lag(1, null, AssignIdentifierPrevious)
                 .ToImmutableArray();
-            return new ListFolder(arg.Name, folders);
+            return new ListFolder(nodeOrList.Name, folders);
 
-            NodeFolder AssignIdentifier(NodeFolder node, int index)
+            NodeFolder AssignIdentifier(NodeFolder nodeFolder, int index)
             {
-                var currNode = node.Node;
-                var name = names[currNode];
-                var identifier = nameCounts[name] == 1 ? name : $"{name} {index}";
-                return node.WithNode(currNode.WithMeta(currNode.Meta.WithIdentifier(identifier)));
+                var currNode = nodeFolder.Node;
+                var name = names[nodeFolder.WrappedNode];
+                var identifier = nameCounts[name] == 1 ? name : $"{index} - {name}";
+                return nodeFolder.WithNode(currNode.WithMeta(currNode.Meta.WithIdentifier(identifier)));
             }
             NodeFolder AssignIdentifierPrevious(NodeFolder folder, NodeFolder previous)
             {
@@ -174,6 +175,11 @@ namespace WarHub.ArmouryModel.CliTool.JsonUtilities
                 }
                 return folder.WithNode(folder.Node.WithMeta(folder.Node.Meta.WithIdentifier(previous.Node.Meta.Identifier)));
             }
+        }
+
+        public static string SelectName(SourceNode node)
+        {
+            return node is INameableNode named ? named.Name : node.Kind.ToString();
         }
 
         public static DatablobNode BlobWith(SourceNode node)

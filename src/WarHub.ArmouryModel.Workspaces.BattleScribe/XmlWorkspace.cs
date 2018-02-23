@@ -10,7 +10,7 @@ namespace WarHub.ArmouryModel.Workspaces.BattleScribe
     /// </summary>
     public class XmlWorkspace
     {
-        private XmlWorkspace(IEnumerable<FileInfo> files)
+        public XmlWorkspace(IEnumerable<FileInfo> files)
         {
             Documents =
                 files
