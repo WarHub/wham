@@ -22,7 +22,7 @@ namespace WarHub.ArmouryModel.CliTool.Utilities
             {
                 return raw;
             }
-            return EscapingRegex.Replace(raw, " ");
+            return EscapingRegex.Replace(raw, " ").Trim();
         }
     }
 }

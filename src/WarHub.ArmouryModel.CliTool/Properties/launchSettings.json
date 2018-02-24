@@ -1,8 +1,7 @@
 {
   "profiles": {
     "WarHub.ArmouryModel.CliTool": {
-      "commandName": "Project",
-      "commandLineArgs": "convertxml -s D:\\Amadeusz\\BattleScribe\\data\\wh40k -d D:\\Amadeusz\\BattleScribe\\data\\wh40k"
+      "commandName": "Project"
     }
   }
 }

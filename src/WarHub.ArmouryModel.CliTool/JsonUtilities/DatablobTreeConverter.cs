@@ -8,7 +8,7 @@ using WarHub.ArmouryModel.Source;
 namespace WarHub.ArmouryModel.CliTool.JsonUtilities
 {
 
-    public class DatablobTreeConverter : SourceVisitor<NodeFolder>
+    public class NodeToDatablobTreeConverter : SourceVisitor<NodeFolder>
     {
         private static DatablobNode EmptyBlob { get; }
             = new DatablobCore.Builder { Meta = new MetadataCore.Builder() }.ToImmutable().ToNode();
@@ -164,7 +164,7 @@ namespace WarHub.ArmouryModel.CliTool.JsonUtilities
             {
                 var currNode = nodeFolder.Node;
                 var name = names[nodeFolder.WrappedNode];
-                var identifier = nameCounts[name] == 1 ? name : $"{index} - {name}";
+                var identifier = nameCounts[name] == 1 ? name : $"{name} - {index}";
                 return nodeFolder.WithNode(currNode.WithMeta(currNode.Meta.WithIdentifier(identifier)));
             }
             NodeFolder AssignIdentifierPrevious(NodeFolder folder, NodeFolder previous)
@@ -173,7 +173,9 @@ namespace WarHub.ArmouryModel.CliTool.JsonUtilities
                 {
                     return folder;
                 }
-                return folder.WithNode(folder.Node.WithMeta(folder.Node.Meta.WithIdentifier(previous.Node.Meta.Identifier)));
+                var node = folder.Node;
+                var newMeta = node.Meta.WithPrevIdentifier(previous.Node.Meta.Identifier);
+                return folder.WithNode(node.WithMeta(newMeta));
             }
         }
 
