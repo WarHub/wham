@@ -1,4 +1,5 @@
 ﻿using System.IO;
+using System.Linq;
 using Newtonsoft.Json;
 using WarHub.ArmouryModel.CliTool.Utilities;
 using WarHub.ArmouryModel.Source;
@@ -24,7 +25,7 @@ namespace WarHub.ArmouryModel.CliTool.JsonUtilities
 
         private JsonSerializer Serializer { get; }
 
-        public void WriteNode(NodeFolder nodeFolder, DirectoryInfo directory)
+        public void WriteNode(JsonBlobItem nodeFolder, DirectoryInfo directory)
         {
             INodeWithCore<NodeCore> node = nodeFolder.Node;
             var filename = GetFilename(nodeFolder);
@@ -38,7 +39,7 @@ namespace WarHub.ArmouryModel.CliTool.JsonUtilities
             }
         }
 
-        private void WriteList(ListFolder childList, DirectoryInfo directory)
+        private void WriteList(JsonBlobList childList, DirectoryInfo directory)
         {
             if (childList.Nodes.Length == 0)
             {
@@ -46,18 +47,28 @@ namespace WarHub.ArmouryModel.CliTool.JsonUtilities
             }
             var listDirName = childList.Name.FilenameSanitize();
             var listDir = directory.CreateSubdirectory(listDirName);
-            foreach (var childNode in childList.Nodes)
+            if (childList.Nodes.All(x => x.IsLeaf))
             {
-                var childDirName = childNode.Node.Meta.Identifier.FilenameSanitize();
-                var childDir = listDir.CreateSubdirectory(childDirName);
-                WriteNode(childNode, childDir);
+                foreach (var childNode in childList.Nodes)
+                {
+                    WriteNode(childNode, listDir);
+                }
+            }
+            else
+            {
+                foreach (var childNode in childList.Nodes)
+                {
+                    var childDirName = childNode.Node.Meta.Identifier.FilenameSanitize();
+                    var childDir = listDir.CreateSubdirectory(childDirName);
+                    WriteNode(childNode, childDir);
+                }
             }
         }
 
-        private string GetFilename(NodeFolder nodeFolder)
+        private string GetFilename(JsonBlobItem nodeFolder)
         {
-            var filename = nodeFolder.WrappedNode.Kind.ToString() + ".json";
-            return filename.FilenameSanitize();
+            var filenameBase = nodeFolder.IsLeaf ? nodeFolder.Node.Meta.Identifier : nodeFolder.WrappedNode.Kind.ToString();
+            return (filenameBase + ".json").FilenameSanitize();
         }
     }
 }

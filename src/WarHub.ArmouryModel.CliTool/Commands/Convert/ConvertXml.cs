@@ -49,7 +49,7 @@ namespace WarHub.ArmouryModel.CliTool.Commands.Convert
                 [XmlDocumentKind.Gamesystem] = "gamesystems",
                 [XmlDocumentKind.Catalogue] = "catalogues"
             }.ToImmutableDictionary();
-            var treeConverter = new NodeToDatablobTreeConverter();
+            var treeConverter = new NodeToJsonBlobTreeConverter();
             var xmlToJsonWriter = new XmlToJsonWriter();
             foreach (var (kind, folderName) in foldersByDocumentKind)  
             {
