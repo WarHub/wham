@@ -1,15 +1,18 @@
 ﻿using System;
 using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
+using System.Text;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 
-namespace BattleScribeLoader
+namespace WarHub.ArmouryModel.Workspaces.JsonFolder
 {
     /// <summary>
-    /// Completely ignores properties whose type implements <see cref="ICollection"/>.
+    /// Ignores "defaultXmlNamespace" property, as well as collections with no elements.
     /// </summary>
-    public class NoChildrenContractResolver : CamelCasePropertyNamesContractResolver
+    public class IgnoringEmptyCollectionsContractResolver : CamelCasePropertyNamesContractResolver
     {
         protected override JsonProperty CreateProperty(MemberInfo member, MemberSerialization memberSerialization)
         {
@@ -23,8 +26,12 @@ namespace BattleScribeLoader
             {
                 return prop;
             }
-            prop.Ignored = true;
+            prop.ShouldSerialize = IsNotEmptyImmutableArray;
             return prop;
+            bool IsNotEmptyImmutableArray(object instance)
+            {
+                return ((ICollection)prop.ValueProvider.GetValue(instance)).Count > 0;
+            }
         }
     }
 }

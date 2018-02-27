@@ -3,14 +3,15 @@ using System.Collections.Generic;
 using System.Text;
 using Newtonsoft.Json;
 
-namespace WarHub.ArmouryModel.CliTool.JsonUtilities
+namespace WarHub.ArmouryModel.Workspaces.JsonFolder
 {
     /// <summary>
     /// Converts multiline strings into arrays of strings.
     /// </summary>
-    class MultiLineStringConverter : JsonConverter
+    public class MultilineJsonStringConverter : JsonConverter
     {
         const char LF = '\n';
+        const string stringLF = "\n";
 
         public override bool CanConvert(Type objectType)
         {
@@ -48,7 +49,7 @@ namespace WarHub.ArmouryModel.CliTool.JsonUtilities
                 ReadUntilStringOrEndArray();
             }
             while (reader.TokenType == JsonToken.String);
-            return string.Join(LF, lines);
+            return string.Join(stringLF, lines);
             void ReadUntilStringOrEndArray()
             {
                 while (reader.Read() && reader.TokenType != JsonToken.String && reader.TokenType != JsonToken.EndArray)

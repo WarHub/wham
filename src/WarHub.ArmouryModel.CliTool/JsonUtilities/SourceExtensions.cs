@@ -40,39 +40,39 @@ namespace WarHub.ArmouryModel.CliTool.JsonUtilities
             Func<SelectionEntryGroupNode, T> selectionEntryGroupMap = null,
             T defaultValue = default)
         {
-            switch (node)
+            switch (node.Kind)
             {
-                case CatalogueNode catalogue: return catalogueMap(catalogue);
-                case CategoryNode category: return categoryMap(category);
-                case CategoryEntryNode categoryEntry: return categoryEntryMap(categoryEntry);
-                case CategoryLinkNode categoryLink: return categoryLinkMap(categoryLink);
-                case CharacteristicNode characteristic: return characteristicMap(characteristic);
-                case CharacteristicTypeNode characteristicType: return characteristicTypeMap(characteristicType);
-                case ConditionNode condition: return conditionMap(condition);
-                case ConditionGroupNode conditionGroup: return conditionGroupMap(conditionGroup);
-                case ConstraintNode constraint: return constraintMap(constraint);
-                case CostNode cost: return costMap(cost);
-                case CostLimitNode costLimit: return costLimitMap(costLimit);
-                case CostTypeNode costType: return costTypeMap(costType);
-                case DatablobNode datablob: return datablobMap(datablob);
-                case DataIndexNode dataIndex: return dataIndexMap(dataIndex);
-                case DataIndexEntryNode dataIndexEntry: return dataIndexEntryMap(dataIndexEntry);
-                case DataIndexRepositoryUrlNode dataIndexRepositoryUrl: return dataIndexRepositoryUrlMap(dataIndexRepositoryUrl);
-                case EntryLinkNode entryLink: return entryLinkMap(entryLink);
-                case ForceNode force: return forceMap(force);
-                case ForceEntryNode forceEntry: return forceEntryMap(forceEntry);
-                case GamesystemNode gamesystem: return gamesystemMap(gamesystem);
-                case InfoLinkNode infoLink: return infoLinkMap(infoLink);
-                case MetadataNode metadata: return metadataMap(metadata);
-                case ModifierNode modifier: return modifierMap(modifier);
-                case ProfileNode profile: return profileMap(profile);
-                case ProfileTypeNode profileType: return profileTypeMap(profileType);
-                case RepeatNode repeat: return repeatMap(repeat);
-                case RosterNode roster: return rosterMap(roster);
-                case RuleNode rule: return ruleMap(rule);
-                case SelectionNode selection: return selectionMap(selection);
-                case SelectionEntryNode selectionEntry: return selectionEntryMap(selectionEntry);
-                case SelectionEntryGroupNode selectionEntryGroup: return selectionEntryGroupMap(selectionEntryGroup);
+                case SourceKind.CostType: return costTypeMap((CostTypeNode)node);
+                case SourceKind.CharacteristicType: return characteristicTypeMap((CharacteristicTypeNode)node);
+                case SourceKind.ProfileType: return profileTypeMap((ProfileTypeNode)node);
+                case SourceKind.SelectionEntry: return selectionEntryMap((SelectionEntryNode)node);
+                case SourceKind.SelectionEntryGroup: return selectionEntryGroupMap((SelectionEntryGroupNode)node);
+                case SourceKind.CategoryEntry: return categoryEntryMap((CategoryEntryNode)node);
+                case SourceKind.ForceEntry: return forceEntryMap((ForceEntryNode)node);
+                case SourceKind.DataIndexEntry: return dataIndexEntryMap((DataIndexEntryNode)node);
+                case SourceKind.DataIndexRepositoryUrl: return dataIndexRepositoryUrlMap((DataIndexRepositoryUrlNode)node);
+                case SourceKind.Metadata: return metadataMap((MetadataNode)node);
+                case SourceKind.Condition: return conditionMap((ConditionNode)node);
+                case SourceKind.ConditionGroup: return conditionGroupMap((ConditionGroupNode)node);
+                case SourceKind.Constraint: return constraintMap((ConstraintNode)node);
+                case SourceKind.Repeat: return repeatMap((RepeatNode)node);
+                case SourceKind.Modifier: return modifierMap((ModifierNode)node);
+                case SourceKind.Cost: return costMap((CostNode)node);
+                case SourceKind.Characteristic: return characteristicMap((CharacteristicNode)node);
+                case SourceKind.Profile: return profileMap((ProfileNode)node);
+                case SourceKind.Rule: return ruleMap((RuleNode)node);
+                case SourceKind.CategoryLink: return categoryLinkMap((CategoryLinkNode)node);
+                case SourceKind.EntryLink: return entryLinkMap((EntryLinkNode)node);
+                case SourceKind.InfoLink: return infoLinkMap((InfoLinkNode)node);
+                case SourceKind.CostLimit: return costLimitMap((CostLimitNode)node);
+                case SourceKind.Category: return categoryMap((CategoryNode)node);
+                case SourceKind.Force: return forceMap((ForceNode)node);
+                case SourceKind.Selection: return selectionMap((SelectionNode)node);
+                case SourceKind.Catalogue: return catalogueMap((CatalogueNode)node);
+                case SourceKind.Gamesystem: return gamesystemMap((GamesystemNode)node);
+                case SourceKind.Roster: return rosterMap((RosterNode)node);
+                case SourceKind.DataIndex: return dataIndexMap((DataIndexNode)node);
+                case SourceKind.Datablob: return datablobMap((DatablobNode)node);
                 default:
                     return defaultValue;
             }

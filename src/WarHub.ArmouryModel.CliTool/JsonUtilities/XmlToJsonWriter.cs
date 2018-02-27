@@ -3,6 +3,7 @@ using System.Linq;
 using Newtonsoft.Json;
 using WarHub.ArmouryModel.CliTool.Utilities;
 using WarHub.ArmouryModel.Source;
+using WarHub.ArmouryModel.Workspaces.JsonFolder;
 
 namespace WarHub.ArmouryModel.CliTool.JsonUtilities
 {
@@ -14,13 +15,7 @@ namespace WarHub.ArmouryModel.CliTool.JsonUtilities
     {
         public XmlToJsonWriter()
         {
-            Serializer = new JsonSerializer
-            {
-                DefaultValueHandling = DefaultValueHandling.Ignore,
-                Formatting = Formatting.Indented,
-                ContractResolver = new IgnoringEmptyCollectionsContractResolver(),
-                Converters = { new MultiLineStringConverter() }
-            };
+            Serializer = JsonWorkspace.CreateSerializer();
         }
 
         private JsonSerializer Serializer { get; }
