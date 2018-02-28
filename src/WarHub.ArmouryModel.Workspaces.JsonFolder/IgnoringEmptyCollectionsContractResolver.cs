@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using System.Reflection;
 using System.Text;
@@ -22,16 +23,20 @@ namespace WarHub.ArmouryModel.Workspaces.JsonFolder
                 prop.Ignored = true;
                 return prop;
             }
-            if (!typeof(ICollection).IsAssignableFrom(prop.PropertyType))
+            //if (!typeof(ICollection).IsAssignableFrom(prop.PropertyType))
+            //{
+            //    return prop;
+            //}
+            if (prop.PropertyType.IsGenericType && prop.PropertyType.GetGenericTypeDefinition() == typeof(ImmutableArray<>))
             {
-                return prop;
+                prop.DefaultValue = prop.PropertyType.GetField(nameof(ImmutableArray<int>.Empty)).GetValue(null);
             }
-            prop.ShouldSerialize = IsNotEmptyImmutableArray;
+            //prop.ShouldSerialize = IsNotEmptyImmutableArray;
             return prop;
-            bool IsNotEmptyImmutableArray(object instance)
-            {
-                return ((ICollection)prop.ValueProvider.GetValue(instance)).Count > 0;
-            }
+            //bool IsNotEmptyImmutableArray(object instance)
+            //{
+            //    return ((ICollection)prop.ValueProvider.GetValue(instance)).Count > 0;
+            //}
         }
     }
 }

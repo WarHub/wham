@@ -30,7 +30,7 @@ namespace WarHub.ArmouryModel.Workspaces.JsonFolder
         {
             return new JsonSerializer
             {
-                DefaultValueHandling = DefaultValueHandling.Ignore,
+                DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate,
                 Formatting = Formatting.Indented,
                 ContractResolver = new IgnoringEmptyCollectionsContractResolver(),
                 Converters = { new MultilineJsonStringConverter() }
