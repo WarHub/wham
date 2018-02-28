@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Collections.Immutable;
+﻿using System.Collections.Immutable;
 using System.Linq;
 using System.Text;
 using MoreLinq;
@@ -186,7 +185,7 @@ namespace WarHub.ArmouryModel.CliTool.JsonUtilities
 
         public static DatablobNode BlobWith(SourceNode node)
         {
-            return node.SwitchOnType(
+            return node.MatchOnType(
                 x => EmptyBlob.AddCatalogues(x),
                 x => EmptyBlob.AddCategories(x),
                 x => EmptyBlob.AddCategoryEntries(x),
@@ -218,7 +217,7 @@ namespace WarHub.ArmouryModel.CliTool.JsonUtilities
                 x => EmptyBlob.AddSelections(x),
                 x => EmptyBlob.AddSelectionEntries(x),
                 x => EmptyBlob.AddSelectionEntryGroups(x),
-                EmptyBlob);
+                x => EmptyBlob);
         }
     }
 }

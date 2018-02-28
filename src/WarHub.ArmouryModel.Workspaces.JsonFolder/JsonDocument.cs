@@ -16,6 +16,16 @@ namespace WarHub.ArmouryModel.Workspaces.JsonFolder
 
         private WeakReference<DatablobNode> WeakRoot { get; } = new WeakReference<DatablobNode>(null);
 
+        public override void Accept(JsonFileStructureVisitor visitor)
+        {
+            visitor.VisitDocument(this);
+        }
+
+        public override TResult Accept<TResult>(JsonFileStructureVisitor<TResult> visitor)
+        {
+            return visitor.VisitDocument(this);
+        }
+
         /// <summary>
         /// Gets the root node of the document. May cause deserialization.
         /// </summary>

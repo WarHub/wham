@@ -17,5 +17,9 @@ namespace WarHub.ArmouryModel.Workspaces.JsonFolder
         public string Name => FileSystemInfo.Name;
 
         public JsonWorkspace Workspace { get; }
+
+        public abstract void Accept(JsonFileStructureVisitor visitor);
+
+        public abstract TResult Accept<TResult>(JsonFileStructureVisitor<TResult> visitor);
     }
 }
