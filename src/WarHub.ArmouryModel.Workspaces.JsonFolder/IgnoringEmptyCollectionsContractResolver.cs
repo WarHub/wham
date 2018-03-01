@@ -23,20 +23,17 @@ namespace WarHub.ArmouryModel.Workspaces.JsonFolder
                 prop.Ignored = true;
                 return prop;
             }
-            //if (!typeof(ICollection).IsAssignableFrom(prop.PropertyType))
-            //{
-            //    return prop;
-            //}
-            if (prop.PropertyType.IsGenericType && prop.PropertyType.GetGenericTypeDefinition() == typeof(ImmutableArray<>))
+            if (!prop.PropertyType.IsGenericType || prop.PropertyType.GetGenericTypeDefinition() != typeof(ImmutableArray<>))
             {
-                prop.DefaultValue = prop.PropertyType.GetField(nameof(ImmutableArray<int>.Empty)).GetValue(null);
+                return prop;
             }
-            //prop.ShouldSerialize = IsNotEmptyImmutableArray;
+            prop.DefaultValue = prop.PropertyType.GetField(nameof(ImmutableArray<int>.Empty)).GetValue(null);
+            prop.ShouldSerialize = IsNotEmptyImmutableArray;
             return prop;
-            //bool IsNotEmptyImmutableArray(object instance)
-            //{
-            //    return ((ICollection)prop.ValueProvider.GetValue(instance)).Count > 0;
-            //}
+            bool IsNotEmptyImmutableArray(object instance)
+            {
+                return ((ICollection)prop.ValueProvider.GetValue(instance)).Count > 0;
+            }
         }
     }
 }

@@ -49,7 +49,7 @@ namespace WarHub.ArmouryModel.CliTool.Commands.Convert
                 [XmlDocumentKind.Gamesystem] = "gamesystems",
                 [XmlDocumentKind.Catalogue] = "catalogues"
             }.ToImmutableDictionary();
-            var treeConverter = new NodeToJsonBlobTreeConverter();
+            var treeConverter = new SourceNodeToJsonBlobTreeConverter();
             var xmlToJsonWriter = new XmlToJsonWriter();
             foreach (var (kind, folderName) in foldersByDocumentKind)  
             {
@@ -70,7 +70,7 @@ namespace WarHub.ArmouryModel.CliTool.Commands.Convert
                     Log.Verbose("- Reading finished. Converting...");
                     var tree = treeConverter.Visit(root);
                     Log.Verbose("- Converting finished. Saving to JSON directory structure...");
-                    xmlToJsonWriter.WriteNode(tree, documentFolder);
+                    xmlToJsonWriter.WriteItem(tree, documentFolder);
                     Log.Verbose("- Saved");
                 }
             }

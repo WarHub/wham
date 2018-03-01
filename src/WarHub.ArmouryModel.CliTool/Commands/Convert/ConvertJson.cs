@@ -33,7 +33,7 @@ namespace WarHub.ArmouryModel.CliTool.Commands.Convert
             Log.Debug("Destination resolved to {Destination}", destDir);
             destDir.Create();
             var reviver = new JsonBlobTreeReviver();
-            var converter = new BlobTreeToSourceRootConverter();
+            var converter = new JsonBlobTreeToSourceNodeConverter();
             var serializer = new BattleScribeXmlSerializer();
             Log.Information("Converting...");
             foreach (var sourceKindFolder in workspace.Root.GetFolders())
@@ -41,7 +41,7 @@ namespace WarHub.ArmouryModel.CliTool.Commands.Convert
                 Log.Debug("Converting JSON trees in {KindFolder}", sourceKindFolder.Path);
                 foreach (var sourceTreeFolder in sourceKindFolder.GetFolders())
                 {
-                    Log.Debug("Converting JSON tree @ {TreeFolder}", sourceTreeFolder);
+                    Log.Debug("Converting JSON tree @ {TreeFolderPath}", sourceTreeFolder.Path);
                     Log.Verbose("- Loading JSON tree...");
                     var blobItem = reviver.VisitItemFolder(sourceTreeFolder);
                     Log.Verbose("- Loading finished. Converting to monolitic model...");

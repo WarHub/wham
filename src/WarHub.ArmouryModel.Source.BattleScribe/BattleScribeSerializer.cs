@@ -75,37 +75,37 @@ namespace WarHub.ArmouryModel.Source.BattleScribe
 
         public void SerializeGamesystem(GamesystemNode node, Stream stream)
         {
-            var fse = node.GetSerializationProxy();
+            var fsp = node.GetSerializationProxy();
             using (var writer = BattleScribeConformantXmlWriter.Create(stream))
             {
-                LazyGamesystemSerializer.Value.Serialize(writer, fse, LazyGamesystemNamespaces.Value);
+                LazyGamesystemSerializer.Value.Serialize(writer, fsp, LazyGamesystemNamespaces.Value);
             }
         }
 
         public void SerializeCatalogue(CatalogueNode node, Stream stream)
         {
-            var fse = node.GetSerializationProxy();
+            var fsp = node.GetSerializationProxy();
             using (var writer = BattleScribeConformantXmlWriter.Create(stream))
             {
-                LazyCatalogueSerializer.Value.Serialize(writer, fse, LazyCatalogueNamespaces.Value);
+                LazyCatalogueSerializer.Value.Serialize(writer, fsp, LazyCatalogueNamespaces.Value);
             }
         }
 
         public void SerializeRoster(RosterNode node, Stream stream)
         {
-            var fse = node.GetSerializationProxy();
+            var fsp = node.GetSerializationProxy();
             using (var writer = BattleScribeConformantXmlWriter.Create(stream))
             {
-                LazyRosterSerializer.Value.Serialize(writer, fse, LazyRosterNamespaces.Value);
+                LazyRosterSerializer.Value.Serialize(writer, fsp, LazyRosterNamespaces.Value);
             }
         }
 
         public void SerializeDataIndex(DataIndexNode node, Stream stream)
         {
-            var fse = node.GetSerializationProxy();
+            var fsp = node.GetSerializationProxy();
             using (var writer = BattleScribeConformantXmlWriter.Create(stream))
             {
-                LazyDataIndexSerializer.Value.Serialize(writer, fse, LazyDataIndexNamespaces.Value);
+                LazyDataIndexSerializer.Value.Serialize(writer, fsp, LazyDataIndexNamespaces.Value);
             }
         }
 

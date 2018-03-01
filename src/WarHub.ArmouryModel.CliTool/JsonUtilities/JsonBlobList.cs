@@ -7,6 +7,6 @@ namespace WarHub.ArmouryModel.CliTool.JsonUtilities
     {
         public string Name { get; }
 
-        public ImmutableArray<JsonBlobItem> Nodes { get; }
+        public ImmutableArray<JsonBlobItem> Items { get; }
     }
 }

@@ -5,7 +5,7 @@ using WarHub.ArmouryModel.Source;
 
 namespace WarHub.ArmouryModel.CliTool.JsonUtilities
 {
-    public class BlobTreeToSourceRootConverter
+    public class JsonBlobTreeToSourceNodeConverter
     {
         public SourceNode ParseItem(JsonBlobItem blobItem)
         {
@@ -30,14 +30,35 @@ namespace WarHub.ArmouryModel.CliTool.JsonUtilities
             }
         }
 
-        private ImmutableDictionary<string, IEnumerable<SourceNode>> ParseBlobLists(JsonBlobItem blobItem)
+        private NodeListDictionaryWithDefault ParseBlobLists(JsonBlobItem blobItem)
         {
-            return blobItem.Children.ToImmutableDictionary(x => x.Name, ParseBlobList);
+            var dictionary = blobItem.Children.ToImmutableDictionary(x => x.Name, ParseBlobList);
+            var wrapper = new NodeListDictionaryWithDefault(dictionary);
+            return wrapper;
         }
 
         private IEnumerable<SourceNode> ParseBlobList(JsonBlobList blobList)
         {
-            return blobList.Nodes.Select(ParseItem);
+            if (blobList.Items.IsEmpty)
+            {
+                return Enumerable.Empty<SourceNode>();
+            }
+            var first = blobList.Items.First(x => x.Node.Meta.PrevIdentifier == null);
+            var nodesByPrevIdentifier = blobList.Items
+                .Remove(first)
+                .ToImmutableDictionary(node => node.Node.Meta.PrevIdentifier);
+            var orderedList = new List<SourceNode>
+            {
+                ParseItem(first)
+            };
+            string prevId = first.Node.Meta.Identifier;
+            for (int i = 0; i < nodesByPrevIdentifier.Count; i++)
+            {
+                var node = nodesByPrevIdentifier[prevId];
+                prevId = node.Node.Meta.Identifier;
+                orderedList.Add(ParseItem(node));
+            }
+            return orderedList;
         }
 
         private CatalogueBaseNode ParseCatalogueBase(JsonBlobItem blobItem)
@@ -110,6 +131,19 @@ namespace WarHub.ArmouryModel.CliTool.JsonUtilities
                 .AddRules(lists[nameof(SelectionNode.Rules)].Cast<RuleNode>())
                 .AddSelections(lists[nameof(SelectionNode.Selections)].Cast<SelectionNode>());
             return filledNode;
+        }
+
+        private class NodeListDictionaryWithDefault
+        {
+            public NodeListDictionaryWithDefault(ImmutableDictionary<string, IEnumerable<SourceNode>> dictionary)
+            {
+                Dictionary = dictionary;
+            }
+
+            public IEnumerable<SourceNode> this[string key]
+                => Dictionary.TryGetValue(key, out var value) ? value : Enumerable.Empty<SourceNode>();
+
+            private ImmutableDictionary<string, IEnumerable<SourceNode>> Dictionary { get; }
         }
     }
 }

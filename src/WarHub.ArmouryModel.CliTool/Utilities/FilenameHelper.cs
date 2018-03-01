@@ -20,7 +20,7 @@ namespace WarHub.ArmouryModel.CliTool.Utilities
         {
             if (raw.IndexOfAny(InvalidChars) < 0)
             {
-                return raw;
+                return raw.Trim();
             }
             return EscapingRegex.Replace(raw, " ").Trim();
         }

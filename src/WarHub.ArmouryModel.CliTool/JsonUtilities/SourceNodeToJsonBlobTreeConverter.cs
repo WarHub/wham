@@ -1,4 +1,5 @@
-﻿using System.Collections.Immutable;
+﻿using System;
+using System.Collections.Immutable;
 using System.Linq;
 using System.Text;
 using MoreLinq;
@@ -7,7 +8,7 @@ using WarHub.ArmouryModel.Source;
 namespace WarHub.ArmouryModel.CliTool.JsonUtilities
 {
 
-    public class NodeToJsonBlobTreeConverter : SourceVisitor<JsonBlobItem>
+    public class SourceNodeToJsonBlobTreeConverter : SourceVisitor<JsonBlobItem>
     {
         private static DatablobNode EmptyBlob { get; }
             = new DatablobCore.Builder { Meta = new MetadataCore.Builder() }.ToImmutable().ToNode();
@@ -94,7 +95,8 @@ namespace WarHub.ArmouryModel.CliTool.JsonUtilities
             return new JsonBlobItem(EmptyBlob.AddSelectionEntryGroups(result.node), node, IsLeaf: false, result.folders);
         }
 
-        private (T node, ImmutableArray<JsonBlobList> folders) VisitCatalogueBase<T>(T node) where T : CatalogueBaseNode
+        private (T node, ImmutableArray<JsonBlobList> folders) VisitCatalogueBase<T>(T node)
+            where T : CatalogueBaseNode
         {
             var strippedLists = ImmutableHashSet.Create(
                 nameof(CatalogueBaseNode.ForceEntries),
@@ -120,7 +122,8 @@ namespace WarHub.ArmouryModel.CliTool.JsonUtilities
             return ((T)strippedNode, listFolders);
         }
 
-        private (T node, ImmutableArray<JsonBlobList> folders) VisitSelectionEntryBase<T>(T node) where T : SelectionEntryBaseNode
+        private (T node, ImmutableArray<JsonBlobList> folders) VisitSelectionEntryBase<T>(T node)
+            where T : SelectionEntryBaseNode
         {
             var strippedLists = ImmutableHashSet.Create(
                 nameof(SelectionEntryBaseNode.Profiles),
@@ -139,7 +142,6 @@ namespace WarHub.ArmouryModel.CliTool.JsonUtilities
         private ImmutableArray<JsonBlobList> CreateListFolders<TNode>(TNode node, ImmutableHashSet<string> listNames)
             where TNode : SourceNode
         {
-
             var listFolders = node
                 .NamedChildrenLists()
                 .Where(l => listNames.Contains(l.Name))
@@ -151,30 +153,31 @@ namespace WarHub.ArmouryModel.CliTool.JsonUtilities
         private JsonBlobList CreateListFolder(NamedNodeOrList nodeOrList)
         {
             var names = nodeOrList.ToImmutableDictionary(x => x, SelectName);
-            var nameCounts = names.CountBy(x => x.Value).ToImmutableDictionary();
+            var nameCounts = names.Values
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToDictionary(x => x, x => 0, StringComparer.OrdinalIgnoreCase);
             var folders = nodeOrList
                 .Select(Visit)
-                .Select(AssignIdentifier)
-                .Lag(1, null, AssignIdentifierPrevious)
+                .Scan(default(JsonBlobItem), AssignIdentifiers)
+                .Skip(1)
                 .ToImmutableArray();
             return new JsonBlobList(nodeOrList.Name, folders);
-
-            JsonBlobItem AssignIdentifier(JsonBlobItem nodeFolder, int index)
+            string GetUniqueIdentifier(JsonBlobItem item)
             {
-                var currNode = nodeFolder.Node;
-                var name = names[nodeFolder.WrappedNode];
-                var identifier = nameCounts[name] == 1 ? name : $"{name} - {index}";
-                return nodeFolder.WithNode(currNode.WithMeta(currNode.Meta.WithIdentifier(identifier)));
+                var node = item.Node;
+                var name = names[item.WrappedNode];
+                var nameIndex = ++nameCounts[name];
+                var identifier = nameIndex == 1 ? name : $"{name} - {nameIndex}";
+                return identifier;
             }
-            JsonBlobItem AssignIdentifierPrevious(JsonBlobItem folder, JsonBlobItem previous)
+            JsonBlobItem AssignIdentifiers(JsonBlobItem prevItem, JsonBlobItem item)
             {
-                if (previous == null)
-                {
-                    return folder;
-                }
-                var node = folder.Node;
-                var newMeta = node.Meta.WithPrevIdentifier(previous.Node.Meta.Identifier);
-                return folder.WithNode(node.WithMeta(newMeta));
+                var node = item.Node;
+                var identifier = GetUniqueIdentifier(item);
+                var newMeta = node.Meta
+                    .WithIdentifier(identifier)
+                    .WithPrevIdentifier(prevItem?.Node.Meta.Identifier);
+                return item.WithNode(node.WithMeta(newMeta));
             }
         }
 
