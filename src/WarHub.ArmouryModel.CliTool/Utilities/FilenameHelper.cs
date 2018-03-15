@@ -5,7 +5,7 @@ using System.Text.RegularExpressions;
 
 namespace WarHub.ArmouryModel.CliTool.Utilities
 {
-    public static class FilenameHelper
+    internal static class FilenameHelper
     {
         static FilenameHelper()
         {

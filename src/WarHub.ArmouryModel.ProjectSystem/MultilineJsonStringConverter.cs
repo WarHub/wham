@@ -1,9 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
 using Newtonsoft.Json;
 
-namespace WarHub.ArmouryModel.Workspaces.JsonFolder
+namespace WarHub.ArmouryModel.ProjectSystem
 {
     /// <summary>
     /// Converts multiline strings into arrays of strings.

@@ -1,19 +1,16 @@
 ﻿using System;
 using System.Collections;
-using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.Linq;
 using System.Reflection;
-using System.Text;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 
-namespace WarHub.ArmouryModel.Workspaces.JsonFolder
+namespace WarHub.ArmouryModel.ProjectSystem
 {
     /// <summary>
     /// Ignores "defaultXmlNamespace" property, as well as collections with no elements.
     /// </summary>
-    public class IgnoringEmptyCollectionsContractResolver : CamelCasePropertyNamesContractResolver
+    internal class IgnoringEmptyCollectionsContractResolver : CamelCasePropertyNamesContractResolver
     {
         protected override JsonProperty CreateProperty(MemberInfo member, MemberSerialization memberSerialization)
         {

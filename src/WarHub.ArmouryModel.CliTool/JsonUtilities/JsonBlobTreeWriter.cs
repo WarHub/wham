@@ -5,7 +5,6 @@ using Newtonsoft.Json;
 using Optional;
 using WarHub.ArmouryModel.CliTool.Utilities;
 using WarHub.ArmouryModel.Source;
-using WarHub.ArmouryModel.Workspaces.JsonFolder;
 
 namespace WarHub.ArmouryModel.CliTool.JsonUtilities
 {
@@ -13,13 +12,13 @@ namespace WarHub.ArmouryModel.CliTool.JsonUtilities
     /// Splits every entity into JSON with properties and folders for each collection,
     /// which contain folder for each item.
     /// </summary>
-    public class XmlToJsonWriter
+    internal class JsonBlobTreeWriter
     {
         const string Extension = ".json";
         const string ExtensionPattern = "*.json";
-        public XmlToJsonWriter()
+        public JsonBlobTreeWriter()
         {
-            Serializer = JsonWorkspace.CreateSerializer();
+            Serializer = ProjectSystem.JsonUtilities.CreateSerializer();
         }
 
         private JsonSerializer Serializer { get; }

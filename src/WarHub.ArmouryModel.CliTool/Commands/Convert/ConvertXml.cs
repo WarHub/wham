@@ -47,7 +47,7 @@ namespace WarHub.ArmouryModel.CliTool.Commands.Convert
                 [XmlDocumentKind.Catalogue] = "catalogues"
             }.ToImmutableDictionary();
             var treeConverter = new SourceNodeToJsonBlobTreeConverter();
-            var xmlToJsonWriter = new XmlToJsonWriter();
+            var xmlToJsonWriter = new JsonBlobTreeWriter();
             foreach (var (kind, folderName) in foldersByDocumentKind)  
             {
                 workspace.DocumentsByKind.TryGetValue(kind, out var documents);

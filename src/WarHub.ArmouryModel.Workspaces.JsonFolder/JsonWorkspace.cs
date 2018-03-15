@@ -2,6 +2,7 @@
 using System.IO;
 using System.Text;
 using Newtonsoft.Json;
+using WarHub.ArmouryModel.ProjectSystem;
 
 namespace WarHub.ArmouryModel.Workspaces.JsonFolder
 {
@@ -9,7 +10,7 @@ namespace WarHub.ArmouryModel.Workspaces.JsonFolder
     {
         private JsonWorkspace(DirectoryInfo directory)
         {
-            Serializer = CreateSerializer();
+            Serializer = JsonUtilities.CreateSerializer();
             Directory = directory;
             Root = new JsonFolder(directory, this);
         }
@@ -24,17 +25,6 @@ namespace WarHub.ArmouryModel.Workspaces.JsonFolder
         {
             var dirInfo = new DirectoryInfo(path);
             return new JsonWorkspace(dirInfo);
-        }
-
-        public static JsonSerializer CreateSerializer()
-        {
-            return new JsonSerializer
-            {
-                DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate,
-                Formatting = Formatting.Indented,
-                ContractResolver = new IgnoringEmptyCollectionsContractResolver(),
-                Converters = { new MultilineJsonStringConverter() }
-            };
         }
     }
 }
