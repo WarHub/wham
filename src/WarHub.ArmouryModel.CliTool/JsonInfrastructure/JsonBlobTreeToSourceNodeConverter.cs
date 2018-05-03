@@ -3,7 +3,7 @@ using System.Collections.Immutable;
 using System.Linq;
 using WarHub.ArmouryModel.Source;
 
-namespace WarHub.ArmouryModel.CliTool.JsonUtilities
+namespace WarHub.ArmouryModel.CliTool.JsonInfrastructure
 {
     public class JsonBlobTreeToSourceNodeConverter
     {

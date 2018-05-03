@@ -1,6 +1,6 @@
 ﻿using System.Collections.Immutable;
 
-namespace WarHub.ArmouryModel.CliTool.JsonUtilities
+namespace WarHub.ArmouryModel.CliTool.JsonInfrastructure
 {
     [Record]
     public partial class JsonBlobList

@@ -5,8 +5,10 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using PowerArgs;
-using WarHub.ArmouryModel.CliTool.JsonUtilities;
+using WarHub.ArmouryModel.CliTool.JsonInfrastructure;
+using WarHub.ArmouryModel.ProjectSystem;
 using WarHub.ArmouryModel.Workspaces.BattleScribe;
+using WarHub.ArmouryModel.Workspaces.JsonFolder;
 
 namespace WarHub.ArmouryModel.CliTool.Commands.Convert
 {
@@ -18,7 +20,7 @@ namespace WarHub.ArmouryModel.CliTool.Commands.Convert
         [ArgDescription("File to convert."), ArgExistingFile]
         public string File { get; set; }
 
-        [ArgDescription("Directory into which to save conversion results"), ArgExistingDirectory]
+        [ArgDescription("Directory into which to save conversion results.")]
         public string Destination { get; set; }
 
         public void Main()
@@ -26,6 +28,7 @@ namespace WarHub.ArmouryModel.CliTool.Commands.Convert
             SetupLogger();
             var sourceDir = Source == null ? new DirectoryInfo(".") : new DirectoryInfo(Source);
             Log.Debug("Source resolved to {Source}", sourceDir);
+            var projectConfig = new ConvertedJsonProjectConfigurationProvider().Create(sourceDir.FullName);
             var workspace = File == null
                 ? XmlWorkspace.CreateFromDirectory(sourceDir.FullName)
                 : new XmlWorkspace(sourceDir.GetFiles(File));
@@ -39,13 +42,23 @@ namespace WarHub.ArmouryModel.CliTool.Commands.Convert
                 Log.Verbose("- {Kind} {Name} at {Path}", doc.Kind, doc.Name, doc.Path);
             }
             var destDir = new DirectoryInfo(Destination ?? ".");
-            var src = destDir.CreateSubdirectory("src");
-            Log.Debug("Destination directory resolved to {Destination}", src);
-            var foldersByDocumentKind = new Dictionary<XmlDocumentKind, string>
+            destDir.Create();
+            Log.Debug("Destination directory resolved to {Destination}", destDir);
+
+            var serializer = JsonUtilities.CreateSerializer();
+            var projectConfigFilename = $"{sourceDir.Name}{ProjectConfiguration.FileExtension}";
+            var projectConfigFilepath = Path.Combine(destDir.FullName, projectConfigFilename);
+            using (var projectConfigurationWriter = System.IO.File.CreateText(projectConfigFilepath))
             {
-                [XmlDocumentKind.Gamesystem] = "gamesystems",
-                [XmlDocumentKind.Catalogue] = "catalogues"
-            }.ToImmutableDictionary();
+                serializer.Serialize(projectConfigurationWriter, projectConfig);
+            }
+            Log.Debug("Project file created as {ProjectFile}", projectConfigFilename);
+
+            var foldersByDocumentKind = new Dictionary<XmlDocumentKind, string>
+                {
+                    [XmlDocumentKind.Gamesystem] = projectConfig.GetRefForKind(DirectoryReferenceKind.Gamesystems).Path,
+                    [XmlDocumentKind.Catalogue] = projectConfig.GetRefForKind(DirectoryReferenceKind.Catalogues).Path
+                }.ToImmutableDictionary();
             var treeConverter = new SourceNodeToJsonBlobTreeConverter();
             var xmlToJsonWriter = new JsonBlobTreeWriter();
             foreach (var (kind, folderName) in foldersByDocumentKind)  
@@ -55,7 +68,7 @@ namespace WarHub.ArmouryModel.CliTool.Commands.Convert
                 {
                     continue;
                 }
-                var kindFolder = src.CreateSubdirectory(folderName);
+                var kindFolder = destDir.CreateSubdirectory(folderName);
                 Log.Debug("Converting documents of kind {Kind}, saving into {Folder}", kind, kindFolder);
                 foreach (var document in documents)
                 {
@@ -70,6 +83,20 @@ namespace WarHub.ArmouryModel.CliTool.Commands.Convert
                     xmlToJsonWriter.WriteItem(tree, documentFolder);
                     Log.Verbose("- Saved");
                 }
+            }
+            WaitForReadKey();
+        }
+        
+        private class ConvertedJsonProjectConfigurationProvider : JsonFolderProjectConfigurationProvider
+        {
+            protected override ImmutableArray<DirectoryReference> DefaultDirectoryReferences { get; } =
+                ImmutableArray.Create(
+                    new DirectoryReference(DirectoryReferenceKind.Catalogues, "src/catalogues"),
+                    new DirectoryReference(DirectoryReferenceKind.Gamesystems, "src/gamesystems"));
+
+            protected override ProjectConfiguration CreateDefault(string path)
+            {
+                return new ProjectConfiguration(ToolsetVersion, DefaultDirectoryReferences);
             }
         }
     }

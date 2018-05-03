@@ -1,7 +1,9 @@
 {
   "profiles": {
     "WarHub.ArmouryModel.CliTool": {
-      "commandName": "Project"
+      "commandName": "Project",
+      "commandLineArgs": "convertjson -d wh40k-xml -s wh40k-json -v Verbose -w",
+      "workingDirectory": "D:\\Amadeusz\\BattleScribe\\data"
     }
   }
 }

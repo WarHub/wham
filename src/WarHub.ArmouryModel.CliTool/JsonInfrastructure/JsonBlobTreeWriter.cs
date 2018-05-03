@@ -6,7 +6,7 @@ using Optional;
 using WarHub.ArmouryModel.CliTool.Utilities;
 using WarHub.ArmouryModel.Source;
 
-namespace WarHub.ArmouryModel.CliTool.JsonUtilities
+namespace WarHub.ArmouryModel.CliTool.JsonInfrastructure
 {
     /// <summary>
     /// Splits every entity into JSON with properties and folders for each collection,

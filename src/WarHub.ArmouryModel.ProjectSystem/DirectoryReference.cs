@@ -10,5 +10,10 @@ namespace WarHub.ArmouryModel.ProjectSystem
 
         [JsonProperty("path")]
         public string Path { get; }
+
+        public override string ToString()
+        {
+            return $"{Kind}@{Path}";
+        }
     }
 }

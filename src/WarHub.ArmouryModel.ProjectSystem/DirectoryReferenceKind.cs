@@ -10,7 +10,7 @@ namespace WarHub.ArmouryModel.ProjectSystem
         [JsonProperty("catalogues")]
         Catalogues,
 
-        [JsonProperty("gameSystems")]
-        GameSystems
+        [JsonProperty("gamesystems")]
+        Gamesystems
     }
 }

@@ -5,7 +5,7 @@ using System.IO;
 using System.Linq;
 using Optional;
 using PowerArgs;
-using WarHub.ArmouryModel.CliTool.JsonUtilities;
+using WarHub.ArmouryModel.CliTool.JsonInfrastructure;
 using WarHub.ArmouryModel.Source;
 using WarHub.ArmouryModel.Source.BattleScribe;
 using WarHub.ArmouryModel.Workspaces.BattleScribe;
@@ -24,23 +24,24 @@ namespace WarHub.ArmouryModel.CliTool.Commands.Convert
         public void Main()
         {
             SetupLogger();
-            Log.Debug("Source resolved to {Source}", Source);
-            var workspace = JsonWorkspace.CreateFromDirectory(Source);
+            var workspace = JsonWorkspace.CreateFromPath(Source);
+            Log.Debug("Source resolved to {RootPath}", workspace.Root.Path);
             var destDir = new DirectoryInfo(Destination);
             Log.Debug("Destination resolved to {Destination}", destDir);
             destDir.Create();
-            var reviver = new JsonBlobTreeReviver();
+            var jsonBlobTreeVisitor = new JsonBlobTreeVisitor();
             var converter = new JsonBlobTreeToSourceNodeConverter();
             var serializer = new BattleScribeXmlSerializer();
             Log.Information("Converting...");
-            foreach (var sourceKindFolder in workspace.Root.GetFolders())
+            foreach (var sourceDirRef in workspace.ProjectConfiguration.SourceDirectories)
             {
-                Log.Debug("Converting JSON trees in {KindFolder}", sourceKindFolder.Path);
-                foreach (var sourceTreeFolder in sourceKindFolder.GetFolders())
+                Log.Debug("Converting JSON trees in SourceDir {DirectoryReference}", sourceDirRef);
+                var subfolderPath = Path.Combine(workspace.Root.Path, sourceDirRef.Path);
+                foreach (var sourceTreeFolder in GetSubfolders())
                 {
-                    Log.Debug("Converting JSON tree @ {TreeFolderPath}", sourceTreeFolder.Path);
+                    Log.Debug("Converting JSON tree '{SubfolderName}' from {DirRef}", sourceTreeFolder.Name, sourceDirRef);
                     Log.Verbose("- Loading JSON tree...");
-                    var blobItem = reviver.VisitItemFolder(sourceTreeFolder);
+                    var blobItem = jsonBlobTreeVisitor.VisitItemFolder(sourceTreeFolder);
                     Log.Verbose("- Loading finished. Converting to monolitic model...");
                     var node = converter.ParseItem(blobItem);
                     Log.Verbose("- Conversion finished. Saving XML file...");
@@ -52,8 +53,16 @@ namespace WarHub.ArmouryModel.CliTool.Commands.Convert
                     }
                     Log.Verbose("- Saved.");
                 }
+                IEnumerable<JsonFolder> GetSubfolders()
+                {
+                    return Directory
+                       .EnumerateDirectories(subfolderPath)
+                       .Select(x => new JsonFolder(new DirectoryInfo(x), workspace));
+                }
             }
             Log.Information("Finished converting.");
+
+            WaitForReadKey();
 
             (Action<Stream> serialize, string extension) GetXmlKindUtilities(SourceNode node)
             {

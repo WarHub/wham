@@ -3,9 +3,9 @@ using System.Linq;
 using WarHub.ArmouryModel.Source;
 using WarHub.ArmouryModel.Workspaces.JsonFolder;
 
-namespace WarHub.ArmouryModel.CliTool.JsonUtilities
+namespace WarHub.ArmouryModel.CliTool.JsonInfrastructure
 {
-    public class JsonBlobTreeReviver
+    public class JsonBlobTreeVisitor
     {
         public JsonBlobItem VisitItemFolder(JsonFolder folder)
         {

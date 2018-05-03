@@ -5,7 +5,7 @@ using System.Text;
 using MoreLinq;
 using WarHub.ArmouryModel.Source;
 
-namespace WarHub.ArmouryModel.CliTool.JsonUtilities
+namespace WarHub.ArmouryModel.CliTool.JsonInfrastructure
 {
 
     public class SourceNodeToJsonBlobTreeConverter : SourceVisitor<JsonBlobItem>

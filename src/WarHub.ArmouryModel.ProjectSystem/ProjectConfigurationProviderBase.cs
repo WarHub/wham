@@ -15,6 +15,7 @@ namespace WarHub.ArmouryModel.ProjectSystem
 
         protected virtual ProjectConfiguration CreateCore(string path)
         {
+            // TODO version check
             var rawConfiguration = CreateRaw();
             var sanitized = SanitizeConfiguration(rawConfiguration);
             return sanitized;
