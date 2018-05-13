@@ -8,10 +8,18 @@ namespace WarHub.ArmouryModel.ProjectSystem
     {
         public const string FileExtension = ".whamproj";
 
+        public const string DefaultOutputPath = "artifacts";
+
         [JsonProperty("toolset")]
         public string ToolsetVersion { get; }
 
         [JsonProperty("src")]
         public ImmutableArray<DirectoryReference> SourceDirectories { get; }
+
+        [JsonProperty("out")]
+        public string OutputPath { get; }
+
+        [JsonProperty("format")]
+        public ProjectFormatProviderType FormatProvider { get; }
     }
 }

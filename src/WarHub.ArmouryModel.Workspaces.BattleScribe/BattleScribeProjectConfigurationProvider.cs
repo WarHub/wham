@@ -11,16 +11,14 @@ namespace WarHub.ArmouryModel.Workspaces.BattleScribe
 
         protected override ProjectConfiguration CreateDefault(string path)
         {
-            return new ProjectConfiguration(ToolsetVersion, DefaultDirectoryReferences);
+            return new ProjectConfiguration(
+                ToolsetVersion,
+                DefaultDirectoryReferences,
+                ProjectConfiguration.DefaultOutputPath,
+                ProjectFormatProviderType.XmlCatalogues);
         }
 
         protected override ImmutableArray<DirectoryReference> DefaultDirectoryReferences { get; } =
             ImmutableArray.Create(new DirectoryReference(DirectoryReferenceKind.All, DefaultSourcePath));
-
-        protected override ProjectConfiguration SanitizeConfiguration(ProjectConfiguration raw)
-        {
-            return raw.Update(raw.ToolsetVersion ?? ToolsetVersion,
-                !raw.SourceDirectories.IsEmpty ? raw.SourceDirectories : DefaultDirectoryReferences);
-        }
     }
 }

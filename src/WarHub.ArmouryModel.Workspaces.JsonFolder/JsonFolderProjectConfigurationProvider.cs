@@ -12,7 +12,11 @@ namespace WarHub.ArmouryModel.Workspaces.JsonFolder
 
         protected override ProjectConfiguration CreateDefault(string path)
         {
-            return new ProjectConfiguration(ToolsetVersion, DefaultDirectoryReferences);
+            return new ProjectConfiguration(
+                ToolsetVersion,
+                DefaultDirectoryReferences,
+                ProjectConfiguration.DefaultOutputPath,
+                ProjectFormatProviderType.JsonFolders);
         }
 
         protected override ImmutableArray<DirectoryReference> DefaultDirectoryReferences { get; } =

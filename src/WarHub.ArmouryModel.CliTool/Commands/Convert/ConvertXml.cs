@@ -96,7 +96,7 @@ namespace WarHub.ArmouryModel.CliTool.Commands.Convert
 
             protected override ProjectConfiguration CreateDefault(string path)
             {
-                return new ProjectConfiguration(ToolsetVersion, DefaultDirectoryReferences);
+                return base.CreateDefault(path).WithSourceDirectories(DefaultDirectoryReferences);
             }
         }
     }

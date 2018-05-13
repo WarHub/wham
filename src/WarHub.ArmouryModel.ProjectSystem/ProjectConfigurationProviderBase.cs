@@ -49,8 +49,11 @@ namespace WarHub.ArmouryModel.ProjectSystem
 
         protected virtual ProjectConfiguration SanitizeConfiguration(ProjectConfiguration raw)
         {
-            return raw.Update(raw.ToolsetVersion ?? ToolsetVersion,
-                !raw.SourceDirectories.IsEmpty ? raw.SourceDirectories : DefaultDirectoryReferences);
+            return raw.Update(
+                raw.ToolsetVersion ?? ToolsetVersion,
+                !raw.SourceDirectories.IsDefaultOrEmpty ? raw.SourceDirectories : DefaultDirectoryReferences,
+                string.IsNullOrWhiteSpace(raw.OutputPath) ? ProjectConfiguration.DefaultOutputPath : raw.OutputPath,
+                raw.FormatProvider);
         }
     }
 }
