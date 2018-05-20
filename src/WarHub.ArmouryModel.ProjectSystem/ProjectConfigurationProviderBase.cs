@@ -4,9 +4,14 @@ using Newtonsoft.Json;
 
 namespace WarHub.ArmouryModel.ProjectSystem
 {
+    public class ProjectToolset
+    {
+        public static string Version { get; } = "v0.0-alpha";
+    }
+
     public abstract class ProjectConfigurationProviderBase : IProjectConfigurationProvider
     {
-        public string ToolsetVersion { get; } = "v0.0-alpha";
+        public string CurrentToolsetVersion => ProjectToolset.Version;
 
         public ProjectConfiguration Create(string path)
         {
@@ -50,7 +55,7 @@ namespace WarHub.ArmouryModel.ProjectSystem
         protected virtual ProjectConfiguration SanitizeConfiguration(ProjectConfiguration raw)
         {
             return raw.Update(
-                raw.ToolsetVersion ?? ToolsetVersion,
+                raw.ToolsetVersion ?? CurrentToolsetVersion,
                 !raw.SourceDirectories.IsDefaultOrEmpty ? raw.SourceDirectories : DefaultDirectoryReferences,
                 string.IsNullOrWhiteSpace(raw.OutputPath) ? ProjectConfiguration.DefaultOutputPath : raw.OutputPath,
                 raw.FormatProvider);

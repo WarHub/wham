@@ -22,7 +22,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
         {
             SemanticModel = context.SemanticModel;
             Compilation = context.Compilation;
-            TypeDeclaration = (ClassDeclarationSyntax)context.ProcessingMember;
+            TypeDeclaration = (ClassDeclarationSyntax)context.ProcessingNode;
             CancellationToken = cancellationToken;
             UpdateNamedTypeSymbolCache(ref ImmutableArraySymbolCache, Compilation);
             UpdateNamedTypeSymbolCache(ref WhamNodeCoreAttributeSymbolCache, Compilation);

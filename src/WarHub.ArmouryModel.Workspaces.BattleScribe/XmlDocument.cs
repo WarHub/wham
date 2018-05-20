@@ -1,28 +1,26 @@
-﻿using System;
-using System.IO;
-using System.IO.Compression;
+﻿using System.IO;
+using WarHub.ArmouryModel.ProjectSystem;
 using WarHub.ArmouryModel.Source;
-using WarHub.ArmouryModel.Source.BattleScribe;
 
 namespace WarHub.ArmouryModel.Workspaces.BattleScribe
 {
     public class XmlDocument
     {
-        private readonly FileInfo file;
+        private readonly IDatafileInfo _datafileInfo;
 
-        public XmlDocument(XmlDocumentKind key, FileInfo file, XmlWorkspace workspace)
+        public XmlDocument(XmlDocumentKind key, IDatafileInfo datafileInfo, XmlWorkspace workspace)
         {
             Kind = key;
-            this.file = file;
+            _datafileInfo = datafileInfo;
             Workspace = workspace;
-            Path = file.FullName;
-            Name = file.Name;
+            Filepath = datafileInfo.Filepath;
+            Name = Path.GetExtension(Filepath);
         }
 
         /// <summary>
         /// Gets the filepath of this document.
         /// </summary>
-        public string Path { get; }
+        public string Filepath { get; }
 
         /// <summary>
         /// Gets the filename without file extension.
@@ -33,8 +31,11 @@ namespace WarHub.ArmouryModel.Workspaces.BattleScribe
         /// Gets the kind of this document.
         /// </summary>
         public XmlDocumentKind Kind { get; }
+
+        /// <summary>
+        /// Gets the parent workspace of this document.
+        /// </summary>
         public XmlWorkspace Workspace { get; }
-        private WeakReference<SourceNode> WeakRoot { get; } = new WeakReference<SourceNode>(null);
 
         /// <summary>
         /// Gets the root node of the document. May cause deserialization.
@@ -42,61 +43,7 @@ namespace WarHub.ArmouryModel.Workspaces.BattleScribe
         /// <returns></returns>
         public SourceNode GetRoot()
         {
-            return GetRootCore();
-        }
-
-        private SourceNode GetRootCore()
-        {
-            if (WeakRoot.TryGetTarget(out var root))
-            {
-                return root;
-            }
-            root = LoadRoot();
-            WeakRoot.SetTarget(root);
-            return root;
-        }
-
-        private SourceNode LoadRoot()
-        {
-            switch (Kind)
-            {
-                case XmlDocumentKind.Gamesystem:
-                    return FromUnzippedStream(BattleScribeXml.LoadGamesystem);
-                case XmlDocumentKind.Catalogue:
-                    return FromUnzippedStream(BattleScribeXml.LoadCatalogue);
-                case XmlDocumentKind.Roster:
-                    return FromUnzippedStream(BattleScribeXml.LoadRoster);
-                case XmlDocumentKind.DataIndex:
-                    return FromUnzippedStream(BattleScribeXml.LoadDataIndex);
-                case XmlDocumentKind.Unknown:
-                default:
-                    throw new InvalidOperationException(
-                        $"Cannot load root for {nameof(XmlDocument)} of {nameof(Kind)} {Kind}");
-            }
-
-            SourceNode FromUnzippedStream(Func<Stream, SourceNode> deserialize)
-            {
-                using (var fileStream = File.OpenRead(Path))
-                {
-                    if (!XmlFileExtensions.ZippedExtensions.Contains(file.Extension))
-                    {
-                        return deserialize(fileStream);
-                    }
-                    using (var archive = new ZipArchive(fileStream))
-                    {
-                        if (archive.Entries.Count != 1)
-                        {
-                            throw new InvalidOperationException(
-                                $"File is not a correct BattleScribe ZIP archive," +
-                                $" contains {archive.Entries.Count} entries, expected 1: '{Path}'");
-                        }
-                        using (var entryStream = archive.Entries[0].Open())
-                        {
-                            return deserialize(entryStream);
-                        }
-                    }
-                }
-            }
+            return _datafileInfo.Data;
         }
     }
 }

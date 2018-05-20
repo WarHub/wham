@@ -29,7 +29,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
             var generatedMembers = SyntaxFactory.List<MemberDeclarationSyntax>();
             try
             {
-                if (context.ProcessingMember is ClassDeclarationSyntax classDeclaration)
+                if (context.ProcessingNode is ClassDeclarationSyntax classDeclaration)
                 {
                     var descriptorBuilder = new CoreDescriptorBuilder(context, cancellationToken);
                     var descriptor = descriptorBuilder.CreateDescriptor();
@@ -47,7 +47,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                 progress.Report(
                     Diagnostic.Create(
                         ExceptionDiagDescriptor,
-                        context.ProcessingMember.GetLocation(),
+                        context.ProcessingNode.GetLocation(),
                         messageArgs: e.ToString()));
             }
             return Task.FromResult(generatedMembers);

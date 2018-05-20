@@ -12,10 +12,7 @@ namespace WarHub.ArmouryModel.Source.BattleScribe.Tests
         [Trait("XmlSerialization", "ReadWriteTest")]
         public void ReadWriteGamesystem()
         {
-            ReadWriteXml(
-                XmlTestData.GamesystemFilename,
-                (n,s) => (n as GamesystemNode).Serialize(s),
-                s => s.DeserializeGamesystem());
+            ReadWriteXml(XmlTestData.GamesystemFilename, s => s.DeserializeGamesystem());
         }
 
         [Theory]
@@ -24,23 +21,17 @@ namespace WarHub.ArmouryModel.Source.BattleScribe.Tests
         [InlineData(XmlTestData.Catalogue2Filename)]
         public void ReadWriteCatalogue(string filename)
         {
-            ReadWriteXml(
-                filename,
-                (n, s) => (n as CatalogueNode).Serialize(s),
-                s => s.DeserializeCatalogue());
+            ReadWriteXml(filename, s => s.DeserializeCatalogue());
         }
 
         [Fact]
         [Trait("XmlSerialization", "ReadWriteTest")]
         public void ReadWriteRoster()
         {
-            ReadWriteXml(
-                XmlTestData.RosterFilename,
-                (n, s) => (n as RosterNode).Serialize(s),
-                s => s.DeserializeRoster());
+            ReadWriteXml(XmlTestData.RosterFilename, s => s.DeserializeRoster());
         }
 
-        private static void ReadWriteXml(string filename, Action<SourceNode, Stream> serialize, Func<Stream, SourceNode> deserialize)
+        private static void ReadWriteXml(string filename, Func<Stream, SourceNode> deserialize)
         {
             var input = Path.Combine(XmlTestData.InputDir, filename);
             var output = Path.Combine(XmlTestData.OutputDir, filename);
@@ -61,7 +52,7 @@ namespace WarHub.ArmouryModel.Source.BattleScribe.Tests
                 Assert.True(Directory.Exists(XmlTestData.OutputDir));
                 using (var stream = File.Create(output))
                 {
-                    serialize(node, stream);
+                    node.Serialize(stream);
                 }
             }
             bool AreXmlEqual()

@@ -10,44 +10,47 @@ namespace WarHub.ArmouryModel.Source.BattleScribe
     {
         private static Lazy<BattleScribeXmlSerializer> BSSerializer { get; } = new Lazy<BattleScribeXmlSerializer>();
 
+        private static BattleScribeXmlSerializer Serializer => BSSerializer.Value;
+
         public static GamesystemNode DeserializeGamesystem(this Stream stream)
         {
-            return BSSerializer.Value.DeserializeGamesystem(stream);
+            return Serializer.DeserializeGamesystem(stream);
         }
 
         public static CatalogueNode DeserializeCatalogue(this Stream stream)
         {
-            return BSSerializer.Value.DeserializeCatalogue(stream);
+            return Serializer.DeserializeCatalogue(stream);
         }
 
         public static RosterNode DeserializeRoster(this Stream stream)
         {
-            return BSSerializer.Value.DeserializeRoster(stream);
+            return Serializer.DeserializeRoster(stream);
         }
 
         public static DataIndexNode DeserializeDataIndex(this Stream stream)
         {
-            return BSSerializer.Value.DeserializeDataIndex(stream);
+            return Serializer.DeserializeDataIndex(stream);
         }
 
-        public static void Serialize(this GamesystemNode node, Stream stream)
+        public static void Serialize(this SourceNode node, Stream stream)
         {
-            BSSerializer.Value.SerializeGamesystem(node, stream);
-        }
-
-        public static void Serialize(this CatalogueNode node, Stream stream)
-        {
-            BSSerializer.Value.SerializeCatalogue(node, stream);
-        }
-
-        public static void Serialize(this RosterNode node, Stream stream)
-        {
-            BSSerializer.Value.SerializeRoster(node, stream);
-        }
-
-        public static void Serialize(this DataIndexNode node, Stream stream)
-        {
-            BSSerializer.Value.SerializeDataIndex(node, stream);
+            switch (node.Kind)
+            {
+                case SourceKind.Gamesystem:
+                    Serializer.SerializeGamesystem((GamesystemNode)node, stream);
+                    return;
+                case SourceKind.Catalogue:
+                    Serializer.SerializeCatalogue((CatalogueNode)node, stream);
+                    return;
+                case SourceKind.Roster:
+                    Serializer.SerializeRoster((RosterNode)node, stream);
+                    return;
+                case SourceKind.DataIndex:
+                    Serializer.SerializeDataIndex((DataIndexNode)node, stream);
+                    return;
+                default:
+                    throw new ArgumentException($"{nameof(node)} type's ({node?.GetType()}) serialization is not supported.");
+            }
         }
 
         public static GamesystemCore.FastSerializationProxy GetSerializationProxy(this GamesystemNode node)

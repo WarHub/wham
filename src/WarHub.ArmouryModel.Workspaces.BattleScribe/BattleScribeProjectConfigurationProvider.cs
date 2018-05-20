@@ -12,7 +12,7 @@ namespace WarHub.ArmouryModel.Workspaces.BattleScribe
         protected override ProjectConfiguration CreateDefault(string path)
         {
             return new ProjectConfiguration(
-                ToolsetVersion,
+                CurrentToolsetVersion,
                 DefaultDirectoryReferences,
                 ProjectConfiguration.DefaultOutputPath,
                 ProjectFormatProviderType.XmlCatalogues);
