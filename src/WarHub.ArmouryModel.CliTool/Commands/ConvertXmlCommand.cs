@@ -8,9 +8,9 @@ using WarHub.ArmouryModel.ProjectSystem;
 using WarHub.ArmouryModel.Workspaces.BattleScribe;
 using WarHub.ArmouryModel.Workspaces.JsonFolder;
 
-namespace WarHub.ArmouryModel.CliTool.Commands.Convert
+namespace WarHub.ArmouryModel.CliTool.Commands
 {
-    public class ConvertXml : CommandBase
+    public class ConvertXmlCommand : CommandBase
     {
         [ArgDescription("Directory in which to look for convertible files."), ArgExistingDirectory]
         public string Source { get; set; }

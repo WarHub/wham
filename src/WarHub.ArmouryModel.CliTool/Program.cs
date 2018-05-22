@@ -1,6 +1,6 @@
 ﻿using System;
 using PowerArgs;
-using WarHub.ArmouryModel.CliTool.Commands.Convert;
+using WarHub.ArmouryModel.CliTool.Commands;
 
 namespace WarHub.ArmouryModel.CliTool
 {
@@ -16,9 +16,12 @@ namespace WarHub.ArmouryModel.CliTool
     public class CliActions
     {
         [ArgActionMethod, ArgDescription("Converts BattleScribe XML files into JSON directory structure.")]
-        public void ConvertXml(ConvertXml args) => args.Main();
+        public void ConvertXml(ConvertXmlCommand args) => args.Main();
 
         [ArgActionMethod, ArgDescription("Converts JSON directory structure into BattleScribe XML files.")]
-        public void ConvertJson(ConvertJson args) => args.Main();
+        public void ConvertJson(ConvertJsonCommand args) => args.Main();
+
+        [ArgActionMethod, ArgDescription("Publishes given workspace into multiple available formats, e.g. .bsr file.")]
+        public void Publish(PublishCommand args) => args.Main();
     }
 }

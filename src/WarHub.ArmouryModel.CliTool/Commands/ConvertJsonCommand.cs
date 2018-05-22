@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
-using Optional;
 using PowerArgs;
 using WarHub.ArmouryModel.CliTool.JsonInfrastructure;
 using WarHub.ArmouryModel.Source;
@@ -11,9 +9,9 @@ using WarHub.ArmouryModel.Source.BattleScribe;
 using WarHub.ArmouryModel.Workspaces.BattleScribe;
 using WarHub.ArmouryModel.Workspaces.JsonFolder;
 
-namespace WarHub.ArmouryModel.CliTool.Commands.Convert
+namespace WarHub.ArmouryModel.CliTool.Commands
 {
-    public class ConvertJson : CommandBase
+    public class ConvertJsonCommand : CommandBase
     {
         [ArgDescription("Directory in which to look for convertible files."), ArgExistingDirectory, ArgRequired]
         public string Source { get; set; }
