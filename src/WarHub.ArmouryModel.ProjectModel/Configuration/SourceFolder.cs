@@ -1,12 +1,12 @@
 ﻿using Newtonsoft.Json;
 
-namespace WarHub.ArmouryModel.ProjectSystem
+namespace WarHub.ArmouryModel.ProjectModel
 {
     [Record]
-    public partial class DirectoryReference
+    public partial class SourceFolder
     {
         [JsonProperty("kind")]
-        public DirectoryReferenceKind Kind { get; }
+        public SourceFolderKind Kind { get; }
 
         [JsonProperty("path")]
         public string Path { get; }

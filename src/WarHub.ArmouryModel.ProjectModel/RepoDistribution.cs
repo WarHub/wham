@@ -4,7 +4,7 @@ using System.Collections.Immutable;
 using System.Text;
 using WarHub.ArmouryModel.Source;
 
-namespace WarHub.ArmouryModel.ProjectSystem
+namespace WarHub.ArmouryModel.ProjectModel
 {
     /// <summary>
     /// This represents contents of the <c>.bsr</c> file.

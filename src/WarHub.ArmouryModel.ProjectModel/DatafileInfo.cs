@@ -1,6 +1,6 @@
 ﻿using WarHub.ArmouryModel.Source;
 
-namespace WarHub.ArmouryModel.ProjectSystem
+namespace WarHub.ArmouryModel.ProjectModel
 {
     [Record]
     public partial class DatafileInfo<TData> : IDatafileInfo<TData>

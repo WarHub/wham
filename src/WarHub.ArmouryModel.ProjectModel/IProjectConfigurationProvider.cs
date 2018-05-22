@@ -1,4 +1,4 @@
-﻿namespace WarHub.ArmouryModel.ProjectSystem
+﻿namespace WarHub.ArmouryModel.ProjectModel
 {
     public interface IProjectConfigurationProvider
     {

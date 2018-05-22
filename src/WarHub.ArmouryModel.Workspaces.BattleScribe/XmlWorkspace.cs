@@ -3,7 +3,7 @@ using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
 using MoreLinq;
-using WarHub.ArmouryModel.ProjectSystem;
+using WarHub.ArmouryModel.ProjectModel;
 using WarHub.ArmouryModel.Source;
 
 namespace WarHub.ArmouryModel.Workspaces.BattleScribe

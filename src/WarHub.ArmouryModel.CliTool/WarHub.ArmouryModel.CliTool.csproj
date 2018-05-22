@@ -19,6 +19,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\WarHub.ArmouryModel.ProjectModel\WarHub.ArmouryModel.ProjectModel.csproj" />
     <ProjectReference Include="..\WarHub.ArmouryModel.Source\WarHub.ArmouryModel.Source.csproj" />
     <ProjectReference Include="..\WarHub.ArmouryModel.Workspaces.BattleScribe\WarHub.ArmouryModel.Workspaces.BattleScribe.csproj" />
     <ProjectReference Include="..\WarHub.ArmouryModel.Workspaces.JsonFolder\WarHub.ArmouryModel.Workspaces.JsonFolder.csproj" />

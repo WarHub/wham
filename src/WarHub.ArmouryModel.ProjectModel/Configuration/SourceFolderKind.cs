@@ -1,8 +1,8 @@
 ﻿using Newtonsoft.Json;
 
-namespace WarHub.ArmouryModel.ProjectSystem
+namespace WarHub.ArmouryModel.ProjectModel
 {
-    public enum DirectoryReferenceKind
+    public enum SourceFolderKind
     {
         [JsonProperty("all")]
         All,

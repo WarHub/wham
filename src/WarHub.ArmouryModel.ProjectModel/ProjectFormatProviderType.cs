@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json;
 
-namespace WarHub.ArmouryModel.ProjectSystem
+namespace WarHub.ArmouryModel.ProjectModel
 {
     public enum ProjectFormatProviderType
     {

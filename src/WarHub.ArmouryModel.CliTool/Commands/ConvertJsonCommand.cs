@@ -19,9 +19,8 @@ namespace WarHub.ArmouryModel.CliTool.Commands
         [ArgDescription("Directory into which to save conversion results"), ArgRequired]
         public string Destination { get; set; }
 
-        public void Main()
+        protected override void MainCore()
         {
-            SetupLogger();
             var workspace = JsonWorkspace.CreateFromPath(Source);
             Log.Debug("Source resolved to {RootPath}", workspace.Root.Path);
             var destDir = new DirectoryInfo(Destination);
@@ -59,8 +58,6 @@ namespace WarHub.ArmouryModel.CliTool.Commands
                 }
             }
             Log.Information("Finished converting.");
-
-            WaitForReadKey();
 
             (Action<Stream> serialize, string extension) GetXmlKindUtilities(SourceNode node)
             {

@@ -4,7 +4,7 @@ using System.IO;
 using System.Linq;
 using PowerArgs;
 using WarHub.ArmouryModel.CliTool.JsonInfrastructure;
-using WarHub.ArmouryModel.ProjectSystem;
+using WarHub.ArmouryModel.ProjectModel;
 using WarHub.ArmouryModel.Workspaces.BattleScribe;
 using WarHub.ArmouryModel.Workspaces.JsonFolder;
 
@@ -21,9 +21,8 @@ namespace WarHub.ArmouryModel.CliTool.Commands
         [ArgDescription("Directory into which to save conversion results.")]
         public string Destination { get; set; }
 
-        public void Main()
+        protected override void MainCore()
         {
-            SetupLogger();
             var sourceDir = ResolveSourceDir();
             var projectConfig = CreateProjectConfig(sourceDir);
             var workspace = CreateWorkspace(sourceDir);
@@ -32,8 +31,8 @@ namespace WarHub.ArmouryModel.CliTool.Commands
 
             var foldersByDocumentKind = new Dictionary<XmlDocumentKind, string>
             {
-                [XmlDocumentKind.Gamesystem] = projectConfig.GetRefForKind(DirectoryReferenceKind.Gamesystems).Path,
-                [XmlDocumentKind.Catalogue] = projectConfig.GetRefForKind(DirectoryReferenceKind.Catalogues).Path
+                [XmlDocumentKind.Gamesystem] = projectConfig.GetRefForKind(SourceFolderKind.Gamesystems).Path,
+                [XmlDocumentKind.Catalogue] = projectConfig.GetRefForKind(SourceFolderKind.Catalogues).Path
             }.ToImmutableDictionary();
             var treeConverter = new SourceNodeToJsonBlobTreeConverter();
             var xmlToJsonWriter = new JsonBlobTreeWriter();
@@ -60,7 +59,6 @@ namespace WarHub.ArmouryModel.CliTool.Commands
                     Log.Debug("- Saved");
                 }
             }
-            WaitForReadKey();
         }
 
         private void SaveProjectConfig(DirectoryInfo sourceDir, ProjectConfiguration projectConfig, DirectoryInfo destDir)
@@ -115,10 +113,10 @@ namespace WarHub.ArmouryModel.CliTool.Commands
 
         private class ConvertedJsonProjectConfigurationProvider : JsonFolderProjectConfigurationProvider
         {
-            protected override ImmutableArray<DirectoryReference> DefaultDirectoryReferences { get; } =
+            protected override ImmutableArray<SourceFolder> DefaultDirectoryReferences { get; } =
                 ImmutableArray.Create(
-                    new DirectoryReference(DirectoryReferenceKind.Catalogues, "src/catalogues"),
-                    new DirectoryReference(DirectoryReferenceKind.Gamesystems, "src/gamesystems"));
+                    new SourceFolder(SourceFolderKind.Catalogues, "src/catalogues"),
+                    new SourceFolder(SourceFolderKind.Gamesystems, "src/gamesystems"));
 
             protected override ProjectConfiguration CreateDefault(string path)
             {

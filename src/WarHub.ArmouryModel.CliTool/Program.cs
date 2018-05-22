@@ -12,16 +12,19 @@ namespace WarHub.ArmouryModel.CliTool
         }
     }
 
-    [ArgExceptionBehavior(ArgExceptionPolicy.StandardExceptionHandling)]
+    [ArgExceptionBehavior(ArgExceptionPolicy.StandardExceptionHandling), ArgEnforceCase]
     public class CliActions
     {
-        [ArgActionMethod, ArgDescription("Converts BattleScribe XML files into JSON directory structure.")]
+        [ArgActionMethod, ArgShortcut("convertxml")]
+        [ArgDescription("Converts BattleScribe XML files into JSON directory structure.")]
         public void ConvertXml(ConvertXmlCommand args) => args.Main();
 
-        [ArgActionMethod, ArgDescription("Converts JSON directory structure into BattleScribe XML files.")]
+        [ArgActionMethod, ArgShortcut("convertjson")]
+        [ArgDescription("Converts JSON directory structure into BattleScribe XML files.")]
         public void ConvertJson(ConvertJsonCommand args) => args.Main();
 
-        [ArgActionMethod, ArgDescription("Publishes given workspace into multiple available formats, e.g. .bsr file.")]
+        [ArgActionMethod, ArgShortcut("publish")]
+        [ArgDescription("Publishes given workspace into multiple available formats, e.g. .bsr file.")]
         public void Publish(PublishCommand args) => args.Main();
     }
 }

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
-using WarHub.ArmouryModel.ProjectSystem;
+using WarHub.ArmouryModel.ProjectModel;
 
 namespace WarHub.ArmouryModel.Workspaces.BattleScribe
 {
@@ -18,7 +18,7 @@ namespace WarHub.ArmouryModel.Workspaces.BattleScribe
                 ProjectFormatProviderType.XmlCatalogues);
         }
 
-        protected override ImmutableArray<DirectoryReference> DefaultDirectoryReferences { get; } =
-            ImmutableArray.Create(new DirectoryReference(DirectoryReferenceKind.All, DefaultSourcePath));
+        protected override ImmutableArray<SourceFolder> DefaultDirectoryReferences { get; } =
+            ImmutableArray.Create(new SourceFolder(SourceFolderKind.All, DefaultSourcePath));
     }
 }

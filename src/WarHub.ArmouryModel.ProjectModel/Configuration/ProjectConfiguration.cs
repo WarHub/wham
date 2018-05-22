@@ -1,7 +1,7 @@
 ﻿using System.Collections.Immutable;
 using Newtonsoft.Json;
 
-namespace WarHub.ArmouryModel.ProjectSystem
+namespace WarHub.ArmouryModel.ProjectModel
 {
     [Record]
     public partial class ProjectConfiguration
@@ -14,7 +14,7 @@ namespace WarHub.ArmouryModel.ProjectSystem
         public string ToolsetVersion { get; }
 
         [JsonProperty("src")]
-        public ImmutableArray<DirectoryReference> SourceDirectories { get; }
+        public ImmutableArray<SourceFolder> SourceDirectories { get; }
 
         [JsonProperty("out")]
         public string OutputPath { get; }

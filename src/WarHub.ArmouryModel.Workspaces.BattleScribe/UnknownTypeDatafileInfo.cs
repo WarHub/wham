@@ -1,4 +1,4 @@
-﻿using WarHub.ArmouryModel.ProjectSystem;
+﻿using WarHub.ArmouryModel.ProjectModel;
 using WarHub.ArmouryModel.Source;
 
 namespace WarHub.ArmouryModel.Workspaces.BattleScribe

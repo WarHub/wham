@@ -2,7 +2,7 @@
 using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
-using WarHub.ArmouryModel.ProjectSystem;
+using WarHub.ArmouryModel.ProjectModel;
 using WarHub.ArmouryModel.Source;
 using Xunit;
 

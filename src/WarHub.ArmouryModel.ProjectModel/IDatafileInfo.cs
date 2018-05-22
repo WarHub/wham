@@ -1,6 +1,6 @@
 ﻿using WarHub.ArmouryModel.Source;
 
-namespace WarHub.ArmouryModel.ProjectSystem
+namespace WarHub.ArmouryModel.ProjectModel
 {
     public interface IDatafileInfo
     {

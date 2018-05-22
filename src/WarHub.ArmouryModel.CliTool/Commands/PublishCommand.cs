@@ -6,7 +6,7 @@ using System.IO;
 using System.Linq;
 using PowerArgs;
 using WarHub.ArmouryModel.CliTool.JsonInfrastructure;
-using WarHub.ArmouryModel.ProjectSystem;
+using WarHub.ArmouryModel.ProjectModel;
 using WarHub.ArmouryModel.Workspaces.BattleScribe;
 using WarHub.ArmouryModel.Workspaces.JsonFolder;
 
@@ -20,11 +20,9 @@ namespace WarHub.ArmouryModel.CliTool.Commands
         [ArgDescription("File or directory to save artifacts to.")]
         public string Destination { get; set; }
 
-        public void Main()
+        protected override void MainCore()
         {
-            SetupLogger();
-
-
+            // TODO
         }
     }
 }

@@ -2,7 +2,7 @@
 using System.IO;
 using Newtonsoft.Json;
 
-namespace WarHub.ArmouryModel.ProjectSystem
+namespace WarHub.ArmouryModel.ProjectModel
 {
     public class ProjectToolset
     {
@@ -50,7 +50,7 @@ namespace WarHub.ArmouryModel.ProjectSystem
 
         protected abstract ProjectConfiguration CreateDefault(string path);
 
-        protected abstract ImmutableArray<DirectoryReference> DefaultDirectoryReferences { get; }
+        protected abstract ImmutableArray<SourceFolder> DefaultDirectoryReferences { get; }
 
         protected virtual ProjectConfiguration SanitizeConfiguration(ProjectConfiguration raw)
         {

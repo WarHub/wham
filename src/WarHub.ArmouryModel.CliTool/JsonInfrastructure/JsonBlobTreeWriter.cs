@@ -18,7 +18,7 @@ namespace WarHub.ArmouryModel.CliTool.JsonInfrastructure
         const string ExtensionPattern = "*.json";
         public JsonBlobTreeWriter()
         {
-            Serializer = ProjectSystem.JsonUtilities.CreateSerializer();
+            Serializer = ProjectModel.JsonUtilities.CreateSerializer();
         }
 
         private JsonSerializer Serializer { get; }
