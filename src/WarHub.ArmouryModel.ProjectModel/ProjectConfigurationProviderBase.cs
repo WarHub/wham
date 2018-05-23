@@ -27,11 +27,11 @@ namespace WarHub.ArmouryModel.ProjectModel
 
             ProjectConfiguration CreateRaw()
             {
-                return !File.Exists(path) ? CreateDefault(path) : ReadFile(path);
+                return !File.Exists(path) ? CreateDefault(path) : ReadConfigurationFile(path);
             }
         }
 
-        protected ProjectConfiguration ReadText(TextReader reader)
+        private static ProjectConfiguration ReadText(TextReader reader)
         {
             var serializer = JsonUtilities.CreateSerializer();
             using (var jsonReader = new JsonTextReader(reader))
@@ -40,7 +40,7 @@ namespace WarHub.ArmouryModel.ProjectModel
             }
         }
 
-        protected virtual ProjectConfiguration ReadFile(string path)
+        public static ProjectConfiguration ReadConfigurationFile(string path)
         {
             using (var streamReader = File.OpenText(path))
             {

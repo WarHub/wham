@@ -9,6 +9,7 @@ using WarHub.ArmouryModel.CliTool.JsonInfrastructure;
 using WarHub.ArmouryModel.ProjectModel;
 using WarHub.ArmouryModel.Workspaces.BattleScribe;
 using WarHub.ArmouryModel.Workspaces.JsonFolder;
+using WarHub.ArmouryModel.CliTool.Utilities;
 
 namespace WarHub.ArmouryModel.CliTool.Commands
 {
@@ -20,9 +21,32 @@ namespace WarHub.ArmouryModel.CliTool.Commands
         [ArgDescription("File or directory to save artifacts to.")]
         public string Destination { get; set; }
 
+        public List<PublishArtifact> Artifacts { get; }
+
         protected override void MainCore()
         {
-            // TODO
+            var projectConfiguration = new AutoProjectConfigurationProvider().Create(Source);
+            switch (projectConfiguration.FormatProvider)
+            {
+                case ProjectFormatProviderType.JsonFolders:
+                    //PublishJson();
+                    break;
+                case ProjectFormatProviderType.XmlCatalogues:
+                    //PublishXml();
+                    break;
+                default:
+                    Log.Error("Publishing unknown ProjectFormat: '{Format}' is not supported.", projectConfiguration.FormatProvider);
+                    break;
+            }
         }
+    }
+    
+    public enum PublishArtifact
+    {
+        XmlDatafiles,
+        ZippedXmlDatafiles,
+        Index,
+        ZippedIndex,
+        RepoDistribution
     }
 }
