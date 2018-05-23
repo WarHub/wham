@@ -7,7 +7,7 @@ namespace WarHub.ArmouryModel.ProjectModel
     /// <summary>
     /// Converts multiline strings into arrays of strings.
     /// </summary>
-    public class MultilineJsonStringConverter : JsonConverter
+    internal class MultilineJsonStringConverter : JsonConverter
     {
         const char LF = '\n';
         const string stringLF = "\n";

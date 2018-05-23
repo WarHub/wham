@@ -5,6 +5,7 @@ using System.Linq;
 using PowerArgs;
 using WarHub.ArmouryModel.CliTool.JsonInfrastructure;
 using WarHub.ArmouryModel.ProjectModel;
+using WarHub.ArmouryModel.Source;
 using WarHub.ArmouryModel.Workspaces.BattleScribe;
 using WarHub.ArmouryModel.Workspaces.JsonFolder;
 
@@ -31,8 +32,8 @@ namespace WarHub.ArmouryModel.CliTool.Commands
 
             var foldersByDocumentKind = new Dictionary<XmlDocumentKind, string>
             {
-                [XmlDocumentKind.Gamesystem] = projectConfig.GetRefForKind(SourceFolderKind.Gamesystems).Path,
-                [XmlDocumentKind.Catalogue] = projectConfig.GetRefForKind(SourceFolderKind.Catalogues).Path
+                [XmlDocumentKind.Gamesystem] = projectConfig.GetSourceFolder(SourceKind.Gamesystem).Path,
+                [XmlDocumentKind.Catalogue] = projectConfig.GetSourceFolder(SourceKind.Catalogue).Path
             }.ToImmutableDictionary();
             var treeConverter = new SourceNodeToJsonBlobTreeConverter();
             var xmlToJsonWriter = new JsonBlobTreeWriter();

@@ -5,7 +5,7 @@ using WarHub.ArmouryModel.Source;
 
 namespace WarHub.ArmouryModel.Workspaces.BattleScribe
 {
-    public class LazyWeakDatafileInfo<TData> : IDatafileInfo<TData> where TData : SourceNode
+    internal class LazyWeakDatafileInfo<TData> : IDatafileInfo<TData> where TData : SourceNode
     {
         public LazyWeakDatafileInfo(string path)
         {

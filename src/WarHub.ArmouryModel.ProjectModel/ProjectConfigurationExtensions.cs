@@ -11,22 +11,38 @@ namespace WarHub.ArmouryModel.ProjectModel
     {
         static ProjectConfigurationExtensions()
         {
-            DirectoryReferenceKindsBySource = new Dictionary<SourceKind, ImmutableHashSet<SourceFolderKind>>
+            FolderKindsBySourceKinds = new Dictionary<SourceKind, ImmutableHashSet<SourceFolderKind>>
             {
                 [SourceKind.Catalogue] = ImmutableHashSet.Create(SourceFolderKind.All, SourceFolderKind.Catalogues),
                 [SourceKind.Gamesystem] = ImmutableHashSet.Create(SourceFolderKind.All, SourceFolderKind.Gamesystems)
             }
             .ToImmutableDictionary();
+
+            SourceKindsByFolderKinds = FolderKindsBySourceKinds
+                .SelectMany(x => x.Value.Select(folderKind => (folderKind, sourceKind: x.Key)))
+                .GroupBy(x => x.folderKind, x => x.sourceKind)
+                .ToImmutableDictionary(x => x.Key, x => x.ToImmutableHashSet());
         }
 
-        public static ImmutableDictionary<SourceKind, ImmutableHashSet<SourceFolderKind>> DirectoryReferenceKindsBySource { get; }
+        public static ImmutableDictionary<SourceKind, ImmutableHashSet<SourceFolderKind>> FolderKindsBySourceKinds { get; }
 
-        public static ImmutableHashSet<SourceFolderKind> DirectoryReferenceKinds(this SourceKind sourceKind)
-            => DirectoryReferenceKindsBySource[sourceKind];
+        public static ImmutableDictionary<SourceFolderKind, ImmutableHashSet<SourceKind>> SourceKindsByFolderKinds { get; }
 
-        public static SourceFolder GetRefForKind(this ProjectConfiguration config, SourceFolderKind kind)
+        public static ImmutableHashSet<SourceFolderKind> FolderKinds(this SourceKind sourceKind)
+            => FolderKindsBySourceKinds[sourceKind];
+
+        public static ImmutableHashSet<SourceKind> SourceKinds(this SourceFolderKind folderKind)
+            => SourceKindsByFolderKinds[folderKind];
+
+        public static IEnumerable<SourceFolder> GetSourceFolders(this ProjectConfiguration config, SourceKind kind)
         {
-            return config.SourceDirectories.Single(dir => dir.Kind == kind);
+            var folderKinds = kind.FolderKinds();
+            return config.SourceDirectories.Where(dir => folderKinds.Contains(dir.Kind));
+        }
+
+        public static SourceFolder GetSourceFolder(this ProjectConfiguration config, SourceKind kind)
+        {
+            return config.GetSourceFolders(kind).First();
         }
     }
 }
