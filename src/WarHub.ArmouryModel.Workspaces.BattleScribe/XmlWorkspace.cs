@@ -11,12 +11,13 @@ namespace WarHub.ArmouryModel.Workspaces.BattleScribe
     /// <summary>
     /// Provides methods to map folder contents to BattleScribe XML documents and load them on demand.
     /// </summary>
-    public class XmlWorkspace
+    public class XmlWorkspace : IWorkspace
     {
-        public XmlWorkspace(IEnumerable<IDatafileInfo> files)
+        private XmlWorkspace(string rootPath, IEnumerable<IDatafileInfo> files)
         {
+            Datafiles = files.ToImmutableArray();
             Documents =
-                files
+                Datafiles
                 .Select(file => new XmlDocument(file.Filepath.GetXmlDocumentKind(), file, this))
                 .ToImmutableArray();
             DocumentsByKind =
@@ -31,6 +32,10 @@ namespace WarHub.ArmouryModel.Workspaces.BattleScribe
 
         public ImmutableDictionary<XmlDocumentKind, ImmutableArray<XmlDocument>> DocumentsByKind { get; }
 
+        public string RootPath { get; }
+
+        public ImmutableArray<IDatafileInfo> Datafiles { get; }
+
         /// <summary>
         /// Creates workspace from directory by indexing it's contents (and all subdirectories
         /// if specified using <paramref name="searchOption"/>) for files with well-known extensions.
@@ -43,12 +48,12 @@ namespace WarHub.ArmouryModel.Workspaces.BattleScribe
             var dirInfo = new DirectoryInfo(path);
             var files = dirInfo.EnumerateFiles("*", searchOption);
             var datafiles = files.Select(XmlFileExtensions.GetDatafileInfo);
-            return new XmlWorkspace(datafiles);
+            return new XmlWorkspace(path, datafiles);
         }
 
         public static XmlWorkspace CreateFromRepoDistribution(RepoDistribution repo)
         {
-            return new XmlWorkspace((repo.Index as IDatafileInfo).Concat(repo.Datafiles));
+            return new XmlWorkspace(null, (repo.Index as IDatafileInfo).Concat(repo.Datafiles));
         }
 
         public DataIndexNode CreateDataIndex(string repoName, string repoUrl)

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -8,7 +9,7 @@ using WarHub.ArmouryModel.ProjectModel;
 
 namespace WarHub.ArmouryModel.Workspaces.JsonFolder
 {
-    public class JsonWorkspace
+    public class JsonWorkspace : IWorkspace
     {
         private JsonWorkspace(DirectoryInfo directory, ProjectConfiguration projectConfiguration)
         {
@@ -16,6 +17,7 @@ namespace WarHub.ArmouryModel.Workspaces.JsonFolder
             Directory = directory;
             ProjectConfiguration = projectConfiguration;
             Root = new JsonFolder(directory, this);
+            Datafiles = /*TODO fill*/default;
         }
 
         public JsonFolder Root { get; }
@@ -25,6 +27,10 @@ namespace WarHub.ArmouryModel.Workspaces.JsonFolder
         private DirectoryInfo Directory { get; }
 
         public ProjectConfiguration ProjectConfiguration { get; }
+
+        public string RootPath => Directory.FullName;
+
+        public ImmutableArray<IDatafileInfo> Datafiles { get; }
 
         public static JsonWorkspace CreateFromPath(string path)
         {
