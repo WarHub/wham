@@ -83,7 +83,7 @@ namespace WarHub.ArmouryModel.CliTool.Commands
         {
             var workspace = File == null
                             ? XmlWorkspace.CreateFromDirectory(sourceDir.FullName)
-                            : new XmlWorkspace(sourceDir.GetFiles(File).Select(XmlFileExtensions.GetDatafileInfo));
+                            : XmlWorkspace.CreateFromFiles(sourceDir.GetFiles(File));
             Log.Debug("Found {Count} documents at source", workspace.Documents.Length);
             foreach (var (kind, docs) in workspace.DocumentsByKind)
             {
@@ -107,7 +107,10 @@ namespace WarHub.ArmouryModel.CliTool.Commands
 
         private DirectoryInfo ResolveSourceDir()
         {
-            var sourceDir = Source == null ? new DirectoryInfo(".") : new DirectoryInfo(Source);
+            var sourceDir =
+                Source != null ? new DirectoryInfo(Source)
+                : File != null ? new FileInfo(File).Directory
+                : new DirectoryInfo(".");
             Log.Debug("Source resolved to {Source}", sourceDir);
             return sourceDir;
         }

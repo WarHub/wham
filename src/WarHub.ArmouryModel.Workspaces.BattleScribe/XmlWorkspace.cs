@@ -51,6 +51,38 @@ namespace WarHub.ArmouryModel.Workspaces.BattleScribe
             return new XmlWorkspace(path, datafiles);
         }
 
+        public static XmlWorkspace CreateFromFiles(params FileInfo[] files)
+        {
+            var path =
+                files
+                .Select(x => x.Directory)
+                .Select(
+                    x => MoreEnumerable
+                    .Generate(x, y => y.Parent)
+                    .Select(y => y.FullName)
+                    .Reverse()
+                    .ToImmutableArray()
+                    .AsEnumerable())
+                .Aggregate(
+                    (left, right) =>
+                    left.Zip(right, (x1, x2) => x1 == x2 ? x1 : null)
+                    .Where(x => x != null))
+                .LastOrDefault();
+            return CreateFromFiles(path, files);
+        }
+
+        public static XmlWorkspace CreateFromFiles(string rootPath, params FileInfo[] files)
+        {
+            var datafiles = files.Select(XmlFileExtensions.GetDatafileInfo);
+            return new XmlWorkspace(rootPath, datafiles);
+        }
+
+        public static XmlWorkspace CreateFromFiles(string rootPath, IEnumerable<FileInfo> files)
+        {
+            var datafiles = files.Select(XmlFileExtensions.GetDatafileInfo);
+            return new XmlWorkspace(rootPath, datafiles);
+        }
+
         public static XmlWorkspace CreateFromRepoDistribution(RepoDistribution repo)
         {
             return new XmlWorkspace(null, (repo.Index as IDatafileInfo).Concat(repo.Datafiles));

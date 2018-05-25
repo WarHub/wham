@@ -6,9 +6,27 @@ using System.Linq;
 using System.Text;
 using Newtonsoft.Json;
 using WarHub.ArmouryModel.ProjectModel;
+using MoreLinq;
+using Optional;
+using Optional.Collections;
+using WarHub.ArmouryModel.Source;
 
 namespace WarHub.ArmouryModel.Workspaces.JsonFolder
 {
+    internal class JsonDatafileInfo : IDatafileInfo
+    {
+        public JsonDatafileInfo(JsonDocument rootDocument)
+        {
+            RootDocument = rootDocument;
+        }
+
+        public string Filepath => throw new NotImplementedException();
+
+        public SourceNode Data => throw new NotImplementedException();
+
+        public JsonDocument RootDocument { get; }
+    }
+
     public class JsonWorkspace : IWorkspace
     {
         private JsonWorkspace(DirectoryInfo directory, ProjectConfiguration projectConfiguration)
@@ -17,7 +35,9 @@ namespace WarHub.ArmouryModel.Workspaces.JsonFolder
             Directory = directory;
             ProjectConfiguration = projectConfiguration;
             Root = new JsonFolder(directory, this);
-            Datafiles = /*TODO fill*/default;
+            Datafiles = new JsonTopDocumentFindingVisitor()
+                .GetRootDocuments(Root)
+                .Select()
         }
 
         public JsonFolder Root { get; }
@@ -62,6 +82,37 @@ namespace WarHub.ArmouryModel.Workspaces.JsonFolder
                     return new JsonWorkspace(dirInfo, configProvider.Create(configFiles[0].FullName));
                 default:
                     throw new InvalidOperationException("There's more than one project file in the directory");
+            }
+        }
+
+        private class JsonTopDocumentFindingVisitor
+        {
+            private Queue<JsonFolder> FoldersToVisit { get; } = new Queue<JsonFolder>();
+
+            public IEnumerable<JsonDocument> GetRootDocuments(JsonFolder initialFolder)
+            {
+                FoldersToVisit.Enqueue(initialFolder);
+                return GetCore().Values();
+
+                IEnumerable<Option<JsonDocument>> GetCore()
+                {
+                    while (FoldersToVisit.Count > 0)
+                    {
+                        var folder = FoldersToVisit.Dequeue();
+                        var doc = VisitFolder(folder);
+                        yield return doc;
+                    }
+                }
+            }
+
+            private Option<JsonDocument> VisitFolder(JsonFolder folder)
+            {
+                if (folder.GetDocuments().SingleOrDefault() is JsonDocument doc)
+                {
+                    return doc.Some();
+                }
+                folder.GetFolders().ForEach(FoldersToVisit.Enqueue);
+                return default;
             }
         }
     }
