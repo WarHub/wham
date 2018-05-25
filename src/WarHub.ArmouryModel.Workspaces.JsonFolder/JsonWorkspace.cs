@@ -9,23 +9,9 @@ using WarHub.ArmouryModel.ProjectModel;
 using MoreLinq;
 using Optional;
 using Optional.Collections;
-using WarHub.ArmouryModel.Source;
 
 namespace WarHub.ArmouryModel.Workspaces.JsonFolder
 {
-    internal class JsonDatafileInfo : IDatafileInfo
-    {
-        public JsonDatafileInfo(JsonDocument rootDocument)
-        {
-            RootDocument = rootDocument;
-        }
-
-        public string Filepath => throw new NotImplementedException();
-
-        public SourceNode Data => throw new NotImplementedException();
-
-        public JsonDocument RootDocument { get; }
-    }
 
     public class JsonWorkspace : IWorkspace
     {
@@ -34,10 +20,11 @@ namespace WarHub.ArmouryModel.Workspaces.JsonFolder
             Serializer = JsonUtilities.CreateSerializer();
             Directory = directory;
             ProjectConfiguration = projectConfiguration;
-            Root = new JsonFolder(directory, this);
+            Root = new JsonFolder(directory, null, this);
             Datafiles = new JsonTopDocumentFindingVisitor()
                 .GetRootDocuments(Root)
-                .Select()
+                .Select(x => (IDatafileInfo)new JsonDatafileInfo(x))
+                .ToImmutableArray();
         }
 
         public JsonFolder Root { get; }
@@ -65,6 +52,11 @@ namespace WarHub.ArmouryModel.Workspaces.JsonFolder
         {
             var configProvider = new JsonFolderProjectConfigurationProvider();
             return new JsonWorkspace(new DirectoryInfo(Path.GetDirectoryName(path)), configProvider.Create(path));
+        }
+
+        public static JsonWorkspace CreateFromConfigurationInfo(ProjectConfigurationInfo info)
+        {
+            return new JsonWorkspace(new FileInfo(info.Filepath).Directory, info.Configuration);
         }
 
         public static JsonWorkspace CreateFromDirectory(string path)

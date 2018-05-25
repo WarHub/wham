@@ -1,10 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
+﻿using System.IO;
 using PowerArgs;
-using WarHub.ArmouryModel.CliTool.JsonInfrastructure;
-using WarHub.ArmouryModel.Source;
 using WarHub.ArmouryModel.Source.BattleScribe;
 using WarHub.ArmouryModel.Workspaces.BattleScribe;
 using WarHub.ArmouryModel.Workspaces.JsonFolder;
@@ -26,45 +21,23 @@ namespace WarHub.ArmouryModel.CliTool.Commands
             var destDir = new DirectoryInfo(Destination);
             Log.Debug("Destination resolved to {Destination}", destDir);
             destDir.Create();
-            var jsonBlobTreeVisitor = new JsonBlobTreeVisitor();
-            var converter = new JsonBlobTreeToSourceNodeConverter();
-            var serializer = new BattleScribeXmlSerializer();
             Log.Information("Converting...");
-            foreach (var sourceDirRef in workspace.ProjectConfiguration.SourceDirectories)
+            foreach (var datafile in workspace.Datafiles)
             {
-                Log.Debug("Converting JSON trees in SourceDir {DirectoryReference}", sourceDirRef);
-                var subfolderPath = Path.Combine(workspace.Root.Path, sourceDirRef.Path);
-                foreach (var sourceTreeFolder in GetSubfolders())
+                var fileDir = new FileInfo(datafile.Filepath).Directory;
+                Log.Debug("Converting JSON tree '{SubfolderName}' from {DirRef}", fileDir.Name, fileDir.Parent.FullName);
+                Log.Verbose("- Loading JSON tree...");
+                var node = datafile.Data;
+                Log.Verbose("- Loading finished. Saving XML file...");
+                var extension = node.GetXmlDocumentKind().GetFileExtension();
+                var filename = Path.Combine(destDir.FullName, fileDir.Name + extension);
+                using (var fileStream = File.Create(filename))
                 {
-                    Log.Debug("Converting JSON tree '{SubfolderName}' from {DirRef}", sourceTreeFolder.Name, sourceDirRef);
-                    Log.Verbose("- Loading JSON tree...");
-                    var blobItem = jsonBlobTreeVisitor.VisitItemFolder(sourceTreeFolder);
-                    Log.Verbose("- Loading finished. Converting to monolitic model...");
-                    var node = converter.ParseItem(blobItem);
-                    Log.Verbose("- Conversion finished. Saving XML file...");
-                    var (serialize, extension) = GetXmlKindUtilities(node);
-                    var filename = Path.Combine(destDir.FullName, sourceTreeFolder.Name + extension);
-                    using (var fileStream = File.Create(filename))
-                    {
-                        serialize(fileStream);
-                    }
-                    Log.Verbose("- Saved.");
+                    node.Serialize(fileStream);
                 }
-                IEnumerable<JsonFolder> GetSubfolders()
-                {
-                    return Directory
-                       .EnumerateDirectories(subfolderPath)
-                       .Select(x => new JsonFolder(new DirectoryInfo(x), workspace));
-                }
+                Log.Verbose("- Saved.");
             }
             Log.Information("Finished converting.");
-
-            (Action<Stream> serialize, string extension) GetXmlKindUtilities(SourceNode node)
-            {
-                return node.MatchOnType<(Action<Stream>, string)>(
-                    gamesystemMap: gst => (gst.Serialize, XmlFileExtensions.Gamesystem),
-                    catalogueMap: cat => (cat.Serialize, XmlFileExtensions.Catalogue));
-            }
         }
     }
 }

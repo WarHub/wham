@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Text.RegularExpressions;
 
-namespace WarHub.ArmouryModel.CliTool.Utilities
+namespace WarHub.ArmouryModel.Workspaces.JsonFolder
 {
     internal static class FilenameHelper
     {

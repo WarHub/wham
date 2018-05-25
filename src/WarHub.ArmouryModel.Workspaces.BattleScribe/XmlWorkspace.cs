@@ -51,6 +51,12 @@ namespace WarHub.ArmouryModel.Workspaces.BattleScribe
             return new XmlWorkspace(path, datafiles);
         }
 
+        public static XmlWorkspace CreateFromConfigurationInfo(ProjectConfigurationInfo info)
+        {
+            // TODO read files
+            return CreateFromFiles(new FileInfo(info.Filepath).DirectoryName, null);
+        }
+
         public static XmlWorkspace CreateFromFiles(params FileInfo[] files)
         {
             var path =

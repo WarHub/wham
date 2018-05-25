@@ -6,9 +6,11 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Amadevus.RecordGenerator" Version="0.3.4" />
     <PackageReference Include="morelinq" Version="2.10.0" />
     <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
     <PackageReference Include="Optional" Version="4.0.0" />
+    <DotNetCliToolReference Include="dotnet-codegen" Version="0.4.49" />
   </ItemGroup>
 
   <ItemGroup>

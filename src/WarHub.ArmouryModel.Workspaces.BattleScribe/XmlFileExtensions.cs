@@ -65,6 +65,15 @@ namespace WarHub.ArmouryModel.Workspaces.BattleScribe
             KindsByExtensions = ExtensionsByKinds
                 .SelectMany(x => x.Value.Select(value => (x.Key, value)))
                 .ToImmutableDictionary(t => t.value, t => t.Key, StringComparer.OrdinalIgnoreCase);
+            DocumentKindsBySourceKinds =
+                new Dictionary<SourceKind, XmlDocumentKind>
+                {
+                    [SourceKind.Gamesystem] = XmlDocumentKind.Gamesystem,
+                    [SourceKind.Catalogue] = XmlDocumentKind.Catalogue,
+                    [SourceKind.DataIndex] = XmlDocumentKind.DataIndex,
+                    [SourceKind.Roster] = XmlDocumentKind.Roster
+                }
+                .ToImmutableDictionary();
         }
 
         public static ImmutableHashSet<string> Extensions { get; }
@@ -78,6 +87,8 @@ namespace WarHub.ArmouryModel.Workspaces.BattleScribe
         /// </summary>
         public static ImmutableHashSet<XmlDocumentKind> DataCatalogueKinds { get; }
 
+        public static ImmutableDictionary<SourceKind, XmlDocumentKind> DocumentKindsBySourceKinds { get; }
+
         public static ImmutableDictionary<XmlDocumentKind, ImmutableArray<string>> ExtensionsByKinds { get; }
 
         public static ImmutableDictionary<string, XmlDocumentKind> KindsByExtensions { get; }
@@ -85,6 +96,11 @@ namespace WarHub.ArmouryModel.Workspaces.BattleScribe
         public static XmlDocumentKind GetXmlDocumentKind(this FileInfo file) => GetKind(file.Extension);
 
         public static XmlDocumentKind GetXmlDocumentKind(this string path) => GetKind(Path.GetExtension(path));
+
+        public static XmlDocumentKind GetXmlDocumentKind(this SourceNode node)
+        {
+            return DocumentKindsBySourceKinds.TryGetValue(node.Kind, out var kind) ? kind : XmlDocumentKind.Unknown;
+        }
 
         public static string GetFileExtension(this XmlDocumentKind kind) => ExtensionsByKinds[kind].First();
 

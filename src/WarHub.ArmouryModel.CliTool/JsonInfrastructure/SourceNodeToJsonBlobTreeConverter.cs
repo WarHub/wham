@@ -4,28 +4,29 @@ using System.Linq;
 using System.Text;
 using MoreLinq;
 using WarHub.ArmouryModel.Source;
+using WarHub.ArmouryModel.Workspaces.JsonFolder;
 
 namespace WarHub.ArmouryModel.CliTool.JsonInfrastructure
 {
 
-    public class SourceNodeToJsonBlobTreeConverter : SourceVisitor<JsonBlobItem>
+    public class SourceNodeToJsonBlobTreeConverter : SourceVisitor<JsonTreeItem>
     {
         private static DatablobNode EmptyBlob { get; }
             = new DatablobCore.Builder { Meta = new MetadataCore.Builder() }.ToImmutable().ToNode();
 
-        public override JsonBlobItem DefaultVisit(SourceNode node)
+        public override JsonTreeItem DefaultVisit(SourceNode node)
         {
             var blob = BlobWith(node);
-            return new JsonBlobItem(blob, node, IsLeaf: true, ImmutableArray<JsonBlobList>.Empty);
+            return new JsonTreeItem(blob, node, IsLeaf: true, ImmutableArray<JsonTreeItemList>.Empty);
         }
 
-        public override JsonBlobItem VisitCatalogue(CatalogueNode node)
+        public override JsonTreeItem VisitCatalogue(CatalogueNode node)
         {
             var result = VisitCatalogueBase(node);
-            return new JsonBlobItem(EmptyBlob.AddCatalogues(result.node), node, IsLeaf: false, result.folders);
+            return new JsonTreeItem(EmptyBlob.AddCatalogues(result.node), node, IsLeaf: false, result.folders);
         }
 
-        public override JsonBlobItem VisitForce(ForceNode node)
+        public override JsonTreeItem VisitForce(ForceNode node)
         {
             var strippedLists = ImmutableHashSet.Create(
                 nameof(ForceNode.Forces),
@@ -38,10 +39,10 @@ namespace WarHub.ArmouryModel.CliTool.JsonInfrastructure
                 .WithProfiles()
                 .WithRules()
                 .WithSelections();
-            return new JsonBlobItem(EmptyBlob.AddForces(strippedNode), node, IsLeaf: false, listFolders);
+            return new JsonTreeItem(EmptyBlob.AddForces(strippedNode), node, IsLeaf: false, listFolders);
         }
 
-        public override JsonBlobItem VisitForceEntry(ForceEntryNode node)
+        public override JsonTreeItem VisitForceEntry(ForceEntryNode node)
         {
             var strippedLists = ImmutableHashSet.Create(
                 nameof(ForceEntryNode.ForceEntries),
@@ -52,24 +53,24 @@ namespace WarHub.ArmouryModel.CliTool.JsonInfrastructure
                 .WithForceEntries()
                 .WithProfiles()
                 .WithRules();
-            return new JsonBlobItem(EmptyBlob.AddForceEntries(strippedNode), node, IsLeaf: false, listFolders);
+            return new JsonTreeItem(EmptyBlob.AddForceEntries(strippedNode), node, IsLeaf: false, listFolders);
         }
 
-        public override JsonBlobItem VisitGamesystem(GamesystemNode node)
+        public override JsonTreeItem VisitGamesystem(GamesystemNode node)
         {
             var result = VisitCatalogueBase(node);
-            return new JsonBlobItem(EmptyBlob.AddGamesystems(result.node), node, IsLeaf: false, result.folders);
+            return new JsonTreeItem(EmptyBlob.AddGamesystems(result.node), node, IsLeaf: false, result.folders);
         }
 
-        public override JsonBlobItem VisitRoster(RosterNode node)
+        public override JsonTreeItem VisitRoster(RosterNode node)
         {
             var strippedLists = ImmutableHashSet.Create(nameof(RosterNode.Forces));
             var listFolders = CreateListFolders(node, strippedLists);
             var strippedNode = node.WithForces();
-            return new JsonBlobItem(EmptyBlob.AddRosters(strippedNode), node, IsLeaf: false, listFolders);
+            return new JsonTreeItem(EmptyBlob.AddRosters(strippedNode), node, IsLeaf: false, listFolders);
         }
 
-        public override JsonBlobItem VisitSelection(SelectionNode node)
+        public override JsonTreeItem VisitSelection(SelectionNode node)
         {
             var strippedLists = ImmutableHashSet.Create(
                 nameof(SelectionNode.Profiles),
@@ -80,22 +81,22 @@ namespace WarHub.ArmouryModel.CliTool.JsonInfrastructure
                 .WithProfiles()
                 .WithRules()
                 .WithSelections();
-            return new JsonBlobItem(EmptyBlob.AddSelections(strippedNode), node, IsLeaf: false, listFolders);
+            return new JsonTreeItem(EmptyBlob.AddSelections(strippedNode), node, IsLeaf: false, listFolders);
         }
 
-        public override JsonBlobItem VisitSelectionEntry(SelectionEntryNode node)
+        public override JsonTreeItem VisitSelectionEntry(SelectionEntryNode node)
         {
             var result = VisitSelectionEntryBase(node);
-            return new JsonBlobItem(EmptyBlob.AddSelectionEntries(result.node), node, IsLeaf: false, result.folders);
+            return new JsonTreeItem(EmptyBlob.AddSelectionEntries(result.node), node, IsLeaf: false, result.folders);
         }
 
-        public override JsonBlobItem VisitSelectionEntryGroup(SelectionEntryGroupNode node)
+        public override JsonTreeItem VisitSelectionEntryGroup(SelectionEntryGroupNode node)
         {
             var result = VisitSelectionEntryBase(node);
-            return new JsonBlobItem(EmptyBlob.AddSelectionEntryGroups(result.node), node, IsLeaf: false, result.folders);
+            return new JsonTreeItem(EmptyBlob.AddSelectionEntryGroups(result.node), node, IsLeaf: false, result.folders);
         }
 
-        private (T node, ImmutableArray<JsonBlobList> folders) VisitCatalogueBase<T>(T node)
+        private (T node, ImmutableArray<JsonTreeItemList> folders) VisitCatalogueBase<T>(T node)
             where T : CatalogueBaseNode
         {
             var strippedLists = ImmutableHashSet.Create(
@@ -122,7 +123,7 @@ namespace WarHub.ArmouryModel.CliTool.JsonInfrastructure
             return ((T)strippedNode, listFolders);
         }
 
-        private (T node, ImmutableArray<JsonBlobList> folders) VisitSelectionEntryBase<T>(T node)
+        private (T node, ImmutableArray<JsonTreeItemList> folders) VisitSelectionEntryBase<T>(T node)
             where T : SelectionEntryBaseNode
         {
             var strippedLists = ImmutableHashSet.Create(
@@ -139,7 +140,7 @@ namespace WarHub.ArmouryModel.CliTool.JsonInfrastructure
             return ((T)strippedNode, listFolders);
         }
 
-        private ImmutableArray<JsonBlobList> CreateListFolders<TNode>(TNode node, ImmutableHashSet<string> listNames)
+        private ImmutableArray<JsonTreeItemList> CreateListFolders<TNode>(TNode node, ImmutableHashSet<string> listNames)
             where TNode : SourceNode
         {
             var listFolders = node
@@ -150,7 +151,7 @@ namespace WarHub.ArmouryModel.CliTool.JsonInfrastructure
             return listFolders;
         }
 
-        private JsonBlobList CreateListFolder(NamedNodeOrList nodeOrList)
+        private JsonTreeItemList CreateListFolder(NamedNodeOrList nodeOrList)
         {
             var names = nodeOrList.ToImmutableDictionary(x => x, SelectName);
             var nameCounts = names.Values
@@ -158,11 +159,11 @@ namespace WarHub.ArmouryModel.CliTool.JsonInfrastructure
                 .ToDictionary(x => x, x => 0, StringComparer.OrdinalIgnoreCase);
             var folders = nodeOrList
                 .Select(Visit)
-                .Scan(default(JsonBlobItem), AssignIdentifiers)
+                .Scan(default(JsonTreeItem), AssignIdentifiers)
                 .Skip(1)
                 .ToImmutableArray();
-            return new JsonBlobList(nodeOrList.Name, folders);
-            string GetUniqueIdentifier(JsonBlobItem item)
+            return new JsonTreeItemList(nodeOrList.Name, folders);
+            string GetUniqueIdentifier(JsonTreeItem item)
             {
                 var node = item.Node;
                 var name = names[item.WrappedNode];
@@ -170,7 +171,7 @@ namespace WarHub.ArmouryModel.CliTool.JsonInfrastructure
                 var identifier = nameIndex == 1 ? name : $"{name} - {nameIndex}";
                 return identifier;
             }
-            JsonBlobItem AssignIdentifiers(JsonBlobItem prevItem, JsonBlobItem item)
+            JsonTreeItem AssignIdentifiers(JsonTreeItem prevItem, JsonTreeItem item)
             {
                 var node = item.Node;
                 var identifier = GetUniqueIdentifier(item);

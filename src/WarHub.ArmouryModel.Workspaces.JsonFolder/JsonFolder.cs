@@ -9,8 +9,8 @@ namespace WarHub.ArmouryModel.Workspaces.JsonFolder
     {
         private readonly DirectoryInfo directory;
 
-        public JsonFolder(DirectoryInfo directory, JsonWorkspace workspace)
-            : base(directory, workspace)
+        public JsonFolder(DirectoryInfo directory, JsonFolder parent, JsonWorkspace workspace)
+            : base(directory, parent, workspace)
         {
             this.directory = directory;
             Documents = new Lazy<ImmutableArray<JsonDocument>>(CreateDocuments);
@@ -21,16 +21,6 @@ namespace WarHub.ArmouryModel.Workspaces.JsonFolder
 
         private Lazy<ImmutableArray<JsonFolder>> Folders { get; }
 
-        public override void Accept(JsonFileStructureVisitor visitor)
-        {
-            visitor.VisitFolder(this);
-        }
-
-        public override TResult Accept<TResult>(JsonFileStructureVisitor<TResult> visitor)
-        {
-            return visitor.VisitFolder(this);
-        }
-
         public ImmutableArray<JsonDocument> GetDocuments() => Documents.Value;
 
         public ImmutableArray<JsonFolder> GetFolders() => Folders.Value;
@@ -39,7 +29,7 @@ namespace WarHub.ArmouryModel.Workspaces.JsonFolder
         {
             return directory
                 .EnumerateFiles("*.json")
-                .Select(file => new JsonDocument(file, Workspace))
+                .Select(file => new JsonDocument(file, this, Workspace))
                 .ToImmutableArray();
         }
 
@@ -47,7 +37,7 @@ namespace WarHub.ArmouryModel.Workspaces.JsonFolder
         {
             return directory
                 .EnumerateDirectories()
-                .Select(dir => new JsonFolder(dir, Workspace))
+                .Select(dir => new JsonFolder(dir, this, Workspace))
                 .ToImmutableArray();
         }
     }

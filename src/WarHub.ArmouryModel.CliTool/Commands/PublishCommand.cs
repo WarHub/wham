@@ -35,8 +35,28 @@ namespace WarHub.ArmouryModel.CliTool.Commands
                     //PublishXml();
                     break;
                 default:
-                    Log.Error("Publishing unknown ProjectFormat: '{Format}' is not supported.", projectConfiguration.FormatProvider);
+                    Log.Error(
+                        "Publishing unknown ProjectFormat: '{Format}' is not supported.",
+                        projectConfiguration.FormatProvider);
                     break;
+            }
+        }
+
+        private class WorkspaceProvider
+        {
+            public static IWorkspace ReadWorkspaceFromConfig(ProjectConfigurationInfo info)
+            {
+                switch (info.Configuration.FormatProvider)
+                {
+                    case ProjectFormatProviderType.JsonFolders:
+                        return JsonWorkspace.CreateFromConfigurationInfo(info);
+                    case ProjectFormatProviderType.XmlCatalogues:
+                        return XmlWorkspace.CreateFromConfigurationInfo(info);
+                    default:
+                        throw new InvalidOperationException(
+                            $"Unknown {nameof(ProjectConfiguration.FormatProvider)}:" +
+                            $" {info.Configuration.FormatProvider}");
+                }
             }
         }
     }

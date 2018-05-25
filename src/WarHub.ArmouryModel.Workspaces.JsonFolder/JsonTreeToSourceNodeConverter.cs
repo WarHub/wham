@@ -3,11 +3,14 @@ using System.Collections.Immutable;
 using System.Linq;
 using WarHub.ArmouryModel.Source;
 
-namespace WarHub.ArmouryModel.CliTool.JsonInfrastructure
+namespace WarHub.ArmouryModel.Workspaces.JsonFolder
 {
-    public class JsonBlobTreeToSourceNodeConverter
+    /// <summary>
+    /// Reads <see cref="JsonTreeItem"/> and converts to appropriate <see cref="SourceNode"/>.
+    /// </summary>
+    public class JsonTreeToSourceNodeConverter
     {
-        public SourceNode ParseItem(JsonBlobItem blobItem)
+        public SourceNode ParseItem(JsonTreeItem blobItem)
         {
             switch (blobItem.WrappedNode.Kind)
             {
@@ -30,14 +33,14 @@ namespace WarHub.ArmouryModel.CliTool.JsonInfrastructure
             }
         }
 
-        private NodeListDictionaryWithDefault ParseBlobLists(JsonBlobItem blobItem)
+        private NodeListDictionaryWithDefault ParseItemLists(JsonTreeItem blobItem)
         {
-            var dictionary = blobItem.Children.ToImmutableDictionary(x => x.Name, ParseBlobList);
+            var dictionary = blobItem.Lists.ToImmutableDictionary(x => x.Name, ParseList);
             var wrapper = new NodeListDictionaryWithDefault(dictionary);
             return wrapper;
         }
 
-        private IEnumerable<SourceNode> ParseBlobList(JsonBlobList blobList)
+        private IEnumerable<SourceNode> ParseList(JsonTreeItemList blobList)
         {
             if (blobList.Items.IsEmpty)
             {
@@ -61,9 +64,9 @@ namespace WarHub.ArmouryModel.CliTool.JsonInfrastructure
             return orderedList;
         }
 
-        private CatalogueBaseNode ParseCatalogueBase(JsonBlobItem blobItem)
+        private CatalogueBaseNode ParseCatalogueBase(JsonTreeItem blobItem)
         {
-            var lists = ParseBlobLists(blobItem);
+            var lists = ParseItemLists(blobItem);
             var node = (CatalogueBaseNode)blobItem.WrappedNode;
             var filledNode = node
                 .AddForceEntries(lists[nameof(CatalogueBaseNode.ForceEntries)].Cast<ForceEntryNode>())
@@ -78,9 +81,9 @@ namespace WarHub.ArmouryModel.CliTool.JsonInfrastructure
             return filledNode;
         }
 
-        private ForceEntryNode ParseForceEntry(JsonBlobItem blobItem)
+        private ForceEntryNode ParseForceEntry(JsonTreeItem blobItem)
         {
-            var lists = ParseBlobLists(blobItem);
+            var lists = ParseItemLists(blobItem);
             var node = (ForceEntryNode)blobItem.WrappedNode;
             var filledNode = node
                 .AddForceEntries(lists[nameof(ForceEntryNode.ForceEntries)].Cast<ForceEntryNode>())
@@ -89,9 +92,9 @@ namespace WarHub.ArmouryModel.CliTool.JsonInfrastructure
             return filledNode;
         }
 
-        private SelectionEntryBaseNode ParseSelectionEntryBase(JsonBlobItem blobItem)
+        private SelectionEntryBaseNode ParseSelectionEntryBase(JsonTreeItem blobItem)
         {
-            var lists = ParseBlobLists(blobItem);
+            var lists = ParseItemLists(blobItem);
             var node = (SelectionEntryBaseNode)blobItem.WrappedNode;
             var filledNode = node
                 .AddProfiles(lists[nameof(SelectionEntryBaseNode.Profiles)].Cast<ProfileNode>())
@@ -101,18 +104,18 @@ namespace WarHub.ArmouryModel.CliTool.JsonInfrastructure
             return filledNode;
         }
 
-        private RosterNode ParseRoster(JsonBlobItem blobItem)
+        private RosterNode ParseRoster(JsonTreeItem blobItem)
         {
-            var lists = ParseBlobLists(blobItem);
+            var lists = ParseItemLists(blobItem);
             var node = (RosterNode)blobItem.WrappedNode;
             var filledNode = node
                 .AddForces(lists[nameof(RosterNode.Forces)].Cast<ForceNode>());
             return filledNode;
         }
 
-        private ForceNode ParseForce(JsonBlobItem blobItem)
+        private ForceNode ParseForce(JsonTreeItem blobItem)
         {
-            var lists = ParseBlobLists(blobItem);
+            var lists = ParseItemLists(blobItem);
             var node = (ForceNode)blobItem.WrappedNode;
             var filledNode = node
                 .AddForces(lists[nameof(ForceNode.Forces)].Cast<ForceNode>())
@@ -122,9 +125,9 @@ namespace WarHub.ArmouryModel.CliTool.JsonInfrastructure
             return filledNode;
         }
 
-        private SelectionNode ParseSelection(JsonBlobItem blobItem)
+        private SelectionNode ParseSelection(JsonTreeItem blobItem)
         {
-            var lists = ParseBlobLists(blobItem);
+            var lists = ParseItemLists(blobItem);
             var node = (SelectionNode)blobItem.WrappedNode;
             var filledNode = node
                 .AddProfiles(lists[nameof(SelectionNode.Profiles)].Cast<ProfileNode>())

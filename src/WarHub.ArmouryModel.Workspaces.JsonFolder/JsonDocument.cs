@@ -9,22 +9,14 @@ namespace WarHub.ArmouryModel.Workspaces.JsonFolder
     {
         private readonly FileInfo file;
 
-        public JsonDocument(FileInfo file, JsonWorkspace workspace) : base(file, workspace)
+        public JsonDocument(FileInfo file, JsonFolder parent, JsonWorkspace workspace)
+            : base(file, parent, workspace)
         {
             this.file = file;
         }
 
-        private WeakReference<DatablobNode> WeakRoot { get; } = new WeakReference<DatablobNode>(null);
-
-        public override void Accept(JsonFileStructureVisitor visitor)
-        {
-            visitor.VisitDocument(this);
-        }
-
-        public override TResult Accept<TResult>(JsonFileStructureVisitor<TResult> visitor)
-        {
-            return visitor.VisitDocument(this);
-        }
+        private WeakReference<DatablobNode> WeakRoot { get; }
+            = new WeakReference<DatablobNode>(null);
 
         /// <summary>
         /// Gets the root node of the document. May cause deserialization.

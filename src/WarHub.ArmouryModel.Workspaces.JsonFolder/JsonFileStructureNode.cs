@@ -4,22 +4,21 @@ namespace WarHub.ArmouryModel.Workspaces.JsonFolder
 {
     public abstract class JsonFileStructureNode
     {
-        public JsonFileStructureNode(FileSystemInfo fileSystemInfo, JsonWorkspace workspace)
+        public JsonFileStructureNode(FileSystemInfo fileSystemInfo, JsonFolder parent, JsonWorkspace workspace)
         {
-            Workspace = workspace;
             FileSystemInfo = fileSystemInfo;
+            Parent = parent;
+            Workspace = workspace;
         }
 
         protected FileSystemInfo FileSystemInfo { get; }
+
+        public JsonFolder Parent { get; }
 
         public string Path => FileSystemInfo.FullName;
 
         public string Name => FileSystemInfo.Name;
 
         public JsonWorkspace Workspace { get; }
-
-        public abstract void Accept(JsonFileStructureVisitor visitor);
-
-        public abstract TResult Accept<TResult>(JsonFileStructureVisitor<TResult> visitor);
     }
 }

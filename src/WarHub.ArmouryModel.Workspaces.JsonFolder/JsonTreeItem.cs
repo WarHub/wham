@@ -1,10 +1,10 @@
 ﻿using System.Collections.Immutable;
 using WarHub.ArmouryModel.Source;
 
-namespace WarHub.ArmouryModel.CliTool.JsonInfrastructure
+namespace WarHub.ArmouryModel.Workspaces.JsonFolder
 {
     [Record]
-    public partial class JsonBlobItem
+    public partial class JsonTreeItem
     {
         public DatablobNode Node { get; }
 
@@ -12,6 +12,6 @@ namespace WarHub.ArmouryModel.CliTool.JsonInfrastructure
 
         public bool IsLeaf { get; }
 
-        public ImmutableArray<JsonBlobList> Children { get; }
+        public ImmutableArray<JsonTreeItemList> Lists { get; }
     }
 }

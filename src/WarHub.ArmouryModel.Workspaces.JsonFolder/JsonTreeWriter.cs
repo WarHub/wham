@@ -1,29 +1,25 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using MoreLinq;
 using Newtonsoft.Json;
 using Optional;
-using WarHub.ArmouryModel.CliTool.Utilities;
 using WarHub.ArmouryModel.Source;
 
-namespace WarHub.ArmouryModel.CliTool.JsonInfrastructure
+namespace WarHub.ArmouryModel.Workspaces.JsonFolder
 {
     /// <summary>
     /// Splits every entity into JSON with properties and folders for each collection,
     /// which contain folder for each item.
     /// </summary>
-    internal class JsonBlobTreeWriter
+    public class JsonTreeWriter
     {
         const string Extension = ".json";
         const string ExtensionPattern = "*.json";
-        public JsonBlobTreeWriter()
-        {
-            Serializer = ProjectModel.JsonUtilities.CreateSerializer();
-        }
 
-        private JsonSerializer Serializer { get; }
+        private JsonSerializer Serializer { get; } = ProjectModel.JsonUtilities.CreateSerializer();
 
-        public string WriteItem(JsonBlobItem blobItem, DirectoryInfo directory)
+        public string WriteItem(JsonTreeItem blobItem, DirectoryInfo directory)
         {
             INodeWithCore<NodeCore> node = blobItem.Node;
             var filename = GetFilename(blobItem);
@@ -37,7 +33,7 @@ namespace WarHub.ArmouryModel.CliTool.JsonInfrastructure
             }
             PruneUnusedFiles(directory, new[] { filename }.ToHashSet());
             var usedNames = new HashSet<string>();
-            foreach (var childList in blobItem.Children)
+            foreach (var childList in blobItem.Lists)
             {
                 var dirName = WriteList(childList, directory);
                 dirName.MatchSome(x => usedNames.Add(x));
@@ -46,7 +42,7 @@ namespace WarHub.ArmouryModel.CliTool.JsonInfrastructure
             return filename;
         }
 
-        private Option<string> WriteList(JsonBlobList blobList, DirectoryInfo directory)
+        private Option<string> WriteList(JsonTreeItemList blobList, DirectoryInfo directory)
         {
             if (blobList.Items.Length == 0)
             {
@@ -98,7 +94,7 @@ namespace WarHub.ArmouryModel.CliTool.JsonInfrastructure
             }
         }
 
-        private string GetFilename(JsonBlobItem nodeFolder)
+        private string GetFilename(JsonTreeItem nodeFolder)
         {
             var filenameBase = nodeFolder.IsLeaf ? nodeFolder.Node.Meta.Identifier : nodeFolder.WrappedNode.Kind.ToString();
             return (filenameBase + Extension).FilenameSanitize();
