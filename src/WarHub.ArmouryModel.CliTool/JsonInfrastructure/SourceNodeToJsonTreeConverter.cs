@@ -9,7 +9,7 @@ using WarHub.ArmouryModel.Workspaces.JsonFolder;
 namespace WarHub.ArmouryModel.CliTool.JsonInfrastructure
 {
 
-    public class SourceNodeToJsonBlobTreeConverter : SourceVisitor<JsonTreeItem>
+    public class SourceNodeToJsonTreeConverter : SourceVisitor<JsonTreeItem>
     {
         private static DatablobNode EmptyBlob { get; }
             = new DatablobCore.Builder { Meta = new MetadataCore.Builder() }.ToImmutable().ToNode();

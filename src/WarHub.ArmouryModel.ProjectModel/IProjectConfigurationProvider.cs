@@ -2,6 +2,6 @@
 {
     public interface IProjectConfigurationProvider
     {
-        ProjectConfiguration Create(string path);
+        ProjectConfigurationInfo Create(string path);
     }
 }

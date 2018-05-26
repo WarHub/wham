@@ -13,77 +13,82 @@ namespace WarHub.ArmouryModel.CliTool.Commands
 {
     public class ConvertXmlCommand : CommandBase
     {
+        [ArgShortcut("s")]
         [ArgDescription("Directory in which to look for convertible files."), ArgExistingDirectory]
         public string Source { get; set; }
 
-        [ArgDescription("File to convert."), ArgExistingFile]
-        public string File { get; set; }
-
+        [ArgShortcut("d")]
         [ArgDescription("Directory into which to save conversion results.")]
         public string Destination { get; set; }
 
         protected override void MainCore()
         {
             var sourceDir = ResolveSourceDir();
-            var projectConfig = CreateProjectConfig(sourceDir);
-            var workspace = CreateWorkspace(sourceDir);
             var destDir = ResolveDestinationDir();
-            SaveProjectConfig(sourceDir, projectConfig, destDir);
+            var configInfo = CreateDestinationProjectConfig(sourceDir, destDir);
+            var workspace = CreateXmlWorkspace(sourceDir);
+            configInfo.WriteFile();
+            Log.Debug("Project configuration saved as {ConfigFile}", configInfo.Filepath);
 
-            var foldersByDocumentKind = new Dictionary<XmlDocumentKind, string>
+            ConvertFiles(configInfo, workspace);
+        }
+
+        private void ConvertFiles(ProjectConfigurationInfo configInfo, XmlWorkspace workspace)
+        {
+            var treeConverter = new SourceNodeToJsonTreeConverter();
+            var treeWriter = new JsonTreeWriter();
+            foreach (var document in workspace.GetDocuments(SourceKind.Gamesystem, SourceKind.Catalogue))
             {
-                [XmlDocumentKind.Gamesystem] = projectConfig.GetSourceFolder(SourceKind.Gamesystem).Path,
-                [XmlDocumentKind.Catalogue] = projectConfig.GetSourceFolder(SourceKind.Catalogue).Path
-            }.ToImmutableDictionary();
-            var treeConverter = new SourceNodeToJsonBlobTreeConverter();
-            var xmlToJsonWriter = new JsonTreeWriter();
-            foreach (var (kind, folderName) in foldersByDocumentKind)
-            {
-                workspace.DocumentsByKind.TryGetValue(kind, out var documents);
-                if (documents.IsDefaultOrEmpty)
-                {
-                    continue;
-                }
-                var kindFolder = destDir.CreateSubdirectory(folderName);
-                Log.Debug("Converting documents of kind {Kind}, saving into {Folder}", kind, kindFolder);
-                foreach (var document in documents)
-                {
-                    var filenameNoExt = Path.GetFileNameWithoutExtension(document.Filepath);
-                    var documentFolder = kindFolder.CreateSubdirectory(filenameNoExt);
-                    Log.Information("Converting file {Name} into {Folder}", filenameNoExt, documentFolder);
-                    Log.Verbose("- Reading...");
-                    var root = document.GetRoot();
-                    Log.Verbose("- Reading finished. Converting...");
-                    var tree = treeConverter.Visit(root);
-                    Log.Verbose("- Converting finished. Saving to JSON directory structure...");
-                    xmlToJsonWriter.WriteItem(tree, documentFolder);
-                    Log.Debug("- Saved");
-                }
+                var sourceKind = document.Kind.GetSourceKindOrUnknown();
+                var filenameNoExt = Path.GetFileNameWithoutExtension(document.Filepath);
+                var folderPath = Path.Combine(configInfo.GetFullPath(sourceKind), filenameNoExt);
+                var folder = Directory.CreateDirectory(folderPath);
+                Log.Information("Converting file {Name} into {Folder}", filenameNoExt, folder);
+                Log.Verbose("- Reading...");
+                var sourceNode = document.GetRoot();
+                Log.Verbose("- Reading finished. Converting...");
+                var jsonTree = treeConverter.Visit(sourceNode);
+                Log.Verbose("- Converting finished. Saving to JSON directory structure...");
+                treeWriter.WriteItem(jsonTree, folder);
+                Log.Debug("- Saved");
             }
         }
 
-        private void SaveProjectConfig(DirectoryInfo sourceDir, ProjectConfiguration projectConfig, DirectoryInfo destDir)
+        private class XmlToJsonConverter
         {
-            var serializer = JsonUtilities.CreateSerializer();
-            var projectConfigFilename = $"{sourceDir.Name}{ProjectConfiguration.FileExtension}";
-            var projectConfigFilepath = Path.Combine(destDir.FullName, projectConfigFilename);
-            using (var projectConfigurationWriter = System.IO.File.CreateText(projectConfigFilepath))
+            private SourceNodeToJsonTreeConverter treeConverter { get; }
+
+            private JsonTreeWriter treeWriter { get; }
+
+            private ImmutableDictionary<XmlDocumentKind, string> pathsForDocumentKinds { get; }
+
+            public ProjectConfigurationInfo ConfigInfo { get; }
+
+            public XmlWorkspace Workspace { get; }
+
+            public XmlToJsonConverter(ProjectConfigurationInfo configInfo, XmlWorkspace workspace)
             {
-                serializer.Serialize(projectConfigurationWriter, projectConfig);
+                pathsForDocumentKinds = new Dictionary<XmlDocumentKind, string>
+                {
+                    [XmlDocumentKind.Gamesystem] = configInfo.GetFullPath(SourceKind.Gamesystem),
+                    [XmlDocumentKind.Catalogue] = configInfo.GetFullPath(SourceKind.Catalogue)
+                }.ToImmutableDictionary();
+                ConfigInfo = configInfo;
+                Workspace = workspace;
             }
-            Log.Information("Project file created as {ProjectFile}", projectConfigFilename);
+            
         }
 
-        private static ProjectConfiguration CreateProjectConfig(DirectoryInfo sourceDir)
+        private static ProjectConfigurationInfo CreateDestinationProjectConfig(DirectoryInfo sourceDir, DirectoryInfo destDir)
         {
-            return new ConvertedJsonProjectConfigurationProvider().Create(sourceDir.FullName);
+            var configInfo = new ConvertedJsonProjectConfigurationProvider().Create(sourceDir.FullName);
+            var destFilepath = Path.Combine(destDir.FullName, Path.GetFileName(configInfo.Filepath));
+            return configInfo.WithFilepath(destFilepath);
         }
 
-        private XmlWorkspace CreateWorkspace(DirectoryInfo sourceDir)
+        private XmlWorkspace CreateXmlWorkspace(DirectoryInfo sourceDir)
         {
-            var workspace = File == null
-                            ? XmlWorkspace.CreateFromDirectory(sourceDir.FullName)
-                            : XmlWorkspace.CreateFromFiles(sourceDir.GetFiles(File));
+            var workspace = XmlWorkspace.CreateFromDirectory(sourceDir.FullName);
             Log.Debug("Found {Count} documents at source", workspace.Documents.Length);
             foreach (var (kind, docs) in workspace.DocumentsByKind)
             {
@@ -107,10 +112,7 @@ namespace WarHub.ArmouryModel.CliTool.Commands
 
         private DirectoryInfo ResolveSourceDir()
         {
-            var sourceDir =
-                Source != null ? new DirectoryInfo(Source)
-                : File != null ? new FileInfo(File).Directory
-                : new DirectoryInfo(".");
+            var sourceDir = Source != null ? new DirectoryInfo(Source) : new DirectoryInfo(".");
             Log.Debug("Source resolved to {Source}", sourceDir);
             return sourceDir;
         }
@@ -122,9 +124,9 @@ namespace WarHub.ArmouryModel.CliTool.Commands
                     new SourceFolder(SourceFolderKind.Catalogues, "src/catalogues"),
                     new SourceFolder(SourceFolderKind.Gamesystems, "src/gamesystems"));
 
-            protected override ProjectConfiguration CreateDefault(string path)
+            protected override ProjectConfiguration CreateDefaultCore(string path)
             {
-                return base.CreateDefault(path).WithSourceDirectories(DefaultDirectoryReferences);
+                return base.CreateDefaultCore(path).WithSourceDirectories(DefaultDirectoryReferences);
             }
         }
     }

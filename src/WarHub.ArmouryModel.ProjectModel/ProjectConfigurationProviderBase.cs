@@ -13,21 +13,23 @@ namespace WarHub.ArmouryModel.ProjectModel
     {
         public string CurrentToolsetVersion => ProjectToolset.Version;
 
-        public ProjectConfiguration Create(string path)
+        public ProjectConfigurationInfo Create(string path)
         {
             return CreateCore(path);
         }
 
-        protected virtual ProjectConfiguration CreateCore(string path)
+        protected virtual ProjectConfigurationInfo CreateCore(string path)
         {
             // TODO version check
-            var rawConfiguration = CreateRaw();
-            var sanitized = SanitizeConfiguration(rawConfiguration);
-            return sanitized;
+            var raw = CreateRaw();
+            var sanitized = SanitizeConfiguration(raw.Configuration);
+            return raw.WithConfiguration(sanitized);
 
-            ProjectConfiguration CreateRaw()
+            ProjectConfigurationInfo CreateRaw()
             {
-                return !File.Exists(path) ? CreateDefault(path) : ReadConfigurationFile(path);
+                return File.Exists(path)
+                    ? ReadFromFile(path)
+                    : CreateDefault(path);
             }
         }
 
@@ -40,15 +42,31 @@ namespace WarHub.ArmouryModel.ProjectModel
             }
         }
 
-        public static ProjectConfiguration ReadConfigurationFile(string path)
+        public static ProjectConfigurationInfo ReadFromFile(string filepath)
         {
-            using (var streamReader = File.OpenText(path))
+            using (var streamReader = File.OpenText(filepath))
             {
-                return ReadText(streamReader);
+                var config = ReadText(streamReader);
+                return new ProjectConfigurationInfo(filepath, config);
             }
         }
 
-        protected abstract ProjectConfiguration CreateDefault(string path);
+        protected virtual ProjectConfigurationInfo CreateDefault(string directory)
+        {
+            var config = CreateDefaultCore(directory);
+            var filepath = Path.Combine(directory, CreateDefaultFilename(directory));
+            return new ProjectConfigurationInfo(filepath, config);
+        }
+
+        protected string CreateDefaultFilename(string directory)
+        {
+            var dir = new DirectoryInfo(directory);
+            var folderName = dir.Parent != null ? dir.Name : "project";
+            var filename = Path.Combine(folderName, ProjectConfiguration.FileExtension);
+            return filename;
+        }
+
+        protected abstract ProjectConfiguration CreateDefaultCore(string directory);
 
         protected abstract ImmutableArray<SourceFolder> DefaultDirectoryReferences { get; }
 
@@ -56,7 +74,7 @@ namespace WarHub.ArmouryModel.ProjectModel
         {
             return raw.Update(
                 raw.ToolsetVersion ?? CurrentToolsetVersion,
-                !raw.SourceDirectories.IsDefaultOrEmpty ? raw.SourceDirectories : DefaultDirectoryReferences,
+                raw.SourceDirectories.IsDefaultOrEmpty ? DefaultDirectoryReferences : raw.SourceDirectories,
                 string.IsNullOrWhiteSpace(raw.OutputPath) ? ProjectConfiguration.DefaultOutputPath : raw.OutputPath,
                 raw.FormatProvider);
         }

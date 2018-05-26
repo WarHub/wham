@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.Immutable;
+﻿using System.Collections.Immutable;
 using WarHub.ArmouryModel.ProjectModel;
 
 namespace WarHub.ArmouryModel.Workspaces.BattleScribe
@@ -9,7 +7,7 @@ namespace WarHub.ArmouryModel.Workspaces.BattleScribe
     {
         public const string DefaultSourcePath = ".";
 
-        protected override ProjectConfiguration CreateDefault(string path)
+        protected override ProjectConfiguration CreateDefaultCore(string path)
         {
             return new ProjectConfiguration(
                 CurrentToolsetVersion,

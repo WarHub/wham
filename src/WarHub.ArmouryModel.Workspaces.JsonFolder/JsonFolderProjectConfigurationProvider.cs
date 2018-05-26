@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.Immutable;
-using System.Text;
+﻿using System.Collections.Immutable;
 using WarHub.ArmouryModel.ProjectModel;
 
 namespace WarHub.ArmouryModel.Workspaces.JsonFolder
@@ -10,7 +7,7 @@ namespace WarHub.ArmouryModel.Workspaces.JsonFolder
     {
         public const string DefaultSourcePath = "src";
 
-        protected override ProjectConfiguration CreateDefault(string path)
+        protected override ProjectConfiguration CreateDefaultCore(string path)
         {
             return new ProjectConfiguration(
                 CurrentToolsetVersion,

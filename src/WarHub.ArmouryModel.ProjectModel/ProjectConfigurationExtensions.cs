@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.IO;
 using System.Linq;
 using System.Text;
 using WarHub.ArmouryModel.Source;
@@ -37,12 +38,44 @@ namespace WarHub.ArmouryModel.ProjectModel
         public static IEnumerable<SourceFolder> GetSourceFolders(this ProjectConfiguration config, SourceKind kind)
         {
             var folderKinds = kind.FolderKinds();
-            return config.SourceDirectories.Where(dir => folderKinds.Contains(dir.Kind));
+            return config.SourceDirectories.Where(x => folderKinds.Contains(x.Kind));
         }
 
         public static SourceFolder GetSourceFolder(this ProjectConfiguration config, SourceKind kind)
         {
             return config.GetSourceFolders(kind).First();
         }
+
+        public static void WriteFile(this ProjectConfigurationInfo configInfo)
+        {
+            using (var stream = File.OpenWrite(configInfo.Filepath))
+            {
+                configInfo.Configuration.Serialize(stream);
+            }
+        }
+
+        public static void Serialize(this ProjectConfiguration configuration, Stream stream)
+        {
+            var serializer = JsonUtilities.CreateSerializer();
+            using (var textWriter = new StreamWriter(stream))
+            {
+                serializer.Serialize(textWriter, configuration);
+            }
+        }
+
+        public static string GetFullPath(this ProjectConfigurationInfo configInfo, SourceKind kind)
+            => configInfo.GetFullPath(configInfo.Configuration.GetSourceFolder(kind));
+
+        public static string GetFullPath(this ProjectConfigurationInfo configInfo, SourceFolder folder)
+            => Path.Combine(Path.GetDirectoryName(configInfo.Filepath), folder.Subpath);
+
+        public static DirectoryInfo GetDirectoryInfo(this ProjectConfigurationInfo configInfo)
+            => new DirectoryInfo(Path.GetDirectoryName(configInfo.Filepath));
+
+        public static string GetFilename(this ProjectConfigurationInfo configInfo)
+            => Path.GetFileName(configInfo.Filepath);
+
+        public static DirectoryInfo GetDirectoryInfoFor(this ProjectConfigurationInfo configInfo, SourceFolder folder)
+            => new DirectoryInfo(configInfo.GetFullPath(folder));
     }
 }

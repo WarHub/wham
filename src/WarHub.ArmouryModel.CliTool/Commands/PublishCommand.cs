@@ -25,8 +25,8 @@ namespace WarHub.ArmouryModel.CliTool.Commands
 
         protected override void MainCore()
         {
-            var projectConfiguration = new AutoProjectConfigurationProvider().Create(Source);
-            switch (projectConfiguration.FormatProvider)
+            var configInfo = new AutoProjectConfigurationProvider().Create(Source);
+            switch (configInfo.Configuration.FormatProvider)
             {
                 case ProjectFormatProviderType.JsonFolders:
                     //PublishJson();
@@ -37,7 +37,7 @@ namespace WarHub.ArmouryModel.CliTool.Commands
                 default:
                     Log.Error(
                         "Publishing unknown ProjectFormat: '{Format}' is not supported.",
-                        projectConfiguration.FormatProvider);
+                        configInfo.Configuration.FormatProvider);
                     break;
             }
         }

@@ -2,6 +2,8 @@
 {
     public enum SourceKind
     {
+        Unknown,
+
         // types
         CostType,
         CharacteristicType,

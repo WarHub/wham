@@ -17,5 +17,10 @@ namespace WarHub.ArmouryModel.ProjectModel
         /// Gets a collection of datafile info objects that belong in this workspace.
         /// </summary>
         ImmutableArray<IDatafileInfo> Datafiles { get; }
+
+        /// <summary>
+        /// Gets project configuration info.
+        /// </summary>
+        ProjectConfigurationInfo Info { get; }
     }
 }

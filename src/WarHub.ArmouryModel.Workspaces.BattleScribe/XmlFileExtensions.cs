@@ -51,7 +51,10 @@ namespace WarHub.ArmouryModel.Workspaces.BattleScribe
                 UnzippedExtensions
                 .Concat(ZippedExtensions)
                 .ToImmutableHashSet(StringComparer.OrdinalIgnoreCase);
-            DataCatalogueKinds = ImmutableHashSet.Create(XmlDocumentKind.Gamesystem, XmlDocumentKind.Catalogue);
+            DataCatalogueKinds =
+                ImmutableHashSet.Create(
+                    XmlDocumentKind.Gamesystem,
+                    XmlDocumentKind.Catalogue);
             ExtensionsByKinds =
                 new Dictionary<XmlDocumentKind, ImmutableArray<string>>
                 {
@@ -62,10 +65,11 @@ namespace WarHub.ArmouryModel.Workspaces.BattleScribe
                     [XmlDocumentKind.RepoDistribution] = ImmutableArray.Create(RepoDistribution),
                 }
                 .ToImmutableDictionary();
-            KindsByExtensions = ExtensionsByKinds
+            DocumentKindByExtensions =
+                ExtensionsByKinds
                 .SelectMany(x => x.Value.Select(value => (x.Key, value)))
                 .ToImmutableDictionary(t => t.value, t => t.Key, StringComparer.OrdinalIgnoreCase);
-            DocumentKindsBySourceKinds =
+            DocumentKinds =
                 new Dictionary<SourceKind, XmlDocumentKind>
                 {
                     [SourceKind.Gamesystem] = XmlDocumentKind.Gamesystem,
@@ -74,6 +78,7 @@ namespace WarHub.ArmouryModel.Workspaces.BattleScribe
                     [SourceKind.Roster] = XmlDocumentKind.Roster
                 }
                 .ToImmutableDictionary();
+            SourceKinds = DocumentKinds.ToImmutableDictionary(x => x.Value, x => x.Key);
         }
 
         public static ImmutableHashSet<string> Extensions { get; }
@@ -83,33 +88,42 @@ namespace WarHub.ArmouryModel.Workspaces.BattleScribe
         public static ImmutableHashSet<string> ZippedExtensions { get; }
 
         /// <summary>
-        /// Gets the set containing <see cref="XmlDocumentKind.Gamesystem"/> and <see cref="XmlDocumentKind.Catalogue"/>.
+        /// Gets the set containing <see cref="XmlDocumentKind.Gamesystem"/>
+        /// and <see cref="XmlDocumentKind.Catalogue"/>.
         /// </summary>
         public static ImmutableHashSet<XmlDocumentKind> DataCatalogueKinds { get; }
 
-        public static ImmutableDictionary<SourceKind, XmlDocumentKind> DocumentKindsBySourceKinds { get; }
+        public static ImmutableDictionary<SourceKind, XmlDocumentKind> DocumentKinds { get; }
+
+        public static ImmutableDictionary<XmlDocumentKind, SourceKind> SourceKinds { get; }
 
         public static ImmutableDictionary<XmlDocumentKind, ImmutableArray<string>> ExtensionsByKinds { get; }
 
-        public static ImmutableDictionary<string, XmlDocumentKind> KindsByExtensions { get; }
+        public static ImmutableDictionary<string, XmlDocumentKind> DocumentKindByExtensions { get; }
 
-        public static XmlDocumentKind GetXmlDocumentKind(this FileInfo file) => GetKind(file.Extension);
+        public static XmlDocumentKind GetXmlDocumentKind(this FileInfo file)
+            => GetKindOrUnknown(file.Extension);
 
-        public static XmlDocumentKind GetXmlDocumentKind(this string path) => GetKind(Path.GetExtension(path));
+        public static XmlDocumentKind GetXmlDocumentKind(this string path)
+            => GetKindOrUnknown(Path.GetExtension(path));
 
-        public static XmlDocumentKind GetXmlDocumentKind(this SourceNode node)
-        {
-            return DocumentKindsBySourceKinds.TryGetValue(node.Kind, out var kind) ? kind : XmlDocumentKind.Unknown;
-        }
+        public static XmlDocumentKind GetXmlDocumentKindOrUnknown(this SourceNode node)
+            => node.Kind.GetXmlDocumentKindOrUnknown();
 
-        public static string GetFileExtension(this XmlDocumentKind kind) => ExtensionsByKinds[kind].First();
+        public static XmlDocumentKind GetXmlDocumentKindOrUnknown(this SourceKind sourceKind)
+            => DocumentKinds.TryGetValue(sourceKind, out var kind) ? kind : XmlDocumentKind.Unknown;
 
-        public static string GetZippedFileExtension(this XmlDocumentKind kind) => ExtensionsByKinds[kind].First(ZippedExtensions.Contains);
+        public static SourceKind GetSourceKindOrUnknown(this XmlDocumentKind docKind)
+            => SourceKinds.TryGetValue(docKind, out var kind) ? kind : SourceKind.Unknown;
 
-        private static XmlDocumentKind GetKind(string extension)
-        {
-            return KindsByExtensions.TryGetValue(extension, out var kind) ? kind : XmlDocumentKind.Unknown;
-        }
+        public static string GetFileExtension(this XmlDocumentKind kind)
+            => ExtensionsByKinds[kind].First();
+
+        public static string GetZippedFileExtension(this XmlDocumentKind kind)
+            => ExtensionsByKinds[kind].First(ZippedExtensions.Contains);
+
+        private static XmlDocumentKind GetKindOrUnknown(string extension)
+            => DocumentKindByExtensions.TryGetValue(extension, out var kind) ? kind : XmlDocumentKind.Unknown;
 
         public static IDatafileInfo GetDatafileInfo(this FileInfo file)
         {
@@ -219,33 +233,16 @@ namespace WarHub.ArmouryModel.Workspaces.BattleScribe
             }
         }
 
-        public static T Match<T>(
-            this XmlDocumentKind kind,
-            Func<T> gamesystem = default,
-            Func<T> catalogue = default,
-            Func<T> roster = default,
-            Func<T> dataIndex = default,
-            Func<T> repoDistribution = default,
-            Func<T> unknown = default,
-            T @default = default)
-        {
-            switch (kind)
-            {
-                case XmlDocumentKind.Gamesystem:
-                    return GetValue(gamesystem);
-                case XmlDocumentKind.Catalogue:
-                    return GetValue(catalogue);
-                case XmlDocumentKind.Roster:
-                    return GetValue(roster);
-                case XmlDocumentKind.DataIndex:
-                    return GetValue(dataIndex);
-                case XmlDocumentKind.RepoDistribution:
-                    return GetValue(repoDistribution);
-                default:
-                    return GetValue(unknown);
-            }
 
-            T GetValue(Func<T> func) => func != null ? func() : @default;
+        public static IEnumerable<XmlDocument> GetDocuments(this XmlWorkspace workspace, params SourceKind[] kinds)
+            => workspace.GetDocuments(kinds.AsEnumerable());
+
+        public static IEnumerable<XmlDocument> GetDocuments(this XmlWorkspace workspace, IEnumerable<SourceKind> kinds)
+        {
+            var kindSet = kinds
+                .Select(x => x.GetXmlDocumentKindOrUnknown())
+                .ToImmutableHashSet();
+            return workspace.Documents.Where(x => kindSet.Contains(x.Kind));
         }
 
         public static T Match<T>(

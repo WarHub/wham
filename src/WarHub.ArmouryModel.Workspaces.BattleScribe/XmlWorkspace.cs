@@ -13,9 +13,11 @@ namespace WarHub.ArmouryModel.Workspaces.BattleScribe
     /// </summary>
     public class XmlWorkspace : IWorkspace
     {
-        private XmlWorkspace(string rootPath, IEnumerable<IDatafileInfo> files)
+        private XmlWorkspace(ProjectConfigurationInfo info)
         {
-            Datafiles = files.ToImmutableArray();
+            var files = info.Configuration.SourceDirectories
+                .SelectMany(x => info.GetDirectoryInfoFor(x).EnumerateFiles());
+            Datafiles = files.Select(XmlFileExtensions.GetDatafileInfo).ToImmutableArray();
             Documents =
                 Datafiles
                 .Select(file => new XmlDocument(file.Filepath.GetXmlDocumentKind(), file, this))
@@ -26,6 +28,7 @@ namespace WarHub.ArmouryModel.Workspaces.BattleScribe
                 .ToImmutableDictionary(
                     group => group.Key,
                     group => group.ToImmutableArray());
+            Info = info;
         }
 
         public ImmutableArray<XmlDocument> Documents { get; }
@@ -36,31 +39,29 @@ namespace WarHub.ArmouryModel.Workspaces.BattleScribe
 
         public ImmutableArray<IDatafileInfo> Datafiles { get; }
 
+        public ProjectConfigurationInfo Info { get; }
+
         /// <summary>
-        /// Creates workspace from directory by indexing it's contents (and all subdirectories
-        /// if specified using <paramref name="searchOption"/>) for files with well-known extensions.
+        /// Creates workspace from directory by indexing it's contents for files with well-known extensions.
         /// </summary>
         /// <param name="path">Directory path to search in.</param>
-        /// <param name="searchOption">Specify to search all sub-directories.</param>
         /// <returns>Workspace created from the directory with all files with well-known extensions.</returns>
-        public static XmlWorkspace CreateFromDirectory(string path, SearchOption searchOption = SearchOption.TopDirectoryOnly)
+        public static XmlWorkspace CreateFromDirectory(string path)
         {
             var dirInfo = new DirectoryInfo(path);
-            var files = dirInfo.EnumerateFiles("*", searchOption);
-            var datafiles = files.Select(XmlFileExtensions.GetDatafileInfo);
-            return new XmlWorkspace(path, datafiles);
+
+            var info = new BattleScribeProjectConfigurationProvider().Create(path);
+            return new XmlWorkspace(info);
         }
 
         public static XmlWorkspace CreateFromConfigurationInfo(ProjectConfigurationInfo info)
         {
-            // TODO read files
-            return CreateFromFiles(new FileInfo(info.Filepath).DirectoryName, null);
+            return new XmlWorkspace(info);
         }
 
-        public static XmlWorkspace CreateFromFiles(params FileInfo[] files)
+        private static string GetLongestCommonPath(IEnumerable<FileInfo> files)
         {
-            var path =
-                files
+            return files
                 .Select(x => x.Directory)
                 .Select(
                     x => MoreEnumerable
@@ -74,24 +75,6 @@ namespace WarHub.ArmouryModel.Workspaces.BattleScribe
                     left.Zip(right, (x1, x2) => x1 == x2 ? x1 : null)
                     .Where(x => x != null))
                 .LastOrDefault();
-            return CreateFromFiles(path, files);
-        }
-
-        public static XmlWorkspace CreateFromFiles(string rootPath, params FileInfo[] files)
-        {
-            var datafiles = files.Select(XmlFileExtensions.GetDatafileInfo);
-            return new XmlWorkspace(rootPath, datafiles);
-        }
-
-        public static XmlWorkspace CreateFromFiles(string rootPath, IEnumerable<FileInfo> files)
-        {
-            var datafiles = files.Select(XmlFileExtensions.GetDatafileInfo);
-            return new XmlWorkspace(rootPath, datafiles);
-        }
-
-        public static XmlWorkspace CreateFromRepoDistribution(RepoDistribution repo)
-        {
-            return new XmlWorkspace(null, (repo.Index as IDatafileInfo).Concat(repo.Datafiles));
         }
 
         public DataIndexNode CreateDataIndex(string repoName, string repoUrl)

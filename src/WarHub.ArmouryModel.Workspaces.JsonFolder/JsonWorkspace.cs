@@ -3,26 +3,25 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
-using System.Text;
-using Newtonsoft.Json;
-using WarHub.ArmouryModel.ProjectModel;
 using MoreLinq;
+using Newtonsoft.Json;
 using Optional;
 using Optional.Collections;
+using WarHub.ArmouryModel.ProjectModel;
 
 namespace WarHub.ArmouryModel.Workspaces.JsonFolder
 {
 
     public class JsonWorkspace : IWorkspace
     {
-        private JsonWorkspace(DirectoryInfo directory, ProjectConfiguration projectConfiguration)
+        private JsonWorkspace(ProjectConfigurationInfo info)
         {
             Serializer = JsonUtilities.CreateSerializer();
-            Directory = directory;
-            ProjectConfiguration = projectConfiguration;
-            Root = new JsonFolder(directory, null, this);
-            Datafiles = new JsonTopDocumentFindingVisitor()
-                .GetRootDocuments(Root)
+            Info = info;
+            var documentFindingVisitor = new JsonTopDocumentFindingVisitor(info, this);
+            Datafiles = 
+                info.Configuration.SourceDirectories
+                .SelectMany(documentFindingVisitor.GetRootDocuments)
                 .Select(x => (IDatafileInfo)new JsonDatafileInfo(x))
                 .ToImmutableArray();
         }
@@ -31,13 +30,12 @@ namespace WarHub.ArmouryModel.Workspaces.JsonFolder
 
         internal JsonSerializer Serializer { get; }
 
-        private DirectoryInfo Directory { get; }
+        private ProjectConfiguration ProjectConfiguration => Info.Configuration;
 
-        public ProjectConfiguration ProjectConfiguration { get; }
-
-        public string RootPath => Directory.FullName;
+        public string RootPath => Info.GetDirectoryInfo().FullName;
 
         public ImmutableArray<IDatafileInfo> Datafiles { get; }
+        public ProjectConfigurationInfo Info { get; }
 
         public static JsonWorkspace CreateFromPath(string path)
         {
@@ -49,29 +47,24 @@ namespace WarHub.ArmouryModel.Workspaces.JsonFolder
         }
 
         public static JsonWorkspace CreateFromConfigurationFile(string path)
-        {
-            var configProvider = new JsonFolderProjectConfigurationProvider();
-            return new JsonWorkspace(new DirectoryInfo(Path.GetDirectoryName(path)), configProvider.Create(path));
-        }
+            => new JsonWorkspace(new JsonFolderProjectConfigurationProvider().Create(path));
 
         public static JsonWorkspace CreateFromConfigurationInfo(ProjectConfigurationInfo info)
-        {
-            return new JsonWorkspace(new FileInfo(info.Filepath).Directory, info.Configuration);
-        }
+            => new JsonWorkspace(info);
 
         public static JsonWorkspace CreateFromDirectory(string path)
         {
-            var dirInfo = new DirectoryInfo(path);
-            var configFiles = dirInfo
+            var configFiles =
+                new DirectoryInfo(path)
                 .EnumerateFiles("*" + ProjectConfiguration.FileExtension)
                 .ToList();
             var configProvider = new JsonFolderProjectConfigurationProvider();
             switch (configFiles.Count)
             {
                 case 0:
-                    return new JsonWorkspace(dirInfo, configProvider.Create(path));
+                    return new JsonWorkspace(configProvider.Create(path));
                 case 1:
-                    return new JsonWorkspace(dirInfo, configProvider.Create(configFiles[0].FullName));
+                    return new JsonWorkspace(configProvider.Create(configFiles[0].FullName));
                 default:
                     throw new InvalidOperationException("There's more than one project file in the directory");
             }
@@ -79,10 +72,23 @@ namespace WarHub.ArmouryModel.Workspaces.JsonFolder
 
         private class JsonTopDocumentFindingVisitor
         {
+            public JsonTopDocumentFindingVisitor(ProjectConfigurationInfo info, JsonWorkspace workspace)
+            {
+                Info = info;
+                Workspace = workspace;
+            }
+
+            public ProjectConfigurationInfo Info { get; }
+
+            public JsonWorkspace Workspace { get; }
+
             private Queue<JsonFolder> FoldersToVisit { get; } = new Queue<JsonFolder>();
 
-            public IEnumerable<JsonDocument> GetRootDocuments(JsonFolder initialFolder)
+            public IEnumerable<JsonDocument> GetRootDocuments(SourceFolder sourceFolder)
             {
+                var initialDir = Info.GetDirectoryInfoFor(sourceFolder);
+                var initialFolder = new JsonFolder(initialDir, null, Workspace);
+
                 FoldersToVisit.Enqueue(initialFolder);
                 return GetCore().Values();
 
