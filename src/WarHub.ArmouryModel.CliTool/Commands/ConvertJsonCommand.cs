@@ -29,7 +29,7 @@ namespace WarHub.ArmouryModel.CliTool.Commands
                 var fileDir = new FileInfo(datafile.Filepath).Directory;
                 Log.Debug("Converting JSON tree '{SubfolderName}' from {DirRef}", fileDir.Name, fileDir.Parent.FullName);
                 Log.Verbose("- Loading JSON tree...");
-                var node = datafile.Data;
+                var node = datafile.GetData();
                 Log.Verbose("- Loading finished. Saving XML file...");
                 var extension = node.GetXmlDocumentKindOrUnknown().GetFileExtension();
                 var filename = Path.Combine(destDir.FullName, fileDir.Name + extension);

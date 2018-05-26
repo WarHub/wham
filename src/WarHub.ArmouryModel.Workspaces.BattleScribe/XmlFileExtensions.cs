@@ -27,8 +27,6 @@ namespace WarHub.ArmouryModel.Workspaces.BattleScribe
         public const string DataIndex = ".xml";
         public const string DataIndexZipped = ".bsi";
         public const string RepoDistribution = ".bsr";
-        public const string DataIndexFileNameNoExtension = "index";
-        public const string DataIndexFileFullName = DataIndexFileNameNoExtension + DataIndex;
 
         static XmlFileExtensions()
         {
@@ -51,10 +49,6 @@ namespace WarHub.ArmouryModel.Workspaces.BattleScribe
                 UnzippedExtensions
                 .Concat(ZippedExtensions)
                 .ToImmutableHashSet(StringComparer.OrdinalIgnoreCase);
-            DataCatalogueKinds =
-                ImmutableHashSet.Create(
-                    XmlDocumentKind.Gamesystem,
-                    XmlDocumentKind.Catalogue);
             ExtensionsByKinds =
                 new Dictionary<XmlDocumentKind, ImmutableArray<string>>
                 {
@@ -86,12 +80,6 @@ namespace WarHub.ArmouryModel.Workspaces.BattleScribe
         public static ImmutableHashSet<string> UnzippedExtensions { get; }
 
         public static ImmutableHashSet<string> ZippedExtensions { get; }
-
-        /// <summary>
-        /// Gets the set containing <see cref="XmlDocumentKind.Gamesystem"/>
-        /// and <see cref="XmlDocumentKind.Catalogue"/>.
-        /// </summary>
-        public static ImmutableHashSet<XmlDocumentKind> DataCatalogueKinds { get; }
 
         public static ImmutableDictionary<SourceKind, XmlDocumentKind> DocumentKinds { get; }
 
@@ -129,10 +117,14 @@ namespace WarHub.ArmouryModel.Workspaces.BattleScribe
         {
             switch (file.GetXmlDocumentKind())
             {
-                case XmlDocumentKind.Gamesystem: return new LazyWeakDatafileInfo<GamesystemNode>(file.FullName);
-                case XmlDocumentKind.Catalogue: return new LazyWeakDatafileInfo<CatalogueNode>(file.FullName);
-                case XmlDocumentKind.Roster: return new LazyWeakDatafileInfo<RosterNode>(file.FullName);
-                case XmlDocumentKind.DataIndex: return new LazyWeakDatafileInfo<DataIndexNode>(file.FullName);
+                case XmlDocumentKind.Gamesystem:
+                    return new LazyWeakXmlDatafileInfo<GamesystemNode>(file.FullName, SourceKind.Gamesystem);
+                case XmlDocumentKind.Catalogue:
+                    return new LazyWeakXmlDatafileInfo<CatalogueNode>(file.FullName, SourceKind.Catalogue);
+                case XmlDocumentKind.Roster:
+                    return new LazyWeakXmlDatafileInfo<RosterNode>(file.FullName, SourceKind.Roster);
+                case XmlDocumentKind.DataIndex:
+                    return new LazyWeakXmlDatafileInfo<DataIndexNode>(file.FullName, SourceKind.DataIndex);
                 default:
                     return new UnknownTypeDatafileInfo(file.FullName);
             }
@@ -166,7 +158,7 @@ namespace WarHub.ArmouryModel.Workspaces.BattleScribe
             }
         }
 
-        public static void WriteRepoDistribution(this Stream stream, RepoDistribution repoDistribution)
+        public static void WriteTo(this RepoDistribution repoDistribution, Stream stream)
         {
             using (var zip = new ZipArchive(stream, ZipArchiveMode.Create, leaveOpen: true))
             {
@@ -176,7 +168,7 @@ namespace WarHub.ArmouryModel.Workspaces.BattleScribe
                     var entry = zip.CreateEntry(datafile.Filepath);
                     using (var entryStream = entry.Open())
                     {
-                        datafile.Data.Serialize(entryStream);
+                        datafile.GetData().Serialize(entryStream);
                     }
                 }
             }

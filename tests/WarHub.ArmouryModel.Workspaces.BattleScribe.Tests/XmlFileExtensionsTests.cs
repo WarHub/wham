@@ -51,13 +51,13 @@ namespace WarHub.ArmouryModel.Workspaces.BattleScribe.Tests
                     .ToImmutableArray());
             using (var memory = new MemoryStream())
             {
-                memory.WriteRepoDistribution(original);
+                original.WriteTo(memory);
                 memory.Position = 0;
                 var read = memory.ReadRepoDistribution();
-                Assert.Equal(dataIndexName, read.Index.Data.Name);
+                Assert.Equal(dataIndexName, read.Index.GetData().Name);
                 Assert.True(
                     read.Datafiles
-                    .Select(x => x.Data.Id)
+                    .Select(x => x.GetData().Id)
                     .ToHashSet()
                     .SetEquals(new[] { gstId, catId1, catId2 }));
             }

@@ -10,14 +10,32 @@ namespace WarHub.ArmouryModel.ProjectModel
 {
     public static class ProjectConfigurationExtensions
     {
+        public const string DataIndexFileName = "index.xml";
+
         static ProjectConfigurationExtensions()
         {
-            FolderKindsBySourceKinds = new Dictionary<SourceKind, ImmutableHashSet<SourceFolderKind>>
-            {
-                [SourceKind.Catalogue] = ImmutableHashSet.Create(SourceFolderKind.All, SourceFolderKind.Catalogues),
-                [SourceKind.Gamesystem] = ImmutableHashSet.Create(SourceFolderKind.All, SourceFolderKind.Gamesystems)
-            }
-            .ToImmutableDictionary();
+            DataCatalogueKinds =
+                ImmutableHashSet.Create(
+                    SourceKind.Gamesystem,
+                    SourceKind.Catalogue);
+
+            FolderKindsBySourceKinds =
+                new Dictionary<SourceKind, ImmutableHashSet<SourceFolderKind>>
+                {
+                    [SourceKind.Catalogue] = ImmutableHashSet.Create(SourceFolderKind.All, SourceFolderKind.Catalogues),
+                    [SourceKind.Gamesystem] = ImmutableHashSet.Create(SourceFolderKind.All, SourceFolderKind.Gamesystems)
+                }
+                .ToImmutableDictionary();
+
+            DataIndexKinds =
+                new Dictionary<SourceKind, DataIndexEntryKind>
+                {
+                    [SourceKind.Catalogue] = DataIndexEntryKind.Catalogue,
+                    [SourceKind.Gamesystem] = DataIndexEntryKind.Gamesystem
+                }
+                .ToImmutableDictionary();
+
+            SourceKindsByDataIndexKinds = DataIndexKinds.ToImmutableDictionary(x => x.Value, x => x.Key);
 
             SourceKindsByFolderKinds = FolderKindsBySourceKinds
                 .SelectMany(x => x.Value.Select(folderKind => (folderKind, sourceKind: x.Key)))
@@ -25,8 +43,10 @@ namespace WarHub.ArmouryModel.ProjectModel
                 .ToImmutableDictionary(x => x.Key, x => x.ToImmutableHashSet());
         }
 
+        public static ImmutableHashSet<SourceKind> DataCatalogueKinds { get; }
         public static ImmutableDictionary<SourceKind, ImmutableHashSet<SourceFolderKind>> FolderKindsBySourceKinds { get; }
-
+        public static ImmutableDictionary<SourceKind, DataIndexEntryKind> DataIndexKinds { get; }
+        public static ImmutableDictionary<DataIndexEntryKind, SourceKind> SourceKindsByDataIndexKinds { get; }
         public static ImmutableDictionary<SourceFolderKind, ImmutableHashSet<SourceKind>> SourceKindsByFolderKinds { get; }
 
         public static ImmutableHashSet<SourceFolderKind> FolderKinds(this SourceKind sourceKind)
@@ -35,11 +55,16 @@ namespace WarHub.ArmouryModel.ProjectModel
         public static ImmutableHashSet<SourceKind> SourceKinds(this SourceFolderKind folderKind)
             => SourceKindsByFolderKinds[folderKind];
 
+        public static DataIndexEntryKind GetIndexEntryKindOrUnknown(this SourceKind sourceKind)
+            => DataIndexKinds.TryGetValue(sourceKind, out var kind) ? kind : DataIndexEntryKind.Unknown;
+
         public static IEnumerable<SourceFolder> GetSourceFolders(this ProjectConfiguration config, SourceKind kind)
         {
             var folderKinds = kind.FolderKinds();
             return config.SourceDirectories.Where(x => folderKinds.Contains(x.Kind));
         }
+
+        public static bool IsDataCatalogueKind(this SourceKind kind) => DataCatalogueKinds.Contains(kind);
 
         public static SourceFolder GetSourceFolder(this ProjectConfiguration config, SourceKind kind)
         {
@@ -77,5 +102,36 @@ namespace WarHub.ArmouryModel.ProjectModel
 
         public static DirectoryInfo GetDirectoryInfoFor(this ProjectConfigurationInfo configInfo, SourceFolder folder)
             => new DirectoryInfo(configInfo.GetFullPath(folder));
+
+        public static DataIndexNode CreateDataIndex(this IWorkspace workspace, string repoName, string repoUrl)
+        {
+            var entries =
+                workspace.Datafiles
+                .Where(x => x.DataKind.IsDataCatalogueKind())
+                .Select(CreateEntry)
+                .ToNodeList();
+            // TODO use BattleScribe version for DataIndex bs version
+            return NodeFactory.DataIndex(ProjectToolset.Version, repoName, repoUrl, dataIndexEntries: entries);
+            DataIndexEntryNode CreateEntry(IDatafileInfo datafile)
+            {
+                var node = (CatalogueBaseNode)datafile.GetData();
+                var path = Path.GetFileName(datafile.Filepath);
+                var entryKind = datafile.DataKind.GetIndexEntryKindOrUnknown();
+                return NodeFactory.DataIndexEntry(path, entryKind, node.Id, node.Name, node.BattleScribeVersion, node.Revision);
+            }
+        }
+
+        public static RepoDistribution CreateRepoDistribution(this IWorkspace workspace, string repoName, string repoUrl)
+        {
+            var indexNode = workspace.CreateDataIndex(repoName, repoUrl);
+            var indexDatafile = DatafileInfo.Create(DataIndexFileName, indexNode);
+            var datafiles = workspace.Datafiles
+                .Where(x => x.DataKind.IsDataCatalogueKind())
+                .Select(x => DatafileInfo.Create(Path.GetFileName(x.Filepath), x.GetData()))
+                .OfType<IDatafileInfo<CatalogueBaseNode>>()
+                .ToImmutableArray();
+            var repo = new RepoDistribution(indexDatafile, datafiles);
+            return repo;
+        }
     }
 }

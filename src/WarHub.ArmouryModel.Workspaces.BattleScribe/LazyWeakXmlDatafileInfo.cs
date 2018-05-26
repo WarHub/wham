@@ -5,22 +5,23 @@ using WarHub.ArmouryModel.Source;
 
 namespace WarHub.ArmouryModel.Workspaces.BattleScribe
 {
-    internal class LazyWeakDatafileInfo<TData> : IDatafileInfo<TData> where TData : SourceNode
+    internal class LazyWeakXmlDatafileInfo<TData> : IDatafileInfo<TData> where TData : SourceNode
     {
-        public LazyWeakDatafileInfo(string path)
+        public LazyWeakXmlDatafileInfo(string path, SourceKind dataKind)
         {
             Filepath = path;
+            DataKind = dataKind;
         }
 
         public string Filepath { get; }
 
         public TData Data => GetData();
 
+        public SourceKind DataKind { get; }
+
         private WeakReference<TData> WeakData { get; } = new WeakReference<TData>(null);
 
-        SourceNode IDatafileInfo.Data => Data;
-
-        private TData GetData()
+        public TData GetData()
         {
             if (WeakData.TryGetTarget(out var cached))
             {
@@ -31,12 +32,14 @@ namespace WarHub.ArmouryModel.Workspaces.BattleScribe
             return data;
         }
 
+        SourceNode IDatafileInfo.GetData() => GetData();
+
         private TData ReadFile()
         {
             using (var filestream = File.OpenRead(Filepath))
             {
                 var datafile = filestream.LoadSourceAuto(Filepath);
-                return (TData)datafile?.Data;
+                return (TData)datafile?.GetData();
             }
         }
     }

@@ -9,16 +9,28 @@ namespace WarHub.ArmouryModel.Workspaces.JsonFolder
         public JsonDatafileInfo(JsonDocument rootDocument)
         {
             RootDocument = rootDocument;
-            LazyData = new Lazy<SourceNode>(ReadData);
         }
 
         public string Filepath => RootDocument.Path;
 
-        public SourceNode Data => LazyData.Value;
-
         public JsonDocument RootDocument { get; }
 
-        private Lazy<SourceNode> LazyData { get; }
+        // TODO should be optimized to read data type from single "root" file
+        public SourceKind DataKind => GetData().Kind;
+
+
+        private WeakReference<SourceNode> WeakData { get; } = new WeakReference<SourceNode>(null);
+
+        public SourceNode GetData()
+        {
+            if (WeakData.TryGetTarget(out var cached))
+            {
+                return cached;
+            }
+            var data = ReadData();
+            WeakData.SetTarget(data);
+            return data;
+        }
 
         private SourceNode ReadData()
         {

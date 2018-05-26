@@ -8,24 +8,22 @@ namespace WarHub.ArmouryModel.Workspaces.BattleScribe
     {
         private readonly IDatafileInfo _datafileInfo;
 
-        public XmlDocument(XmlDocumentKind key, IDatafileInfo datafileInfo, XmlWorkspace workspace)
+        public XmlDocument(XmlDocumentKind kind, IDatafileInfo datafileInfo, XmlWorkspace workspace)
         {
-            Kind = key;
+            Kind = kind;
             _datafileInfo = datafileInfo;
             Workspace = workspace;
-            Filepath = datafileInfo.Filepath;
-            Name = Path.GetExtension(Filepath);
         }
 
         /// <summary>
         /// Gets the filepath of this document.
         /// </summary>
-        public string Filepath { get; }
+        public string Filepath => _datafileInfo.Filepath;
 
         /// <summary>
         /// Gets the filename without file extension.
         /// </summary>
-        public string Name { get; }
+        public string Name => Path.GetExtension(Filepath);
 
         /// <summary>
         /// Gets the kind of this document.
@@ -43,7 +41,7 @@ namespace WarHub.ArmouryModel.Workspaces.BattleScribe
         /// <returns></returns>
         public SourceNode GetRoot()
         {
-            return _datafileInfo.Data;
+            return _datafileInfo.GetData();
         }
     }
 }

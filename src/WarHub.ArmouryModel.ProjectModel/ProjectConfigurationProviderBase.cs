@@ -62,7 +62,7 @@ namespace WarHub.ArmouryModel.ProjectModel
         {
             var dir = new DirectoryInfo(directory);
             var folderName = dir.Parent != null ? dir.Name : "project";
-            var filename = Path.Combine(folderName, ProjectConfiguration.FileExtension);
+            var filename = folderName + ProjectConfiguration.FileExtension;
             return filename;
         }
 

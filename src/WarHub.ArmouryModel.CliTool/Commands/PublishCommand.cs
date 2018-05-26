@@ -15,31 +15,35 @@ namespace WarHub.ArmouryModel.CliTool.Commands
 {
     public class PublishCommand : CommandBase
     {
+        [ArgShortcut("s")]
         [ArgDescription("Directory in which to look for project file or datafiles.")]
+        [DefaultValue("."), ArgExistingDirectory]
         public string Source { get; set; }
 
-        [ArgDescription("File or directory to save artifacts to.")]
+        [ArgShortcut("d")]
+        [ArgDescription("Directory to save artifacts to.")]
+        [DefaultValue(".")]
         public string Destination { get; set; }
 
-        public List<PublishArtifact> Artifacts { get; }
+        public List<PublishArtifact> Artifacts { get; set; }
 
         protected override void MainCore()
         {
+            Directory.CreateDirectory(Destination);
             var configInfo = new AutoProjectConfigurationProvider().Create(Source);
-            switch (configInfo.Configuration.FormatProvider)
+            var workspace = WorkspaceProvider.ReadWorkspaceFromConfig(configInfo);
+
+            // TODO switch on artifact types, output to artifact directory
+            var distro = workspace.CreateRepoDistribution("repo", "repo-url");
+            using (var stream = File.OpenWrite(GetRepoDistributionFilename(distro)))
             {
-                case ProjectFormatProviderType.JsonFolders:
-                    //PublishJson();
-                    break;
-                case ProjectFormatProviderType.XmlCatalogues:
-                    //PublishXml();
-                    break;
-                default:
-                    Log.Error(
-                        "Publishing unknown ProjectFormat: '{Format}' is not supported.",
-                        configInfo.Configuration.FormatProvider);
-                    break;
+                distro.WriteTo(stream);
             }
+        }
+
+        private string GetRepoDistributionFilename(RepoDistribution distribution)
+        {
+            return Path.Combine(Destination, new DirectoryInfo(Source).Name + XmlFileExtensions.RepoDistribution);
         }
 
         private class WorkspaceProvider

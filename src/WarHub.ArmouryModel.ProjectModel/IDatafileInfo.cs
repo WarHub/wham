@@ -6,11 +6,13 @@ namespace WarHub.ArmouryModel.ProjectModel
     {
         string Filepath { get; }
 
-        SourceNode Data { get; }
+        SourceKind DataKind { get; }
+
+        SourceNode GetData();
     }
 
     public interface IDatafileInfo<out TData> : IDatafileInfo where TData : SourceNode
     {
-        new TData Data { get; }
+        new TData GetData();
     }
 }

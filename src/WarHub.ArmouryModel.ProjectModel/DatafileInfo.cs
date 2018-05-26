@@ -12,7 +12,11 @@ namespace WarHub.ArmouryModel.ProjectModel
 
         public TData Data { get; }
 
-        SourceNode IDatafileInfo.Data => Data;
+        public SourceKind DataKind => Data.Kind;
+
+        public TData GetData() => Data;
+
+        SourceNode IDatafileInfo.GetData() => Data;
     }
 
     public static class DatafileInfo

@@ -4,7 +4,6 @@ using System.IO;
 using System.Linq;
 using MoreLinq;
 using WarHub.ArmouryModel.ProjectModel;
-using WarHub.ArmouryModel.Source;
 
 namespace WarHub.ArmouryModel.Workspaces.BattleScribe
 {
@@ -75,42 +74,6 @@ namespace WarHub.ArmouryModel.Workspaces.BattleScribe
                     left.Zip(right, (x1, x2) => x1 == x2 ? x1 : null)
                     .Where(x => x != null))
                 .LastOrDefault();
-        }
-
-        public DataIndexNode CreateDataIndex(string repoName, string repoUrl)
-        {
-            var entries =
-                Documents
-                .Where(x => XmlFileExtensions.DataCatalogueKinds.Contains(x.Kind))
-                .Select(CreateEntry)
-                .ToNodeList();
-            return NodeFactory.DataIndex(ProjectToolset.Version, repoName, repoUrl, dataIndexEntries: entries);
-            DataIndexEntryNode CreateEntry(XmlDocument doc)
-            {
-                var node = (CatalogueBaseNode)doc.GetRoot();
-                var path = Path.GetFileName(doc.Filepath);
-                var entryKind = doc.Kind == XmlDocumentKind.Gamesystem
-                    ? DataIndexEntryKind.Gamesystem : DataIndexEntryKind.Catalogue;
-                return NodeFactory.DataIndexEntry(path, entryKind, node.Id, node.Name, node.BattleScribeVersion, node.Revision);
-            }
-        }
-
-        public RepoDistribution CreateRepoDistribution(string repoName, string repoUrl)
-        {
-            var indexNode = CreateDataIndex(repoName, repoUrl);
-            var indexDatafile = DatafileInfo.Create(XmlFileExtensions.DataIndexFileFullName, indexNode);
-            var datafiles = Documents
-                .Where(x => XmlFileExtensions.DataCatalogueKinds.Contains(x.Kind))
-                .Select(CreateDatafileInfo)
-                .ToImmutableArray();
-            var repo = new RepoDistribution(indexDatafile, datafiles);
-            return repo;
-
-            IDatafileInfo<CatalogueBaseNode> CreateDatafileInfo(XmlDocument doc)
-            {
-                var node = (CatalogueBaseNode)doc.GetRoot();
-                return DatafileInfo.Create(doc.Filepath, node);
-            }
         }
     }
 }

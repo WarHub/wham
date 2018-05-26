@@ -4,6 +4,9 @@ namespace WarHub.ArmouryModel.Source
 {
     public enum DataIndexEntryKind
     {
+        [XmlEnum("unknown")]
+        Unknown,
+
         [XmlEnum("gamesystem")]
         Gamesystem,
 
