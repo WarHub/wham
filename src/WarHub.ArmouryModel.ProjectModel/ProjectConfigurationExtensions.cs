@@ -11,6 +11,7 @@ namespace WarHub.ArmouryModel.ProjectModel
     public static class ProjectConfigurationExtensions
     {
         public const string DataIndexFileName = "index.xml";
+        public const string DataIndexZippedFileName = "index.bsi";
 
         static ProjectConfigurationExtensions()
         {
