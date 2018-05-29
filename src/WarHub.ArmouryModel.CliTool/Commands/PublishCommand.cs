@@ -27,7 +27,15 @@ namespace WarHub.ArmouryModel.CliTool.Commands
         public string Destination { get; set; }
 
         [ArgShortcut("a")]
-        [ArgDescription("Kinds of artifacts to publish to output. Defaults to RepoDistribution (.bsr).")]
+        
+        [ArgDescription(
+            "Kinds of artifacts to publish to output (multiple values allowed). Defaults to RepoDistribution (.bsr)." +
+            " Available values:\n" +
+            " * xml - uncompressed cat/gst XML files\n" +
+            " * zip - zipped catz/gstz XML files\n" +
+            " * index - index.xml datafile index for hosting on the web\n" +
+            " * bsi - index.bsi zipped datafile index for hosting on the web\n" +
+            " * bsr - zipped cat/gst datafile container with index")]
         public List<PublishArtifact> Artifacts { get; set; } = new List<PublishArtifact> { PublishArtifact.RepoDistribution };
 
         protected override void MainCore()
@@ -135,10 +143,15 @@ namespace WarHub.ArmouryModel.CliTool.Commands
     
     public enum PublishArtifact
     {
+        [ArgShortcut("xml")]
         XmlDatafiles,
+        [ArgShortcut("zip")]
         ZippedXmlDatafiles,
+        [ArgShortcut("index")]
         Index,
+        [ArgShortcut("bsi")]
         ZippedIndex,
+        [ArgShortcut("bsr")]
         RepoDistribution
     }
 }

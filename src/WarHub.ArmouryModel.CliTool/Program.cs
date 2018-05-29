@@ -15,6 +15,10 @@ namespace WarHub.ArmouryModel.CliTool
     [ArgExceptionBehavior(ArgExceptionPolicy.StandardExceptionHandling), ArgEnforceCase]
     public class CliActions
     {
+        [HelpHook]
+        [ArgShortcut("?"), ArgShortcut("h"), ArgShortcut("help")]
+        public bool ShowHelp { get; set; }
+
         [ArgActionMethod, ArgShortcut("convertxml")]
         [ArgDescription("Converts BattleScribe XML files into JSON directory structure.")]
         public void ConvertXml(ConvertXmlCommand args) => args.Main();
