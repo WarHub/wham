@@ -35,9 +35,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		.gitignore = .gitignore
 		appveyor.yml = appveyor.yml
 		src\Directory.Build.props = src\Directory.Build.props
-		LICENSE = LICENSE
+		LICENSE.txt = LICENSE.txt
 		log.txt = log.txt
-		NuGet.Config = NuGet.Config
+		nuget.config = nuget.config
 		README.md = README.md
 		src\version.json = src\version.json
 	EndProjectSection

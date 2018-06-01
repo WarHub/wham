@@ -15,10 +15,12 @@ namespace WarHub.ArmouryModel.CliTool.Commands
     {
         [ArgShortcut("s")]
         [ArgDescription("Directory in which to look for convertible files."), ArgExistingDirectory]
+        [ArgDefaultValue(".")]
         public string Source { get; set; }
 
         [ArgShortcut("d")]
         [ArgDescription("Directory into which to save conversion results.")]
+        [ArgDefaultValue(".")]
         public string Destination { get; set; }
 
         protected override void MainCore()
