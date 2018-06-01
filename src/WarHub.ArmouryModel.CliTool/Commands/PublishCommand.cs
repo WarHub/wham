@@ -42,7 +42,7 @@ namespace WarHub.ArmouryModel.CliTool.Commands
         protected override void MainCore()
         {
             var configInfo = new AutoProjectConfigurationProvider().Create(Source);
-            Log.Debug("Using configuration: @{Config}", configInfo);
+            Log.Debug("Using configuration: {@Config}", configInfo);
             Destination = Destination ?? configInfo.Configuration.OutputPath;
             Log.Debug("Writing artifacts to: {Destination}", Destination);
             Log.Debug("Loading workspace...");

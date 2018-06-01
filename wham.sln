@@ -29,6 +29,19 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WarHub.ArmouryModel.Workspa
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WarHub.ArmouryModel.ProjectModel", "src\WarHub.ArmouryModel.ProjectModel\WarHub.ArmouryModel.ProjectModel.csproj", "{24081E12-9A56-4FFE-AA56-88FF40BF7CFB}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{7FE22FE4-14D4-4179-9811-90E0A21F4000}"
+	ProjectSection(SolutionItems) = preProject
+		.gitattributes = .gitattributes
+		.gitignore = .gitignore
+		appveyor.yml = appveyor.yml
+		src\Directory.Build.props = src\Directory.Build.props
+		LICENSE = LICENSE
+		log.txt = log.txt
+		NuGet.Config = NuGet.Config
+		README.md = README.md
+		src\version.json = src\version.json
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU

@@ -18,6 +18,7 @@ namespace WarHub.ArmouryModel.Workspaces.JsonFolder
         {
             Serializer = JsonUtilities.CreateSerializer();
             Info = info;
+            // TOD validate configuration, handle not-found paths
             var documentFindingVisitor = new JsonTopDocumentFindingVisitor(info, this);
             Datafiles = 
                 info.Configuration.SourceDirectories
