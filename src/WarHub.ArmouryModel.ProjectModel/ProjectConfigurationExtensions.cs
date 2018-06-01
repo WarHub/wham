@@ -112,7 +112,7 @@ namespace WarHub.ArmouryModel.ProjectModel
                 .Select(CreateEntry)
                 .ToNodeList();
             // TODO use BattleScribe version for DataIndex bs version
-            return NodeFactory.DataIndex(ProjectToolset.Version, repoName, repoUrl, dataIndexEntries: entries);
+            return NodeFactory.DataIndex(ProjectToolset.BattleScribeFormatVersion, repoName, repoUrl, dataIndexEntries: entries);
             DataIndexEntryNode CreateEntry(IDatafileInfo datafile)
             {
                 var node = (CatalogueBaseNode)datafile.GetData();

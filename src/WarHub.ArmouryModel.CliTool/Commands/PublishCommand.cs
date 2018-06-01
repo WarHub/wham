@@ -1,18 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using PowerArgs;
-using WarHub.ArmouryModel.CliTool.JsonInfrastructure;
-using WarHub.ArmouryModel.Source.BattleScribe;
+using WarHub.ArmouryModel.CliTool.Utilities;
 using WarHub.ArmouryModel.ProjectModel;
+using WarHub.ArmouryModel.Source;
 using WarHub.ArmouryModel.Workspaces.BattleScribe;
 using WarHub.ArmouryModel.Workspaces.JsonFolder;
-using WarHub.ArmouryModel.CliTool.Utilities;
-using System.IO.Compression;
-using System.Reflection;
 
 namespace WarHub.ArmouryModel.CliTool.Commands
 {
@@ -39,6 +36,16 @@ namespace WarHub.ArmouryModel.CliTool.Commands
         [ArgDescription("Directory to save artifacts to. Overrides default read from .whamproj file.")]
         public string Destination { get; set; }
 
+        [ArgShortcut("url")]
+        [ArgDescription("Repository url that gets included in index files and repo distribution (.bsr).")]
+        public string RepoUrl { get; set; }
+
+        [ArgShortcut("name")]
+        [ArgDescription(
+            "Repository name that gets included in index files and repo distribution (.bsr)." +
+            " By default name of the game system file is used, or parent folder name if no game system.")]
+        public string RepoName { get; set; }
+
         protected override void MainCore()
         {
             var configInfo = new AutoProjectConfigurationProvider().Create(Source);
@@ -50,7 +57,16 @@ namespace WarHub.ArmouryModel.CliTool.Commands
             Log.Debug(
                 "Workspace loaded. {DatafileCount} datafiles discovered.",
                 workspace.Datafiles.Where(x => x.DataKind.IsDataCatalogueKind()).Count());
-            foreach (var artifactType in Artifacts ?? Enumerable.Empty<PublishArtifact>())
+            if (string.IsNullOrWhiteSpace(RepoName))
+            {
+                var gst = (GamesystemNode)workspace.Datafiles
+                    .FirstOrDefault(x => x.DataKind == SourceKind.Gamesystem)
+                    ?.GetData();
+                RepoName = gst?.Name ?? configInfo.GetDirectoryInfo().Name;
+            }
+            Log.Debug("Repository name used is: {RepoName}", RepoName);
+
+            foreach (var artifactType in Artifacts.Distinct() ?? Enumerable.Empty<PublishArtifact>())
             {
                 CreateArtifact(artifactType, workspace);
             }
@@ -89,52 +105,77 @@ namespace WarHub.ArmouryModel.CliTool.Commands
 
         private void PublishArtifactRepoDistribution(IWorkspace workspace)
         {
-            var distro = workspace.CreateRepoDistribution("repo", "repo-url");
-            var filename = GetRepoDistributionFilename(distro);
-            using (var stream = File.OpenWrite(filename))
-            {
-                distro.WriteTo(stream);
-            }
-            Log.Information("Created {File}", filename);
+            var distro = workspace.CreateRepoDistribution(RepoName, RepoUrl);
+            TryCatchLogError(
+                "bsr",
+                () => GetRepoDistributionFilepath(distro),
+                filepath =>
+                {
+                    using (var stream = File.OpenWrite(filepath))
+                    {
+                        distro.WriteTo(stream);
+                    }
+                });
         }
 
         private void PublishIndexZipped(IWorkspace workspace)
         {
-            var dataIndex = workspace.CreateDataIndex("repo", "repo-url");
-            var filepath = Path.Combine(Destination, ProjectConfigurationExtensions.DataIndexZippedFileName);
-            using (var stream = File.Create(filepath))
-            using (var archive = new ZipArchive(stream, ZipArchiveMode.Create))
-            using (var entryStream = archive.CreateEntry(ProjectConfigurationExtensions.DataIndexFileName).Open())
-            {
-                dataIndex.Serialize(entryStream);
-            }
-            Log.Information("Created {File}", filepath);
+            var dataIndex = workspace.CreateDataIndex(RepoName, RepoUrl);
+            var datafile = DatafileInfo.Create(ProjectConfigurationExtensions.DataIndexZippedFileName, dataIndex);
+            TryCatchLogError(
+                datafile.Filepath,
+                () => Path.Combine(Destination, datafile.Filepath),
+                datafile.WriteXmlZippedFile);
         }
 
         private void PublishIndex(IWorkspace workspace)
         {
             var dataIndex = workspace.CreateDataIndex("repo", "repo-url");
-            var filepath = Path.Combine(Destination, ProjectConfigurationExtensions.DataIndexFileName);
-            using (var stream = File.Create(filepath))
-            {
-                dataIndex.Serialize(stream);
-            }
-            Log.Information("Created {File}", filepath);
+            var datafile = DatafileInfo.Create(ProjectConfigurationExtensions.DataIndexFileName, dataIndex);
+            TryCatchLogError(
+                datafile.Filepath,
+                () => Path.Combine(Destination, datafile.Filepath),
+                datafile.WriteXmlFile);
         }
 
         private void PublishXmlZipped(IWorkspace workspace)
         {
-            // TODO
-            Log.Error("Publishing {Artifact} is not yet supported.", PublishArtifact.ZippedXmlDatafiles);
+            foreach (var datafile in workspace.Datafiles.Where(x => x.DataKind.IsDataCatalogueKind()))
+            {
+                TryCatchLogError(
+                    datafile.Filepath,
+                    () => Path.Combine(Destination, datafile.GetXmlZippedFilename()),
+                    datafile.WriteXmlZippedFile);
+            }
         }
 
         private void PublishXml(IWorkspace workspace)
         {
-            // TODO
-            Log.Error("Publishing {Artifact} is not yet supported.", PublishArtifact.XmlDatafiles);
+            foreach (var datafile in workspace.Datafiles.Where(x => x.DataKind.IsDataCatalogueKind()))
+            {
+                TryCatchLogError(
+                    datafile.Filepath,
+                    () => Path.Combine(Destination, datafile.GetXmlFilename()),
+                    datafile.WriteXmlFile);
+            }
         }
 
-        private string GetRepoDistributionFilename(RepoDistribution distribution)
+        private void TryCatchLogError(string originalItemPath, Func<string> publishItemPathGetter, Action<string> publish)
+        {
+            try
+            {
+                var publishItemPath = publishItemPathGetter();
+                Log.Debug("Creating {Filepath}", publishItemPath);
+                publish(publishItemPath);
+                Log.Information("Created {Filepath}", publishItemPath);
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "Failed to publish {OriginalFilepath}", originalItemPath);
+            }
+        }
+
+        private string GetRepoDistributionFilepath(RepoDistribution distribution)
         {
             return Path.Combine(Destination, new DirectoryInfo(Source).Name + XmlFileExtensions.RepoDistribution);
         }

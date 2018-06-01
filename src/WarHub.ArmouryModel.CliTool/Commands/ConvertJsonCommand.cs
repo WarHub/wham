@@ -31,7 +31,7 @@ namespace WarHub.ArmouryModel.CliTool.Commands
                 Log.Verbose("- Loading JSON tree...");
                 var node = datafile.GetData();
                 Log.Verbose("- Loading finished. Saving XML file...");
-                var extension = node.GetXmlDocumentKindOrUnknown().GetFileExtension();
+                var extension = node.GetXmlDocumentKindOrUnknown().GetXmlFileExtension();
                 var filename = Path.Combine(destDir.FullName, fileDir.Name + extension);
                 using (var fileStream = File.Create(filename))
                 {

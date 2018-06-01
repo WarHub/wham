@@ -104,11 +104,17 @@ namespace WarHub.ArmouryModel.Workspaces.BattleScribe
         public static SourceKind GetSourceKindOrUnknown(this XmlDocumentKind docKind)
             => SourceKinds.TryGetValue(docKind, out var kind) ? kind : SourceKind.Unknown;
 
-        public static string GetFileExtension(this XmlDocumentKind kind)
+        public static string GetXmlFileExtension(this XmlDocumentKind kind)
             => ExtensionsByKinds[kind].First();
 
-        public static string GetZippedFileExtension(this XmlDocumentKind kind)
+        public static string GetXmlZippedFileExtension(this XmlDocumentKind kind)
             => ExtensionsByKinds[kind].First(ZippedExtensions.Contains);
+
+        public static string GetXmlFilename(this IDatafileInfo datafile)
+            => Path.GetFileNameWithoutExtension(datafile.Filepath) + datafile.DataKind.GetXmlDocumentKindOrUnknown().GetXmlFileExtension();
+
+        public static string GetXmlZippedFilename(this IDatafileInfo datafile)
+            => Path.GetFileNameWithoutExtension(datafile.Filepath) + datafile.DataKind.GetXmlDocumentKindOrUnknown().GetXmlZippedFileExtension();
 
         private static XmlDocumentKind GetKindOrUnknown(string extension)
             => DocumentKindByExtensions.TryGetValue(extension, out var kind) ? kind : XmlDocumentKind.Unknown;
@@ -171,6 +177,25 @@ namespace WarHub.ArmouryModel.Workspaces.BattleScribe
                         datafile.GetData().Serialize(entryStream);
                     }
                 }
+            }
+        }
+
+
+        public static void WriteXmlFile(this IDatafileInfo datafile, string filepath)
+        {
+            using (var stream = File.Create(filepath))
+            {
+                datafile.GetData().Serialize(stream);
+            }
+        }
+
+        public static void WriteXmlZippedFile(this IDatafileInfo datafile, string filepath)
+        {
+            using (var fileStream = File.Create(filepath))
+            using (var archive = new ZipArchive(fileStream, ZipArchiveMode.Create))
+            using (var entryStream = archive.CreateEntry(datafile.GetXmlFilename()).Open())
+            {
+                datafile.GetData().Serialize(entryStream);
             }
         }
 
