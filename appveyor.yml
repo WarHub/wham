@@ -17,7 +17,7 @@ init:
       if ([System.Version](dotnet --version) -ge [System.Version]"2.1.300") {
         $scriptPath = 'C:\dotnet-install.ps1'
         (New-Object System.Net.WebClient).DownloadString('https://dot.net/v1/dotnet-install.ps1', $scriptPath)
-        $scriptPath --channel 2.1.300
+        iex '$scriptPath --channel 2.1.300'
       }
   - ps: dotnet --info
 before_build:
