@@ -28,7 +28,7 @@ namespace WarHub.ArmouryModel.CliTool.Commands
             var configInfo = CreateDestinationProjectConfig(sourceDir, destDir);
             var workspace = CreateXmlWorkspace(sourceDir);
             configInfo.WriteFile();
-            Log.Debug("Project configuration saved as {ConfigFile}", configInfo.Filepath);
+            Log.Information("Project configuration saved as {ConfigFile}", configInfo.Filepath);
 
             ConvertFiles(configInfo, workspace);
         }

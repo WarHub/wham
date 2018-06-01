@@ -14,7 +14,11 @@ namespace WarHub.ArmouryModel.ProjectModel
                 DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate,
                 Formatting = Formatting.Indented,
                 ContractResolver = new IgnoringEmptyCollectionsContractResolver(),
-                Converters = { new MultilineJsonStringConverter() }
+                Converters =
+                {
+                    new MultilineJsonStringConverter(),
+                    new Newtonsoft.Json.Converters.StringEnumConverter()
+                }
             };
         }
     }

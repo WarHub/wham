@@ -4,13 +4,6 @@ using Newtonsoft.Json;
 
 namespace WarHub.ArmouryModel.ProjectModel
 {
-    public class ProjectToolset
-    {
-        public static string Version { get; } = "v0.0-alpha";
-
-        public static string BattleScribeFormatVersion { get; } = "2.01";
-    }
-
     public abstract class ProjectConfigurationProviderBase : IProjectConfigurationProvider
     {
         public string CurrentToolsetVersion => ProjectToolset.Version;
