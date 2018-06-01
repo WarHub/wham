@@ -14,10 +14,10 @@ init:
       echo "release_branch='$env:release_branch'"
 # get .NET Core SDK v2.1 if not available
   - ps: |
-      if ([System.Version](dotnet --version) -ge [System.Version]"2.1.300") {
+      if ([System.Version](dotnet --version) -lt [System.Version]"2.1.300") {
         $scriptPath = 'C:\dotnet-install.ps1'
-        (New-Object System.Net.WebClient).DownloadString('https://dot.net/v1/dotnet-install.ps1', $scriptPath)
-        iex '$scriptPath --channel 2.1.300'
+        (New-Object System.Net.WebClient).DownloadFile('https://dot.net/v1/dotnet-install.ps1', $scriptPath)
+        iex "$scriptPath --channel 2.1.300"
       }
   - ps: dotnet --info
 before_build:
