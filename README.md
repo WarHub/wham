@@ -45,7 +45,7 @@ To install `wham` command line tool:
   for your platform.
 2. In your shell/command line run
   `dotnet tool install -g --add-source https://www.myget.org/F/warhub/api/v3/index.json
- --version 0.5.6-alpha-gab70099344 wham`
+ --version 0.5.10-alpha wham`
 3. You can check if the tool is available: `wham version` should show what version exactly is running.
 
 This will install preview of `wham` CLI tool in your user-space (not system global),

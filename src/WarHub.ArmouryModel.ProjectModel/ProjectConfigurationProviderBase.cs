@@ -61,7 +61,16 @@ namespace WarHub.ArmouryModel.ProjectModel
             return filename;
         }
 
-        protected abstract ProjectConfiguration CreateDefaultCore(string directory);
+        protected virtual ProjectConfiguration CreateDefaultCore(string directory)
+        {
+            return new ProjectConfiguration(
+                CurrentToolsetVersion,
+                DefaultDirectoryReferences,
+                ProjectConfiguration.DefaultOutputPath,
+                ProviderType);
+        }
+
+        public abstract ProjectFormatProviderType ProviderType { get; }
 
         protected abstract ImmutableArray<SourceFolder> DefaultDirectoryReferences { get; }
 

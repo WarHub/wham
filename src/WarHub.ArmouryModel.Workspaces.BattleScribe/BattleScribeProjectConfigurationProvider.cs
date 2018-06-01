@@ -7,14 +7,7 @@ namespace WarHub.ArmouryModel.Workspaces.BattleScribe
     {
         public const string DefaultSourcePath = ".";
 
-        protected override ProjectConfiguration CreateDefaultCore(string path)
-        {
-            return new ProjectConfiguration(
-                CurrentToolsetVersion,
-                DefaultDirectoryReferences,
-                ProjectConfiguration.DefaultOutputPath,
-                ProjectFormatProviderType.XmlCatalogues);
-        }
+        public override ProjectFormatProviderType ProviderType => ProjectFormatProviderType.BattleScribeXml;
 
         protected override ImmutableArray<SourceFolder> DefaultDirectoryReferences { get; } =
             ImmutableArray.Create(new SourceFolder(SourceFolderKind.All, DefaultSourcePath));

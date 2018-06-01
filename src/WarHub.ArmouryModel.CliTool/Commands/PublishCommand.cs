@@ -186,7 +186,7 @@ namespace WarHub.ArmouryModel.CliTool.Commands
             {
                 case ProjectFormatProviderType.Gitree:
                     return GitreeWorkspace.CreateFromConfigurationInfo(info);
-                case ProjectFormatProviderType.XmlCatalogues:
+                case ProjectFormatProviderType.BattleScribeXml:
                     return XmlWorkspace.CreateFromConfigurationInfo(info);
                 default:
                     throw new InvalidOperationException(

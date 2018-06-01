@@ -7,14 +7,7 @@ namespace WarHub.ArmouryModel.Workspaces.Gitree
     {
         public const string DefaultSourcePath = "src";
 
-        protected override ProjectConfiguration CreateDefaultCore(string path)
-        {
-            return new ProjectConfiguration(
-                CurrentToolsetVersion,
-                DefaultDirectoryReferences,
-                ProjectConfiguration.DefaultOutputPath,
-                ProjectFormatProviderType.Gitree);
-        }
+        public override ProjectFormatProviderType ProviderType => ProjectFormatProviderType.Gitree;
 
         protected override ImmutableArray<SourceFolder> DefaultDirectoryReferences { get; } =
             ImmutableArray.Create(new SourceFolder(SourceFolderKind.All, DefaultSourcePath));

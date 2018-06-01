@@ -66,7 +66,7 @@ namespace WarHub.ArmouryModel.CliTool.Utilities
             {
                 case ProjectFormatProviderType.Gitree:
                     return new GitreeConfigurationSanitizingProvider().Sanitize(raw);
-                case ProjectFormatProviderType.XmlCatalogues:
+                case ProjectFormatProviderType.BattleScribeXml:
                     return new BattleScribeConfigurationSanitizingProvider().Sanitize(raw);
                 default:
                     return raw;

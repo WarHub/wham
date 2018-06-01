@@ -13,17 +13,17 @@ namespace WarHub.ArmouryModel.Workspaces.Gitree
             : base(directory, parent, workspace)
         {
             this.directory = directory;
-            Documents = new Lazy<ImmutableArray<GitreeStorageFileNode>>(CreateDocuments);
-            Folders = new Lazy<ImmutableArray<GitreeStorageFolderNode>>(CreateFolders);
+            DocumentsLazy = new Lazy<ImmutableArray<GitreeStorageFileNode>>(CreateDocuments);
+            FoldersLazy = new Lazy<ImmutableArray<GitreeStorageFolderNode>>(CreateFolders);
         }
 
-        private Lazy<ImmutableArray<GitreeStorageFileNode>> Documents { get; }
+        private Lazy<ImmutableArray<GitreeStorageFileNode>> DocumentsLazy { get; }
 
-        private Lazy<ImmutableArray<GitreeStorageFolderNode>> Folders { get; }
+        private Lazy<ImmutableArray<GitreeStorageFolderNode>> FoldersLazy { get; }
 
-        public ImmutableArray<GitreeStorageFileNode> GetDocuments() => Documents.Value;
+        public ImmutableArray<GitreeStorageFileNode> GetDocuments() => DocumentsLazy.Value;
 
-        public ImmutableArray<GitreeStorageFolderNode> GetFolders() => Folders.Value;
+        public ImmutableArray<GitreeStorageFolderNode> GetFolders() => FoldersLazy.Value;
 
         private ImmutableArray<GitreeStorageFileNode> CreateDocuments()
         {
