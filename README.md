@@ -26,7 +26,7 @@ It consists of:
 * `WarHub.ArmouryModel.ProjectModel` library provides API to operate on wham workspaces (abstraction)
   and their configuration (`.whamproj` configuration files).
 * `WarHub.ArmouryModel.Workspaces.BattleScribe` implements project model for BattleScribe format.
-* `WarHub.ArmouryModel.Workspaces.JsonFolder` implements project model for *folder model* where
+* `WarHub.ArmouryModel.Workspaces.Gitree` implements project model for *folder model* where
   directory and file structure is a part of datafile shape, building datafile from massive amounts
   of tiny files. It's mostly designed to work well with VCS (Version Control Systems) such as **git**.
 

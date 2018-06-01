@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Text.RegularExpressions;
 
-namespace WarHub.ArmouryModel.Workspaces.JsonFolder
+namespace WarHub.ArmouryModel.Workspaces.Gitree
 {
     internal static class FilenameHelper
     {

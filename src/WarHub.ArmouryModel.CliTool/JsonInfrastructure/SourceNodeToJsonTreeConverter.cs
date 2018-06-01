@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using MoreLinq;
 using WarHub.ArmouryModel.Source;
-using WarHub.ArmouryModel.Workspaces.JsonFolder;
+using WarHub.ArmouryModel.Workspaces.Gitree;
 
 namespace WarHub.ArmouryModel.CliTool.JsonInfrastructure
 {

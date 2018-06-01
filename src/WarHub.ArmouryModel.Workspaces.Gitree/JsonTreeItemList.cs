@@ -1,6 +1,6 @@
 ﻿using System.Collections.Immutable;
 
-namespace WarHub.ArmouryModel.Workspaces.JsonFolder
+namespace WarHub.ArmouryModel.Workspaces.Gitree
 {
     [Record]
     public partial class JsonTreeItemList

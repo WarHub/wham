@@ -9,7 +9,7 @@ using Optional;
 using Optional.Collections;
 using WarHub.ArmouryModel.ProjectModel;
 
-namespace WarHub.ArmouryModel.Workspaces.JsonFolder
+namespace WarHub.ArmouryModel.Workspaces.Gitree
 {
 
     public class JsonWorkspace : IWorkspace

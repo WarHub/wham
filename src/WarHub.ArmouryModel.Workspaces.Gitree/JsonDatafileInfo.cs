@@ -2,7 +2,7 @@
 using WarHub.ArmouryModel.ProjectModel;
 using WarHub.ArmouryModel.Source;
 
-namespace WarHub.ArmouryModel.Workspaces.JsonFolder
+namespace WarHub.ArmouryModel.Workspaces.Gitree
 {
     internal class JsonDatafileInfo : IDatafileInfo
     {

@@ -3,7 +3,7 @@ using System.IO;
 using Newtonsoft.Json;
 using WarHub.ArmouryModel.Source;
 
-namespace WarHub.ArmouryModel.Workspaces.JsonFolder
+namespace WarHub.ArmouryModel.Workspaces.Gitree
 {
     public class JsonDocument : JsonFileStructureNode
     {

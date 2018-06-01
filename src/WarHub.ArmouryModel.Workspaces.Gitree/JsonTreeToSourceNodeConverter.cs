@@ -3,7 +3,7 @@ using System.Collections.Immutable;
 using System.Linq;
 using WarHub.ArmouryModel.Source;
 
-namespace WarHub.ArmouryModel.Workspaces.JsonFolder
+namespace WarHub.ArmouryModel.Workspaces.Gitree
 {
     /// <summary>
     /// Reads <see cref="JsonTreeItem"/> and converts to appropriate <see cref="SourceNode"/>.

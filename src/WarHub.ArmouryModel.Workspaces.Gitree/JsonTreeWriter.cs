@@ -6,7 +6,7 @@ using Newtonsoft.Json;
 using Optional;
 using WarHub.ArmouryModel.Source;
 
-namespace WarHub.ArmouryModel.Workspaces.JsonFolder
+namespace WarHub.ArmouryModel.Workspaces.Gitree
 {
     /// <summary>
     /// Splits every entity into JSON with properties and folders for each collection,

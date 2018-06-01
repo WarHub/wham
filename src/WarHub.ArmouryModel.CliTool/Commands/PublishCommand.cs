@@ -9,7 +9,7 @@ using WarHub.ArmouryModel.CliTool.Utilities;
 using WarHub.ArmouryModel.ProjectModel;
 using WarHub.ArmouryModel.Source;
 using WarHub.ArmouryModel.Workspaces.BattleScribe;
-using WarHub.ArmouryModel.Workspaces.JsonFolder;
+using WarHub.ArmouryModel.Workspaces.Gitree;
 
 namespace WarHub.ArmouryModel.CliTool.Commands
 {

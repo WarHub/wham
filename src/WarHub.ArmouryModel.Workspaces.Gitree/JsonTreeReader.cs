@@ -1,9 +1,9 @@
 ﻿using System.Collections.Immutable;
 using System.Linq;
 using WarHub.ArmouryModel.Source;
-using WarHub.ArmouryModel.Workspaces.JsonFolder;
+using WarHub.ArmouryModel.Workspaces.Gitree;
 
-namespace WarHub.ArmouryModel.Workspaces.JsonFolder
+namespace WarHub.ArmouryModel.Workspaces.Gitree
 {
     public class JsonTreeReader
     {

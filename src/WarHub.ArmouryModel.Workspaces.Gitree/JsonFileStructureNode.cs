@@ -1,6 +1,6 @@
 ﻿using System.IO;
 
-namespace WarHub.ArmouryModel.Workspaces.JsonFolder
+namespace WarHub.ArmouryModel.Workspaces.Gitree
 {
     public abstract class JsonFileStructureNode
     {

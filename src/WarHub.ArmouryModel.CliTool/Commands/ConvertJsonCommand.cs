@@ -2,7 +2,7 @@
 using PowerArgs;
 using WarHub.ArmouryModel.Source.BattleScribe;
 using WarHub.ArmouryModel.Workspaces.BattleScribe;
-using WarHub.ArmouryModel.Workspaces.JsonFolder;
+using WarHub.ArmouryModel.Workspaces.Gitree;
 
 namespace WarHub.ArmouryModel.CliTool.Commands
 {
