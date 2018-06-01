@@ -6,11 +6,11 @@ using WarHub.ArmouryModel.Source;
 namespace WarHub.ArmouryModel.Workspaces.Gitree
 {
     /// <summary>
-    /// Reads <see cref="JsonTreeItem"/> and converts to appropriate <see cref="SourceNode"/>.
+    /// Reads <see cref="GitreeNode"/> and converts to appropriate <see cref="SourceNode"/>.
     /// </summary>
-    public class JsonTreeToSourceNodeConverter
+    internal class GitreeToSourceNodeConverter
     {
-        public SourceNode ParseItem(JsonTreeItem blobItem)
+        public SourceNode ParseItem(GitreeNode blobItem)
         {
             switch (blobItem.WrappedNode.Kind)
             {
@@ -33,14 +33,14 @@ namespace WarHub.ArmouryModel.Workspaces.Gitree
             }
         }
 
-        private NodeListDictionaryWithDefault ParseItemLists(JsonTreeItem blobItem)
+        private NodeListDictionaryWithDefault ParseItemLists(GitreeNode blobItem)
         {
             var dictionary = blobItem.Lists.ToImmutableDictionary(x => x.Name, ParseList);
             var wrapper = new NodeListDictionaryWithDefault(dictionary);
             return wrapper;
         }
 
-        private IEnumerable<SourceNode> ParseList(JsonTreeItemList blobList)
+        private IEnumerable<SourceNode> ParseList(GitreeListNode blobList)
         {
             if (blobList.Items.IsEmpty)
             {
@@ -64,7 +64,7 @@ namespace WarHub.ArmouryModel.Workspaces.Gitree
             return orderedList;
         }
 
-        private CatalogueBaseNode ParseCatalogueBase(JsonTreeItem blobItem)
+        private CatalogueBaseNode ParseCatalogueBase(GitreeNode blobItem)
         {
             var lists = ParseItemLists(blobItem);
             var node = (CatalogueBaseNode)blobItem.WrappedNode;
@@ -81,7 +81,7 @@ namespace WarHub.ArmouryModel.Workspaces.Gitree
             return filledNode;
         }
 
-        private ForceEntryNode ParseForceEntry(JsonTreeItem blobItem)
+        private ForceEntryNode ParseForceEntry(GitreeNode blobItem)
         {
             var lists = ParseItemLists(blobItem);
             var node = (ForceEntryNode)blobItem.WrappedNode;
@@ -92,7 +92,7 @@ namespace WarHub.ArmouryModel.Workspaces.Gitree
             return filledNode;
         }
 
-        private SelectionEntryBaseNode ParseSelectionEntryBase(JsonTreeItem blobItem)
+        private SelectionEntryBaseNode ParseSelectionEntryBase(GitreeNode blobItem)
         {
             var lists = ParseItemLists(blobItem);
             var node = (SelectionEntryBaseNode)blobItem.WrappedNode;
@@ -104,7 +104,7 @@ namespace WarHub.ArmouryModel.Workspaces.Gitree
             return filledNode;
         }
 
-        private RosterNode ParseRoster(JsonTreeItem blobItem)
+        private RosterNode ParseRoster(GitreeNode blobItem)
         {
             var lists = ParseItemLists(blobItem);
             var node = (RosterNode)blobItem.WrappedNode;
@@ -113,7 +113,7 @@ namespace WarHub.ArmouryModel.Workspaces.Gitree
             return filledNode;
         }
 
-        private ForceNode ParseForce(JsonTreeItem blobItem)
+        private ForceNode ParseForce(GitreeNode blobItem)
         {
             var lists = ParseItemLists(blobItem);
             var node = (ForceNode)blobItem.WrappedNode;
@@ -125,7 +125,7 @@ namespace WarHub.ArmouryModel.Workspaces.Gitree
             return filledNode;
         }
 
-        private SelectionNode ParseSelection(JsonTreeItem blobItem)
+        private SelectionNode ParseSelection(GitreeNode blobItem)
         {
             var lists = ParseItemLists(blobItem);
             var node = (SelectionNode)blobItem.WrappedNode;

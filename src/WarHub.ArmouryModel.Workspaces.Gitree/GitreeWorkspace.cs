@@ -12,22 +12,22 @@ using WarHub.ArmouryModel.ProjectModel;
 namespace WarHub.ArmouryModel.Workspaces.Gitree
 {
 
-    public class JsonWorkspace : IWorkspace
+    public class GitreeWorkspace : IWorkspace
     {
-        private JsonWorkspace(ProjectConfigurationInfo info)
+        private GitreeWorkspace(ProjectConfigurationInfo info)
         {
             Serializer = JsonUtilities.CreateSerializer();
             Info = info;
             // TOD validate configuration, handle not-found paths
-            var documentFindingVisitor = new JsonTopDocumentFindingVisitor(info, this);
+            var documentFindingVisitor = new GitreeRootFindingVisitor(info, this);
             Datafiles = 
                 info.Configuration.SourceDirectories
                 .SelectMany(documentFindingVisitor.GetRootDocuments)
-                .Select(x => (IDatafileInfo)new JsonDatafileInfo(x))
+                .Select(x => (IDatafileInfo)new GitreeDatafileInfo(x))
                 .ToImmutableArray();
         }
 
-        public JsonFolder Root { get; }
+        private GitreeStorageFolderNode Root { get; }
 
         internal JsonSerializer Serializer { get; }
 
@@ -38,7 +38,7 @@ namespace WarHub.ArmouryModel.Workspaces.Gitree
         public ImmutableArray<IDatafileInfo> Datafiles { get; }
         public ProjectConfigurationInfo Info { get; }
 
-        public static JsonWorkspace CreateFromPath(string path)
+        public static GitreeWorkspace CreateFromPath(string path)
         {
             if (File.Exists(path))
             {
@@ -47,33 +47,33 @@ namespace WarHub.ArmouryModel.Workspaces.Gitree
             return CreateFromDirectory(path);
         }
 
-        public static JsonWorkspace CreateFromConfigurationFile(string path)
-            => new JsonWorkspace(new JsonFolderProjectConfigurationProvider().Create(path));
+        public static GitreeWorkspace CreateFromConfigurationFile(string path)
+            => new GitreeWorkspace(new GitreeProjectConfigurationProvider().Create(path));
 
-        public static JsonWorkspace CreateFromConfigurationInfo(ProjectConfigurationInfo info)
-            => new JsonWorkspace(info);
+        public static GitreeWorkspace CreateFromConfigurationInfo(ProjectConfigurationInfo info)
+            => new GitreeWorkspace(info);
 
-        public static JsonWorkspace CreateFromDirectory(string path)
+        public static GitreeWorkspace CreateFromDirectory(string path)
         {
             var configFiles =
                 new DirectoryInfo(path)
                 .EnumerateFiles("*" + ProjectConfiguration.FileExtension)
                 .ToList();
-            var configProvider = new JsonFolderProjectConfigurationProvider();
+            var configProvider = new GitreeProjectConfigurationProvider();
             switch (configFiles.Count)
             {
                 case 0:
-                    return new JsonWorkspace(configProvider.Create(path));
+                    return new GitreeWorkspace(configProvider.Create(path));
                 case 1:
-                    return new JsonWorkspace(configProvider.Create(configFiles[0].FullName));
+                    return new GitreeWorkspace(configProvider.Create(configFiles[0].FullName));
                 default:
                     throw new InvalidOperationException("There's more than one project file in the directory");
             }
         }
 
-        private class JsonTopDocumentFindingVisitor
+        private class GitreeRootFindingVisitor
         {
-            public JsonTopDocumentFindingVisitor(ProjectConfigurationInfo info, JsonWorkspace workspace)
+            public GitreeRootFindingVisitor(ProjectConfigurationInfo info, GitreeWorkspace workspace)
             {
                 Info = info;
                 Workspace = workspace;
@@ -81,19 +81,19 @@ namespace WarHub.ArmouryModel.Workspaces.Gitree
 
             public ProjectConfigurationInfo Info { get; }
 
-            public JsonWorkspace Workspace { get; }
+            public GitreeWorkspace Workspace { get; }
 
-            private Queue<JsonFolder> FoldersToVisit { get; } = new Queue<JsonFolder>();
+            private Queue<GitreeStorageFolderNode> FoldersToVisit { get; } = new Queue<GitreeStorageFolderNode>();
 
-            public IEnumerable<JsonDocument> GetRootDocuments(SourceFolder sourceFolder)
+            public IEnumerable<GitreeStorageFileNode> GetRootDocuments(SourceFolder sourceFolder)
             {
                 var initialDir = Info.GetDirectoryInfoFor(sourceFolder);
-                var initialFolder = new JsonFolder(initialDir, null, Workspace);
+                var initialFolder = new GitreeStorageFolderNode(initialDir, null, Workspace);
 
                 FoldersToVisit.Enqueue(initialFolder);
                 return GetCore().Values();
 
-                IEnumerable<Option<JsonDocument>> GetCore()
+                IEnumerable<Option<GitreeStorageFileNode>> GetCore()
                 {
                     while (FoldersToVisit.Count > 0)
                     {
@@ -104,9 +104,9 @@ namespace WarHub.ArmouryModel.Workspaces.Gitree
                 }
             }
 
-            private Option<JsonDocument> VisitFolder(JsonFolder folder)
+            private Option<GitreeStorageFileNode> VisitFolder(GitreeStorageFolderNode folder)
             {
-                if (folder.GetDocuments().SingleOrDefault() is JsonDocument doc)
+                if (folder.GetDocuments().SingleOrDefault() is GitreeStorageFileNode doc)
                 {
                     return doc.Some();
                 }

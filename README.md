@@ -1,6 +1,6 @@
 # wham - WarHub.ArmouryModel
 
-C# cornerstone library for wargame datafile tools.
+Foundational .NET library for wargame datafile tools, written in C#.
 
 [![NuGet package](https://img.shields.io/nuget/v/Amadevus.RecordGenerator.svg)](https://www.nuget.org/packages?q=warhub+armourymodel)
 [![Build status](https://img.shields.io/appveyor/ci/amis92/wham.svg)](https://ci.appveyor.com/project/amis92/wham/branch/master)
@@ -26,7 +26,7 @@ It consists of:
 * `WarHub.ArmouryModel.ProjectModel` library provides API to operate on wham workspaces (abstraction)
   and their configuration (`.whamproj` configuration files).
 * `WarHub.ArmouryModel.Workspaces.BattleScribe` implements project model for BattleScribe format.
-* `WarHub.ArmouryModel.Workspaces.Gitree` implements project model for *folder model* where
+* `WarHub.ArmouryModel.Workspaces.Gitree` implements project model for *gitree* where
   directory and file structure is a part of datafile shape, building datafile from massive amounts
   of tiny files. It's mostly designed to work well with VCS (Version Control Systems) such as **git**.
 
@@ -54,7 +54,7 @@ and so it doesn't require root/admin permissions. (Although installation of .NET
 ### `wham` features
 
 * converts BattleScribe workspace (xml files: `.cat`/`.catz`/`.gst`/`.gstz`)
-  into *folder model* workspace (mutliple small files in directory trees) that
+  into *gitree* workspace (mutliple small files in directory trees) that
   behaves with **git** well.
 * publishes BattleScribe format distribution files:
   * `.bsr` repository distribution package - zip archive containing datafiles (`.cat` and `.gst`)
@@ -80,13 +80,13 @@ You can always run `wham -?` or `wham -h` or `wham [action] -?` to get help abou
   unless the `.whamproj` configuration specifies otherwise. Both can be overridden 
   by using `-d <Destination>` option, passing another directory path.
 * `wham convertxml [-s <Source>] [-d <Destination>]` converts xml workspace
-  into *folder model* workspace. Parameters are directory paths
+  into *gitree* workspace. Parameters are directory paths
   (these default to working directory):
     * `Source` - containing XML/BattleScribe format workspace
-    * `Destination` - where the *folder model* workspace will be rooted (and `.whamproj` written).
-* `wham convertjson -s <Source> -d <Destination>` converts *folder model* workspace
+    * `Destination` - where the *gitree* workspace will be rooted (and `.whamproj` written).
+* `wham convertgitree -s <Source> -d <Destination>` converts *gitree* workspace
   into xml/BattleScribe workspace model. Required parameters are directory paths:
-    * `Source` - where the *folder model* workspace is rooted (and `.whamproj` exists)
+    * `Source` - where the *gitree* workspace is rooted (and `.whamproj` exists)
       *or* the path to the `.whamproj` file directly.
     * `Destination` - directory to write XML/BattleScribe workspace format files in.
 

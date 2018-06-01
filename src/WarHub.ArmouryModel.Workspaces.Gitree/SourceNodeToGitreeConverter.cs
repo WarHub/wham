@@ -4,29 +4,28 @@ using System.Linq;
 using System.Text;
 using MoreLinq;
 using WarHub.ArmouryModel.Source;
-using WarHub.ArmouryModel.Workspaces.Gitree;
 
-namespace WarHub.ArmouryModel.CliTool.JsonInfrastructure
+namespace WarHub.ArmouryModel.Workspaces.Gitree
 {
 
-    public class SourceNodeToJsonTreeConverter : SourceVisitor<JsonTreeItem>
+    public class SourceNodeToGitreeConverter : SourceVisitor<GitreeNode>
     {
         private static DatablobNode EmptyBlob { get; }
             = new DatablobCore.Builder { Meta = new MetadataCore.Builder() }.ToImmutable().ToNode();
 
-        public override JsonTreeItem DefaultVisit(SourceNode node)
+        public override GitreeNode DefaultVisit(SourceNode node)
         {
             var blob = BlobWith(node);
-            return new JsonTreeItem(blob, node, IsLeaf: true, ImmutableArray<JsonTreeItemList>.Empty);
+            return new GitreeNode(blob, node, IsLeaf: true, ImmutableArray<GitreeListNode>.Empty);
         }
 
-        public override JsonTreeItem VisitCatalogue(CatalogueNode node)
+        public override GitreeNode VisitCatalogue(CatalogueNode node)
         {
             var result = VisitCatalogueBase(node);
-            return new JsonTreeItem(EmptyBlob.AddCatalogues(result.node), node, IsLeaf: false, result.folders);
+            return new GitreeNode(EmptyBlob.AddCatalogues(result.node), node, IsLeaf: false, result.folders);
         }
 
-        public override JsonTreeItem VisitForce(ForceNode node)
+        public override GitreeNode VisitForce(ForceNode node)
         {
             var strippedLists = ImmutableHashSet.Create(
                 nameof(ForceNode.Forces),
@@ -39,10 +38,10 @@ namespace WarHub.ArmouryModel.CliTool.JsonInfrastructure
                 .WithProfiles()
                 .WithRules()
                 .WithSelections();
-            return new JsonTreeItem(EmptyBlob.AddForces(strippedNode), node, IsLeaf: false, listFolders);
+            return new GitreeNode(EmptyBlob.AddForces(strippedNode), node, IsLeaf: false, listFolders);
         }
 
-        public override JsonTreeItem VisitForceEntry(ForceEntryNode node)
+        public override GitreeNode VisitForceEntry(ForceEntryNode node)
         {
             var strippedLists = ImmutableHashSet.Create(
                 nameof(ForceEntryNode.ForceEntries),
@@ -53,24 +52,24 @@ namespace WarHub.ArmouryModel.CliTool.JsonInfrastructure
                 .WithForceEntries()
                 .WithProfiles()
                 .WithRules();
-            return new JsonTreeItem(EmptyBlob.AddForceEntries(strippedNode), node, IsLeaf: false, listFolders);
+            return new GitreeNode(EmptyBlob.AddForceEntries(strippedNode), node, IsLeaf: false, listFolders);
         }
 
-        public override JsonTreeItem VisitGamesystem(GamesystemNode node)
+        public override GitreeNode VisitGamesystem(GamesystemNode node)
         {
             var result = VisitCatalogueBase(node);
-            return new JsonTreeItem(EmptyBlob.AddGamesystems(result.node), node, IsLeaf: false, result.folders);
+            return new GitreeNode(EmptyBlob.AddGamesystems(result.node), node, IsLeaf: false, result.folders);
         }
 
-        public override JsonTreeItem VisitRoster(RosterNode node)
+        public override GitreeNode VisitRoster(RosterNode node)
         {
             var strippedLists = ImmutableHashSet.Create(nameof(RosterNode.Forces));
             var listFolders = CreateListFolders(node, strippedLists);
             var strippedNode = node.WithForces();
-            return new JsonTreeItem(EmptyBlob.AddRosters(strippedNode), node, IsLeaf: false, listFolders);
+            return new GitreeNode(EmptyBlob.AddRosters(strippedNode), node, IsLeaf: false, listFolders);
         }
 
-        public override JsonTreeItem VisitSelection(SelectionNode node)
+        public override GitreeNode VisitSelection(SelectionNode node)
         {
             var strippedLists = ImmutableHashSet.Create(
                 nameof(SelectionNode.Profiles),
@@ -81,22 +80,22 @@ namespace WarHub.ArmouryModel.CliTool.JsonInfrastructure
                 .WithProfiles()
                 .WithRules()
                 .WithSelections();
-            return new JsonTreeItem(EmptyBlob.AddSelections(strippedNode), node, IsLeaf: false, listFolders);
+            return new GitreeNode(EmptyBlob.AddSelections(strippedNode), node, IsLeaf: false, listFolders);
         }
 
-        public override JsonTreeItem VisitSelectionEntry(SelectionEntryNode node)
+        public override GitreeNode VisitSelectionEntry(SelectionEntryNode node)
         {
             var result = VisitSelectionEntryBase(node);
-            return new JsonTreeItem(EmptyBlob.AddSelectionEntries(result.node), node, IsLeaf: false, result.folders);
+            return new GitreeNode(EmptyBlob.AddSelectionEntries(result.node), node, IsLeaf: false, result.folders);
         }
 
-        public override JsonTreeItem VisitSelectionEntryGroup(SelectionEntryGroupNode node)
+        public override GitreeNode VisitSelectionEntryGroup(SelectionEntryGroupNode node)
         {
             var result = VisitSelectionEntryBase(node);
-            return new JsonTreeItem(EmptyBlob.AddSelectionEntryGroups(result.node), node, IsLeaf: false, result.folders);
+            return new GitreeNode(EmptyBlob.AddSelectionEntryGroups(result.node), node, IsLeaf: false, result.folders);
         }
 
-        private (T node, ImmutableArray<JsonTreeItemList> folders) VisitCatalogueBase<T>(T node)
+        private (T node, ImmutableArray<GitreeListNode> folders) VisitCatalogueBase<T>(T node)
             where T : CatalogueBaseNode
         {
             var strippedLists = ImmutableHashSet.Create(
@@ -123,7 +122,7 @@ namespace WarHub.ArmouryModel.CliTool.JsonInfrastructure
             return ((T)strippedNode, listFolders);
         }
 
-        private (T node, ImmutableArray<JsonTreeItemList> folders) VisitSelectionEntryBase<T>(T node)
+        private (T node, ImmutableArray<GitreeListNode> folders) VisitSelectionEntryBase<T>(T node)
             where T : SelectionEntryBaseNode
         {
             var strippedLists = ImmutableHashSet.Create(
@@ -140,7 +139,7 @@ namespace WarHub.ArmouryModel.CliTool.JsonInfrastructure
             return ((T)strippedNode, listFolders);
         }
 
-        private ImmutableArray<JsonTreeItemList> CreateListFolders<TNode>(TNode node, ImmutableHashSet<string> listNames)
+        private ImmutableArray<GitreeListNode> CreateListFolders<TNode>(TNode node, ImmutableHashSet<string> listNames)
             where TNode : SourceNode
         {
             var listFolders = node
@@ -151,7 +150,7 @@ namespace WarHub.ArmouryModel.CliTool.JsonInfrastructure
             return listFolders;
         }
 
-        private JsonTreeItemList CreateListFolder(NamedNodeOrList nodeOrList)
+        private GitreeListNode CreateListFolder(NamedNodeOrList nodeOrList)
         {
             var names = nodeOrList.ToImmutableDictionary(x => x, SelectName);
             var nameCounts = names.Values
@@ -159,11 +158,11 @@ namespace WarHub.ArmouryModel.CliTool.JsonInfrastructure
                 .ToDictionary(x => x, x => 0, StringComparer.OrdinalIgnoreCase);
             var folders = nodeOrList
                 .Select(Visit)
-                .Scan(default(JsonTreeItem), AssignIdentifiers)
+                .Scan(default(GitreeNode), AssignIdentifiers)
                 .Skip(1)
                 .ToImmutableArray();
-            return new JsonTreeItemList(nodeOrList.Name, folders);
-            string GetUniqueIdentifier(JsonTreeItem item)
+            return new GitreeListNode(nodeOrList.Name, folders);
+            string GetUniqueIdentifier(GitreeNode item)
             {
                 var node = item.Node;
                 var name = names[item.WrappedNode];
@@ -171,7 +170,7 @@ namespace WarHub.ArmouryModel.CliTool.JsonInfrastructure
                 var identifier = nameIndex == 1 ? name : $"{name} - {nameIndex}";
                 return identifier;
             }
-            JsonTreeItem AssignIdentifiers(JsonTreeItem prevItem, JsonTreeItem item)
+            GitreeNode AssignIdentifiers(GitreeNode prevItem, GitreeNode item)
             {
                 var node = item.Node;
                 var identifier = GetUniqueIdentifier(item);

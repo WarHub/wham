@@ -2,9 +2,9 @@
 
 namespace WarHub.ArmouryModel.Workspaces.Gitree
 {
-    public abstract class JsonFileStructureNode
+    internal abstract class GitreeStorageBaseNode
     {
-        public JsonFileStructureNode(FileSystemInfo fileSystemInfo, JsonFolder parent, JsonWorkspace workspace)
+        public GitreeStorageBaseNode(FileSystemInfo fileSystemInfo, GitreeStorageFolderNode parent, GitreeWorkspace workspace)
         {
             FileSystemInfo = fileSystemInfo;
             Parent = parent;
@@ -13,12 +13,12 @@ namespace WarHub.ArmouryModel.Workspaces.Gitree
 
         protected FileSystemInfo FileSystemInfo { get; }
 
-        public JsonFolder Parent { get; }
+        public GitreeStorageFolderNode Parent { get; }
 
         public string Path => FileSystemInfo.FullName;
 
         public string Name => FileSystemInfo.Name;
 
-        public JsonWorkspace Workspace { get; }
+        public GitreeWorkspace Workspace { get; }
     }
 }

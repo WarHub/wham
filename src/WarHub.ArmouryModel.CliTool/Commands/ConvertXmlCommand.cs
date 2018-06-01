@@ -3,7 +3,6 @@ using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
 using PowerArgs;
-using WarHub.ArmouryModel.CliTool.JsonInfrastructure;
 using WarHub.ArmouryModel.ProjectModel;
 using WarHub.ArmouryModel.Source;
 using WarHub.ArmouryModel.Workspaces.BattleScribe;
@@ -37,8 +36,8 @@ namespace WarHub.ArmouryModel.CliTool.Commands
 
         private void ConvertFiles(ProjectConfigurationInfo configInfo, XmlWorkspace workspace)
         {
-            var treeConverter = new SourceNodeToJsonTreeConverter();
-            var treeWriter = new JsonTreeWriter();
+            var treeConverter = new SourceNodeToGitreeConverter();
+            var treeWriter = new GitreeWriter();
             foreach (var document in workspace.GetDocuments(SourceKind.Gamesystem, SourceKind.Catalogue))
             {
                 var sourceKind = document.Kind.GetSourceKindOrUnknown();
@@ -49,41 +48,16 @@ namespace WarHub.ArmouryModel.CliTool.Commands
                 Log.Verbose("- Reading...");
                 var sourceNode = document.GetRoot();
                 Log.Verbose("- Reading finished. Converting...");
-                var jsonTree = treeConverter.Visit(sourceNode);
-                Log.Verbose("- Converting finished. Saving to JSON directory structure...");
-                treeWriter.WriteItem(jsonTree, folder);
+                var gitree = treeConverter.Visit(sourceNode);
+                Log.Verbose("- Converting finished. Saving to Gitree directory structure...");
+                treeWriter.WriteItem(gitree, folder);
                 Log.Debug("- Saved");
             }
         }
 
-        private class XmlToJsonConverter
-        {
-            private SourceNodeToJsonTreeConverter treeConverter { get; }
-
-            private JsonTreeWriter treeWriter { get; }
-
-            private ImmutableDictionary<XmlDocumentKind, string> pathsForDocumentKinds { get; }
-
-            public ProjectConfigurationInfo ConfigInfo { get; }
-
-            public XmlWorkspace Workspace { get; }
-
-            public XmlToJsonConverter(ProjectConfigurationInfo configInfo, XmlWorkspace workspace)
-            {
-                pathsForDocumentKinds = new Dictionary<XmlDocumentKind, string>
-                {
-                    [XmlDocumentKind.Gamesystem] = configInfo.GetFullPath(SourceKind.Gamesystem),
-                    [XmlDocumentKind.Catalogue] = configInfo.GetFullPath(SourceKind.Catalogue)
-                }.ToImmutableDictionary();
-                ConfigInfo = configInfo;
-                Workspace = workspace;
-            }
-            
-        }
-
         private static ProjectConfigurationInfo CreateDestinationProjectConfig(DirectoryInfo sourceDir, DirectoryInfo destDir)
         {
-            var configInfo = new ConvertedJsonProjectConfigurationProvider().Create(sourceDir.FullName);
+            var configInfo = new ConvertedGitreeProjectConfigurationProvider().Create(sourceDir.FullName);
             var destFilepath = Path.Combine(destDir.FullName, Path.GetFileName(configInfo.Filepath));
             return configInfo.WithFilepath(destFilepath);
         }
@@ -119,7 +93,7 @@ namespace WarHub.ArmouryModel.CliTool.Commands
             return sourceDir;
         }
 
-        private class ConvertedJsonProjectConfigurationProvider : JsonFolderProjectConfigurationProvider
+        private class ConvertedGitreeProjectConfigurationProvider : GitreeProjectConfigurationProvider
         {
             protected override ImmutableArray<SourceFolder> DefaultDirectoryReferences { get; } =
                 ImmutableArray.Create(

@@ -4,16 +4,16 @@ using WarHub.ArmouryModel.Source;
 
 namespace WarHub.ArmouryModel.Workspaces.Gitree
 {
-    internal class JsonDatafileInfo : IDatafileInfo
+    internal class GitreeDatafileInfo : IDatafileInfo
     {
-        public JsonDatafileInfo(JsonDocument rootDocument)
+        public GitreeDatafileInfo(GitreeStorageFileNode rootDocument)
         {
             RootDocument = rootDocument;
         }
 
         public string Filepath => RootDocument.Path;
 
-        public JsonDocument RootDocument { get; }
+        public GitreeStorageFileNode RootDocument { get; }
 
         // TODO should be optimized to read data type from single "root" file
         public SourceKind DataKind => GetData().Kind;
@@ -34,8 +34,8 @@ namespace WarHub.ArmouryModel.Workspaces.Gitree
 
         private SourceNode ReadData()
         {
-            var rootItem = new JsonTreeReader().ReadItemFolder(RootDocument.Parent);
-            var node = new JsonTreeToSourceNodeConverter().ParseItem(rootItem);
+            var rootItem = new GitreeReader().ReadItemFolder(RootDocument.Parent);
+            var node = new GitreeToSourceNodeConverter().ParseItem(rootItem);
             return node;
         }
     }

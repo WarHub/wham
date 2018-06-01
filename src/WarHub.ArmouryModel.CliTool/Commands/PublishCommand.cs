@@ -53,7 +53,7 @@ namespace WarHub.ArmouryModel.CliTool.Commands
             Destination = Destination ?? configInfo.Configuration.OutputPath;
             Log.Debug("Writing artifacts to: {Destination}", Destination);
             Log.Debug("Loading workspace...");
-            var workspace = WorkspaceProvider.ReadWorkspaceFromConfig(configInfo);
+            var workspace = ReadWorkspaceFromConfig(configInfo);
             Log.Debug(
                 "Workspace loaded. {DatafileCount} datafiles discovered.",
                 workspace.Datafiles.Where(x => x.DataKind.IsDataCatalogueKind()).Count());
@@ -180,21 +180,18 @@ namespace WarHub.ArmouryModel.CliTool.Commands
             return Path.Combine(Destination, new DirectoryInfo(Source).Name + XmlFileExtensions.RepoDistribution);
         }
 
-        private class WorkspaceProvider
+        private static IWorkspace ReadWorkspaceFromConfig(ProjectConfigurationInfo info)
         {
-            public static IWorkspace ReadWorkspaceFromConfig(ProjectConfigurationInfo info)
+            switch (info.Configuration.FormatProvider)
             {
-                switch (info.Configuration.FormatProvider)
-                {
-                    case ProjectFormatProviderType.JsonFolders:
-                        return JsonWorkspace.CreateFromConfigurationInfo(info);
-                    case ProjectFormatProviderType.XmlCatalogues:
-                        return XmlWorkspace.CreateFromConfigurationInfo(info);
-                    default:
-                        throw new InvalidOperationException(
-                            $"Unknown {nameof(ProjectConfiguration.FormatProvider)}:" +
-                            $" {info.Configuration.FormatProvider}");
-                }
+                case ProjectFormatProviderType.Gitree:
+                    return GitreeWorkspace.CreateFromConfigurationInfo(info);
+                case ProjectFormatProviderType.XmlCatalogues:
+                    return XmlWorkspace.CreateFromConfigurationInfo(info);
+                default:
+                    throw new InvalidOperationException(
+                        $"Unknown {nameof(ProjectConfiguration.FormatProvider)}:" +
+                        $" {info.Configuration.FormatProvider}");
             }
         }
     }

@@ -5,11 +5,11 @@ using WarHub.ArmouryModel.Source;
 
 namespace WarHub.ArmouryModel.Workspaces.Gitree
 {
-    public class JsonDocument : JsonFileStructureNode
+    internal class GitreeStorageFileNode : GitreeStorageBaseNode
     {
         private readonly FileInfo file;
 
-        public JsonDocument(FileInfo file, JsonFolder parent, JsonWorkspace workspace)
+        public GitreeStorageFileNode(FileInfo file, GitreeStorageFolderNode parent, GitreeWorkspace workspace)
             : base(file, parent, workspace)
         {
             this.file = file;

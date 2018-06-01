@@ -56,7 +56,7 @@ namespace WarHub.ArmouryModel.CliTool.Utilities
                 // that's BattleScribe workspace
                 return new BattleScribeProjectConfigurationProvider().Create(path);
             }
-            return new JsonFolderProjectConfigurationProvider().Create(path);
+            return new GitreeProjectConfigurationProvider().Create(path);
         }
 
         private ProjectConfigurationInfo ReadConfigurationFile(string path)
@@ -64,8 +64,8 @@ namespace WarHub.ArmouryModel.CliTool.Utilities
             var raw = ProjectConfigurationProviderBase.ReadFromFile(path);
             switch (raw.Configuration.FormatProvider)
             {
-                case ProjectFormatProviderType.JsonFolders:
-                    return new JsonConfigurationSanitizingProvider().Sanitize(raw);
+                case ProjectFormatProviderType.Gitree:
+                    return new GitreeConfigurationSanitizingProvider().Sanitize(raw);
                 case ProjectFormatProviderType.XmlCatalogues:
                     return new BattleScribeConfigurationSanitizingProvider().Sanitize(raw);
                 default:
@@ -82,7 +82,7 @@ namespace WarHub.ArmouryModel.CliTool.Utilities
                 StringComparison.OrdinalIgnoreCase);
         }
 
-        private class JsonConfigurationSanitizingProvider : JsonFolderProjectConfigurationProvider
+        private class GitreeConfigurationSanitizingProvider : GitreeProjectConfigurationProvider
         {
             public ProjectConfigurationInfo Sanitize(ProjectConfigurationInfo raw)
             {

@@ -3,7 +3,7 @@ using WarHub.ArmouryModel.ProjectModel;
 
 namespace WarHub.ArmouryModel.Workspaces.Gitree
 {
-    public class JsonFolderProjectConfigurationProvider : ProjectConfigurationProviderBase
+    public class GitreeProjectConfigurationProvider : ProjectConfigurationProviderBase
     {
         public const string DefaultSourcePath = "src";
 
@@ -13,7 +13,7 @@ namespace WarHub.ArmouryModel.Workspaces.Gitree
                 CurrentToolsetVersion,
                 DefaultDirectoryReferences,
                 ProjectConfiguration.DefaultOutputPath,
-                ProjectFormatProviderType.JsonFolders);
+                ProjectFormatProviderType.Gitree);
         }
 
         protected override ImmutableArray<SourceFolder> DefaultDirectoryReferences { get; } =

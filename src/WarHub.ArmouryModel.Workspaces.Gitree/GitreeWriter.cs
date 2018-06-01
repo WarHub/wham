@@ -9,17 +9,17 @@ using WarHub.ArmouryModel.Source;
 namespace WarHub.ArmouryModel.Workspaces.Gitree
 {
     /// <summary>
-    /// Splits every entity into JSON with properties and folders for each collection,
+    /// Splits every entity into Gitree with properties and folders for each collection,
     /// which contain folder for each item.
     /// </summary>
-    public class JsonTreeWriter
+    public class GitreeWriter
     {
         const string Extension = ".json";
         const string ExtensionPattern = "*.json";
 
         private JsonSerializer Serializer { get; } = ProjectModel.JsonUtilities.CreateSerializer();
 
-        public string WriteItem(JsonTreeItem blobItem, DirectoryInfo directory)
+        public string WriteItem(GitreeNode blobItem, DirectoryInfo directory)
         {
             INodeWithCore<NodeCore> node = blobItem.Node;
             var filename = GetFilename(blobItem);
@@ -42,7 +42,7 @@ namespace WarHub.ArmouryModel.Workspaces.Gitree
             return filename;
         }
 
-        private Option<string> WriteList(JsonTreeItemList blobList, DirectoryInfo directory)
+        private Option<string> WriteList(GitreeListNode blobList, DirectoryInfo directory)
         {
             if (blobList.Items.Length == 0)
             {
@@ -94,7 +94,7 @@ namespace WarHub.ArmouryModel.Workspaces.Gitree
             }
         }
 
-        private string GetFilename(JsonTreeItem nodeFolder)
+        private string GetFilename(GitreeNode nodeFolder)
         {
             var filenameBase = nodeFolder.IsLeaf ? nodeFolder.Node.Meta.Identifier : nodeFolder.WrappedNode.Kind.ToString();
             return (filenameBase + Extension).FilenameSanitize();

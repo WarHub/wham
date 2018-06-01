@@ -25,12 +25,12 @@ namespace WarHub.ArmouryModel.CliTool
         public void ShowVersion(ShowVersionCommand cmd) => cmd.Main(this);
 
         [ArgActionMethod, ArgShortcut("convertxml")]
-        [ArgDescription("Converts BattleScribe XML files into JSON directory structure.")]
+        [ArgDescription("Converts BattleScribe XML files into Gitree directory structure.")]
         public void ConvertXml(ConvertXmlCommand cmd) => cmd.Main(this);
 
-        [ArgActionMethod, ArgShortcut("convertjson")]
-        [ArgDescription("Converts JSON directory structure into BattleScribe XML files.")]
-        public void ConvertJson(ConvertJsonCommand cmd) => cmd.Main(this);
+        [ArgActionMethod, ArgShortcut("convertgitree")]
+        [ArgDescription("Converts Gitree directory structure into BattleScribe XML files.")]
+        public void ConvertGitree(ConvertGitreeCommand cmd) => cmd.Main(this);
 
         [ArgActionMethod, ArgShortcut("publish")]
         [ArgDescription("Publishes given workspace into multiple available formats, e.g. .bsr file.")]

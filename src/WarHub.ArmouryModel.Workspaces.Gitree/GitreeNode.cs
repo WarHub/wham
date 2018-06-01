@@ -4,7 +4,7 @@ using WarHub.ArmouryModel.Source;
 namespace WarHub.ArmouryModel.Workspaces.Gitree
 {
     [Record]
-    public partial class JsonTreeItem
+    public partial class GitreeNode
     {
         public DatablobNode Node { get; }
 
@@ -12,6 +12,6 @@ namespace WarHub.ArmouryModel.Workspaces.Gitree
 
         public bool IsLeaf { get; }
 
-        public ImmutableArray<JsonTreeItemList> Lists { get; }
+        public ImmutableArray<GitreeListNode> Lists { get; }
     }
 }

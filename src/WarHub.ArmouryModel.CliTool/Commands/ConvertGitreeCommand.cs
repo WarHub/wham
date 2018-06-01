@@ -6,7 +6,7 @@ using WarHub.ArmouryModel.Workspaces.Gitree;
 
 namespace WarHub.ArmouryModel.CliTool.Commands
 {
-    public class ConvertJsonCommand : CommandBase
+    public class ConvertGitreeCommand : CommandBase
     {
         [ArgShortcut("s")]
         [ArgDescription("Directory in which to look for convertible files."), ArgExistingDirectory, ArgRequired]
@@ -18,7 +18,7 @@ namespace WarHub.ArmouryModel.CliTool.Commands
 
         protected override void MainCore()
         {
-            var workspace = JsonWorkspace.CreateFromPath(Source);
+            var workspace = GitreeWorkspace.CreateFromPath(Source);
             Log.Debug("Source resolved to {RootPath}", workspace.RootPath);
             var destDir = new DirectoryInfo(Destination);
             Log.Debug("Destination resolved to {Destination}", destDir);
@@ -27,8 +27,8 @@ namespace WarHub.ArmouryModel.CliTool.Commands
             foreach (var datafile in workspace.Datafiles)
             {
                 var fileDir = new FileInfo(datafile.Filepath).Directory;
-                Log.Debug("Converting JSON tree '{SubfolderName}' from {DirRef}", fileDir.Name, fileDir.Parent.FullName);
-                Log.Verbose("- Loading JSON tree...");
+                Log.Debug("Converting Gitree '{SubfolderName}' from {DirRef}", fileDir.Name, fileDir.Parent.FullName);
+                Log.Verbose("- Loading Gitree...");
                 var node = datafile.GetData();
                 Log.Verbose("- Loading finished. Saving XML file...");
                 var extension = node.GetXmlDocumentKindOrUnknown().GetXmlFileExtension();

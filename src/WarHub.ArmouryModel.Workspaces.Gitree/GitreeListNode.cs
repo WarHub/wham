@@ -3,10 +3,10 @@
 namespace WarHub.ArmouryModel.Workspaces.Gitree
 {
     [Record]
-    public partial class JsonTreeItemList
+    public partial class GitreeListNode
     {
         public string Name { get; }
 
-        public ImmutableArray<JsonTreeItem> Items { get; }
+        public ImmutableArray<GitreeNode> Items { get; }
     }
 }

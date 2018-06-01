@@ -1,7 +1,6 @@
 ﻿using System;
-using WarHub.ArmouryModel.Source;
 
-namespace WarHub.ArmouryModel.CliTool.JsonInfrastructure
+namespace WarHub.ArmouryModel.Source
 {
     public static class SourceExtensions
     {
