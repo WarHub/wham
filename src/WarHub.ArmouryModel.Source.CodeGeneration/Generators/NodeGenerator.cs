@@ -1,6 +1,7 @@
 ﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using MoreLinq;
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
@@ -91,46 +92,16 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                     .AsStatement();
                 foreach (var entry in Descriptor.DeclaredEntries.Where(x => !x.IsSimple))
                 {
-                    yield return CreateCollectionInitialization(entry);
-                }
-                if (!IsAbstract)
-                {
-                    yield return ChildrenCountInitialization();
+                    yield return CreateNotSimpleInitialization(entry);
                 }
             }
-            StatementSyntax ChildrenCountInitialization()
-            {
-                var complexCount = Descriptor.Entries.Where(x => x.IsComplex).Count();
-                var entries = Descriptor.Entries.OfType<CoreDescriptor.CollectionEntry>().ToImmutableArray();
-                return
-                    IdentifierName(Names.ChildrenCount)
-                    .Assign(
-                        SumNodeListLengthExpression())
-                    .AsStatement();
-
-                ExpressionSyntax SumNodeListLengthExpression()
-                {
-                    if (entries.Length == 0)
-                    {
-                        return LiteralExpression(SyntaxKind.NumericLiteralExpression, Literal(complexCount));
-                    }
-                    return
-                        entries
-                        .Select(collection => CountExpression(collection.IdentifierName))
-                        .MutateIf(
-                            complexCount > 0,
-                            x => x.Append(LiteralExpression(SyntaxKind.NumericLiteralExpression, Literal(complexCount))))
-                        .Aggregate(
-                            (left, right) => BinaryExpression(SyntaxKind.AddExpression, left, right));
-                }
-            }
-            StatementSyntax CreateCollectionInitialization(CoreDescriptor.Entry entry)
+            StatementSyntax CreateNotSimpleInitialization(CoreDescriptor.Entry entry)
             {
                 return
                     CorePropertyIdentifierName
                     .MemberAccess(entry.IdentifierName)
                     .MemberAccess(
-                        IdentifierName(entry.IsCollection ? Names.ToNodeList : Names.ToNode))
+                        IdentifierName(entry.IsCollection ? Names.ToListNode : Names.ToNode))
                     .InvokeWithArguments(
                         ThisExpression())
                     .AssignTo(entry.IdentifierName)
@@ -217,7 +188,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
             {
                 return
                     PropertyDeclaration(
-                        entry.GetNodeTypeIdentifierName().ToNodeListType(),
+                        entry.GetListNodeTypeIdentifierName(),
                         entry.Identifier)
                     .AddModifiers(SyntaxKind.PublicKeyword, SyntaxKind.VirtualKeyword)
                     .AddAccessorListAccessors(
@@ -236,7 +207,8 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                 yield return DerivedUpdateWithMethod();
             }
             foreach (var withMethod in Descriptor.Entries
-                .Select(WithForSimpleEntry, WithForComplexEntry, WithForCollectionEntry))
+                .Select(WithForSimpleEntry, WithForComplexEntry, WithForCollectionEntry)
+                .SelectMany(x => x))
             {
                 yield return withMethod;
             }
@@ -302,9 +274,9 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                         IsDerived && entry.Symbol.ContainingType != Descriptor.TypeSymbol,
                         x => x.AddModifiers(SyntaxKind.NewKeyword));
             }
-            MethodDeclarationSyntax WithForSimpleEntry(CoreDescriptor.SimpleEntry entry)
+            IEnumerable<MethodDeclarationSyntax> WithForSimpleEntry(CoreDescriptor.SimpleEntry entry)
             {
-                return 
+                yield return 
                     WithBasicPart(entry)
                     .AddParameterListParameters(
                         Parameter(entry.Identifier)
@@ -317,9 +289,9 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                                 IdentifierName(Names.WithPrefix + entry.Identifier))
                             .InvokeWithArguments(entry.IdentifierName)));
             }
-            MethodDeclarationSyntax WithForComplexEntry(CoreDescriptor.ComplexEntry entry)
+            IEnumerable<MethodDeclarationSyntax> WithForComplexEntry(CoreDescriptor.ComplexEntry entry)
             {
-                return
+                yield return
                     WithBasicPart(entry)
                     .AddParameterListParameters(
                         Parameter(entry.Identifier)
@@ -334,9 +306,27 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                                 entry.IdentifierName
                                 .ConditionalMemberAccess(CorePropertyIdentifierName))));
             }
-            MethodDeclarationSyntax WithForCollectionEntry(CoreDescriptor.CollectionEntry entry)
+            IEnumerable<MethodDeclarationSyntax> WithForCollectionEntry(CoreDescriptor.CollectionEntry entry)
             {
-                return
+                yield return
+                    WithBasicPart(entry)
+                    .AddParameterListParameters(
+                        Parameter(entry.Identifier)
+                        .WithType(
+                            entry.GetListNodeTypeIdentifierName()))
+                    .AddBodyStatements(
+                        ReturnStatement(
+                            IdentifierName(Names.UpdateWith)
+                            .InvokeWithArguments(
+                                CorePropertyIdentifierName
+                                .MemberAccess(
+                                    IdentifierName(Names.WithPrefix + entry.Identifier))
+                                .InvokeWithArguments(
+                                    entry.IdentifierName
+                                    .MemberAccess(
+                                        IdentifierName(Names.ToCoreArray))
+                                    .InvokeWithArguments()))));
+                yield return
                     WithBasicPart(entry)
                     .AddParameterListParameters(
                         Parameter(entry.Identifier)
@@ -357,67 +347,21 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
             }
         }
 
-
         private IEnumerable<MemberDeclarationSyntax> GenerateSourceNodeOverrideMethods()
         {
             if (IsAbstract)
             {
                 yield break;
             }
-            yield return NamedChildrenLists();
-            yield return ChildrenLists();
+            var children = Descriptor.Entries.Where(x => !x.IsSimple).ToImmutableArray();
             yield return ChildrenCount();
+            if (children.IsEmpty)
+            {
+                yield break;
+            }
+            yield return ChildrenInfos();
+            yield return Children();
             yield return GetChild();
-            MemberDeclarationSyntax NamedChildrenLists()
-            {
-                return
-                    MethodDeclaration(
-                        CreateIEnumerableOf(
-                            IdentifierName(Names.NamedNodeOrList)),
-                        Names.NamedChildrenLists)
-                    .AddModifiers(SyntaxKind.PublicKeyword, SyntaxKind.OverrideKeyword)
-                    .AddBodyStatements(
-                        Descriptor.Entries
-                        .Where(x => !x.IsSimple)
-                        .Select(CreateStatement)
-                        .DefaultIfEmpty(
-                            ReturnBaseStatement(Names.NamedChildrenLists)));
-                StatementSyntax CreateStatement(CoreDescriptor.Entry entry)
-                {
-                    return
-                        YieldStatement(
-                            SyntaxKind.YieldReturnStatement,
-                            ObjectCreationExpression(
-                                IdentifierName(Names.NamedNodeOrList))
-                            .InvokeWithArguments(
-                                LiteralExpression(
-                                    SyntaxKind.StringLiteralExpression,
-                                    Literal(entry.Identifier.ValueText)),
-                                entry.IdentifierName));
-                }
-            }
-            MemberDeclarationSyntax ChildrenLists()
-            {
-                return
-                    MethodDeclaration(
-                        CreateIEnumerableOf(
-                            IdentifierName(Names.NodeOrList)),
-                        Names.ChildrenLists)
-                    .AddModifiers(
-                        SyntaxKind.ProtectedKeyword,
-                        SyntaxKind.InternalKeyword,
-                        SyntaxKind.OverrideKeyword)
-                    .AddBodyStatements(
-                        Descriptor.Entries
-                        .Where(x => !x.IsSimple)
-                        .Select(CreateStatement)
-                        .DefaultIfEmpty(
-                            ReturnBaseStatement(Names.ChildrenLists)));
-                StatementSyntax CreateStatement(CoreDescriptor.Entry entry)
-                {
-                    return YieldStatement(SyntaxKind.YieldReturnStatement, entry.IdentifierName);
-                }
-            }
             MemberDeclarationSyntax ChildrenCount()
             {
                 return
@@ -428,14 +372,55 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                         SyntaxKind.ProtectedKeyword,
                         SyntaxKind.InternalKeyword,
                         SyntaxKind.OverrideKeyword)
-                    .AddAccessorListAccessors(
-                        AccessorDeclaration(SyntaxKind.GetAccessorDeclaration).WithSemicolonTokenDefault());
+                    .WithExpressionBodyFull(
+                        LiteralExpression(SyntaxKind.NumericLiteralExpression,
+                        Literal(children.Length)));
+            }
+            MemberDeclarationSyntax ChildrenInfos()
+            {
+                return
+                    MethodDeclaration(
+                        CreateIEnumerableOf(
+                            IdentifierName(Names.ChildInfo)),
+                        Names.ChildrenInfos)
+                    .AddModifiers(SyntaxKind.PublicKeyword, SyntaxKind.OverrideKeyword)
+                    .AddBodyStatements(
+                        children.Select(CreateStatement));
+                StatementSyntax CreateStatement(CoreDescriptor.Entry entry)
+                {
+                    return
+                        YieldStatement(
+                            SyntaxKind.YieldReturnStatement,
+                            ObjectCreationExpression(
+                                IdentifierName(Names.ChildInfo))
+                            .InvokeWithArguments(
+                                IdentifierName("nameof")
+                                .InvokeWithArguments(entry.IdentifierName),
+                                entry.IdentifierName));
+                }
+            }
+            MemberDeclarationSyntax Children()
+            {
+                return
+                    MethodDeclaration(
+                        CreateIEnumerableOf(
+                            IdentifierName(Names.SourceNode)),
+                        Names.Children)
+                    .AddModifiers(SyntaxKind.PublicKeyword, SyntaxKind.OverrideKeyword)
+                    .AddBodyStatements(
+                        children.Select(CreateStatement));
+                StatementSyntax CreateStatement(CoreDescriptor.Entry entry)
+                {
+                    return
+                        YieldStatement(
+                            SyntaxKind.YieldReturnStatement,
+                            entry.IdentifierName);
+                }
             }
             MemberDeclarationSyntax GetChild()
             {
                 const string indexParam = "index";
                 var indexIdentifierName = IdentifierName(indexParam);
-                var collectionEntries = Descriptor.Entries.OfType<CoreDescriptor.CollectionEntry>().ToImmutableList();
                 return
                     MethodDeclaration(
                         IdentifierName(Names.SourceNode),
@@ -451,13 +436,32 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                             PredefinedType(
                                 Token(SyntaxKind.IntKeyword))))
                     .AddBodyStatements(
-                        collectionEntries
-                        .Select(ReturnIfInRangeExpression)
-                        .Append(
-                            collectionEntries.Count == 0
-                            ? ReturnStatement(
-                                LiteralExpression(SyntaxKind.NullLiteralExpression))
-                            : ThrowArgumentOutOfRangeStatement()));
+                        SwitchStatement(indexIdentifierName)
+                        .AddSections(
+                            CreateSwitchSections()
+                            .ToArray()));
+                IEnumerable<SwitchSectionSyntax> CreateSwitchSections()
+                {
+                    foreach (var (index, child) in children.Index())
+                    {
+                        yield return
+                            SwitchSection()
+                            .AddLabels(
+                                CaseSwitchLabel(
+                                    LiteralExpression(
+                                        SyntaxKind.NumericLiteralExpression,
+                                        Literal(index))))
+                            .AddStatements(
+                                ReturnStatement(
+                                    child.IdentifierName));
+                    }
+                    yield return
+                        SwitchSection()
+                        .AddLabels(
+                            DefaultSwitchLabel())
+                        .AddStatements(
+                            ThrowArgumentOutOfRangeStatement());
+                }
                 StatementSyntax ThrowArgumentOutOfRangeStatement()
                     =>
                     ThrowStatement(
@@ -469,30 +473,6 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                                     IdentifierName("nameof"))
                                 .AddArgumentListArguments(
                                     Argument(indexIdentifierName)))));
-                StatementSyntax ReturnIfInRangeExpression(CoreDescriptor.CollectionEntry entry)
-                    =>
-                    IfStatement(
-                        BinaryExpression(
-                            SyntaxKind.LessThanExpression,
-                            ParenthesizedExpression(
-                                AssignmentExpression(
-                                    SyntaxKind.SubtractAssignmentExpression,
-                                    indexIdentifierName,
-                                    CountExpression(entry.IdentifierName))),
-                            LiteralExpression(
-                                SyntaxKind.NumericLiteralExpression,
-                                Literal(0))),
-                        ReturnStatement(
-                            IndexerOfNodeListExpression(entry.IdentifierName)));
-                ExpressionSyntax IndexerOfNodeListExpression(IdentifierNameSyntax identifier)
-                    =>
-                    ElementAccessExpression(identifier)
-                    .AddArgumentListArguments(
-                        Argument(
-                            BinaryExpression(
-                                SyntaxKind.AddExpression,
-                                indexIdentifierName,
-                                CountExpression(identifier))));
             }
             QualifiedNameSyntax CreateIEnumerableOf(TypeSyntax typeParameter)
             {
@@ -503,20 +483,6 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                             Identifier(Names.IEnumerableGeneric))
                         .AddTypeArgumentListArguments(typeParameter));
             }
-            StatementSyntax ReturnBaseStatement(string methodName)
-            {
-                return
-                    ReturnStatement(
-                        BaseExpression()
-                        .MemberAccess(
-                            IdentifierName(methodName))
-                        .InvokeWithArguments());
-            }
-        }
-
-        private ExpressionSyntax CountExpression(IdentifierNameSyntax listName)
-        {
-            return listName.MemberAccess(IdentifierName(Names.Count));
         }
     }
 }

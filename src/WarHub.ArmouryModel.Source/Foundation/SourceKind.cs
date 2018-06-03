@@ -5,48 +5,48 @@
         Unknown,
 
         // types
-        CostType,
-        CharacteristicType,
-        ProfileType,
+        CostType, CostTypeList,
+        CharacteristicType, CharacteristicTypeList,
+        ProfileType, ProfileTypeList,
 
         // entries
-        SelectionEntry,
-        SelectionEntryGroup,
-        CategoryEntry,
-        ForceEntry,
-        DataIndexEntry,
-        DataIndexRepositoryUrl,
-        Metadata,
+        SelectionEntry, SelectionEntryList,
+        SelectionEntryGroup, SelectionEntryGroupList,
+        CategoryEntry, CategoryEntryList,
+        ForceEntry, ForceEntryList,
+        DataIndexEntry, DataIndexEntryList,
+        DataIndexRepositoryUrl, DataIndexRepositoryUrlList,
+        Metadata, MetadataList,
 
         // selectors + modifiers
-        Condition,
-        ConditionGroup,
-        Constraint,
-        Repeat,
-        Modifier,
+        Condition, ConditionList,
+        ConditionGroup, ConditionGroupList,
+        Constraint, ConstraintList,
+        Repeat, RepeatList,
+        Modifier, ModifierList,
 
         // infos
-        Cost,
-        Characteristic,
-        Profile,
-        Rule,
+        Cost, CostList,
+        Characteristic, CharacteristicList,
+        Profile, ProfileList,
+        Rule, RuleList,
 
         // links
-        CategoryLink,
-        EntryLink,
-        InfoLink,
+        CategoryLink, CategoryLinkList,
+        EntryLink, EntryLinkList,
+        InfoLink, InfoLinkList,
 
         // roster elements 
-        CostLimit,
-        Category,
-        Force,
-        Selection,
+        CostLimit, CostLimitList,
+        Category, CategoryList,
+        Force, ForceList,
+        Selection, SelectionList,
 
         // top elements
-        Catalogue,
-        Gamesystem,
-        Roster,
-        DataIndex,
-        Datablob,
+        Catalogue, CatalogueList,
+        Gamesystem, GamesystemList,
+        Roster, RosterList,
+        DataIndex, DataIndexList,
+        Datablob, DatablobList
     }
 }

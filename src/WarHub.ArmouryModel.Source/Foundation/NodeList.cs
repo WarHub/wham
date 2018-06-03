@@ -7,22 +7,22 @@ using System.Diagnostics;
 namespace WarHub.ArmouryModel.Source
 {
     [DebuggerDisplay("Count = {Count}")]
-    public partial struct NodeList<TItem> : IReadOnlyList<TItem> where TItem : SourceNode
+    public partial struct NodeList<TNode> : IReadOnlyList<TNode> where TNode : SourceNode
     {
         // TODO a lot of optimizations here
 
-        internal NodeList(IContainer<TItem> container)
+        internal NodeList(IContainer<TNode> container)
         {
             Container = container;
         }
 
-        internal IContainer<TItem> Container { get; }
+        internal IContainer<TNode> Container { get; }
 
-        public TItem this[int index] => Container.GetNodeSlot(index);
+        public TNode this[int index] => Container.GetNodeSlot(index);
 
         public int Count => Container?.SlotCount ?? 0;
 
-        public IEnumerator<TItem> GetEnumerator()
+        public IEnumerator<TNode> GetEnumerator()
         {
             var count = Count;
             for (int i = 0; i < count; i++)
@@ -31,37 +31,22 @@ namespace WarHub.ArmouryModel.Source
             }
         }
 
-        public static implicit operator NodeList<SourceNode>(NodeList<TItem> itemList)
+        public static implicit operator NodeList<SourceNode>(NodeList<TNode> nodeList)
         {
-            return new NodeList<SourceNode>(itemList.Container);
+            return new NodeList<SourceNode>(nodeList.Container);
         }
 
-        public static implicit operator SourceNode.NodeOrList(NodeList<TItem> itemList)
+        public static implicit operator NodeList<TNode>(NodeList<SourceNode> nodeList)
         {
-            return new NodeList<SourceNode>(itemList.Container);
-        }
-
-        public static implicit operator NodeList<TItem>(SourceNode.NodeOrList nodeOrList)
-        {
-            return new NodeList<TItem>((IContainer<TItem>)nodeOrList.List.Container);
-        }
-
-        public static implicit operator NodeList<TItem>(NamedNodeOrList namedNodeOrList)
-        {
-            return new NodeList<TItem>((IContainer<TItem>)namedNodeOrList.List.Container);
-        }
-
-        public static implicit operator NodeList<TItem>(NodeList<SourceNode> nodeList)
-        {
-            return new NodeList<TItem>((IContainer<TItem>)nodeList.Container);
+            return new NodeList<TNode>((IContainer<TNode>)nodeList.Container);
         }
 
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
     }
 
-    partial struct NodeList<TItem>
+    partial struct NodeList<TNode>
     {
-        public NodeList<TItem> AddRange(IEnumerable<TItem> items)
+        public NodeList<TNode> AddRange(IEnumerable<TNode> items)
         {
             return this.Concat(items).ToNodeList();
         }
@@ -69,14 +54,14 @@ namespace WarHub.ArmouryModel.Source
 
     public static class NodeList
     {
-        public static NodeList<TItem> Create<TItem>(IEnumerable<TItem> items)
-            where TItem : SourceNode
+        public static NodeList<TNode> Create<TNode>(IEnumerable<TNode> items)
+            where TNode : SourceNode
         {
-            return new NodeList<TItem>(new NodeCollectionContainerProxy<TItem>(items.ToImmutableArray()));
+            return new NodeList<TNode>(new NodeCollectionContainerProxy<TNode>(items.ToImmutableArray()));
         }
 
-        public static NodeList<TItem> ToNodeList<TItem>(this IEnumerable<TItem> items)
-            where TItem : SourceNode
+        public static NodeList<TNode> ToNodeList<TNode>(this IEnumerable<TNode> items)
+            where TNode : SourceNode
         {
             return NodeList.Create(items);
         }
@@ -86,7 +71,7 @@ namespace WarHub.ArmouryModel.Source
             where TCore : ICore<TNode>
         {
             // shortcut for easy case
-            if (array.Container is LazyNodeList<TNode, TCore> nodeListCore)
+            if (array.Container is INodeListWithCoreArray<TNode, TCore> nodeListCore)
             {
                 return nodeListCore.Cores;
             }

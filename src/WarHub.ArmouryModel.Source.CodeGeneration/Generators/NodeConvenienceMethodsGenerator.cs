@@ -42,7 +42,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
             ParameterSyntax CreateParameter(CoreDescriptor.Entry entry)
             {
                 var type = entry is CoreDescriptor.CollectionEntry collectionEntry
-                    ? collectionEntry.GetNodeTypeIdentifierName().ToNodeListType()
+                    ? collectionEntry.GetListNodeTypeIdentifierName()
                     : entry is CoreDescriptor.ComplexEntry complexEntry
                     ? complexEntry.GetNodeTypeIdentifierName()
                     : entry.Type;

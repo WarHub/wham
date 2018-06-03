@@ -183,8 +183,15 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration.Tests
                 .AddLeftContainers(OneItemContainerPackage.CreateContainer().WithId(container1Id))
                 .AddRightContainers(OneItemContainerPackage.CreateContainer().WithId(container2Id));
             var children = root.Children();
+
             Assert.Collection(children,
-                x => Assert.True(x is ContainerNode c && c.Id == container1Id),
+                x => Assert.IsType<ContainerListNode>(x),
+                x => Assert.IsType<ContainerListNode>(x));
+
+            Assert.Collection((ContainerListNode)children.ElementAt(0),
+                x => Assert.True(x is ContainerNode c && c.Id == container1Id));
+
+            Assert.Collection((ContainerListNode)children.ElementAt(1),
                 x => Assert.True(x is ContainerNode c && c.Id == container2Id));
         }
 
@@ -230,8 +237,10 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration.Tests
             var descendants = root.Descendants(descendIntoChildren: x => !(x is ContainerNode));
             Assert.Collection(
                 descendants,
+                x => Assert.IsType<ContainerListNode>(x),
                 x => Assert.IsType<ContainerNode>(x),
                 x => Assert.IsType<ContainerNode>(x),
+                x => Assert.IsType<ContainerListNode>(x),
                 x => Assert.IsType<ContainerNode>(x),
                 x => Assert.IsType<ContainerNode>(x));
         }
@@ -260,8 +269,10 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration.Tests
             Assert.Collection(
                 descendants,
                 x => Assert.IsType<RootContainerNode>(x),
+                x => Assert.IsType<ContainerListNode>(x),
                 x => Assert.IsType<ContainerNode>(x),
                 x => Assert.IsType<ContainerNode>(x),
+                x => Assert.IsType<ContainerListNode>(x),
                 x => Assert.IsType<ContainerNode>(x),
                 x => Assert.IsType<ContainerNode>(x));
         }

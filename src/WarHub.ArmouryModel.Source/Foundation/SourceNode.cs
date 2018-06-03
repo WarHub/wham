@@ -18,7 +18,7 @@ namespace WarHub.ArmouryModel.Source
             Tree = parent?.Tree;
         }
 
-        private int? _indexInParent;
+        internal int? _indexInParent;
 
         NodeCore INodeWithCore<NodeCore>.Core => Core;
 
@@ -32,6 +32,11 @@ namespace WarHub.ArmouryModel.Source
         /// Gets the kind of this node.
         /// </summary>
         public abstract SourceKind Kind { get; }
+
+        /// <summary>
+        /// Gets whether or not this is a <see cref="ListNode{TChild}"/>.
+        /// </summary>
+        public virtual bool IsList => false;
 
         /// <summary>
         /// Gets index in parent, or -1 if no parent.
@@ -62,12 +67,9 @@ namespace WarHub.ArmouryModel.Source
         /// Enumerates all children of this node.
         /// </summary>
         /// <returns>Enumeration of this node's children.</returns>
-        public IEnumerable<SourceNode> Children()
+        public virtual IEnumerable<SourceNode> Children()
         {
-            for (int i = 0; i < ChildrenCount; i++)
-            {
-                yield return GetChild(i);
-            }
+            return Enumerable.Empty<SourceNode>();
         }
 
         /// <summary>
@@ -131,49 +133,42 @@ namespace WarHub.ArmouryModel.Source
             return null;
         }
 
-        public virtual IEnumerable<NamedNodeOrList> NamedChildrenLists()
+        /// <summary>
+        /// Enumerates children wrapped in <see cref="ChildInfo"/> which also provides property name
+        /// by which a child node can be accessed from this instance.
+        /// </summary>
+        /// <returns>Children info wrapper enumeration.</returns>
+        public virtual IEnumerable<ChildInfo> ChildrenInfos()
         {
-            return Enumerable.Empty<NamedNodeOrList>();
+            return Enumerable.Empty<ChildInfo>();
         }
 
         /// <summary>
-        /// Enumerates containers of children in this node. Implementation is used
-        /// to provide the very basic and totally inefficient implementation of
-        /// <see cref="ChildrenCount"/> and <see cref="GetChild(int)"/>. It is advised
-        /// to provide a specialized and optimized implementation of these members.
+        /// Gets the total count of children of this node.
         /// </summary>
-        /// <returns></returns>
-        protected internal virtual IEnumerable<NodeOrList> ChildrenLists()
-        {
-            return Enumerable.Empty<NodeOrList>();
-        }
+        /// <remarks>
+        /// <see cref="SourceNode"/>'s basic implementation is very inefficient. It is advised
+        /// that deriving classes provide a specialized and optimized implementation of this member.
+        /// </remarks>
+        protected internal virtual int ChildrenCount => Children().Count();
 
         /// <summary>
-        /// Gets the total count of children of this node. <see cref="SourceNode"/>'s basic
-        /// implementation is very inefficient. It is advised that deriving classes provide
-        /// a specialized and optimized implementation of this member.
+        /// Retrieves this node's child from given <paramref name="index"/>.
         /// </summary>
-        protected internal virtual int ChildrenCount => ChildrenLists().Sum(list => list.Count);
-
-        /// <summary>
-        /// Retrieves this node's child from given <paramref name="index"/>. <see cref="SourceNode"/>'s basic
-        /// implementation is very inefficient. It is advised that deriving classes provide
-        /// a specialized and optimized implementation of this member.
-        /// </summary>
+        /// <remarks>
+        /// <see cref="SourceNode"/>'s basic implementation is very inefficient. It is advised
+        /// that deriving classes provide a specialized and optimized implementation of this member.
+        /// </remarks>
         /// <param name="index">The index from which to retrieve child</param>
         /// <returns>Child from the given index.</returns>
         /// <exception cref="ArgumentOutOfRangeException">When index is out of range.</exception>
         protected internal virtual SourceNode GetChild(int index)
         {
-            foreach (var list in ChildrenLists())
+            if (index < 0 || index >= ChildrenCount)
             {
-                index -= list.Count;
-                if (index < 0)
-                {
-                    return list[index + list.Count];
-                }
+                throw new ArgumentOutOfRangeException(nameof(index));
             }
-            throw new ArgumentOutOfRangeException(nameof(index));
+            return Children().ElementAt(index);
         }
 
         private IEnumerable<SourceNode> AncestorsCore(bool includeSelf)
@@ -222,6 +217,7 @@ namespace WarHub.ArmouryModel.Source
             var indexInParent = CalculateIndex();
             _indexInParent = indexInParent;
             return indexInParent;
+
             int CalculateIndex()
             {
                 if (Parent == null)
@@ -239,40 +235,6 @@ namespace WarHub.ArmouryModel.Source
                 }
                 return index;
             }
-        }
-
-        public static implicit operator NodeOrList(SourceNode node) => new NodeOrList(node);
-
-        public struct NodeOrList
-        {
-            public NodeOrList(SourceNode singleChild)
-            {
-                SingleChild = singleChild;
-                List = default;
-            }
-            public NodeOrList(NodeList<SourceNode> list)
-            {
-                SingleChild = default;
-                List = list;
-            }
-
-            public bool IsSingle => SingleChild != null;
-            public bool IsList => SingleChild == null;
-            public int Count => IsSingle ? 1 : List.Count;
-            public SourceNode this[int index]
-            {
-                get
-                {
-                    return
-                        IsList ? List[index] :
-                        index == 0 ? SingleChild :
-                        throw new IndexOutOfRangeException(
-                            "This is a single element union, tried to access index " + index);
-                }
-            }
-
-            public SourceNode SingleChild { get; }
-            public NodeList<SourceNode> List { get; }
         }
     }
 }

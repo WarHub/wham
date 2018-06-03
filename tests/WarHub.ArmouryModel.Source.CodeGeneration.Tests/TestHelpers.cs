@@ -42,14 +42,20 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration.Tests
                 {
                     yield return x => Assert.IsType<RootContainerNode>(x);
                 }
+                yield return x => Assert.IsType<ContainerListNode>(x);
                 yield return x => Assert.IsType<ContainerNode>(x);
+                yield return x => Assert.IsType<ItemListNode>(x);
                 yield return x => Assert.IsType<ItemNode>(x);
                 yield return x => Assert.IsType<ItemNode>(x);
                 yield return x => Assert.IsType<ContainerNode>(x);
+                yield return x => Assert.IsType<ItemListNode>(x);
+                yield return x => Assert.IsType<ItemNode>(x);
+                yield return x => Assert.IsType<ContainerListNode>(x);
+                yield return x => Assert.IsType<ContainerNode>(x);
+                yield return x => Assert.IsType<ItemListNode>(x);
                 yield return x => Assert.IsType<ItemNode>(x);
                 yield return x => Assert.IsType<ContainerNode>(x);
-                yield return x => Assert.IsType<ItemNode>(x);
-                yield return x => Assert.IsType<ContainerNode>(x);
+                yield return x => Assert.IsType<ItemListNode>(x);
                 yield return x => Assert.IsType<ItemNode>(x);
                 yield return x => Assert.IsType<ItemNode>(x);
             }

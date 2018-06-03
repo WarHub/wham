@@ -77,6 +77,8 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                     return
                         entry.IdentifierName
                         .MemberAccess(
+                            IdentifierName(Names.NodeList))
+                        .MemberAccess(
                             IdentifierName(Names.AddRange))
                         .InvokeWithArguments(
                             IdentifierName(nodesParamName));
@@ -97,6 +99,8 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                 {
                     return
                         entry.IdentifierName
+                        .MemberAccess(
+                            IdentifierName(Names.NodeList))
                         .MemberAccess(
                             IdentifierName(Names.AddRange))
                         .InvokeWithArguments(

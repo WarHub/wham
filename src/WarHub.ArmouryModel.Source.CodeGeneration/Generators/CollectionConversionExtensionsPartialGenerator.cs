@@ -21,17 +21,55 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
 
         protected override IEnumerable<MemberDeclarationSyntax> GenerateMembers()
         {
-            yield return GenerateToCoreArray();
-            yield return GenerateToNodeList();
+            if (!IsAbstract)
+            {
+                yield return GenerateListNodeToCoreArray();
+            }
+            yield return GenerateNodeListToCoreArray();
             if (IsAbstract)
             {
                 yield break;
             }
+            yield return GenerateCoreArrayToListNode();
             yield return GenerateToImmutableRecursive();
             yield return GenerateToBuildersList();
         }
 
-        private MemberDeclarationSyntax GenerateToCoreArray()
+        private MemberDeclarationSyntax GenerateListNodeToCoreArray()
+        {
+            const string paramName = "nodes";
+            return
+                MethodDeclaration(
+                    Descriptor.CoreType.ToImmutableArrayType(),
+                    Names.ToCoreArray)
+                .AddModifiers(SyntaxKind.PublicKeyword, SyntaxKind.StaticKeyword)
+                .AddParameterListParameters(
+                    CreateParameters())
+                .AddBodyStatements(
+                    ReturnStatement(
+                        CreateReturnExpression()));
+            IEnumerable<ParameterSyntax> CreateParameters()
+            {
+                yield return
+                    Parameter(
+                        Identifier(paramName))
+                    .AddModifiers(SyntaxKind.ThisKeyword)
+                    .WithType(
+                        Descriptor.GetListNodeTypeIdentifierName());
+            }
+            ExpressionSyntax CreateReturnExpression()
+            {
+                return
+                    IdentifierName(paramName)
+                    .MemberAccess(
+                        IdentifierName(Names.NodeList))
+                    .MemberAccess(
+                        IdentifierName(Names.ToCoreArray))
+                    .InvokeWithArguments();
+            }
+        }
+
+        private MemberDeclarationSyntax GenerateNodeListToCoreArray()
         {
             const string paramName = "nodes";
             return
@@ -67,20 +105,20 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
             }
         }
 
-        private MemberDeclarationSyntax GenerateToNodeList()
+        private MemberDeclarationSyntax GenerateCoreArrayToListNode()
         {
             const string coresParamName = "cores";
             const string parentParamName = "parent";
             return
                 MethodDeclaration(
-                    Descriptor.GetNodeTypeIdentifierName().ToNodeListType(),
-                    Names.ToNodeList)
+                    Descriptor.GetListNodeTypeIdentifierName(),
+                    Names.ToListNode)
                 .AddModifiers(SyntaxKind.PublicKeyword, SyntaxKind.StaticKeyword)
                 .AddParameterListParameters(
                     CreateParameters())
                 .AddBodyStatements(
                     ReturnStatement(
-                        CreateReturnExpression()));
+                        CreateListNodeCreationExpression()));
             IEnumerable<ParameterSyntax> CreateParameters()
             {
                 yield return
@@ -95,7 +133,17 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                     .WithType(
                         IdentifierName(Names.SourceNode));
             }
-            ExpressionSyntax CreateReturnExpression()
+            ExpressionSyntax CreateListNodeCreationExpression()
+            {
+                return
+                    ObjectCreationExpression(
+                        Descriptor.GetListNodeTypeIdentifierName())
+                    .AddArgumentListArguments(
+                        Argument(
+                            CreateToNodeListExpression()),
+                        Argument(IdentifierName(parentParamName)));
+            }
+            ExpressionSyntax CreateToNodeListExpression()
             {
                 return
                     IdentifierName(coresParamName)

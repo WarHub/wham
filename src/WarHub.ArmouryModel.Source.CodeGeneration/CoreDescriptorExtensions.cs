@@ -39,9 +39,19 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
             return descriptor.CoreTypeIdentifier.ValueText.GetNodeTypeNameCore();
         }
 
+        public static string GetListNodeTypeName(this CoreDescriptor descriptor)
+        {
+            return descriptor.CoreTypeIdentifier.ValueText.GetListNodeTypeNameCore();
+        }
+
         public static IdentifierNameSyntax GetNodeTypeIdentifierName(this CoreDescriptor descriptor)
         {
             return IdentifierName(descriptor.GetNodeTypeName());
+        }
+
+        public static IdentifierNameSyntax GetListNodeTypeIdentifierName(this CoreDescriptor descriptor)
+        {
+            return IdentifierName(descriptor.GetListNodeTypeName());
         }
 
         public static IdentifierNameSyntax GetNodeTypeIdentifierName(this CoreDescriptor.ComplexEntry entry)
@@ -54,9 +64,19 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
             return IdentifierName(entry.CollectionTypeParameter.ToString().GetNodeTypeNameCore());
         }
 
+        public static IdentifierNameSyntax GetListNodeTypeIdentifierName(this CoreDescriptor.CollectionEntry entry)
+        {
+            return IdentifierName(entry.CollectionTypeParameter.ToString().GetListNodeTypeNameCore());
+        }
+
         public static string GetNodeTypeNameCore(this string typeName)
         {
             return typeName.StripSuffixes() + Names.NodeSuffix;
+        }
+
+        public static string GetListNodeTypeNameCore(this string typeName)
+        {
+            return typeName.StripSuffixes() + Names.ListNodeSuffix;
         }
 
         public static string StripSuffixes(this string typeName)

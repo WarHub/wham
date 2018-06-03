@@ -4,6 +4,8 @@
     {
         public const string WithPrefix = "With";
         public const string NodeSuffix = "Node";
+        public const string ListNodeSuffix = "ListNode";
+        public const string ListSuffix = "List";
         public const string CoreSuffix = "Core"; 
         public const string Empty = "Empty";
         public const string Add = nameof(System.Collections.IList.Add);
@@ -27,8 +29,8 @@
         public const string SourceKind = "SourceKind";
         public const string SourceVisitor = "SourceVisitor";
         public const string SourceVisitorTypeParameter = "TResult";
-        public const string NodeOrList = "NodeOrList";
-        public const string NamedNodeOrList = "NamedNodeOrList";
+        public const string ChildInfo = "ChildInfo";
+        public const string ListNode = "ListNode";
 
         public const string ArrayNonGenericFull = "System.Array";
         public const string ICollectionNonGenericFull = "System.Collections.ICollection";
@@ -74,13 +76,14 @@
         public const string ToCoreArray = "ToCoreArray";
         public const string NodeList = "NodeList";
         public const string ToNodeList = "ToNodeList";
+        public const string ToListNode = "ToListNode";
         public const string ModelExtensions = "ModelExtensions";
         public const string Deconstruct = "Deconstruct";
         public const string Kind = "Kind";
         public const string Core = "Core";
-        public const string ChildrenLists = "ChildrenLists";
+        public const string Children = "Children";
         public const string ChildrenCount = "ChildrenCount";
-        public const string NamedChildrenLists = "NamedChildrenLists";
+        public const string ChildrenInfos = "ChildrenInfos";
         public const string SlotCount = "SlotCount";
         public const string GetChild = "GetChild";
         public const string GetNodeSlot = "GetNodeSlot";

@@ -175,6 +175,11 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
             return ConditionalAccessExpression(expr, MemberBindingExpression(name));
         }
 
+        public static ExpressionSyntax Coalesce(this ExpressionSyntax expr, ExpressionSyntax ifNullExpr)
+        {
+            return BinaryExpression(SyntaxKind.CoalesceExpression, expr, ifNullExpr);
+        }
+
         public static ExpressionSyntax InvokeWithArguments(this ExpressionSyntax expr, params ExpressionSyntax[] args)
         {
             return InvocationExpression(expr).AddArgumentListArguments(args.Select(Argument).ToArray());
@@ -260,5 +265,11 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
         }
 
         public static T Mutate<T>(this T original, Func<T, T> mutation) => mutation(original);
+
+        public static void Deconstruct<TKey, TValue>(this KeyValuePair<TKey, TValue> pair, out TKey key, out TValue value)
+        {
+            key = pair.Key;
+            value = pair.Value;
+        }
     }
 }

@@ -2,17 +2,17 @@
 {
     public enum SourceKind
     {
-        Class1,
-        Container,
-        DerivedOnce,
-        DerivedOnceWithNewProps,
-        DerivedTwice,
-        DerivedTwiceWithNewProps,
-        Item,
-        NotOnlyAutoGetter,
-        QualifiedProperties,
-        RecursiveContainer,
-        RootContainer,
-        TestBuilderPartial,
+        Class1, Class1List,
+        Container, ContainerList,
+        DerivedOnce, DerivedOnceList,
+        DerivedOnceWithNewProps, DerivedOnceWithNewPropsList,
+        DerivedTwice, DerivedTwiceList,
+        DerivedTwiceWithNewProps, DerivedTwiceWithNewPropsList,
+        Item, ItemList,
+        NotOnlyAutoGetter, NotOnlyAutoGetterList,
+        QualifiedProperties, QualifiedPropertiesList,
+        RecursiveContainer, RecursiveContainerList,
+        RootContainer, RootContainerList,
+        TestBuilderPartial, TestBuilderPartialList,
     }
 }

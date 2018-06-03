@@ -29,25 +29,34 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
         protected override IEnumerable<MemberDeclarationSyntax> GenerateMembers()
         {
             const string node = "node";
-            yield return
-                MethodDeclaration(
-                    IdentifierName(Names.SourceVisitorTypeParameter),
-                    Names.Visit + Descriptor.RawModelName)
-                .AddModifiers(
-                    SyntaxKind.PublicKeyword,
-                    SyntaxKind.VirtualKeyword)
-                .AddParameterListParameters(
-                    Parameter(
-                        Identifier(node))
-                    .WithType(
-                        Descriptor.GetNodeTypeIdentifierName()))
-                .AddBodyStatements(
-                    ReturnStatement(
-                        ThisExpression()
-                        .MemberAccess(
-                            IdentifierName(Names.DefaultVisit))
-                        .InvokeWithArguments(
-                            IdentifierName(node))));
+            yield return CreateVisitMethod(
+                Names.Visit + Descriptor.RawModelName,
+                Descriptor.GetNodeTypeIdentifierName());
+            yield return CreateVisitMethod(
+                Names.Visit + Descriptor.RawModelName + Names.ListSuffix,
+                Descriptor.GetListNodeTypeIdentifierName());
+            MethodDeclarationSyntax CreateVisitMethod(string methodName, IdentifierNameSyntax type)
+            {
+                return
+                    MethodDeclaration(
+                        IdentifierName(Names.SourceVisitorTypeParameter),
+                        methodName)
+                    .AddModifiers(
+                        SyntaxKind.PublicKeyword,
+                        SyntaxKind.VirtualKeyword)
+                    .AddParameterListParameters(
+                        Parameter(
+                            Identifier(node))
+                        .WithType(
+                            type))
+                    .AddBodyStatements(
+                        ReturnStatement(
+                            ThisExpression()
+                            .MemberAccess(
+                                IdentifierName(Names.DefaultVisit))
+                            .InvokeWithArguments(
+                                IdentifierName(node))));
+            }
         }
     }
 }

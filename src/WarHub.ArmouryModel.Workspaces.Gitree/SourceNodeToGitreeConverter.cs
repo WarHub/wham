@@ -142,26 +142,27 @@ namespace WarHub.ArmouryModel.Workspaces.Gitree
         private ImmutableArray<GitreeListNode> CreateListFolders<TNode>(TNode node, ImmutableHashSet<string> listNames)
             where TNode : SourceNode
         {
+            // TODO select by common set of XyzListNode types that should be made into folders
             var listFolders = node
-                .NamedChildrenLists()
-                .Where(l => listNames.Contains(l.Name))
+                .ChildrenInfos()
+                .Where(info => info.IsList && listNames.Contains(info.Name))
                 .Select(CreateListFolder)
                 .ToImmutableArray();
             return listFolders;
         }
 
-        private GitreeListNode CreateListFolder(NamedNodeOrList nodeOrList)
+        private GitreeListNode CreateListFolder(ChildInfo info)
         {
-            var names = nodeOrList.ToImmutableDictionary(x => x, SelectName);
+            var names = info.Node.Children().ToImmutableDictionary(x => x, SelectName);
             var nameCounts = names.Values
                 .Distinct(StringComparer.OrdinalIgnoreCase)
                 .ToDictionary(x => x, x => 0, StringComparer.OrdinalIgnoreCase);
-            var folders = nodeOrList
+            var folders = info.Node.Children()
                 .Select(Visit)
                 .Scan(default(GitreeNode), AssignIdentifiers)
                 .Skip(1)
                 .ToImmutableArray();
-            return new GitreeListNode(nodeOrList.Name, folders);
+            return new GitreeListNode(info.Name, folders);
             string GetUniqueIdentifier(GitreeNode item)
             {
                 var node = item.Node;

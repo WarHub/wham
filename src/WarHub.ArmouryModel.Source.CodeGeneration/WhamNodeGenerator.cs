@@ -15,7 +15,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
             = new DiagnosticDescriptor(
                 id: "WHAMGEN",
                 title: "Error when generating code.",
-                messageFormat: "Exception details:\r\n{0}",
+                messageFormat: "Exception details: {0}",
                 category: "CodeGeneration",
                 defaultSeverity: DiagnosticSeverity.Error,
                 isEnabledByDefault: true);
@@ -75,6 +75,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                 {
                     yield break;
                 }
+                yield return ListNodePartialGenerator.Generate(descriptor, cancellationToken);
                 yield return SourceVisitorVisitPartialGenerator.Generate(descriptor, cancellationToken);
                 yield return SourceVisitorGenericVisitPartialGenerator.Generate(descriptor, cancellationToken);
                 yield return NodeFactoryPartialGenerator.Generate(descriptor, cancellationToken);
