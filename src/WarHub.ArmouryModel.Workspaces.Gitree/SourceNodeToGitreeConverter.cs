@@ -10,6 +10,33 @@ namespace WarHub.ArmouryModel.Workspaces.Gitree
 
     public class SourceNodeToGitreeConverter : SourceVisitor<GitreeNode>
     {
+        static SourceNodeToGitreeConverter()
+        {
+            FolderKinds =
+                new[] 
+                {
+                    SourceKind.CatalogueList,
+                    SourceKind.DatablobList,
+                    SourceKind.DataIndexList,
+                    SourceKind.ForceEntryList,
+                    SourceKind.ForceList,
+                    SourceKind.GamesystemList,
+                    SourceKind.ProfileList,
+                    SourceKind.ProfileTypeList,
+                    SourceKind.RosterList,
+                    SourceKind.RuleList,
+                    SourceKind.SelectionEntryGroupList,
+                    SourceKind.SelectionEntryList,
+                    SourceKind.SelectionList
+                }
+                .ToImmutableHashSet();
+        }
+
+        /// <summary>
+        /// Gets a set of source kinds that will be separated from the entity into child folders.
+        /// </summary>
+        public static ImmutableHashSet<SourceKind> FolderKinds { get; }
+
         private static DatablobNode EmptyBlob { get; }
             = new DatablobCore.Builder { Meta = new MetadataCore.Builder() }.ToImmutable().ToNode();
 
@@ -27,12 +54,7 @@ namespace WarHub.ArmouryModel.Workspaces.Gitree
 
         public override GitreeNode VisitForce(ForceNode node)
         {
-            var strippedLists = ImmutableHashSet.Create(
-                nameof(ForceNode.Forces),
-                nameof(ForceNode.Profiles),
-                nameof(ForceNode.Rules),
-                nameof(ForceNode.Selections));
-            var listFolders = CreateListFolders(node, strippedLists);
+            var listFolders = CreateListFolders(node);
             var strippedNode = node
                 .WithForces()
                 .WithProfiles()
@@ -43,11 +65,7 @@ namespace WarHub.ArmouryModel.Workspaces.Gitree
 
         public override GitreeNode VisitForceEntry(ForceEntryNode node)
         {
-            var strippedLists = ImmutableHashSet.Create(
-                nameof(ForceEntryNode.ForceEntries),
-                nameof(ForceEntryNode.Profiles),
-                nameof(ForceEntryNode.Rules));
-            var listFolders = CreateListFolders(node, strippedLists);
+            var listFolders = CreateListFolders(node);
             var strippedNode = node
                 .WithForceEntries()
                 .WithProfiles()
@@ -63,19 +81,14 @@ namespace WarHub.ArmouryModel.Workspaces.Gitree
 
         public override GitreeNode VisitRoster(RosterNode node)
         {
-            var strippedLists = ImmutableHashSet.Create(nameof(RosterNode.Forces));
-            var listFolders = CreateListFolders(node, strippedLists);
+            var listFolders = CreateListFolders(node);
             var strippedNode = node.WithForces();
             return new GitreeNode(EmptyBlob.AddRosters(strippedNode), node, IsLeaf: false, listFolders);
         }
 
         public override GitreeNode VisitSelection(SelectionNode node)
         {
-            var strippedLists = ImmutableHashSet.Create(
-                nameof(SelectionNode.Profiles),
-                nameof(SelectionNode.Rules),
-                nameof(SelectionNode.Selections));
-            var listFolders = CreateListFolders(node, strippedLists);
+            var listFolders = CreateListFolders(node);
             var strippedNode = node
                 .WithProfiles()
                 .WithRules()
@@ -98,17 +111,7 @@ namespace WarHub.ArmouryModel.Workspaces.Gitree
         private (T node, ImmutableArray<GitreeListNode> folders) VisitCatalogueBase<T>(T node)
             where T : CatalogueBaseNode
         {
-            var strippedLists = ImmutableHashSet.Create(
-                nameof(CatalogueBaseNode.ForceEntries),
-                nameof(CatalogueBaseNode.Profiles),
-                nameof(CatalogueBaseNode.ProfileTypes),
-                nameof(CatalogueBaseNode.Rules),
-                nameof(CatalogueBaseNode.SelectionEntries),
-                nameof(CatalogueBaseNode.SharedProfiles),
-                nameof(CatalogueBaseNode.SharedRules),
-                nameof(CatalogueBaseNode.SharedSelectionEntries),
-                nameof(CatalogueBaseNode.SharedSelectionEntryGroups));
-            var listFolders = CreateListFolders(node, strippedLists);
+            var listFolders = CreateListFolders(node);
             var strippedNode = node
                 .WithForceEntries()
                 .WithProfiles()
@@ -125,12 +128,7 @@ namespace WarHub.ArmouryModel.Workspaces.Gitree
         private (T node, ImmutableArray<GitreeListNode> folders) VisitSelectionEntryBase<T>(T node)
             where T : SelectionEntryBaseNode
         {
-            var strippedLists = ImmutableHashSet.Create(
-                nameof(SelectionEntryBaseNode.Profiles),
-                nameof(SelectionEntryBaseNode.Rules),
-                nameof(SelectionEntryBaseNode.SelectionEntries),
-                nameof(SelectionEntryBaseNode.SelectionEntryGroups));
-            var listFolders = CreateListFolders(node, strippedLists);
+            var listFolders = CreateListFolders(node);
             var strippedNode = node
                 .WithProfiles()
                 .WithRules()
@@ -139,13 +137,13 @@ namespace WarHub.ArmouryModel.Workspaces.Gitree
             return ((T)strippedNode, listFolders);
         }
 
-        private ImmutableArray<GitreeListNode> CreateListFolders<TNode>(TNode node, ImmutableHashSet<string> listNames)
+        private ImmutableArray<GitreeListNode> CreateListFolders<TNode>(TNode node)
             where TNode : SourceNode
         {
             // TODO select by common set of XyzListNode types that should be made into folders
             var listFolders = node
                 .ChildrenInfos()
-                .Where(info => info.IsList && listNames.Contains(info.Name))
+                .Where(info => FolderKinds.Contains(info.Node.Kind))
                 .Select(CreateListFolder)
                 .ToImmutableArray();
             return listFolders;
@@ -189,6 +187,7 @@ namespace WarHub.ArmouryModel.Workspaces.Gitree
 
         public static DatablobNode BlobWith(SourceNode node)
         {
+            
             return node.MatchOnType(
                 x => EmptyBlob.AddCatalogues(x),
                 x => EmptyBlob.AddCategories(x),

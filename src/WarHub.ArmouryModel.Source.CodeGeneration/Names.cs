@@ -80,6 +80,7 @@
         public const string ModelExtensions = "ModelExtensions";
         public const string Deconstruct = "Deconstruct";
         public const string Kind = "Kind";
+        public const string ElementKind = "ElementKind";
         public const string Core = "Core";
         public const string Children = "Children";
         public const string ChildrenCount = "ChildrenCount";

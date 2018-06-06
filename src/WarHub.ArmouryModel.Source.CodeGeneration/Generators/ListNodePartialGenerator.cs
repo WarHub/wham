@@ -50,6 +50,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
             }
             yield return GenerateConstructor();
             yield return CreateKindProperty();
+            yield return CreateElementKindProperty();
             yield return AcceptMethod();
             yield return AcceptGenericMethod();
         }
@@ -87,6 +88,20 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                 PropertyDeclaration(
                     IdentifierName(Names.SourceKind),
                     Names.Kind)
+                .AddModifiers(SyntaxKind.PublicKeyword, SyntaxKind.OverrideKeyword)
+                .WithExpressionBodyFull(
+                    IdentifierName(Names.SourceKind)
+                    .MemberAccess(
+                        IdentifierName(kindString)));
+        }
+
+        private PropertyDeclarationSyntax CreateElementKindProperty()
+        {
+            var kindString = Descriptor.RawModelName;
+            return
+                PropertyDeclaration(
+                    IdentifierName(Names.SourceKind),
+                    Names.ElementKind)
                 .AddModifiers(SyntaxKind.PublicKeyword, SyntaxKind.OverrideKeyword)
                 .WithExpressionBodyFull(
                     IdentifierName(Names.SourceKind)

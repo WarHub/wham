@@ -11,15 +11,34 @@ namespace WarHub.ArmouryModel.Source
             NodeList = nodeList;
         }
 
+        /// <summary>
+        /// Gets count of this node's child elements.
+        /// </summary>
+        public int Count => NodeList.Count;
+
+        /// <summary>
+        /// Gets the kind of elements this list node contains.
+        /// </summary>
+        public abstract SourceKind ElementKind { get; }
+
+        /// <summary>
+        /// Gets <c>true</c> because this node is a list.
+        /// </summary>
         public sealed override bool IsList => true;
 
+        /// <summary>
+        /// Gets a list of this node's child elements.
+        /// </summary>
         public NodeList<TChild> NodeList { get; }
 
+        /// <summary>
+        /// Gets a child element by <paramref name="index"/>.
+        /// </summary>
+        /// <param name="index">0-based index of element in this list.</param>
+        /// <returns>Retrieved child element.</returns>
         public TChild this[int index] => (TChild)GetChild(index);
 
         protected internal override int ChildrenCount => NodeList.Count;
-
-        public int Count => NodeList.Count;
 
         protected internal override SourceNode GetChild(int index) => NodeList[index];
 

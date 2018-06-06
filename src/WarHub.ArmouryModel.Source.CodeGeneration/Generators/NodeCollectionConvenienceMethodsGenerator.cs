@@ -45,9 +45,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                             Identifier(nodesParamName))
                         .AddModifiers(SyntaxKind.ParamsKeyword)
                         .WithType(
-                            ArrayType(entryNodeType)
-                            .AddRankSpecifiers(
-                                ArrayRankSpecifier()));
+                            entryNodeType.ToArrayType());
                 }
                 ExpressionSyntax CreateNodesExpression()
                 {
@@ -68,9 +66,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                             Identifier(nodesParamName))
                         .AddModifiers(SyntaxKind.ParamsKeyword)
                         .WithType(
-                            ArrayType(entryNodeType)
-                            .AddRankSpecifiers(
-                                ArrayRankSpecifier()));
+                            entryNodeType.ToArrayType());
                 }
                 ExpressionSyntax CreateNodesExpression()
                 {

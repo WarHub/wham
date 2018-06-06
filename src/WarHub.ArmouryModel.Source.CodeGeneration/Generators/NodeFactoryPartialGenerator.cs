@@ -34,16 +34,43 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
 
         private IEnumerable<MemberDeclarationSyntax> GenerateFactoryMethods()
         {
+            const string listParamName = "list";
             string methodName = Descriptor.RawModelName;
             if (Descriptor.Entries.Any(x => x.IsCollection))
             {
-                yield return CreateFull(
+                yield return CreateForNode(
                     CreateListNodeParameter,
                     CreateListNodeReturnStatement);
             }
-            yield return CreateFull(
+            yield return CreateForNode(
                 CreateNodeListParameter,
                 CreateNodeListReturnStatement);
+            // NodeList parameter
+            yield return CreateForList(
+                Parameter(
+                    Identifier(listParamName))
+                .WithType(
+                    Descriptor.GetNodeTypeIdentifierName().ToNodeListType()),
+                ObjectCreationExpression(
+                    Descriptor.GetListNodeTypeIdentifierName())
+                .InvokeWithArguments(
+                    IdentifierName(listParamName),
+                    LiteralExpression(SyntaxKind.NullLiteralExpression)));
+            // params parameter
+            yield return CreateForList(
+                Parameter(
+                    Identifier(listParamName))
+                .AddModifiers(SyntaxKind.ParamsKeyword)
+                .WithType(
+                    Descriptor.GetNodeTypeIdentifierName().ToArrayType()),
+                ObjectCreationExpression(
+                    Descriptor.GetListNodeTypeIdentifierName())
+                .InvokeWithArguments(
+                    IdentifierName(listParamName)
+                    .MemberAccess(
+                        IdentifierName(Names.ToNodeList))
+                    .InvokeWithArguments(),
+                    LiteralExpression(SyntaxKind.NullLiteralExpression)));
             ParameterSyntax CreateListNodeParameter(CoreDescriptor.CollectionEntry entry)
             {
                 var type = entry.GetListNodeTypeIdentifierName();
@@ -126,7 +153,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                     }
                 }
             }
-            MethodDeclarationSyntax CreateFull(
+            MethodDeclarationSyntax CreateForNode(
                 Func<CoreDescriptor.CollectionEntry, ParameterSyntax> createCollectionParameter,
                 Func<StatementSyntax> createReturnStatement)
             {
@@ -165,6 +192,17 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                         Parameter(entry.CamelCaseIdentifier)
                         .WithType(type);
                 }
+            }
+            MethodDeclarationSyntax CreateForList(ParameterSyntax parameter, ExpressionSyntax returnExpression)
+            {
+                return
+                    MethodDeclaration(
+                        Descriptor.GetListNodeTypeIdentifierName(),
+                        Descriptor.RawModelName + Names.ListSuffix)
+                    .AddModifiers(SyntaxKind.PublicKeyword, SyntaxKind.StaticKeyword)
+                    .AddParameterListParameters(parameter)
+                    .AddBodyStatements(
+                        ReturnStatement(returnExpression));
             }
         }
     }

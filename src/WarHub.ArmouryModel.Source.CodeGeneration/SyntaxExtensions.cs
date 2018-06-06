@@ -205,6 +205,11 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
             return ExpressionStatement(expr);
         }
 
+        public static ArrayTypeSyntax ToArrayType(this TypeSyntax identifier)
+        {
+            return ArrayType(identifier).AddRankSpecifiers(ArrayRankSpecifier());
+        }
+
         public static AssignmentExpressionSyntax AssignTo(this ExpressionSyntax right, ExpressionSyntax left)
         {
             return AssignmentExpression(SyntaxKind.SimpleAssignmentExpression, left, right);
