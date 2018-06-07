@@ -2,6 +2,7 @@
 {
     public enum SourceKind
     {
+        Unknown,
         Class1, Class1List,
         Container, ContainerList,
         DerivedOnce, DerivedOnceList,

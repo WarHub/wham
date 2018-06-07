@@ -42,8 +42,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                     .AddParameterListParameters(
                         Parameter(
                             Identifier(node))
-                        .WithType(
-                            type))
+                        .WithType(type))
                     .AddBodyStatements(
                         ExpressionStatement(
                             ThisExpression()

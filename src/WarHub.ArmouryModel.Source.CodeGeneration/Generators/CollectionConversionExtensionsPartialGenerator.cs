@@ -31,13 +31,14 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                 yield break;
             }
             yield return GenerateCoreArrayToListNode();
+            yield return GenerateNodeListToListNode();
             yield return GenerateToImmutableRecursive();
             yield return GenerateToBuildersList();
         }
 
         private MemberDeclarationSyntax GenerateListNodeToCoreArray()
         {
-            const string paramName = "nodes";
+            const string paramName = "list";
             return
                 MethodDeclaration(
                     Descriptor.CoreType.ToImmutableArrayType(),
@@ -155,6 +156,50 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                             Descriptor.CoreType))
                     .InvokeWithArguments(
                             IdentifierName(parentParamName));
+            }
+        }
+
+        private MemberDeclarationSyntax GenerateNodeListToListNode()
+        {
+            const string nodesParamName = "nodes";
+            const string parentParamName = "parent";
+            return
+                MethodDeclaration(
+                        Descriptor.GetListNodeTypeIdentifierName(),
+                        Names.ToListNode)
+                    .AddModifiers(SyntaxKind.PublicKeyword, SyntaxKind.StaticKeyword)
+                    .AddParameterListParameters(
+                        CreateParameters())
+                    .AddBodyStatements(
+                        ReturnStatement(
+                            CreateReturnExpression()));
+            IEnumerable<ParameterSyntax> CreateParameters()
+            {
+                yield return
+                    Parameter(
+                            Identifier(nodesParamName))
+                        .AddModifiers(SyntaxKind.ThisKeyword)
+                        .WithType(
+                            Descriptor.GetNodeTypeIdentifierName().ToNodeListType());
+                yield return
+                    Parameter(
+                            Identifier(parentParamName))
+                        .WithType(
+                            IdentifierName(Names.SourceNode))
+                        .WithDefault(
+                            EqualsValueClause(
+                                LiteralExpression(SyntaxKind.NullLiteralExpression)));
+            }
+            ExpressionSyntax CreateReturnExpression()
+            {
+                return
+                    ObjectCreationExpression(
+                            Descriptor.GetListNodeTypeIdentifierName())
+                        .AddArgumentListArguments(
+                            Argument(
+                                IdentifierName(nodesParamName)),
+                            Argument(
+                                IdentifierName(parentParamName)));
             }
         }
 

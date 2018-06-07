@@ -170,6 +170,11 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
             return MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression, expr, name);
         }
 
+        public static ExpressionSyntax Cast(this ExpressionSyntax expr, TypeSyntax type)
+        {
+            return CastExpression(type, expr);
+        }
+
         public static ExpressionSyntax ConditionalMemberAccess(this ExpressionSyntax expr, SimpleNameSyntax name)
         {
             return ConditionalAccessExpression(expr, MemberBindingExpression(name));

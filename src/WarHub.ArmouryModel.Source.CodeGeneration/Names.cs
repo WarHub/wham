@@ -28,6 +28,7 @@
         public const string SourceTree = "SourceTree";
         public const string SourceKind = "SourceKind";
         public const string SourceVisitor = "SourceVisitor";
+        public const string SourceRewriter = "SourceRewriter";
         public const string SourceVisitorTypeParameter = "TResult";
         public const string ChildInfo = "ChildInfo";
         public const string ListNode = "ListNode";
@@ -92,6 +93,7 @@
         public const string Accept = "Accept";
         public const string DefaultVisit = "DefaultVisit";
         public const string Visit = "Visit";
+        public const string VisitNodeList = "VisitNodeList";
         public const string ArgumentOutOfRangeExceptionFull = "System.ArgumentOutOfRangeException";
     }
 }

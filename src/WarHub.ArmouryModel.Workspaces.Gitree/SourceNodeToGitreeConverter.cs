@@ -187,40 +187,42 @@ namespace WarHub.ArmouryModel.Workspaces.Gitree
 
         public static DatablobNode BlobWith(SourceNode node)
         {
-            
-            return node.MatchOnType(
-                x => EmptyBlob.AddCatalogues(x),
-                x => EmptyBlob.AddCategories(x),
-                x => EmptyBlob.AddCategoryEntries(x),
-                x => EmptyBlob.AddCategoryLinks(x),
-                x => EmptyBlob.AddCharacteristics(x),
-                x => EmptyBlob.AddCharacteristicTypes(x),
-                x => EmptyBlob.AddConditions(x),
-                x => EmptyBlob.AddConditionGroups(x),
-                x => EmptyBlob.AddConstraints(x),
-                x => EmptyBlob.AddCosts(x),
-                x => EmptyBlob.AddCostLimits(x),
-                x => EmptyBlob.AddCostTypes(x),
-                x => EmptyBlob.AddDatablobs(x),
-                x => EmptyBlob.AddDataIndexes(x),
-                x => EmptyBlob.AddDataIndexEntries(x),
-                x => EmptyBlob,
-                x => EmptyBlob.AddEntryLinks(x),
-                x => EmptyBlob.AddForces(x),
-                x => EmptyBlob.AddForceEntries(x),
-                x => EmptyBlob.AddGamesystems(x),
-                x => EmptyBlob.AddInfoLinks(x),
-                x => EmptyBlob,
-                x => EmptyBlob.AddModifiers(x),
-                x => EmptyBlob.AddProfiles(x),
-                x => EmptyBlob.AddProfileTypes(x),
-                x => EmptyBlob.AddRepeats(x),
-                x => EmptyBlob.AddRosters(x),
-                x => EmptyBlob.AddRules(x),
-                x => EmptyBlob.AddSelections(x),
-                x => EmptyBlob.AddSelectionEntries(x),
-                x => EmptyBlob.AddSelectionEntryGroups(x),
-                x => EmptyBlob);
+            return AddingToEmptyBlobRewriter.AddToEmpty(node);
+        }
+
+        public class AddingToEmptyBlobRewriter : SourceRewriter
+        {
+            private AddingToEmptyBlobRewriter(SourceNode nodeToAdd)
+            {
+                NodeToAdd = nodeToAdd;
+            }
+
+            private SourceNode NodeToAdd { get; }
+
+            public static DatablobNode AddToEmpty(SourceNode node)
+            {
+                var rewriter = new AddingToEmptyBlobRewriter(node);
+                return (DatablobNode)rewriter.VisitDatablob(EmptyBlob);
+            }
+
+            public override SourceNode Visit(SourceNode node)
+            {
+                if (!(node is IListNode list && list.ElementKind == NodeToAdd.Kind))
+                {
+                    return node;
+                }
+                return base.Visit(node);
+            }
+
+            public override NodeList<TNode> VisitNodeList<TNode>(NodeList<TNode> list)
+            {
+                if (typeof(TNode) == NodeToAdd.GetType())
+                {
+                    return list.Add((TNode)NodeToAdd);
+                }
+
+                return list;
+            }
         }
     }
 }

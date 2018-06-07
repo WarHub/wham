@@ -78,6 +78,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                 yield return ListNodePartialGenerator.Generate(descriptor, cancellationToken);
                 yield return SourceVisitorVisitPartialGenerator.Generate(descriptor, cancellationToken);
                 yield return SourceVisitorGenericVisitPartialGenerator.Generate(descriptor, cancellationToken);
+                yield return SourceRewriterVisitPartialGenerator.Generate(descriptor, cancellationToken);
                 yield return NodeFactoryPartialGenerator.Generate(descriptor, cancellationToken);
             }
         }

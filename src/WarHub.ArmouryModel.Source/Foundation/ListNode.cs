@@ -3,10 +3,10 @@ using System.Collections.Generic;
 
 namespace WarHub.ArmouryModel.Source
 {
-    public abstract class ListNode<TChild> : SourceNode, IReadOnlyList<TChild>
+    public abstract class ListNode<TChild> : SourceNode, IListNode, IReadOnlyList<TChild>
         where TChild : SourceNode
     {
-        public ListNode(NodeList<TChild> nodeList, SourceNode parent) : base(null, parent)
+        protected ListNode(NodeList<TChild> nodeList, SourceNode parent) : base(null, parent)
         {
             NodeList = nodeList;
         }
@@ -30,6 +30,8 @@ namespace WarHub.ArmouryModel.Source
         /// Gets a list of this node's child elements.
         /// </summary>
         public NodeList<TChild> NodeList { get; }
+
+        NodeList<SourceNode> IListNode.NodeList => NodeList;
 
         /// <summary>
         /// Gets a child element by <paramref name="index"/>.

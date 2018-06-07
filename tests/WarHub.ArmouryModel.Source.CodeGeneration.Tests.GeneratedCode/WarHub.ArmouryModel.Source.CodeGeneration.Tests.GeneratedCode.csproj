@@ -12,6 +12,7 @@
     <Compile Include="..\..\src\WarHub.ArmouryModel.Source\Foundation\IBuilder.cs" Link="Foundation\IBuilder.cs" />
     <Compile Include="..\..\src\WarHub.ArmouryModel.Source\Foundation\IContainer.cs" Link="Foundation\IContainer.cs" />
     <Compile Include="..\..\src\WarHub.ArmouryModel.Source\Foundation\ICore.cs" Link="Foundation\ICore.cs" />
+    <Compile Include="..\..\src\WarHub.ArmouryModel.Source\Foundation\IListNode.cs" Link="Foundation\IListNode.cs" />
     <Compile Include="..\..\src\WarHub.ArmouryModel.Source\Foundation\ImmutableExtensions.cs" Link="Foundation\ImmutableExtensions.cs" />
     <Compile Include="..\..\src\WarHub.ArmouryModel.Source\Foundation\INodeListWithCoreArray.cs" Link="Foundation\INodeListWithCoreArray.cs" />
     <Compile Include="..\..\src\WarHub.ArmouryModel.Source\Foundation\INodeWithCore.cs" Link="Foundation\INodeWithCore.cs" />
@@ -21,6 +22,7 @@
     <Compile Include="..\..\src\WarHub.ArmouryModel.Source\Foundation\NodeCore.cs" Link="Foundation\NodeCore.cs" />
     <Compile Include="..\..\src\WarHub.ArmouryModel.Source\Foundation\NodeList.cs" Link="Foundation\NodeList.cs" />
     <Compile Include="..\..\src\WarHub.ArmouryModel.Source\Foundation\SerializationExtensions.cs" Link="Foundation\SerializationExtensions.cs" />
+    <Compile Include="..\..\src\WarHub.ArmouryModel.Source\Foundation\SourceExtensions.cs" Link="Foundation\SourceExtensions.cs" />
     <Compile Include="..\..\src\WarHub.ArmouryModel.Source\Foundation\SourceNode.cs" Link="Foundation\SourceNode.cs" />
     <Compile Include="..\..\src\WarHub.ArmouryModel.Source\Foundation\SourceTree.cs" Link="Foundation\SourceTree.cs" />
   </ItemGroup>

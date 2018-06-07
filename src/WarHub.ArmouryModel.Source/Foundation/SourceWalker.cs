@@ -9,7 +9,7 @@ namespace WarHub.ArmouryModel.Source
         public override void DefaultVisit(SourceNode node)
         {
             var childCount = node.ChildrenCount;
-            for (int i = 0; i < childCount; i++)
+            for (var i = 0; i < childCount; i++)
             {
                 var child = node.GetChild(i);
                 Visit(child);

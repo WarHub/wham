@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Collections;
 using System.Collections.Immutable;
 using System.Linq;
@@ -6,7 +7,7 @@ using System.Diagnostics;
 
 namespace WarHub.ArmouryModel.Source
 {
-    [DebuggerDisplay("Count = {Count}")]
+    [DebuggerDisplay("Count = {" + nameof(Count) + "}")]
     public partial struct NodeList<TNode> : IReadOnlyList<TNode> where TNode : SourceNode
     {
         // TODO a lot of optimizations here
@@ -25,7 +26,7 @@ namespace WarHub.ArmouryModel.Source
         public IEnumerator<TNode> GetEnumerator()
         {
             var count = Count;
-            for (int i = 0; i < count; i++)
+            for (var i = 0; i < count; i++)
             {
                 yield return this[i];
             }
@@ -44,8 +45,42 @@ namespace WarHub.ArmouryModel.Source
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
     }
 
+    // equality implementation
+    partial struct NodeList<TNode> : IEquatable<NodeList<TNode>>
+    {
+        public bool Equals(NodeList<TNode> other)
+        {
+            return Equals(Container, other.Container);
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (obj is null) return false;
+            return obj is NodeList<TNode> list && Equals(list);
+        }
+
+        public override int GetHashCode()
+        {
+            return Container?.GetHashCode() ?? 0;
+        }
+
+        public static bool operator ==(NodeList<TNode> left, NodeList<TNode> right)
+        {
+            return left.Equals(right);
+        }
+
+        public static bool operator !=(NodeList<TNode> left, NodeList<TNode> right)
+        {
+            return !(left == right);
+        }
+    }
+
     partial struct NodeList<TNode>
     {
+        public NodeList<TNode> Add(TNode item)
+        {
+            return this.Append(item).ToNodeList();
+        }
         public NodeList<TNode> AddRange(IEnumerable<TNode> items)
         {
             return this.Concat(items).ToNodeList();
