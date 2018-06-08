@@ -89,10 +89,26 @@ namespace WarHub.ArmouryModel.Source
 
     public static class NodeList
     {
-        public static NodeList<TNode> Create<TNode>(IEnumerable<TNode> items)
+        public static NodeList<TNode> Create<TNode>(params TNode[] nodes)
             where TNode : SourceNode
         {
-            return new NodeList<TNode>(new NodeCollectionContainerProxy<TNode>(items.ToImmutableArray()));
+            if (nodes.Length == 0)
+            {
+                return default;
+            }
+            var nodeArray = nodes.ToImmutableArray();
+            return new NodeList<TNode>(new NodeCollectionContainerProxy<TNode>(nodeArray));
+        }
+
+        public static NodeList<TNode> Create<TNode>(IEnumerable<TNode> nodes)
+            where TNode : SourceNode
+        {
+            var nodeArray = nodes.ToImmutableArray();
+            if (nodeArray.Length == 0)
+            {
+                return default;
+            }
+            return new NodeList<TNode>(new NodeCollectionContainerProxy<TNode>(nodeArray));
         }
 
         public static NodeList<TNode> ToNodeList<TNode>(this IEnumerable<TNode> items)
@@ -101,20 +117,25 @@ namespace WarHub.ArmouryModel.Source
             return NodeList.Create(items);
         }
 
-        internal static ImmutableArray<TCore> ToCoreArray<TCore, TNode>(this NodeList<TNode> array)
+        internal static ImmutableArray<TCore> ToCoreArray<TCore, TNode>(this NodeList<TNode> list)
             where TNode : SourceNode, INodeWithCore<TCore>
             where TCore : ICore<TNode>
         {
             // shortcut for easy case
-            if (array.Container is INodeListWithCoreArray<TNode, TCore> nodeListCore)
+            if (list.Count == 0)
+            {
+                return ImmutableArray<TCore>.Empty;
+            }
+            if (list.Container is INodeListWithCoreArray<TNode, TCore> nodeListCore)
             {
                 return nodeListCore.Cores;
             }
-            var count = array.Count;
+            // manual recovery of cores
+            var count = list.Count;
             var builder = ImmutableArray.CreateBuilder<TCore>(count);
             for (int i = 0; i < count; i++)
             {
-                INodeWithCore<TCore> item = array[i];
+                INodeWithCore<TCore> item = list[i];
                 builder.Add(item.Core);
             }
             return builder.MoveToImmutable();

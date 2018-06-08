@@ -37,8 +37,10 @@ namespace WarHub.ArmouryModel.Workspaces.Gitree
         /// </summary>
         public static ImmutableHashSet<SourceKind> FolderKinds { get; }
 
+        private FolderKindDroppingRewriter FolderDropper { get; } = new FolderKindDroppingRewriter();
+
         private static DatablobNode EmptyBlob { get; }
-            = new DatablobCore.Builder { Meta = new MetadataCore.Builder() }.ToImmutable().ToNode();
+            = NodeFactory.Datablob(NodeFactory.Metadata(null, null, null));
 
         public override GitreeNode DefaultVisit(SourceNode node)
         {
@@ -55,21 +57,14 @@ namespace WarHub.ArmouryModel.Workspaces.Gitree
         public override GitreeNode VisitForce(ForceNode node)
         {
             var listFolders = CreateListFolders(node);
-            var strippedNode = node
-                .WithForces()
-                .WithProfiles()
-                .WithRules()
-                .WithSelections();
+            var strippedNode = DropFolders(node);
             return new GitreeNode(EmptyBlob.AddForces(strippedNode), node, IsLeaf: false, listFolders);
         }
 
         public override GitreeNode VisitForceEntry(ForceEntryNode node)
         {
             var listFolders = CreateListFolders(node);
-            var strippedNode = node
-                .WithForceEntries()
-                .WithProfiles()
-                .WithRules();
+            var strippedNode = DropFolders(node);
             return new GitreeNode(EmptyBlob.AddForceEntries(strippedNode), node, IsLeaf: false, listFolders);
         }
 
@@ -82,17 +77,14 @@ namespace WarHub.ArmouryModel.Workspaces.Gitree
         public override GitreeNode VisitRoster(RosterNode node)
         {
             var listFolders = CreateListFolders(node);
-            var strippedNode = node.WithForces();
+            var strippedNode = DropFolders(node);
             return new GitreeNode(EmptyBlob.AddRosters(strippedNode), node, IsLeaf: false, listFolders);
         }
 
         public override GitreeNode VisitSelection(SelectionNode node)
         {
             var listFolders = CreateListFolders(node);
-            var strippedNode = node
-                .WithProfiles()
-                .WithRules()
-                .WithSelections();
+            var strippedNode = DropFolders(node);
             return new GitreeNode(EmptyBlob.AddSelections(strippedNode), node, IsLeaf: false, listFolders);
         }
 
@@ -112,16 +104,7 @@ namespace WarHub.ArmouryModel.Workspaces.Gitree
             where T : CatalogueBaseNode
         {
             var listFolders = CreateListFolders(node);
-            var strippedNode = node
-                .WithForceEntries()
-                .WithProfiles()
-                .WithProfileTypes()
-                .WithRules()
-                .WithSelectionEntries()
-                .WithSharedProfiles()
-                .WithSharedRules()
-                .WithSharedSelectionEntries()
-                .WithSharedSelectionEntryGroups();
+            var strippedNode = DropFolders(node);
             return ((T)strippedNode, listFolders);
         }
 
@@ -129,11 +112,7 @@ namespace WarHub.ArmouryModel.Workspaces.Gitree
             where T : SelectionEntryBaseNode
         {
             var listFolders = CreateListFolders(node);
-            var strippedNode = node
-                .WithProfiles()
-                .WithRules()
-                .WithSelectionEntries()
-                .WithSelectionEntryGroups();
+            var strippedNode = DropFolders(node);
             return ((T)strippedNode, listFolders);
         }
 
@@ -163,7 +142,6 @@ namespace WarHub.ArmouryModel.Workspaces.Gitree
             return new GitreeListNode(info.Name, folders);
             string GetUniqueIdentifier(GitreeNode item)
             {
-                var node = item.Node;
                 var name = names[item.WrappedNode];
                 var nameIndex = ++nameCounts[name];
                 var identifier = nameIndex == 1 ? name : $"{name} - {nameIndex}";
@@ -178,6 +156,11 @@ namespace WarHub.ArmouryModel.Workspaces.Gitree
                     .WithPrevIdentifier(prevItem?.Node.Meta.Identifier);
                 return item.WithNode(node.WithMeta(newMeta));
             }
+        }
+
+        private TNode DropFolders<TNode>(TNode node) where TNode : SourceNode
+        {
+            return (TNode)node.Accept(FolderDropper);
         }
 
         public static string SelectName(SourceNode node)
@@ -202,7 +185,7 @@ namespace WarHub.ArmouryModel.Workspaces.Gitree
             public static DatablobNode AddToEmpty(SourceNode node)
             {
                 var rewriter = new AddingToEmptyBlobRewriter(node);
-                return (DatablobNode)rewriter.VisitDatablob(EmptyBlob);
+                return (DatablobNode)EmptyBlob.Accept(rewriter);
             }
 
             public override SourceNode Visit(SourceNode node)
@@ -211,17 +194,38 @@ namespace WarHub.ArmouryModel.Workspaces.Gitree
                 {
                     return node;
                 }
-                return base.Visit(node);
+                // this is the list we want
+                return node.Accept(this);
             }
 
             public override NodeList<TNode> VisitNodeList<TNode>(NodeList<TNode> list)
             {
-                if (typeof(TNode) == NodeToAdd.GetType())
-                {
-                    return list.Add((TNode)NodeToAdd);
-                }
+                return list.Add((TNode)NodeToAdd);
+            }
+        }
 
-                return list;
+        public class FolderKindDroppingRewriter : SourceRewriter
+        {
+            private NodeListCleaner ListCleaner { get; } = new NodeListCleaner();
+
+            public override SourceNode Visit(SourceNode node)
+            {
+                if (FolderKinds.Contains(node.Kind))
+                {
+                    return ListCleaner.Visit(node);
+                }
+                return node;
+            }
+        }
+
+        /// <summary>
+        /// Rewrites any list as an empty list.
+        /// </summary>
+        public class NodeListCleaner : SourceRewriter
+        {
+            public override NodeList<TNode> VisitNodeList<TNode>(NodeList<TNode> list)
+            {
+                return default;
             }
         }
     }

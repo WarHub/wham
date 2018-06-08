@@ -9,25 +9,20 @@ namespace WarHub.ArmouryModel.Source
         where TNode : SourceNode, INodeWithCore<TCore>
         where TCore : ICore<TNode>
     {
-        internal LazyNodeList(ImmutableArray<TCore> cores, SourceNode parent)
+        private LazyNodeList(ImmutableArray<TCore> cores, SourceNode parent)
         {
             Parent = parent;
             Cores = cores;
             Nodes = new ArrayElement<TNode>[Cores.Length];
-            List = new NodeList<TNode>(this);
         }
 
         private SourceNode Parent { get; }
 
         private ArrayElement<TNode>[] Nodes { get; }
 
-        internal ImmutableArray<TCore> Cores { get; }
-
-        public NodeList<TNode> List { get; }
+        public ImmutableArray<TCore> Cores { get; }
 
         public int SlotCount => Cores.Length;
-
-        ImmutableArray<TCore> INodeListWithCoreArray<TNode, TCore>.Cores => Cores;
 
         public TNode GetNodeSlot(int index)
         {
@@ -41,7 +36,7 @@ namespace WarHub.ArmouryModel.Source
             return value;
         }
 
-        internal class OneElementList : IContainer<TNode>, INodeListWithCoreArray<TNode, TCore>
+        private class OneElementList : IContainer<TNode>, INodeListWithCoreArray<TNode, TCore>
         {
             public OneElementList(ImmutableArray<TCore> cores, SourceNode parent)
             {
@@ -70,7 +65,7 @@ namespace WarHub.ArmouryModel.Source
             }
         }
 
-        internal class TwoElementList : IContainer<TNode>, INodeListWithCoreArray<TNode, TCore>
+        private class TwoElementList : IContainer<TNode>, INodeListWithCoreArray<TNode, TCore>
         {
             public TwoElementList(ImmutableArray<TCore> cores, SourceNode parent)
             {
@@ -111,7 +106,7 @@ namespace WarHub.ArmouryModel.Source
             }
         }
 
-        internal class ThreeElementList : IContainer<TNode>, INodeListWithCoreArray<TNode, TCore>
+        private class ThreeElementList : IContainer<TNode>, INodeListWithCoreArray<TNode, TCore>
         {
             public ThreeElementList(ImmutableArray<TCore> cores, SourceNode parent)
             {
@@ -153,6 +148,18 @@ namespace WarHub.ArmouryModel.Source
                 return node;
             }
         }
+
+        internal static IContainer<TNode> CreateContainer(ImmutableArray<TCore> cores, SourceNode parent)
+        {
+            switch (cores.Length)
+            {
+                case 0: return default;
+                case 1: return new OneElementList(cores, parent);
+                case 2: return new TwoElementList(cores, parent);
+                case 3: return new ThreeElementList(cores, parent);
+                default: return new LazyNodeList<TNode, TCore>(cores, parent);
+            }
+        }
     }
 
     internal static class LazyNodeListExtensions
@@ -161,14 +168,8 @@ namespace WarHub.ArmouryModel.Source
             where TCore : ICore<TNode>
             where TNode : SourceNode, INodeWithCore<TCore>
         {
-            switch (cores.Length)
-            {
-                case 0: return default;
-                case 1: return new NodeList<TNode>(new LazyNodeList<TNode, TCore>.OneElementList(cores, parent));
-                case 2: return new NodeList<TNode>(new LazyNodeList<TNode, TCore>.TwoElementList(cores, parent));
-                case 3: return new NodeList<TNode>(new LazyNodeList<TNode, TCore>.ThreeElementList(cores, parent));
-                default: return new NodeList<TNode>(new LazyNodeList<TNode, TCore>(cores, parent));
-            }
+            var container = LazyNodeList<TNode, TCore>.CreateContainer(cores, parent);
+            return new NodeList<TNode>(container);
         }
     }
 }
