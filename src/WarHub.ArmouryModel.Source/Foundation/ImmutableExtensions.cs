@@ -66,7 +66,7 @@ namespace WarHub.ArmouryModel.Source
                 Count = declaredCount;
             }
 
-            private IEnumerable<T> _collection;
+            private readonly IEnumerable<T> _collection;
 
             public int Count { get; }
 

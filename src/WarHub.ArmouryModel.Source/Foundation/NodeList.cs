@@ -8,7 +8,8 @@ using System.Diagnostics;
 namespace WarHub.ArmouryModel.Source
 {
     [DebuggerDisplay("Count = {" + nameof(Count) + "}")]
-    public partial struct NodeList<TNode> : IReadOnlyList<TNode> where TNode : SourceNode
+    public partial struct NodeList<TNode> : IReadOnlyList<TNode>, IContainerProvider<TNode>
+        where TNode : SourceNode
     {
         // TODO a lot of optimizations here
 
@@ -22,6 +23,8 @@ namespace WarHub.ArmouryModel.Source
         public TNode this[int index] => Container.GetNodeSlot(index);
 
         public int Count => Container?.SlotCount ?? 0;
+
+        IContainer<TNode> IContainerProvider<TNode>.Container => Container;
 
         public IEnumerator<TNode> GetEnumerator()
         {
@@ -86,9 +89,22 @@ namespace WarHub.ArmouryModel.Source
             return this.Concat(items).ToNodeList();
         }
     }
+    internal interface IContainerProvider<out TNode> where TNode : SourceNode
+    {
+        IContainer<TNode> Container { get; }
+    }
+
 
     public static class NodeList
     {
+        /// <summary>
+        /// Creates a node list from an array of nodes.
+        /// </summary>
+        /// <typeparam name="TNode">
+        /// Type of nodes passed, and by extension, type argument of the returned node list.
+        /// </typeparam>
+        /// <param name="nodes">Array of nodes be contained in node list.</param>
+        /// <returns>Created node list containing all of <paramref name="nodes"/>.</returns>
         public static NodeList<TNode> Create<TNode>(params TNode[] nodes)
             where TNode : SourceNode
         {
@@ -97,31 +113,67 @@ namespace WarHub.ArmouryModel.Source
                 return default;
             }
             var nodeArray = nodes.ToImmutableArray();
-            return new NodeList<TNode>(new NodeCollectionContainerProxy<TNode>(nodeArray));
+            return new NodeList<TNode>(CreateContainerForNodeArray(nodeArray));
         }
 
+        /// <summary>
+        /// Creates a node list from a sequence of nodes.
+        /// </summary>
+        /// <typeparam name="TNode">
+        /// Type of nodes passed, and by extension, type argument of the returned node list.
+        /// </typeparam>
+        /// <param name="nodes">Sequence of nodes be contained in node list.</param>
+        /// <returns>Created node list containing all of <paramref name="nodes"/>.</returns>
         public static NodeList<TNode> Create<TNode>(IEnumerable<TNode> nodes)
             where TNode : SourceNode
         {
+            if (nodes is IContainerProvider<TNode> nodeList)
+            {
+                return new NodeList<TNode>(nodeList.Container);
+            }
             var nodeArray = nodes.ToImmutableArray();
             if (nodeArray.Length == 0)
             {
                 return default;
             }
-            return new NodeList<TNode>(new NodeCollectionContainerProxy<TNode>(nodeArray));
+            return new NodeList<TNode>(CreateContainerForNodeArray(nodeArray));
         }
 
-        public static NodeList<TNode> ToNodeList<TNode>(this IEnumerable<TNode> items)
+        /// <summary>
+        /// Simple wrapper of <see cref="Create{TNode}(TNode[])"/>.
+        /// Creates a node list from an array of nodes.
+        /// </summary>
+        /// <typeparam name="TNode">
+        /// Type of nodes passed, and by extension, type argument of the returned node list.
+        /// </typeparam>
+        /// <param name="nodes">Array of nodes be contained in node list.</param>
+        /// <returns>Created node list containing all of <paramref name="nodes"/>.</returns>
+        public static NodeList<TNode> ToNodeList<TNode>(this TNode[] nodes)
             where TNode : SourceNode
         {
-            return NodeList.Create(items);
+            return NodeList.Create(nodes);
+        }
+
+        /// <summary>
+        /// Simple wrapper of <see cref="Create{TNode}(IEnumerable{TNode})"/>.
+        /// Creates a node list from a sequence of nodes.
+        /// </summary>
+        /// <typeparam name="TNode">
+        /// Type of nodes passed, and by extension, type argument of the returned node list.
+        /// </typeparam>
+        /// <param name="nodes">Sequence of nodes be contained in node list.</param>
+        /// <returns>Created node list containing all of <paramref name="nodes"/>.</returns>
+        public static NodeList<TNode> ToNodeList<TNode>(this IEnumerable<TNode> nodes)
+            where TNode : SourceNode
+        {
+            return NodeList.Create(nodes);
         }
 
         internal static ImmutableArray<TCore> ToCoreArray<TCore, TNode>(this NodeList<TNode> list)
             where TNode : SourceNode, INodeWithCore<TCore>
             where TCore : ICore<TNode>
         {
-            // shortcut for easy case
+            // shortcuts for easy cases
             if (list.Count == 0)
             {
                 return ImmutableArray<TCore>.Empty;
@@ -139,6 +191,12 @@ namespace WarHub.ArmouryModel.Source
                 builder.Add(item.Core);
             }
             return builder.MoveToImmutable();
+        }
+
+        private static IContainer<TNode> CreateContainerForNodeArray<TNode>(ImmutableArray<TNode> nodes)
+            where TNode : SourceNode
+        {
+            return new NodeCollectionContainerProxy<TNode>(nodes);
         }
     }
 }
