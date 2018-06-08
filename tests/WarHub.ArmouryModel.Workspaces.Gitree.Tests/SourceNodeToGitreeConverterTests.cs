@@ -26,7 +26,7 @@ namespace WarHub.ArmouryModel.Workspaces.Gitree.Tests
         {
             var characteristicType = NodeFactory.CharacteristicType("id", "name");
             var profile = NodeFactory.ProfileType("id", "name", NodeList.Create(characteristicType));
-            var rewriter = new SourceNodeToGitreeConverter.FolderKindDroppingRewriter();
+            var rewriter = new SourceNodeToGitreeConverter.SeparatableDropperRewriter();
             var result = (DatablobNode)NodeFactory.Datablob(
                 NodeFactory.Metadata(null, null, null),
                 characteristicTypes: NodeFactory.CharacteristicTypeList(characteristicType),

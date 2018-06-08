@@ -12,32 +12,40 @@ namespace WarHub.ArmouryModel.Workspaces.Gitree
     {
         static SourceNodeToGitreeConverter()
         {
-            FolderKinds =
-                new[] 
+            NonLeafKinds =
+                new[]
                 {
-                    SourceKind.CatalogueList,
-                    SourceKind.DatablobList,
-                    SourceKind.DataIndexList,
-                    SourceKind.ForceEntryList,
-                    SourceKind.ForceList,
-                    SourceKind.GamesystemList,
-                    SourceKind.ProfileList,
-                    SourceKind.ProfileTypeList,
-                    SourceKind.RosterList,
-                    SourceKind.RuleList,
-                    SourceKind.SelectionEntryGroupList,
-                    SourceKind.SelectionEntryList,
-                    SourceKind.SelectionList
-                }
+                    SourceKind.Catalogue,
+                    SourceKind.Datablob,
+                    SourceKind.ForceEntry,
+                    SourceKind.Force,
+                    SourceKind.Gamesystem,
+                    SourceKind.Roster,
+                    SourceKind.SelectionEntryGroup,
+                    SourceKind.SelectionEntry,
+                    SourceKind.Selection
+                }.ToImmutableHashSet();
+
+            SeparatableKinds =
+                NonLeafKinds
+                .Concat(new[]
+                {
+                    SourceKind.DataIndex,
+                    SourceKind.Profile,
+                    SourceKind.ProfileType,
+                    SourceKind.Rule
+                })
                 .ToImmutableHashSet();
         }
+
+        public static ImmutableHashSet<SourceKind> NonLeafKinds { get; }
 
         /// <summary>
         /// Gets a set of source kinds that will be separated from the entity into child folders.
         /// </summary>
-        public static ImmutableHashSet<SourceKind> FolderKinds { get; }
+        public static ImmutableHashSet<SourceKind> SeparatableKinds { get; }
 
-        private FolderKindDroppingRewriter FolderDropper { get; } = new FolderKindDroppingRewriter();
+        private SeparatableDropperRewriter SeparatableDropper { get; } = new SeparatableDropperRewriter();
 
         private static DatablobNode EmptyBlob { get; }
             = NodeFactory.Datablob(NodeFactory.Metadata(null, null, null));
@@ -45,90 +53,43 @@ namespace WarHub.ArmouryModel.Workspaces.Gitree
         public override GitreeNode DefaultVisit(SourceNode node)
         {
             var blob = BlobWith(node);
-            return new GitreeNode(blob, node, IsLeaf: true, ImmutableArray<GitreeListNode>.Empty);
+            return GitreeNode.CreateLeaf(blob, node);
         }
 
-        public override GitreeNode VisitCatalogue(CatalogueNode node)
+        public override GitreeNode Visit(SourceNode node)
         {
-            var result = VisitCatalogueBase(node);
-            return new GitreeNode(EmptyBlob.AddCatalogues(result.node), node, IsLeaf: false, result.folders);
+            if (NonLeafKinds.Contains(node.Kind))
+            {
+                return VisitNonLeafNode(node);
+            }
+            return base.Visit(node);
         }
 
-        public override GitreeNode VisitForce(ForceNode node)
+        private GitreeNode VisitNonLeafNode(SourceNode node)
         {
-            var listFolders = CreateListFolders(node);
-            var strippedNode = DropFolders(node);
-            return new GitreeNode(EmptyBlob.AddForces(strippedNode), node, IsLeaf: false, listFolders);
+            var listFolders = CreateLists(node);
+            var strippedNode = DropSeparatableChildren(node);
+            var blob = BlobWith(strippedNode);
+            return GitreeNode.CreateNonLeaf(blob, node, listFolders);
         }
 
-        public override GitreeNode VisitForceEntry(ForceEntryNode node)
+        private ImmutableArray<GitreeListNode> CreateLists(SourceNode node)
         {
-            var listFolders = CreateListFolders(node);
-            var strippedNode = DropFolders(node);
-            return new GitreeNode(EmptyBlob.AddForceEntries(strippedNode), node, IsLeaf: false, listFolders);
-        }
-
-        public override GitreeNode VisitGamesystem(GamesystemNode node)
-        {
-            var result = VisitCatalogueBase(node);
-            return new GitreeNode(EmptyBlob.AddGamesystems(result.node), node, IsLeaf: false, result.folders);
-        }
-
-        public override GitreeNode VisitRoster(RosterNode node)
-        {
-            var listFolders = CreateListFolders(node);
-            var strippedNode = DropFolders(node);
-            return new GitreeNode(EmptyBlob.AddRosters(strippedNode), node, IsLeaf: false, listFolders);
-        }
-
-        public override GitreeNode VisitSelection(SelectionNode node)
-        {
-            var listFolders = CreateListFolders(node);
-            var strippedNode = DropFolders(node);
-            return new GitreeNode(EmptyBlob.AddSelections(strippedNode), node, IsLeaf: false, listFolders);
-        }
-
-        public override GitreeNode VisitSelectionEntry(SelectionEntryNode node)
-        {
-            var result = VisitSelectionEntryBase(node);
-            return new GitreeNode(EmptyBlob.AddSelectionEntries(result.node), node, IsLeaf: false, result.folders);
-        }
-
-        public override GitreeNode VisitSelectionEntryGroup(SelectionEntryGroupNode node)
-        {
-            var result = VisitSelectionEntryBase(node);
-            return new GitreeNode(EmptyBlob.AddSelectionEntryGroups(result.node), node, IsLeaf: false, result.folders);
-        }
-
-        private (T node, ImmutableArray<GitreeListNode> folders) VisitCatalogueBase<T>(T node)
-            where T : CatalogueBaseNode
-        {
-            var listFolders = CreateListFolders(node);
-            var strippedNode = DropFolders(node);
-            return ((T)strippedNode, listFolders);
-        }
-
-        private (T node, ImmutableArray<GitreeListNode> folders) VisitSelectionEntryBase<T>(T node)
-            where T : SelectionEntryBaseNode
-        {
-            var listFolders = CreateListFolders(node);
-            var strippedNode = DropFolders(node);
-            return ((T)strippedNode, listFolders);
-        }
-
-        private ImmutableArray<GitreeListNode> CreateListFolders<TNode>(TNode node)
-            where TNode : SourceNode
-        {
-            // TODO select by common set of XyzListNode types that should be made into folders
             var listFolders = node
                 .ChildrenInfos()
-                .Where(info => FolderKinds.Contains(info.Node.Kind))
-                .Select(CreateListFolder)
+                .Where(IsSeparatable)
+                .Select(CreateList)
                 .ToImmutableArray();
             return listFolders;
+            bool IsSeparatable(ChildInfo info)
+            {
+                return info.IsList
+                    && info.Node is IListNode list
+                    && SeparatableKinds.Contains(list.ElementKind);
+            }
         }
 
-        private GitreeListNode CreateListFolder(ChildInfo info)
+        private GitreeListNode CreateList(ChildInfo info)
         {
             var names = info.Node.Children().ToImmutableDictionary(x => x, SelectName);
             var nameCounts = names.Values
@@ -158,9 +119,9 @@ namespace WarHub.ArmouryModel.Workspaces.Gitree
             }
         }
 
-        private TNode DropFolders<TNode>(TNode node) where TNode : SourceNode
+        private SourceNode DropSeparatableChildren(SourceNode node)
         {
-            return (TNode)node.Accept(FolderDropper);
+            return node.Accept(SeparatableDropper);
         }
 
         public static string SelectName(SourceNode node)
@@ -173,6 +134,10 @@ namespace WarHub.ArmouryModel.Workspaces.Gitree
             return AddingToEmptyBlobRewriter.AddToEmpty(node);
         }
 
+        /// <summary>
+        /// Visitor that adds visited node to appropriate list
+        /// of an empty <see cref="DatablobNode"/> which is returned.
+        /// </summary>
         public class AddingToEmptyBlobRewriter : SourceRewriter
         {
             private AddingToEmptyBlobRewriter(SourceNode nodeToAdd)
@@ -204,13 +169,20 @@ namespace WarHub.ArmouryModel.Workspaces.Gitree
             }
         }
 
-        public class FolderKindDroppingRewriter : SourceRewriter
+        /// <summary>
+        /// When a node accepts this rewriter, all of it's children <see cref="IListNode"/>s
+        /// that contains elements of <see cref="SeparatableKinds"/> are rewritten as empty.
+        /// Don't call <see cref="Visit(SourceNode)"/> directly, because it only doesn't visit
+        /// node's children - either returns the same node, or if it's a node described above,
+        /// returns empty list node.
+        /// </summary>
+        public class SeparatableDropperRewriter : SourceRewriter
         {
             private NodeListCleaner ListCleaner { get; } = new NodeListCleaner();
 
             public override SourceNode Visit(SourceNode node)
             {
-                if (FolderKinds.Contains(node.Kind))
+                if (node.IsList && node is IListNode list && SeparatableKinds.Contains(list.ElementKind))
                 {
                     return ListCleaner.Visit(node);
                 }
