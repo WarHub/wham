@@ -163,41 +163,28 @@ namespace WarHub.ArmouryModel.Workspaces.Gitree
                 return node.Accept(this);
             }
 
-            public override NodeList<TNode> VisitNodeList<TNode>(NodeList<TNode> list)
+            public override ListNode<TNode> VisitListNode<TNode>(ListNode<TNode> list)
             {
-                return list.Add((TNode)NodeToAdd);
+                return list.ElementKind == NodeToAdd.Kind
+                    ? list.WithNodes(NodeList.Create((TNode)NodeToAdd))
+                    : list;
             }
         }
 
         /// <summary>
-        /// When a node accepts this rewriter, all of it's children <see cref="IListNode"/>s
-        /// that contains elements of <see cref="SeparatableKinds"/> are rewritten as empty.
-        /// Don't call <see cref="Visit(SourceNode)"/> directly, because it only doesn't visit
-        /// node's children - either returns the same node, or if it's a node described above,
-        /// returns empty list node.
+        /// All of visited node's children <see cref="ListNode{TChild}"/>s
+        /// that contain elements of <see cref="SeparatableKinds"/> are rewritten as empty.
+        /// These lists' children are not visited.
         /// </summary>
         public class SeparatableDropperRewriter : SourceRewriter
         {
-            private NodeListCleaner ListCleaner { get; } = new NodeListCleaner();
-
-            public override SourceNode Visit(SourceNode node)
+            public override ListNode<TNode> VisitListNode<TNode>(ListNode<TNode> list)
             {
-                if (node.IsList && node is IListNode list && SeparatableKinds.Contains(list.ElementKind))
+                if (SeparatableKinds.Contains(list.ElementKind))
                 {
-                    return ListCleaner.Visit(node);
+                    return list.WithNodes(default);
                 }
-                return node;
-            }
-        }
-
-        /// <summary>
-        /// Rewrites any list as an empty list.
-        /// </summary>
-        public class NodeListCleaner : SourceRewriter
-        {
-            public override NodeList<TNode> VisitNodeList<TNode>(NodeList<TNode> list)
-            {
-                return default;
+                return base.VisitListNode(list);
             }
         }
     }

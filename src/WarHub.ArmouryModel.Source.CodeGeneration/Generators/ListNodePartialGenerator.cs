@@ -51,34 +51,42 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
             yield return GenerateConstructor();
             yield return CreateKindProperty();
             yield return CreateElementKindProperty();
+            yield return CreateNodeListProperty();
             yield return AcceptMethod();
             yield return AcceptGenericMethod();
+            yield return CreateWithNodesMethod();
         }
 
         private ConstructorDeclarationSyntax GenerateConstructor()
         {
-            const string listLocal = "list";
-            const string parentLocal = "parent";
+            const string cores = "cores";
+            const string parent = "parent";
             return
                 ConstructorDeclaration(
                     Descriptor.GetListNodeTypeName())
                 .AddModifiers(SyntaxKind.ProtectedKeyword, SyntaxKind.InternalKeyword)
                 .AddParameterListParameters(
                     Parameter(
-                        Identifier(listLocal))
-                    .WithType(Descriptor.GetNodeTypeIdentifierName().ToNodeListType()),
+                        Identifier(cores))
+                    .WithType(Descriptor.CoreType.ToImmutableArrayType()),
                     Parameter(
-                        Identifier(parentLocal))
+                        Identifier(parent))
                     .WithType(
                         IdentifierName(Names.SourceNode)))
                 .WithInitializer(
                     ConstructorInitializer(SyntaxKind.BaseConstructorInitializer)
                     .AddArgumentListArguments(
                         Argument(
-                            IdentifierName(listLocal)),
-                        Argument(
-                            IdentifierName(parentLocal))))
-                .AddBodyStatements();
+                            IdentifierName(parent))))
+                .AddBodyStatements(
+                    IdentifierName(cores)
+                        .MemberAccess(
+                            IdentifierName(Names.ToNodeList))
+                        .InvokeWithArguments(
+                            ThisExpression())
+                        .AssignTo(
+                            IdentifierName(Names.NodeList))
+                        .AsStatement());
         }
 
         private PropertyDeclarationSyntax CreateKindProperty()
@@ -107,6 +115,20 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                     IdentifierName(Names.SourceKind)
                     .MemberAccess(
                         IdentifierName(kindString)));
+        }
+
+        private PropertyDeclarationSyntax CreateNodeListProperty()
+        {
+            return
+                PropertyDeclaration(
+                        GenericName(Names.NodeList)
+                            .AddTypeArgumentListArguments(
+                                Descriptor.GetNodeTypeIdentifierName()),
+                        Names.NodeList)
+                    .AddModifiers(SyntaxKind.PublicKeyword, SyntaxKind.OverrideKeyword)
+                    .AddAccessorListAccessors(
+                        AccessorDeclaration(SyntaxKind.GetAccessorDeclaration)
+                            .WithSemicolonTokenDefault());
         }
 
         private MemberDeclarationSyntax AcceptMethod()
@@ -159,6 +181,31 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                             IdentifierName(Names.Visit + Descriptor.RawModelName + Names.ListSuffix))
                         .InvokeWithArguments(
                             ThisExpression())));
+        }
+
+        private MemberDeclarationSyntax CreateWithNodesMethod()
+        {
+            const string nodes = "nodes";
+            return
+                MethodDeclaration(
+                        GenericName(Names.ListNode)
+                            .AddTypeArgumentListArguments(
+                                Descriptor.GetNodeTypeIdentifierName()),
+                        Names.WithNodes)
+                    .AddModifiers(
+                        SyntaxKind.PublicKeyword,
+                        SyntaxKind.OverrideKeyword)
+                    .AddParameterListParameters(
+                        Parameter(
+                                Identifier(nodes))
+                            .WithType(
+                                Descriptor.GetNodeTypeIdentifierName().ToNodeListType()))
+                    .AddBodyStatements(
+                        ReturnStatement(
+                            IdentifierName(nodes)
+                                .MemberAccess(
+                                    IdentifierName(Names.ToListNode))
+                                .InvokeWithArguments()));
         }
     }
 }

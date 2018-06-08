@@ -135,7 +135,9 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration.Tests
         {
             var container = OneItemContainerPackage.CreateContainer();
             var ancestors = container.Items[0].Ancestors();
-            Assert.Collection(ancestors, x => Assert.Same(container, x));
+            Assert.Collection(ancestors,
+                x => Assert.Same(container.Items, x),
+                x => Assert.Same(container, x));
         }
 
         [Fact]
@@ -144,7 +146,11 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration.Tests
             var root = EmptyRootNode.AddLeftContainers(OneItemContainerPackage.CreateContainer());
             var container = root.LeftContainers[0];
             var ancestors = container.Items[0].Ancestors();
-            Assert.Collection(ancestors, x => Assert.Same(container, x), x => Assert.Same(root, x));
+            Assert.Collection(ancestors,
+                x => Assert.Same(container.Items, x),
+                x => Assert.Same(container, x),
+                x => Assert.Same(root.LeftContainers, x),
+                x => Assert.Same(root, x));
         }
 
         [Fact]
@@ -161,7 +167,10 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration.Tests
             var container = OneItemContainerPackage.CreateContainer();
             var item = container.Items[0];
             var ancestors = item.AncestorsAndSelf();
-            Assert.Collection(ancestors, x => Assert.Same(item, x), x => Assert.Same(container, x));
+            Assert.Collection(ancestors,
+                x => Assert.Same(item, x),
+                x => Assert.Same(container.Items, x),
+                x => Assert.Same(container, x));
         }
 
         [Fact]
@@ -171,7 +180,12 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration.Tests
             var container = root.LeftContainers[0];
             var item = container.Items[0];
             var ancestors = item.AncestorsAndSelf();
-            Assert.Collection(ancestors, x => Assert.Same(item, x), x => Assert.Same(container, x), x => Assert.Same(root, x));
+            Assert.Collection(ancestors,
+                x => Assert.Same(item, x),
+                x => Assert.Same(container.Items, x),
+                x => Assert.Same(container, x),
+                x => Assert.Same(root.LeftContainers, x),
+                x => Assert.Same(root, x));
         }
 
         [Fact]

@@ -33,14 +33,9 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                         Descriptor.GetListNodeTypeIdentifierName())
                     .AddBodyStatements(
                         ReturnStatement(
-                            IdentifierName(Names.VisitNodeList)
+                            IdentifierName(Names.VisitListNode)
                                 .InvokeWithArguments(
-                                    IdentifierName(node)
-                                        .MemberAccess(
-                                            IdentifierName(Names.NodeList)))
-                                .MemberAccess(
-                                    IdentifierName(Names.ToListNode))
-                                .InvokeWithArguments()));
+                                    IdentifierName(node))));
             // VisitXyz
             var nonSimpleEntries = Descriptor.Entries.Where(x => !x.IsSimple).ToImmutableArray();
             yield return

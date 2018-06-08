@@ -72,6 +72,7 @@
         public const string XmlType = "XmlType";
         public const string XmlText = "XmlText";
         public const string NotSupportedExceptionFull = "System.NotSupportedException";
+        public const string WithNodes = "WithNodes";
         public const string Update = "Update";
         public const string UpdateWith = "UpdateWith";
         public const string ToCoreArray = "ToCoreArray";
@@ -93,7 +94,7 @@
         public const string Accept = "Accept";
         public const string DefaultVisit = "DefaultVisit";
         public const string Visit = "Visit";
-        public const string VisitNodeList = "VisitNodeList";
+        public const string VisitListNode = "VisitListNode";
         public const string ArgumentOutOfRangeExceptionFull = "System.ArgumentOutOfRangeException";
     }
 }

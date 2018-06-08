@@ -5,6 +5,12 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration.Tests.GeneratedCode
 {
     public abstract partial class SourceRewriter : SourceVisitor<SourceNode>
     {
+        public virtual ListNode<TNode> VisitListNode<TNode>(ListNode<TNode> list)
+            where TNode : SourceNode
+        {
+            return list.WithNodes(VisitNodeList(list.NodeList));
+        }
+
         public virtual NodeList<TNode> VisitNodeList<TNode>(NodeList<TNode> list) where TNode : SourceNode
         {
             ImmutableArray<TNode>.Builder alternate = null;

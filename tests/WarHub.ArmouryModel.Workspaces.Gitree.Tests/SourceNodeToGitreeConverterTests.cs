@@ -29,10 +29,10 @@ namespace WarHub.ArmouryModel.Workspaces.Gitree.Tests
             var rewriter = new SourceNodeToGitreeConverter.SeparatableDropperRewriter();
             var result = (DatablobNode)NodeFactory.Datablob(
                 NodeFactory.Metadata(null, null, null),
-                characteristicTypes: NodeFactory.CharacteristicTypeList(characteristicType),
-                profileTypes: NodeFactory.ProfileTypeList(profile))
+                characteristicTypes: NodeList.Create(characteristicType),
+                profileTypes: NodeList.Create(profile))
                 .Accept(rewriter);
-            Assert.Collection(result.CharacteristicTypes, x => Assert.NotNull(x));
+            Assert.Collection(result.CharacteristicTypes, Assert.NotNull);
             Assert.Empty(result.ProfileTypes);
         }
     }

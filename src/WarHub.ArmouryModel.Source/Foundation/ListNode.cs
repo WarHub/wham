@@ -6,9 +6,8 @@ namespace WarHub.ArmouryModel.Source
     public abstract class ListNode<TChild> : SourceNode, IListNode, IReadOnlyList<TChild>
         where TChild : SourceNode
     {
-        protected ListNode(NodeList<TChild> nodeList, SourceNode parent) : base(null, parent)
+        protected ListNode(SourceNode parent) : base(null, parent)
         {
-            NodeList = nodeList;
         }
 
         /// <summary>
@@ -29,7 +28,7 @@ namespace WarHub.ArmouryModel.Source
         /// <summary>
         /// Gets a list of this node's child elements.
         /// </summary>
-        public NodeList<TChild> NodeList { get; }
+        public abstract NodeList<TChild> NodeList { get; }
 
         NodeList<SourceNode> IListNode.NodeList => NodeList;
 
@@ -39,6 +38,8 @@ namespace WarHub.ArmouryModel.Source
         /// <param name="index">0-based index of element in this list.</param>
         /// <returns>Retrieved child element.</returns>
         public TChild this[int index] => (TChild)GetChild(index);
+
+        public abstract ListNode<TChild> WithNodes(NodeList<TChild> nodes);
 
         protected internal override int ChildrenCount => NodeList.Count;
 

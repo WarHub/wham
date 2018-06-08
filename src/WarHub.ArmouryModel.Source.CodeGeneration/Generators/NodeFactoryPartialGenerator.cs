@@ -34,60 +34,64 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
 
         private IEnumerable<MemberDeclarationSyntax> GenerateFactoryMethods()
         {
-            const string listParamName = "list";
-            string methodName = Descriptor.RawModelName;
+            const string list = "list";
+            var methodName = Descriptor.RawModelName;
+            yield return CreateForNode(
+                CreateNodeListParameter,
+                CreateNodeListReturnStatement);
             if (Descriptor.Entries.Any(x => x.IsCollection))
             {
                 yield return CreateForNode(
                     CreateListNodeParameter,
                     CreateListNodeReturnStatement);
             }
-            yield return CreateForNode(
-                CreateNodeListParameter,
-                CreateNodeListReturnStatement);
             // NodeList parameter
             yield return CreateForList(
                 Parameter(
-                    Identifier(listParamName))
+                    Identifier(list))
                 .WithType(
                     Descriptor.GetNodeTypeIdentifierName().ToNodeListType()),
                 ObjectCreationExpression(
                     Descriptor.GetListNodeTypeIdentifierName())
                 .InvokeWithArguments(
-                    IdentifierName(listParamName),
+                    IdentifierName(list)
+                        .MemberAccess(
+                            IdentifierName(Names.ToCoreArray))
+                        .InvokeWithArguments(),
                     LiteralExpression(SyntaxKind.NullLiteralExpression)));
             // params parameter
             yield return CreateForList(
                 Parameter(
-                    Identifier(listParamName))
+                    Identifier(list))
                 .AddModifiers(SyntaxKind.ParamsKeyword)
                 .WithType(
                     Descriptor.GetNodeTypeIdentifierName().ToArrayType()),
                 ObjectCreationExpression(
                     Descriptor.GetListNodeTypeIdentifierName())
                 .InvokeWithArguments(
-                    IdentifierName(listParamName)
-                    .MemberAccess(
-                        IdentifierName(Names.ToNodeList))
-                    .InvokeWithArguments(),
+                    IdentifierName(list)
+                        .MemberAccess(
+                            IdentifierName(Names.ToNodeList))
+                        .InvokeWithArguments()
+                        .MemberAccess(
+                            IdentifierName(Names.ToCoreArray))
+                        .InvokeWithArguments(),
                     LiteralExpression(SyntaxKind.NullLiteralExpression)));
             ParameterSyntax CreateListNodeParameter(CoreDescriptor.CollectionEntry entry)
             {
-                var type = entry.GetListNodeTypeIdentifierName();
                 return
                     Parameter(entry.CamelCaseIdentifier)
-                    .WithType(type)
-                    .WithDefault(
-                        EqualsValueClause(
-                            DefaultExpression(type)));
+                        .WithType(entry.GetListNodeTypeIdentifierName());
             }
             ParameterSyntax CreateNodeListParameter(CoreDescriptor.CollectionEntry entry)
             {
+                var type = entry.GetNodeTypeIdentifierName().ToNodeListType();
                 return
                     Parameter(entry.CamelCaseIdentifier)
-                    .WithType(
-                        entry.GetNodeTypeIdentifierName()
-                        .ToNodeListType());
+                        .WithType(type)
+                        .WithDefault(
+                            EqualsValueClause(
+                                DefaultExpression(type)));
             }
             StatementSyntax CreateListNodeReturnStatement()
             {
@@ -96,22 +100,18 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                         IdentifierName(methodName)
                         .InvokeWithArguments(
                             Descriptor.Entries
-                            .Where(x => !x.IsCollection)
-                            .Select(e => e.CamelCaseIdentifierName)
-                            .Cast<ExpressionSyntax>()
-                            .Concat(
-                                Descriptor.Entries
-                                .OfType<CoreDescriptor.CollectionEntry>()
-                                .Select(CreateCollectionArgument))));
+                                .Where(x => !x.IsCollection)
+                                .Select(e => e.CamelCaseIdentifierName)
+                                .Concat(
+                                    Descriptor.Entries
+                                        .OfType<CoreDescriptor.CollectionEntry>()
+                                        .Select(CreateCollectionArgument))));
                 ExpressionSyntax CreateCollectionArgument(CoreDescriptor.CollectionEntry entry)
                 {
                     return
                         entry.CamelCaseIdentifierName
-                        .ConditionalMemberAccess(
-                            IdentifierName(Names.NodeList))
-                        .Coalesce(
-                            DefaultExpression(
-                                entry.GetNodeTypeIdentifierName().ToNodeListType()));
+                        .MemberAccess(
+                            IdentifierName(Names.NodeList));
                 }
             }
             StatementSyntax CreateNodeListReturnStatement()
