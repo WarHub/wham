@@ -40,11 +40,6 @@ namespace WarHub.ArmouryModel.Source
             return new NodeList<SourceNode>(nodeList.Container);
         }
 
-        public static implicit operator NodeList<TNode>(NodeList<SourceNode> nodeList)
-        {
-            return new NodeList<TNode>((IContainer<TNode>)nodeList.Container);
-        }
-
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
     }
 

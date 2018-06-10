@@ -1,10 +1,12 @@
 ﻿using System;
+using System.Diagnostics;
 using System.IO;
 using Newtonsoft.Json;
 using WarHub.ArmouryModel.Source;
 
 namespace WarHub.ArmouryModel.Workspaces.Gitree
 {
+    [DebuggerDisplay("{" + nameof(file) + "}")]
     internal class GitreeStorageFileNode : GitreeStorageBaseNode
     {
         private readonly FileInfo file;

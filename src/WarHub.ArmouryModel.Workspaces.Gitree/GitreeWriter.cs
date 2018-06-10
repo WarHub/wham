@@ -21,7 +21,7 @@ namespace WarHub.ArmouryModel.Workspaces.Gitree
 
         public string WriteItem(GitreeNode blobItem, DirectoryInfo directory)
         {
-            INodeWithCore<NodeCore> node = blobItem.Node;
+            INodeWithCore<NodeCore> node = blobItem.Datablob;
             var filename = GetFilename(blobItem);
             using (var fileStream = File.CreateText(Path.Combine(directory.FullName, filename)))
             {
@@ -64,7 +64,7 @@ namespace WarHub.ArmouryModel.Workspaces.Gitree
             {
                 foreach (var item in blobList.Items)
                 {
-                    var childDirName = item.Node.Meta.Identifier.FilenameSanitize();
+                    var childDirName = item.Datablob.Meta.Identifier.FilenameSanitize();
                     var childDir = listDir.CreateSubdirectory(childDirName);
                     usedNames.Add(childDir.Name);
                     WriteItem(item, childDir);
@@ -96,7 +96,7 @@ namespace WarHub.ArmouryModel.Workspaces.Gitree
 
         private string GetFilename(GitreeNode nodeFolder)
         {
-            var filenameBase = nodeFolder.IsLeaf ? nodeFolder.Node.Meta.Identifier : nodeFolder.WrappedNode.Kind.ToString();
+            var filenameBase = nodeFolder.IsLeaf ? nodeFolder.Datablob.Meta.Identifier : nodeFolder.WrappedNode.Kind.ToString();
             return (filenameBase + Extension).FilenameSanitize();
         }
     }

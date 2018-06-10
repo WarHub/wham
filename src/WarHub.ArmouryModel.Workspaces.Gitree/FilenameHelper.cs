@@ -1,7 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System.Linq;
 using System.Text.RegularExpressions;
+using MoreLinq;
 
 namespace WarHub.ArmouryModel.Workspaces.Gitree
 {
@@ -9,7 +8,10 @@ namespace WarHub.ArmouryModel.Workspaces.Gitree
     {
         static FilenameHelper()
         {
-            InvalidChars = new[] { '"', '<', '>', '|', ':', '*', '?', '\\', '/' };
+            InvalidChars =
+                Enumerable.Range(0, 32).Select(x => (char)x)
+                .Concat(new[] { '"', '<', '>', '|', ':', '*', '?', '\\', '/' })
+                .ToArray();
             var escaped = Regex.Escape(new string(InvalidChars));
             EscapingRegex = new Regex($@"[\s{escaped}]+");
         }

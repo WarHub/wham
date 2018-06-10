@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Immutable;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 
 namespace WarHub.ArmouryModel.Workspaces.Gitree
 {
+    [DebuggerDisplay("{" + nameof(directory) + "}")]
     internal class GitreeStorageFolderNode : GitreeStorageBaseNode
     {
         private readonly DirectoryInfo directory;

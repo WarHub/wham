@@ -10,8 +10,6 @@ namespace WarHub.ArmouryModel.Source
             Node = node;
         }
 
-        public bool IsSingle => !Node.IsList;
-
         public bool IsList => Node.IsList;
 
         public string Name { get; }

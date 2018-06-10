@@ -36,7 +36,9 @@ namespace WarHub.ArmouryModel.Workspaces.Gitree
         private (DatablobNode node, SourceNode wrappedNode) ReadDocumentNodes(GitreeStorageFileNode document)
         {
             var node = document.GetRoot();
-            var wrappedNode = node.Children().First(x => x.Kind != SourceKind.Metadata);
+            var wrappedNode = node
+                .Descendants(x => x.IsList)
+                .First(x => x.Kind != SourceKind.Metadata && !x.IsList);
             return (node, wrappedNode);
         }
     }

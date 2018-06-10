@@ -1,6 +1,6 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 
 namespace WarHub.ArmouryModel.Source
@@ -9,6 +9,7 @@ namespace WarHub.ArmouryModel.Source
     /// Base class of all Source nodes, providing an interface and base implementation of many of it's methods.
     /// This class is abstract.
     /// </summary>
+    [DebuggerDisplay("{" + nameof(Kind) + "}, Children = {" + nameof(ChildrenCount) + "}")]
     public abstract partial class SourceNode : INodeWithCore<NodeCore>
     {
         public SourceNode(NodeCore core, SourceNode parent)
@@ -22,7 +23,7 @@ namespace WarHub.ArmouryModel.Source
 
         NodeCore INodeWithCore<NodeCore>.Core => Core;
 
-        protected SourceNode Parent { get; }
+        public SourceNode Parent { get; }
 
         internal SourceTree Tree { get; set; }
 
@@ -91,7 +92,7 @@ namespace WarHub.ArmouryModel.Source
 
         /// <summary>
         /// Traverses all descendants of this node depth-first. <paramref name="descendIntoChildren"/>'s default
-        /// value null is the same as if it always returned null (x => true).
+        /// value null is the same as if it always returned true (x => true).
         /// </summary>
         /// <param name="descendIntoChildren">Predicate to decide if node's children should be visited.</param>
         /// <returns>Enumeration of traversal.</returns>
@@ -102,7 +103,7 @@ namespace WarHub.ArmouryModel.Source
 
         /// <summary>
         /// Traverses all descendants of this node depth-first. <paramref name="descendIntoChildren"/>'s default
-        /// value null is the same as if it always returned null (x => true). At the beginning this node is returned.
+        /// value null is the same as if it always returned true (x => true). At the beginning this node is returned.
         /// </summary>
         /// <param name="descendIntoChildren">Predicate to decide if node's children should be visited.</param>
         /// <returns>Enumeration of traversal.</returns>

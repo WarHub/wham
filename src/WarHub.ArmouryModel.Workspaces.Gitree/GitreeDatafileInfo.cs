@@ -35,7 +35,7 @@ namespace WarHub.ArmouryModel.Workspaces.Gitree
         private SourceNode ReadData()
         {
             var rootItem = new GitreeReader().ReadItemFolder(RootDocument.Parent);
-            var node = new GitreeToSourceNodeConverter().ParseItem(rootItem);
+            var node = new GitreeToSourceNodeConverter().ParseNode(rootItem);
             return node;
         }
     }

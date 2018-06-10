@@ -36,7 +36,6 @@ namespace WarHub.ArmouryModel.CliTool.Commands
 
         private void ConvertFiles(ProjectConfigurationInfo configInfo, XmlWorkspace workspace)
         {
-            var treeConverter = new SourceNodeToGitreeConverter();
             var treeWriter = new GitreeWriter();
             foreach (var document in workspace.GetDocuments(SourceKind.Gamesystem, SourceKind.Catalogue))
             {
@@ -48,7 +47,7 @@ namespace WarHub.ArmouryModel.CliTool.Commands
                 Log.Verbose("- Reading...");
                 var sourceNode = document.GetRoot();
                 Log.Verbose("- Reading finished. Converting...");
-                var gitree = treeConverter.Visit(sourceNode);
+                var gitree = sourceNode.ConvertToGitree();
                 Log.Verbose("- Converting finished. Saving to Gitree directory structure...");
                 treeWriter.WriteItem(gitree, folder);
                 Log.Debug("- Saved");

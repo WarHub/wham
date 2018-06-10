@@ -1,146 +1,111 @@
 ﻿using System;
 using System.Collections.Immutable;
 using System.Linq;
-using System.Text;
 using MoreLinq;
+using Optional;
+using Optional.Collections;
 using WarHub.ArmouryModel.Source;
 
 namespace WarHub.ArmouryModel.Workspaces.Gitree
 {
 
-    public class SourceNodeToGitreeConverter : SourceVisitor<GitreeNode>
+    internal class SourceNodeToGitreeConverter : SourceVisitor<GitreeNode>
     {
-        static SourceNodeToGitreeConverter()
-        {
-            NonLeafKinds =
-                new[]
-                {
-                    SourceKind.Catalogue,
-                    SourceKind.Datablob,
-                    SourceKind.ForceEntry,
-                    SourceKind.Force,
-                    SourceKind.Gamesystem,
-                    SourceKind.Roster,
-                    SourceKind.SelectionEntryGroup,
-                    SourceKind.SelectionEntry,
-                    SourceKind.Selection
-                }.ToImmutableHashSet();
-
-            SeparatableKinds =
-                NonLeafKinds
-                .Concat(new[]
-                {
-                    SourceKind.DataIndex,
-                    SourceKind.Profile,
-                    SourceKind.ProfileType,
-                    SourceKind.Rule
-                })
-                .ToImmutableHashSet();
-        }
-
-        public static ImmutableHashSet<SourceKind> NonLeafKinds { get; }
-
-        /// <summary>
-        /// Gets a set of source kinds that will be separated from the entity into child folders.
-        /// </summary>
-        public static ImmutableHashSet<SourceKind> SeparatableKinds { get; }
-
-        private SeparatableDropperRewriter SeparatableDropper { get; } = new SeparatableDropperRewriter();
+        private SeparatableChildrenRemover SeparatableRemover { get; }
+            = new SeparatableChildrenRemover();
 
         private static DatablobNode EmptyBlob { get; }
             = NodeFactory.Datablob(NodeFactory.Metadata(null, null, null));
 
-        public override GitreeNode DefaultVisit(SourceNode node)
-        {
-            var blob = BlobWith(node);
-            return GitreeNode.CreateLeaf(blob, node);
-        }
-
         public override GitreeNode Visit(SourceNode node)
         {
-            if (NonLeafKinds.Contains(node.Kind))
-            {
-                return VisitNonLeafNode(node);
-            }
-            return base.Visit(node);
-        }
-
-        private GitreeNode VisitNonLeafNode(SourceNode node)
-        {
             var listFolders = CreateLists(node);
-            var strippedNode = DropSeparatableChildren(node);
+            var strippedNode = listFolders.IsEmpty ? node : DropSeparatableChildren(node);
             var blob = BlobWith(strippedNode);
-            return GitreeNode.CreateNonLeaf(blob, node, listFolders);
+            return GitreeNode.Create(blob, node, listFolders);
         }
 
         private ImmutableArray<GitreeListNode> CreateLists(SourceNode node)
         {
             var listFolders = node
                 .ChildrenInfos()
-                .Where(IsSeparatable)
-                .Select(CreateList)
+                .Select(CreateListOption)
+                .Values()
                 .ToImmutableArray();
             return listFolders;
-            bool IsSeparatable(ChildInfo info)
+
+            Option<GitreeListNode> CreateListOption(ChildInfo info)
             {
-                return info.IsList
-                    && info.Node is IListNode list
-                    && SeparatableKinds.Contains(list.ElementKind);
+                if (info.IsList
+                    && Gitree.SeparatableKinds.Contains(info.Node.Kind)
+                    && info.Node is IListNode list)
+                {
+                    var treeNodes = CreateList(list.NodeList);
+                    var name = Gitree.ChildListAliases.TryGetValue(info.Name, out var alias)
+                        ? alias : info.Name;
+                    return new GitreeListNode(name, treeNodes).Some();
+                }
+                return default;
             }
         }
 
-        private GitreeListNode CreateList(ChildInfo info)
+        private ImmutableArray<GitreeNode> CreateList(NodeList<SourceNode> nodes)
         {
-            var names = info.Node.Children().ToImmutableDictionary(x => x, SelectName);
+            var names = nodes.ToImmutableDictionary(x => x, SelectName);
             var nameCounts = names.Values
                 .Distinct(StringComparer.OrdinalIgnoreCase)
                 .ToDictionary(x => x, x => 0, StringComparer.OrdinalIgnoreCase);
-            var folders = info.Node.Children()
+            var folders = nodes
                 .Select(Visit)
                 .Scan(default(GitreeNode), AssignIdentifiers)
+                // skip seed
                 .Skip(1)
                 .ToImmutableArray();
-            return new GitreeListNode(info.Name, folders);
-            string GetUniqueIdentifier(GitreeNode item)
+            return folders;
+
+            GitreeNode AssignIdentifiers(GitreeNode prevTreeNode, GitreeNode treeNode)
             {
-                var name = names[item.WrappedNode];
-                var nameIndex = ++nameCounts[name];
-                var identifier = nameIndex == 1 ? name : $"{name} - {nameIndex}";
-                return identifier;
-            }
-            GitreeNode AssignIdentifiers(GitreeNode prevItem, GitreeNode item)
-            {
-                var node = item.Node;
-                var identifier = GetUniqueIdentifier(item);
-                var newMeta = node.Meta
+                var blob = treeNode.Datablob;
+                var identifier = GetUniqueIdentifier(treeNode.WrappedNode);
+                var newMeta = blob.Meta
                     .WithIdentifier(identifier)
-                    .WithPrevIdentifier(prevItem?.Node.Meta.Identifier);
-                return item.WithNode(node.WithMeta(newMeta));
+                    .WithPrevIdentifier(prevTreeNode?.Datablob.Meta.Identifier);
+                return treeNode.WithDatablob(blob.WithMeta(newMeta));
+            }
+
+            string GetUniqueIdentifier(SourceNode node)
+            {
+                var name = names[node];
+                var repetitions = nameCounts[name]++;
+                var identifier = repetitions == 0 ? name : $"{name} - {repetitions}";
+                return identifier;
             }
         }
 
         private SourceNode DropSeparatableChildren(SourceNode node)
         {
-            return node.Accept(SeparatableDropper);
+            return node.Accept(SeparatableRemover);
         }
 
-        public static string SelectName(SourceNode node)
+        private static string SelectName(SourceNode node)
         {
-            return node is INameableNode named ? named.Name : node.Kind.ToString();
+            var name = node is INameableNode named ? named.Name : node.Kind.ToString();
+            var sanitized = name.FilenameSanitize();
+            return sanitized;
         }
 
-        public static DatablobNode BlobWith(SourceNode node)
+        private static DatablobNode BlobWith(SourceNode node)
         {
-            return AddingToEmptyBlobRewriter.AddToEmpty(node);
+            return DatablobRewriter.AddToEmpty(node);
         }
 
         /// <summary>
         /// Visitor that adds visited node to appropriate list
         /// of an empty <see cref="DatablobNode"/> which is returned.
         /// </summary>
-        public class AddingToEmptyBlobRewriter : SourceRewriter
+        public class DatablobRewriter : SourceRewriter
         {
-            private AddingToEmptyBlobRewriter(SourceNode nodeToAdd)
+            private DatablobRewriter(SourceNode nodeToAdd)
             {
                 NodeToAdd = nodeToAdd;
             }
@@ -149,8 +114,7 @@ namespace WarHub.ArmouryModel.Workspaces.Gitree
 
             public static DatablobNode AddToEmpty(SourceNode node)
             {
-                var rewriter = new AddingToEmptyBlobRewriter(node);
-                return (DatablobNode)EmptyBlob.Accept(rewriter);
+                return (DatablobNode)EmptyBlob.Accept(new DatablobRewriter(node));
             }
 
             public override SourceNode Visit(SourceNode node)
@@ -173,14 +137,14 @@ namespace WarHub.ArmouryModel.Workspaces.Gitree
 
         /// <summary>
         /// All of visited node's children <see cref="ListNode{TChild}"/>s
-        /// that contain elements of <see cref="SeparatableKinds"/> are rewritten as empty.
+        /// of <see cref="SeparatableKinds"/> are rewritten as empty.
         /// These lists' children are not visited.
         /// </summary>
-        public class SeparatableDropperRewriter : SourceRewriter
+        public class SeparatableChildrenRemover : SourceRewriter
         {
             public override ListNode<TNode> VisitListNode<TNode>(ListNode<TNode> list)
             {
-                if (SeparatableKinds.Contains(list.ElementKind))
+                if (Gitree.SeparatableKinds.Contains(list.Kind))
                 {
                     return list.WithNodes(default);
                 }

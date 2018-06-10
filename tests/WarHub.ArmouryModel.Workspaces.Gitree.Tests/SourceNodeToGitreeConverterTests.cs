@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System.Linq;
 using WarHub.ArmouryModel.Source;
 using Xunit;
 
@@ -16,7 +14,7 @@ namespace WarHub.ArmouryModel.Workspaces.Gitree.Tests
                 Id = "id",
                 Name = "name"
             }.ToImmutable();
-            var result = SourceNodeToGitreeConverter.AddingToEmptyBlobRewriter.AddToEmpty(addedCore.ToNode());
+            var result = SourceNodeToGitreeConverter.DatablobRewriter.AddToEmpty(addedCore.ToNode());
             Assert.Collection(result.CharacteristicTypes,
                 x => Assert.Same(addedCore, ((INodeWithCore<CharacteristicTypeCore>)x).Core));
         }
@@ -26,7 +24,7 @@ namespace WarHub.ArmouryModel.Workspaces.Gitree.Tests
         {
             var characteristicType = NodeFactory.CharacteristicType("id", "name");
             var profile = NodeFactory.ProfileType("id", "name", NodeList.Create(characteristicType));
-            var rewriter = new SourceNodeToGitreeConverter.SeparatableDropperRewriter();
+            var rewriter = new SourceNodeToGitreeConverter.SeparatableChildrenRemover();
             var result = (DatablobNode)NodeFactory.Datablob(
                 NodeFactory.Metadata(null, null, null),
                 characteristicTypes: NodeList.Create(characteristicType),
@@ -34,6 +32,75 @@ namespace WarHub.ArmouryModel.Workspaces.Gitree.Tests
                 .Accept(rewriter);
             Assert.Collection(result.CharacteristicTypes, Assert.NotNull);
             Assert.Empty(result.ProfileTypes);
+        }
+        
+        [Fact]
+        public void Visit_SeparatesSeparatable()
+        {
+            const string costTypeId = "costType1";
+            var catalogue = 
+                NodeFactory.Catalogue("id", "name", "gst-id")
+                .AddCostTypes(NodeFactory.CostType(costTypeId, ""))
+                .AddRules(NodeFactory.Rule("ruleid", "rulename"));
+            var rule = catalogue.Rules[0];
+            var converter = new SourceNodeToGitreeConverter();
+            var result = converter.Visit(catalogue);
+            
+            Assert.Collection(
+                result.Datablob.Catalogues,
+                cat =>
+                {
+                    Assert.Collection(
+                        cat.CostTypes,
+                        x => Assert.Equal(costTypeId, x.Id));
+                    Assert.Empty(cat.Rules);
+                });
+            Assert.Collection(
+                result.Lists.Where(x => x.Items.Length > 0),
+                list => Assert.Collection(
+                    list.Items,
+                    item => Assert.Equal(rule, item.WrappedNode)));
+        }
+
+        [Fact]
+        public void Visit_ListWithDuplicateNames_AssignsUniqueNames()
+        {
+            const string RuleName = "Test Rule";
+            var catalogue =
+                NodeFactory.Catalogue("id", "name", "gst-id")
+                .AddRules(
+                    NodeFactory.Rule("ruleid1", RuleName),
+                    NodeFactory.Rule("ruleid2", RuleName));
+            var converter = new SourceNodeToGitreeConverter();
+            var result = converter.Visit(catalogue);
+            
+            Assert.Collection(
+                result.Lists.Where(x => x.Items.Length > 0),
+                ruleList => Assert.Collection(
+                    ruleList.Items,
+                    item => Assert.Equal(RuleName, item.Datablob.Meta.Identifier),
+                    item => Assert.Equal(RuleName + " - 1", item.Datablob.Meta.Identifier)));
+        }
+
+        [Theory]
+        [InlineData("Test Rule slash/ backslash\\ angleBrackets<> apos'quot\" end")]
+        [InlineData("Test Rule pipe| question? asterisk* colon:")]
+        [InlineData("Test Rule with emoji 👌")]
+        [InlineData("Test Rule with trailing spaces   ")]
+        [InlineData("Test Rule with reserved chars \x0 \x0f \x1f end")]
+        public void Visit_ListWithSanitizableNames_AssignsSanitizedNames(string ruleName)
+        {
+            var catalogue =
+                NodeFactory.Catalogue("id", "name", "gst-id")
+                .AddRules(NodeFactory.Rule("ruleid", ruleName));
+            var converter = new SourceNodeToGitreeConverter();
+            var result = converter.Visit(catalogue);
+
+            Assert.Collection(
+                result.Lists.Where(x => x.Items.Length > 0),
+                ruleList => Assert.Collection(
+                    ruleList.Items,
+                    x => Assert.Equal(ruleName.FilenameSanitize(), x.Datablob.Meta.Identifier)));
         }
     }
 }
