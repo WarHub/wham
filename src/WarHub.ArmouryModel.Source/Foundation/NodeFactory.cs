@@ -48,7 +48,7 @@ namespace WarHub.ArmouryModel.Source
 
         public static EntryLinkNode EntryLink(string id, string name, string targetId, EntryLinkKind type)
         {
-            return EntryLink(id, name, default, default, default, targetId, type, default);
+            return EntryLink(id, name, default, default, default, targetId, type);
         }
 
         public static ForceEntryNode ForceEntry(string id, string name)

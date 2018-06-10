@@ -301,7 +301,6 @@
         </xs:sequence>
         <xs:attribute name="targetId" type="cs:idtype" use="required" />
         <xs:attribute name="type" type="cs:EntryLinkKind" use="required" />
-        <xs:attribute name="categoryEntryId" type="cs:idtype" use="optional" />
       </xs:extension>
     </xs:complexContent>
   </xs:complexType>

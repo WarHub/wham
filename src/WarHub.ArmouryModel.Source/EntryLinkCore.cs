@@ -10,9 +10,6 @@ namespace WarHub.ArmouryModel.Source
         [XmlAttribute("type")]
         public EntryLinkKind Type { get; }
 
-        [XmlAttribute("categoryEntryId")]
-        public string CategoryEntryId { get; }
-
         [XmlArray("constraints")]
         public ImmutableArray<ConstraintCore> Constraints { get; }
 
