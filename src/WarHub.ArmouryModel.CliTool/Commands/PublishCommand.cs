@@ -37,8 +37,22 @@ namespace WarHub.ArmouryModel.CliTool.Commands
         public string Destination { get; set; }
 
         [ArgShortcut("url")]
-        [ArgDescription("Repository url that gets included in index files and repo distribution (.bsr).")]
+        [ArgDescription(
+            "Repository url that gets included in index files" +
+            " and repo distribution (.bsr).")]
         public string RepoUrl { get; set; }
+
+        [ArgShortcut("additional-urls"), ArgShortcut(ArgShortcutPolicy.ShortcutsOnly)]
+        [ArgDescription(
+            "Repository urls that will get added to index files" +
+            " (doesn't impact indexes in .bsr repo distributions).")]
+        public List<string> AdditionalRepositoryUrls { get; set; }
+
+        [ArgShortcut("no-index-datafiles"), ArgShortcut(ArgShortcutPolicy.ShortcutsOnly)]
+        [ArgDescription(
+            "Remove all data index entries from published indexes" +
+            " (doesn't impact indexes in .bsr repo distributions).")]
+        public bool NoDatafilesInIndex { get; set; }
 
         [ArgShortcut("name")]
         [ArgDescription(
@@ -120,7 +134,7 @@ namespace WarHub.ArmouryModel.CliTool.Commands
 
         private void PublishIndexZipped(IWorkspace workspace)
         {
-            var dataIndex = workspace.CreateDataIndex(RepoName, RepoUrl);
+            var dataIndex = CreateIndex(workspace);
             var datafile = DatafileInfo.Create(ProjectConfigurationExtensions.DataIndexZippedFileName, dataIndex);
             TryCatchLogError(
                 datafile.Filepath,
@@ -130,12 +144,22 @@ namespace WarHub.ArmouryModel.CliTool.Commands
 
         private void PublishIndex(IWorkspace workspace)
         {
-            var dataIndex = workspace.CreateDataIndex("repo", "repo-url");
+            var dataIndex = CreateIndex(workspace);
             var datafile = DatafileInfo.Create(ProjectConfigurationExtensions.DataIndexFileName, dataIndex);
             TryCatchLogError(
                 datafile.Filepath,
                 () => Path.Combine(Destination, datafile.Filepath),
                 datafile.WriteXmlFile);
+        }
+
+        private DataIndexNode CreateIndex(IWorkspace workspace)
+        {
+            var dataIndex = workspace.CreateDataIndex(RepoName, RepoUrl);
+            dataIndex = NoDatafilesInIndex ? dataIndex.WithDataIndexEntries() : dataIndex;
+            dataIndex = AdditionalRepositoryUrls?.Count > 0
+                ? dataIndex.AddRepositoryUrls(AdditionalRepositoryUrls.Select(NodeFactory.DataIndexRepositoryUrl))
+                : dataIndex;
+            return dataIndex;
         }
 
         private void PublishXmlZipped(IWorkspace workspace)
