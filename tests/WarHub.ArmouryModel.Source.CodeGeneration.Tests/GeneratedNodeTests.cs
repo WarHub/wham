@@ -1,5 +1,7 @@
-﻿using System.Collections.Immutable;
+﻿using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
+using MoreLinq;
 using WarHub.ArmouryModel.Source.CodeGeneration.Tests.GeneratedCode;
 using Xunit;
 using static WarHub.ArmouryModel.Source.CodeGeneration.Tests.TestHelpers;
@@ -207,6 +209,46 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration.Tests
 
             Assert.Collection((ContainerListNode)children.ElementAt(1),
                 x => Assert.True(x is ContainerNode c && c.Id == container2Id));
+        }
+
+        [Fact]
+        public void Children_OfList_ReturnsChildren()
+        {
+            var container =
+                NodeFactory.Container("id", "container")
+                .AddItems(
+                    NodeFactory.Item("child1", ""),
+                    NodeFactory.Item("child2", ""));
+            var list = container.Items;
+
+            Assert.Collection(
+                list.Children().Cast<ItemNode>(),
+                x => Assert.Same(list[0], x),
+                x => Assert.Same(list[1], x));
+        }
+
+        [Fact]
+        public void ChildrenInfos_OfList_ReturnsChildrenInfos()
+        {
+            const string child1Id = "child1";
+            const string child2Id = "child2";
+            var container =
+                NodeFactory.Container("id", "container")
+                .AddItems(
+                    NodeFactory.Item(child1Id, ""),
+                    NodeFactory.Item(child2Id, ""));
+            var list = container.Items;
+
+            Assert.Collection(
+                list.ChildrenInfos().Index(),
+                AssertChild,
+                AssertChild);
+
+            void AssertChild(KeyValuePair<int, ChildInfo> pair)
+            {
+                Assert.Equal(pair.Key.ToString(), pair.Value.Name);
+                Assert.Same(list[pair.Key], pair.Value.Node);
+            }
         }
 
         [Fact]

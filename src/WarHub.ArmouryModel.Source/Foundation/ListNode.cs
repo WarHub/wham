@@ -1,5 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
+using MoreLinq;
 
 namespace WarHub.ArmouryModel.Source
 {
@@ -38,6 +40,14 @@ namespace WarHub.ArmouryModel.Source
         /// <param name="index">0-based index of element in this list.</param>
         /// <returns>Retrieved child element.</returns>
         public TChild this[int index] => (TChild)GetChild(index);
+
+        public override IEnumerable<SourceNode> Children() => NodeList;
+
+        public override IEnumerable<ChildInfo> ChildrenInfos()
+        {
+            return NodeList.Index()
+                .Select(x => new ChildInfo(x.Key.ToString(), x.Value));
+        }
 
         public abstract ListNode<TChild> WithNodes(NodeList<TChild> nodes);
 
