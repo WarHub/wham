@@ -147,10 +147,11 @@ namespace WarHub.ArmouryModel.CliTool.Commands
         {
             var dataIndex = CreateIndex(workspace);
             var filename = !string.IsNullOrWhiteSpace(IndexFilename) ? IndexFilename : "index";
+            var filepath = filename + XmlFileExtensions.DataIndexZipped;
             var datafile = DatafileInfo.Create(XmlFileExtensions.DataIndexFileName, dataIndex);
             TryCatchLogError(
-                filename + XmlFileExtensions.DataIndexZipped,
-                () => Path.Combine(Destination, datafile.Filepath),
+                filepath,
+                () => Path.Combine(Destination, filepath),
                 datafile.WriteXmlZippedFile);
         }
 
