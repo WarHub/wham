@@ -1,4 +1,5 @@
-﻿using WarHub.ArmouryModel.ProjectModel;
+﻿using System.IO;
+using WarHub.ArmouryModel.ProjectModel;
 using WarHub.ArmouryModel.Source;
 
 namespace WarHub.ArmouryModel.Workspaces.BattleScribe
@@ -15,5 +16,7 @@ namespace WarHub.ArmouryModel.Workspaces.BattleScribe
         public SourceKind DataKind => SourceKind.Unknown;
 
         public SourceNode GetData() => null;
+
+        public string GetStorageName() => Path.GetFileNameWithoutExtension(Filepath);
     }
 }

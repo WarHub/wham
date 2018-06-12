@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using WarHub.ArmouryModel.ProjectModel;
 using WarHub.ArmouryModel.Source;
 
@@ -31,6 +32,8 @@ namespace WarHub.ArmouryModel.Workspaces.Gitree
             WeakData.SetTarget(data);
             return data;
         }
+
+        public string GetStorageName() => new FileInfo(Filepath).Directory.Name;
 
         private SourceNode ReadData()
         {

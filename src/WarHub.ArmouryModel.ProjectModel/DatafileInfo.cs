@@ -1,4 +1,5 @@
-﻿using WarHub.ArmouryModel.Source;
+﻿using System.IO;
+using WarHub.ArmouryModel.Source;
 
 namespace WarHub.ArmouryModel.ProjectModel
 {
@@ -14,7 +15,9 @@ namespace WarHub.ArmouryModel.ProjectModel
 
         public SourceKind DataKind => Data.Kind;
 
-        public TData GetData() => Data;
+        public string GetStorageName() => Path.GetFileNameWithoutExtension(Filepath);
+
+        TData IDatafileInfo<TData>.GetData() => Data;
 
         SourceNode IDatafileInfo.GetData() => Data;
     }

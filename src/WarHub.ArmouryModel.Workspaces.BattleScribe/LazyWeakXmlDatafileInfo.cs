@@ -32,6 +32,8 @@ namespace WarHub.ArmouryModel.Workspaces.BattleScribe
             return data;
         }
 
+        public string GetStorageName() => Path.GetFileNameWithoutExtension(Filepath);
+
         SourceNode IDatafileInfo.GetData() => GetData();
 
         private TData ReadFile()

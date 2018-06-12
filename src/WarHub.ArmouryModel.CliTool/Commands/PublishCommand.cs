@@ -60,6 +60,17 @@ namespace WarHub.ArmouryModel.CliTool.Commands
             " By default name of the game system file is used, or parent folder name if no game system.")]
         public string RepoName { get; set; }
 
+        [ArgShortcut("bsr-filename"), ArgShortcut(ArgShortcutPolicy.ShortcutsOnly)]
+        [ArgDescription(
+            "Filename (without extension) for the repo distribution." +
+            " By default parent folder name is used.")]
+        public string BsrFilename { get; set; }
+
+        [ArgShortcut("i")]
+        [ArgDescription("Filename (without extension) for the index files (.xml and .bsi).")]
+        [ArgDefaultValue("index")]
+        public string IndexFilename { get; set; }
+
         protected override void MainCore()
         {
             var configInfo = new AutoProjectConfigurationProvider().Create(Source);
@@ -135,9 +146,10 @@ namespace WarHub.ArmouryModel.CliTool.Commands
         private void PublishIndexZipped(IWorkspace workspace)
         {
             var dataIndex = CreateIndex(workspace);
-            var datafile = DatafileInfo.Create(ProjectConfigurationExtensions.DataIndexZippedFileName, dataIndex);
+            var filename = !string.IsNullOrWhiteSpace(IndexFilename) ? IndexFilename : "index";
+            var datafile = DatafileInfo.Create(XmlFileExtensions.DataIndexFileName, dataIndex);
             TryCatchLogError(
-                datafile.Filepath,
+                filename + XmlFileExtensions.DataIndexZipped,
                 () => Path.Combine(Destination, datafile.Filepath),
                 datafile.WriteXmlZippedFile);
         }
@@ -145,7 +157,8 @@ namespace WarHub.ArmouryModel.CliTool.Commands
         private void PublishIndex(IWorkspace workspace)
         {
             var dataIndex = CreateIndex(workspace);
-            var datafile = DatafileInfo.Create(ProjectConfigurationExtensions.DataIndexFileName, dataIndex);
+            var filename = !string.IsNullOrWhiteSpace(IndexFilename) ? IndexFilename : "index";
+            var datafile = DatafileInfo.Create(filename + XmlFileExtensions.DataIndex, dataIndex);
             TryCatchLogError(
                 datafile.Filepath,
                 () => Path.Combine(Destination, datafile.Filepath),
@@ -154,7 +167,7 @@ namespace WarHub.ArmouryModel.CliTool.Commands
 
         private DataIndexNode CreateIndex(IWorkspace workspace)
         {
-            var dataIndex = workspace.CreateDataIndex(RepoName, RepoUrl);
+            var dataIndex = workspace.CreateDataIndex(RepoName, RepoUrl, x => x.GetXmlZippedFilename());
             dataIndex = NoDatafilesInIndex ? dataIndex.WithDataIndexEntries() : dataIndex;
             dataIndex = AdditionalRepositoryUrls?.Count > 0
                 ? dataIndex.AddRepositoryUrls(AdditionalRepositoryUrls.Select(NodeFactory.DataIndexRepositoryUrl))
@@ -184,7 +197,10 @@ namespace WarHub.ArmouryModel.CliTool.Commands
             }
         }
 
-        private void TryCatchLogError(string originalItemPath, Func<string> publishItemPathGetter, Action<string> publish)
+        private void TryCatchLogError(
+            string originalItemPath,
+            Func<string> publishItemPathGetter,
+            Action<string> publish)
         {
             try
             {
@@ -201,7 +217,8 @@ namespace WarHub.ArmouryModel.CliTool.Commands
 
         private string GetRepoDistributionFilepath(RepoDistribution distribution)
         {
-            return Path.Combine(Destination, new DirectoryInfo(Source).Name + XmlFileExtensions.RepoDistribution);
+            var filename = !string.IsNullOrWhiteSpace(BsrFilename) ? BsrFilename : new DirectoryInfo(Source).Name;
+            return Path.Combine(Destination, filename + XmlFileExtensions.RepoDistribution);
         }
 
         private static IWorkspace ReadWorkspaceFromConfig(ProjectConfigurationInfo info)

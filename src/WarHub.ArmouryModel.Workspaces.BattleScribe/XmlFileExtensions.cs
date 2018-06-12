@@ -27,6 +27,8 @@ namespace WarHub.ArmouryModel.Workspaces.BattleScribe
         public const string DataIndex = ".xml";
         public const string DataIndexZipped = ".bsi";
         public const string RepoDistribution = ".bsr";
+        public const string DataIndexFileName = "index.xml";
+        public const string DataIndexZippedFileName = "index.bsi";
 
         static XmlFileExtensions()
         {
@@ -111,10 +113,10 @@ namespace WarHub.ArmouryModel.Workspaces.BattleScribe
             => ExtensionsByKinds[kind].First(ZippedExtensions.Contains);
 
         public static string GetXmlFilename(this IDatafileInfo datafile)
-            => Path.GetFileNameWithoutExtension(datafile.Filepath) + datafile.DataKind.GetXmlDocumentKindOrUnknown().GetXmlFileExtension();
+            => datafile.GetStorageName() + datafile.DataKind.GetXmlDocumentKindOrUnknown().GetXmlFileExtension();
 
         public static string GetXmlZippedFilename(this IDatafileInfo datafile)
-            => Path.GetFileNameWithoutExtension(datafile.Filepath) + datafile.DataKind.GetXmlDocumentKindOrUnknown().GetXmlZippedFileExtension();
+            => datafile.GetStorageName() + datafile.DataKind.GetXmlDocumentKindOrUnknown().GetXmlZippedFileExtension();
 
         private static XmlDocumentKind GetKindOrUnknown(string extension)
             => DocumentKindByExtensions.TryGetValue(extension, out var kind) ? kind : XmlDocumentKind.Unknown;
@@ -201,14 +203,17 @@ namespace WarHub.ArmouryModel.Workspaces.BattleScribe
 
         public static Func<Stream, SourceNode> GetLoadingMethod(this XmlDocumentKind kind)
         {
-            return kind.Match<Func<Stream, SourceNode>>(
-                gamesystem: BattleScribeXml.LoadGamesystem,
-                catalogue: BattleScribeXml.LoadCatalogue,
-                roster: BattleScribeXml.LoadRoster,
-                dataIndex: BattleScribeXml.LoadDataIndex,
-                repoDistribution: null,
-                unknown: null,
-                @default: null);
+            switch (kind)
+            {
+                case XmlDocumentKind.Gamesystem: return BattleScribeXml.LoadGamesystem;
+                case XmlDocumentKind.Catalogue: return BattleScribeXml.LoadCatalogue;
+                case XmlDocumentKind.Roster: return BattleScribeXml.LoadRoster;
+                case XmlDocumentKind.DataIndex: return BattleScribeXml.LoadDataIndex;
+                case XmlDocumentKind.Unknown:
+                case XmlDocumentKind.RepoDistribution:
+                default:
+                    return null;
+            }
         }
 
         public static IDatafileInfo<SourceNode> LoadSourceAuto(this Stream stream, string filename)
@@ -262,33 +267,40 @@ namespace WarHub.ArmouryModel.Workspaces.BattleScribe
             return workspace.Documents.Where(x => kindSet.Contains(x.Kind));
         }
 
-        public static T Match<T>(
-            this XmlDocumentKind kind,
-            T gamesystem,
-            T catalogue,
-            T roster,
-            T dataIndex,
-            T repoDistribution,
-            T unknown,
-            T @default = default)
+        public static DataIndexNode CreateDataIndex(this IWorkspace workspace,
+            string repoName, string repoUrl,
+            Func<IDatafileInfo, string> indexDataPathProvider)
         {
-            switch (kind)
+            var entries =
+                workspace.Datafiles
+                .Where(x => x.DataKind.IsDataCatalogueKind())
+                .Select(CreateEntry)
+                .ToNodeList();
+            // TODO use BattleScribe version for DataIndex bs version
+            return 
+                NodeFactory.DataIndex(
+                    ProjectToolset.BattleScribeDataIndexFormatVersion,
+                    repoName, repoUrl, repositoryUrls: default, dataIndexEntries: entries);
+            DataIndexEntryNode CreateEntry(IDatafileInfo datafile)
             {
-                case XmlDocumentKind.Gamesystem:
-                    return gamesystem;
-                case XmlDocumentKind.Catalogue:
-                    return catalogue;
-                case XmlDocumentKind.Roster:
-                    return roster;
-                case XmlDocumentKind.DataIndex:
-                    return dataIndex;
-                case XmlDocumentKind.RepoDistribution:
-                    return repoDistribution;
-                case XmlDocumentKind.Unknown:
-                    return unknown;
-                default:
-                    return @default;
+                var node = (CatalogueBaseNode)datafile.GetData();
+                var path = indexDataPathProvider(datafile);
+                var entryKind = datafile.DataKind.GetIndexEntryKindOrUnknown();
+                return NodeFactory.DataIndexEntry(path, entryKind, node.Id, node.Name, node.BattleScribeVersion, node.Revision);
             }
+        }
+
+        public static RepoDistribution CreateRepoDistribution(this IWorkspace workspace, string repoName, string repoUrl)
+        {
+            var indexNode = workspace.CreateDataIndex(repoName, repoUrl, x => x.GetXmlFilename());
+            var indexDatafile = DatafileInfo.Create(DataIndexFileName, indexNode);
+            var datafiles = workspace.Datafiles
+                .Where(x => x.DataKind.IsDataCatalogueKind())
+                .Select(x => DatafileInfo.Create(x.GetXmlFilename(), x.GetData()))
+                .OfType<IDatafileInfo<CatalogueBaseNode>>()
+                .ToImmutableArray();
+            var repo = new RepoDistribution(indexDatafile, datafiles);
+            return repo;
         }
     }
 }

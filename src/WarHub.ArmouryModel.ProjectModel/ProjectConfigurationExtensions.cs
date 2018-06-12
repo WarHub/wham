@@ -10,9 +10,6 @@ namespace WarHub.ArmouryModel.ProjectModel
 {
     public static class ProjectConfigurationExtensions
     {
-        public const string DataIndexFileName = "index.xml";
-        public const string DataIndexZippedFileName = "index.bsi";
-
         static ProjectConfigurationExtensions()
         {
             DataCatalogueKinds =
@@ -103,36 +100,5 @@ namespace WarHub.ArmouryModel.ProjectModel
 
         public static DirectoryInfo GetDirectoryInfoFor(this ProjectConfigurationInfo configInfo, SourceFolder folder)
             => new DirectoryInfo(configInfo.GetFullPath(folder));
-
-        public static DataIndexNode CreateDataIndex(this IWorkspace workspace, string repoName, string repoUrl)
-        {
-            var entries =
-                workspace.Datafiles
-                .Where(x => x.DataKind.IsDataCatalogueKind())
-                .Select(CreateEntry)
-                .ToNodeList();
-            // TODO use BattleScribe version for DataIndex bs version
-            return NodeFactory.DataIndex(ProjectToolset.BattleScribeDataIndexFormatVersion, repoName, repoUrl, default, dataIndexEntries: entries);
-            DataIndexEntryNode CreateEntry(IDatafileInfo datafile)
-            {
-                var node = (CatalogueBaseNode)datafile.GetData();
-                var path = Path.GetFileName(datafile.Filepath);
-                var entryKind = datafile.DataKind.GetIndexEntryKindOrUnknown();
-                return NodeFactory.DataIndexEntry(path, entryKind, node.Id, node.Name, node.BattleScribeVersion, node.Revision);
-            }
-        }
-
-        public static RepoDistribution CreateRepoDistribution(this IWorkspace workspace, string repoName, string repoUrl)
-        {
-            var indexNode = workspace.CreateDataIndex(repoName, repoUrl);
-            var indexDatafile = DatafileInfo.Create(DataIndexFileName, indexNode);
-            var datafiles = workspace.Datafiles
-                .Where(x => x.DataKind.IsDataCatalogueKind())
-                .Select(x => DatafileInfo.Create(Path.GetFileName(x.Filepath), x.GetData()))
-                .OfType<IDatafileInfo<CatalogueBaseNode>>()
-                .ToImmutableArray();
-            var repo = new RepoDistribution(indexDatafile, datafiles);
-            return repo;
-        }
     }
 }
