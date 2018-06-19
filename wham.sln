@@ -29,6 +29,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WarHub.ArmouryModel.Project
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{7FE22FE4-14D4-4179-9811-90E0A21F4000}"
 	ProjectSection(SolutionItems) = preProject
+		.editorconfig = .editorconfig
 		.gitattributes = .gitattributes
 		.gitignore = .gitignore
 		appveyor.yml = appveyor.yml
@@ -44,7 +45,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WarHub.ArmouryModel.Workspa
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WarHub.ArmouryModel.Workspaces.Gitree.Tests", "tests\WarHub.ArmouryModel.Workspaces.Gitree.Tests\WarHub.ArmouryModel.Workspaces.Gitree.Tests.csproj", "{DEE04C3C-7A20-43F0-B289-6A0CB938DAB3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WarHub.ArmouryModel.Source.Tests", "tests\WarHub.ArmouryModel.Source.Tests\WarHub.ArmouryModel.Source.Tests.csproj", "{B8B445FE-6EA4-4378-9420-8E051C909D76}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WarHub.ArmouryModel.Source.Tests", "tests\WarHub.ArmouryModel.Source.Tests\WarHub.ArmouryModel.Source.Tests.csproj", "{B8B445FE-6EA4-4378-9420-8E051C909D76}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
