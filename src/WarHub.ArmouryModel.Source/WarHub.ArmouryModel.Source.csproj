@@ -6,12 +6,12 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <Description>Provides data model for wargaming datafiles, such as BattleScribe.</Description>
+    <Description>Provides data model for wargaming datafiles, such as BattleScribe. wham core library.</Description>
     <PackageTags>warhub armoury armourymodel wham battlescribe roster catalogue gamesystem cat catz gst gstz ros rosz datafile wh40k 40k bsdata battle scribe</PackageTags>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="System.Collections.Immutable" Version="1.4.0" />
+    <PackageReference Include="System.Collections.Immutable" Version="1.5.0" />
     <PackageReference Include="CodeGeneration.Roslyn.BuildTime" Version="0.4.49" PrivateAssets="all" />
     <DotNetCliToolReference Include="dotnet-codegen" Version="0.4.49" />
   </ItemGroup>

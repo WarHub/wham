@@ -4,7 +4,6 @@ using System.Collections.Immutable;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
-using MoreLinq;
 using WarHub.ArmouryModel.ProjectModel;
 using WarHub.ArmouryModel.Source;
 using WarHub.ArmouryModel.Source.BattleScribe;
@@ -170,7 +169,7 @@ namespace WarHub.ArmouryModel.Workspaces.BattleScribe
         {
             using (var zip = new ZipArchive(stream, ZipArchiveMode.Create, leaveOpen: true))
             {
-                var datafiles = (repoDistribution.Index as IDatafileInfo).Concat(repoDistribution.Datafiles);
+                var datafiles = repoDistribution.Datafiles.Prepend(repoDistribution.Index as IDatafileInfo);
                 foreach (var datafile in datafiles)
                 {
                     var entry = zip.CreateEntry(datafile.Filepath);

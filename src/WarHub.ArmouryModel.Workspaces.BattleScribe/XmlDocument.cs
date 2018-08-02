@@ -23,7 +23,7 @@ namespace WarHub.ArmouryModel.Workspaces.BattleScribe
         /// <summary>
         /// Gets the filename without file extension.
         /// </summary>
-        public string Name => Path.GetExtension(Filepath);
+        public string Name => Path.GetFileNameWithoutExtension(Filepath);
 
         /// <summary>
         /// Gets the kind of this document.
