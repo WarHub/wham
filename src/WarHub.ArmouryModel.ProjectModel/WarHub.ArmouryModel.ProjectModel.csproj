@@ -3,13 +3,19 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <LangVersion>7.2</LangVersion>
+    <Description>This library provides abstract API to operate on wham workspaces and their configuration (.whamproj configuration files). Types provided:
+* IDatafileInfo (and DatafileInfo)
+* IProjectConfigurationProvider (and ProjectConfigurationProviderBase, and Extensions)
+* IWorkspace
+* ProjectToolset (Version, BattleScribeFormatVersion, BattleScribeDataIndexFormatVersion)
+* RepoDistribution</Description>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Amadevus.RecordGenerator" Version="0.3.4" />
     <PackageReference Include="CodeGeneration.Roslyn" Version="0.4.49" />
     <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
-    <PackageReference Include="System.Collections.Immutable" Version="1.4.0" />
+    <PackageReference Include="System.Collections.Immutable" Version="1.5.0" />
     <DotNetCliToolReference Include="dotnet-codegen" Version="0.4.49" />
   </ItemGroup>
 
