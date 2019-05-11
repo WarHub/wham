@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <Authors>Amadeusz Sadowski</Authors>
-    <PackageLicenseUrl>https://github.com/WarHub/wham/blob/master/LICENSE</PackageLicenseUrl>
+    <PackageLicense>MIT</PackageLicense>
     <PackageProjectUrl>https://github.com/WarHub/wham</PackageProjectUrl>
     <RepositoryUrl>https://github.com/WarHub/wham</RepositoryUrl>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
