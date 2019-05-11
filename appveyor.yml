@@ -1,4 +1,4 @@
-image: Visual Studio 2017
+image: Visual Studio 2019
 version: 0.5-alpha.build{build}
 skip_tags: true
 configuration:
@@ -14,10 +14,10 @@ init:
       echo "release_branch='$env:release_branch'"
 # get .NET Core SDK v2.1 if not available
   - ps: |
-      if ([System.Version](dotnet --version) -lt [System.Version]"2.1.300") {
+      if ([System.Version](dotnet --version) -lt [System.Version]"2.2.200") {
         $scriptPath = 'C:\dotnet-install.ps1'
         (New-Object System.Net.WebClient).DownloadFile('https://dot.net/v1/dotnet-install.ps1', $scriptPath)
-        iex "$scriptPath --channel 2.1.300"
+        iex "$scriptPath --channel 2.2.200"
       }
   - ps: dotnet --info
 before_build:
@@ -26,7 +26,7 @@ before_build:
       $versionjson = ((Get-Content 'src/version.json') | ConvertFrom-Json).version
       Update-AppveyorBuild -Version "$versionjson.build$env:APPVEYOR_BUILD_NUMBER"
 build_script:
-  - msbuild /v:m /t:Restore,Build /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
+  - dotnet build -v:m -l:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
 notifications:
   - provider: Webhook
     url: https://webhooks.gitter.im/e/ed65900fc71d1cd43a2e
