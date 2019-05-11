@@ -54,9 +54,13 @@ namespace WarHub.ArmouryModel.Source
 
         public ImmutableArray<GamesystemCore> Gamesystems { get; }
 
+        public ImmutableArray<InfoGroupCore> InfoGroups { get; }
+
         public ImmutableArray<InfoLinkCore> InfoLinks { get; }
 
         public ImmutableArray<ModifierCore> Modifiers { get; }
+
+        public ImmutableArray<ModifierGroupCore> ModifierGroups { get; }
 
         public ImmutableArray<ProfileCore> Profiles { get; }
 

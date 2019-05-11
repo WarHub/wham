@@ -68,5 +68,8 @@ namespace WarHub.ArmouryModel.Source
 
         [XmlArray("sharedProfiles")]
         public ImmutableArray<ProfileCore> SharedProfiles { get; }
+
+        [XmlArray("sharedInfoGroups")]
+        public ImmutableArray<InfoGroupCore> SharedInfoGroups { get; }
     }
 }

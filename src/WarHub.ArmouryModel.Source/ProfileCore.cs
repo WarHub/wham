@@ -16,6 +16,9 @@ namespace WarHub.ArmouryModel.Source
         [XmlArray("modifiers")]
         public ImmutableArray<ModifierCore> Modifiers { get; }
 
+        [XmlArray("modifierGroups")]
+        public ImmutableArray<ModifierGroupCore> ModifierGroups { get; }
+
         [XmlArray("characteristics")]
         public ImmutableArray<CharacteristicCore> Characteristics { get; }
     }

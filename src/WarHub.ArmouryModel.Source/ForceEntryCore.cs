@@ -10,6 +10,9 @@ namespace WarHub.ArmouryModel.Source
         [XmlArray("modifiers")]
         public ImmutableArray<ModifierCore> Modifiers { get; }
 
+        [XmlArray("modifierGroups")]
+        public ImmutableArray<ModifierGroupCore> ModifierGroups { get; }
+
         [XmlArray("constraints")]
         public ImmutableArray<ConstraintCore> Constraints { get; }
 
@@ -18,6 +21,9 @@ namespace WarHub.ArmouryModel.Source
 
         [XmlArray("rules")]
         public ImmutableArray<RuleCore> Rules { get; }
+
+        [XmlArray("infoGroups")]
+        public ImmutableArray<InfoGroupCore> InfoGroups { get; }
 
         [XmlArray("infoLinks")]
         public ImmutableArray<InfoLinkCore> InfoLinks { get; }

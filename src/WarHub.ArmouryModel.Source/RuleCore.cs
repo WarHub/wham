@@ -10,6 +10,9 @@ namespace WarHub.ArmouryModel.Source
         [XmlArray("modifiers")]
         public ImmutableArray<ModifierCore> Modifiers { get; }
 
+        [XmlArray("modifierGroups")]
+        public ImmutableArray<ModifierGroupCore> ModifierGroups { get; }
+
         [XmlElement("description")]
         public string Description { get; }
     }
