@@ -7,11 +7,14 @@ namespace WarHub.ArmouryModel.Source
     [XmlType("profile")]
     public partial class ProfileCore : EntryBaseCore
     {
-        [XmlAttribute("profileTypeId")]
+        [XmlAttribute("typeId")]
         public string ProfileTypeId { get; }
 
-        [XmlAttribute("profileTypeName")]
+        [XmlAttribute("typeName")]
         public string ProfileTypeName { get; }
+
+        [XmlArray("modifiers")]
+        public ImmutableArray<ModifierCore> Modifiers { get; }
 
         [XmlArray("characteristics")]
         public ImmutableArray<CharacteristicCore> Characteristics { get; }

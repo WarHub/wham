@@ -28,13 +28,15 @@
         // infos
         Cost, CostList,
         Characteristic, CharacteristicList,
-        Profile, ProfileList,
+        Profile, ProfileList, 
+        Publication, PublicationList,
         Rule, RuleList,
 
         // links
         CategoryLink, CategoryLinkList,
         EntryLink, EntryLinkList,
         InfoLink, InfoLinkList,
+        CatalogueLink, CatalogueLinkList,
 
         // roster elements 
         CostLimit, CostLimitList,
@@ -47,6 +49,7 @@
         Gamesystem, GamesystemList,
         Roster, RosterList,
         DataIndex, DataIndexList,
-        Datablob, DatablobList
+        Datablob, DatablobList,
+        
     }
 }

@@ -60,6 +60,10 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
             foreach (var entry in Descriptor.Entries)
             {
                 yield return CreateProperty(entry);
+                if (entry.IsCollection)
+                {
+                    yield return CreateSpecifiedProperty(entry);
+                }
             }
             MemberDeclarationSyntax CreateConstructor()
             {
@@ -117,6 +121,30 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                                     ParseTypeName(Names.NotSupportedExceptionFull))
                                 .WithArgumentList(
                                     ArgumentList()))));
+            }
+            PropertyDeclarationSyntax CreateSpecifiedProperty(CoreDescriptor.Entry entry)
+            {
+                return
+                    PropertyDeclaration(
+                        PredefinedType(
+                            Token(SyntaxKind.BoolKeyword)),
+                        Identifier(entry.Identifier.Text + Names.SpecifiedSuffix))
+                    .AddAttributeLists(
+                        AttributeList(
+                            SingletonSeparatedList(
+                                Attribute(
+                                    ParseName(Names.XmlIgnoreQualified)))))
+                    .AddModifiers(SyntaxKind.PublicKeyword)
+                    .WithExpressionBodyFull(
+                        BinaryExpression(
+                            SyntaxKind.NotEqualsExpression,
+                            MemberAccessExpression(
+                                SyntaxKind.SimpleMemberAccessExpression,
+                                entry.IdentifierName,
+                                IdentifierName(Names.Count)),
+                            LiteralExpression(
+                                SyntaxKind.NumericLiteralExpression,
+                                Literal(0))));
             }
         }
     }
