@@ -25,8 +25,8 @@ before_build:
   - ps: |
       $versionjson = ((Get-Content 'src/version.json') | ConvertFrom-Json).version
       Update-AppveyorBuild -Version "$versionjson.build$env:APPVEYOR_BUILD_NUMBER"
-build_script:
-  - dotnet build -v:m -l:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
+build:
+  verbosity: minimal
 notifications:
   - provider: Webhook
     url: https://webhooks.gitter.im/e/ed65900fc71d1cd43a2e
