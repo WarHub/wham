@@ -1,0 +1,11 @@
+<Project>
+
+  <PropertyGroup>
+    <Authors>Amadeusz Sadowski</Authors>
+    <Copyright>Copyright © 2018 Amadeusz Sadowski</Copyright>
+    <RepositoryType>git</RepositoryType>
+    <Company>WarHub</Company>
+    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+  </PropertyGroup>
+  
+</Project>

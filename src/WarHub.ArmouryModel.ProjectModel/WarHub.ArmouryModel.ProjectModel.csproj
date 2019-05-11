@@ -13,10 +13,10 @@
 
   <ItemGroup>
     <PackageReference Include="Amadevus.RecordGenerator" Version="0.3.4" />
-    <PackageReference Include="CodeGeneration.Roslyn" Version="0.4.49" />
+    <PackageReference Include="CodeGeneration.Roslyn" Version="0.5.13" />
     <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
     <PackageReference Include="System.Collections.Immutable" Version="1.5.0" />
-    <DotNetCliToolReference Include="dotnet-codegen" Version="0.4.49" />
+    <DotNetCliToolReference Include="dotnet-codegen" Version="0.5.13" />
   </ItemGroup>
 
   <ItemGroup>

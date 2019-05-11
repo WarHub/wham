@@ -12,8 +12,8 @@
 
   <ItemGroup>
     <PackageReference Include="System.Collections.Immutable" Version="1.5.0" />
-    <PackageReference Include="CodeGeneration.Roslyn.BuildTime" Version="0.4.49" PrivateAssets="all" />
-    <DotNetCliToolReference Include="dotnet-codegen" Version="0.4.49" />
+    <PackageReference Include="CodeGeneration.Roslyn.BuildTime" Version="0.5.13" PrivateAssets="all" />
+    <DotNetCliToolReference Include="dotnet-codegen" Version="0.5.13" />
   </ItemGroup>
 
   <ItemGroup>

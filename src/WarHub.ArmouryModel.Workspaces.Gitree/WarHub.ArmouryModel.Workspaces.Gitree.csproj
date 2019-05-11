@@ -11,7 +11,7 @@
     <PackageReference Include="morelinq" Version="3.0.0" />
     <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
     <PackageReference Include="Optional" Version="4.0.0" />
-    <DotNetCliToolReference Include="dotnet-codegen" Version="0.4.49" />
+    <DotNetCliToolReference Include="dotnet-codegen" Version="0.5.13" />
   </ItemGroup>
 
   <ItemGroup>

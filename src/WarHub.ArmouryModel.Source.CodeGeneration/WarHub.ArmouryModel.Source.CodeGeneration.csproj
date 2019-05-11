@@ -7,7 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="CodeGeneration.Roslyn" Version="0.4.49" />
+    <PackageReference Include="CodeGeneration.Roslyn" Version="0.5.13" />
     <PackageReference Include="morelinq" Version="3.0.0" />
   </ItemGroup>
 

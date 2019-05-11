@@ -32,8 +32,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="CodeGeneration.Roslyn.BuildTime" Version="0.4.49" />
-    <DotNetCliToolReference Include="dotnet-codegen" Version="0.4.49" />
+    <PackageReference Include="CodeGeneration.Roslyn.BuildTime" Version="0.5.13" />
+    <DotNetCliToolReference Include="dotnet-codegen" Version="0.5.13" />
   </ItemGroup>
 
 </Project>
