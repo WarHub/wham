@@ -9,7 +9,7 @@ namespace WarHub.ArmouryModel.Source
         public string Name { get; }
 
         [XmlAttribute("typeId")]
-        public string CostTypeId { get; }
+        public string TypeId { get; }
 
         [XmlAttribute("value")]
         public decimal Value { get; }

@@ -10,7 +10,7 @@ namespace WarHub.ArmouryModel.Source
         public string Name { get; }
 
         [XmlAttribute("typeId")]
-        public string CharacteristicTypeId { get; }
+        public string TypeId { get; }
 
         [XmlText]
         public string Value { get; }

@@ -8,10 +8,10 @@ namespace WarHub.ArmouryModel.Source
     public partial class ProfileCore : EntryBaseCore
     {
         [XmlAttribute("typeId")]
-        public string ProfileTypeId { get; }
+        public string TypeId { get; }
 
         [XmlAttribute("typeName")]
-        public string ProfileTypeName { get; }
+        public string TypeName { get; }
 
         [XmlArray("characteristics")]
         public ImmutableArray<CharacteristicCore> Characteristics { get; }

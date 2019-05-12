@@ -11,7 +11,7 @@ namespace WarHub.ArmouryModel.Source
         public string EntryGroupId { get; }
 
         [XmlAttribute("publicationId")]
-        public string Book { get; }
+        public string PublicationId { get; }
 
         [XmlAttribute("page")]
         public string Page { get; }

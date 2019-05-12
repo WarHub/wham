@@ -66,6 +66,8 @@ namespace WarHub.ArmouryModel.Source
 
         public ImmutableArray<ProfileTypeCore> ProfileTypes { get; }
 
+        public ImmutableArray<PublicationCore> Publications { get; }
+
         public ImmutableArray<RepeatCore> Repeats { get; }
 
         public ImmutableArray<RosterCore> Rosters { get; }
