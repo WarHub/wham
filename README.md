@@ -2,8 +2,8 @@
 
 Foundational .NET library for wargame datafile tools, written in C#.
 
-[![NuGet package](https://img.shields.io/nuget/v/Amadevus.RecordGenerator.svg)](https://www.nuget.org/packages?q=warhub+armourymodel)
-[![Build status](https://img.shields.io/appveyor/ci/amis92/wham.svg)](https://ci.appveyor.com/project/amis92/wham/branch/master)
+[![NuGet package](https://img.shields.io/nuget/v/WarHub.ArmouryModel.svg)](https://www.nuget.org/packages?q=warhub+armourymodel)
+[![Build Status](https://dev.azure.com/warhub/wham/_apis/build/status/WarHub.wham?branchName=master)](https://dev.azure.com/warhub/wham/_build/latest?definitionId=1&branchName=master)
 [![MyGet package](https://img.shields.io/myget/warhub/v/WarHub.ArmouryModel.Source.svg?label=myget-ci)](https://www.myget.org/feed/Packages/warhub)
 [![Join the chat at gitter!](https://img.shields.io/gitter/room/WarHub/wham.svg)](https://gitter.im/WarHub/wham?utm_source=badge&utm_medium=badge&utm_content=badge)
 [![License](https://img.shields.io/github/license/WarHub/wham.svg)](https://github.com/WarHub/wham/blob/master/LICENSE)
