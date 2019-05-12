@@ -7,12 +7,6 @@ namespace WarHub.ArmouryModel.Source
     [XmlType("infoGroup")]
     public partial class InfoGroupCore : EntryBaseCore
     {
-        [XmlArray("modifiers")]
-        public ImmutableArray<ModifierCore> Modifiers { get; }
-
-        [XmlArray("modifierGroups")]
-        public ImmutableArray<ModifierGroupCore> ModifierGroups { get; }
-
         [XmlArray("profiles")]
         public ImmutableArray<ProfileCore> Profiles { get; }
 

@@ -13,12 +13,6 @@ namespace WarHub.ArmouryModel.Source
         [XmlAttribute("typeName")]
         public string ProfileTypeName { get; }
 
-        [XmlArray("modifiers")]
-        public ImmutableArray<ModifierCore> Modifiers { get; }
-
-        [XmlArray("modifierGroups")]
-        public ImmutableArray<ModifierGroupCore> ModifierGroups { get; }
-
         [XmlArray("characteristics")]
         public ImmutableArray<CharacteristicCore> Characteristics { get; }
     }

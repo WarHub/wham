@@ -16,12 +16,6 @@ namespace WarHub.ArmouryModel.Source
         [XmlAttribute("type")]
         public EntryLinkKind Type { get; }
 
-        [XmlArray("modifiers")]
-        public ImmutableArray<ModifierCore> Modifiers { get; }
-
-        [XmlArray("modifierGroups")]
-        public ImmutableArray<ModifierGroupCore> ModifierGroups { get; }
-
         [XmlArray("constraints")]
         public ImmutableArray<ConstraintCore> Constraints { get; }
 

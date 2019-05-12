@@ -20,5 +20,11 @@ namespace WarHub.ArmouryModel.Source
 
         [XmlAttribute("hidden")]
         public bool IsHidden { get; }
+
+        [XmlArray("modifiers")]
+        public ImmutableArray<ModifierCore> Modifiers { get; }
+
+        [XmlArray("modifierGroups")]
+        public ImmutableArray<ModifierGroupCore> ModifierGroups { get; }
     }
 }

@@ -1,5 +1,4 @@
-﻿using System.Collections.Immutable;
-using System.Xml.Serialization;
+﻿using System.Xml.Serialization;
 
 namespace WarHub.ArmouryModel.Source
 {
@@ -12,11 +11,5 @@ namespace WarHub.ArmouryModel.Source
 
         [XmlAttribute("type")]
         public InfoLinkKind Type { get; }
-
-        [XmlArray("modifiers")]
-        public ImmutableArray<ModifierCore> Modifiers { get; }
-
-        [XmlArray("modifierGroups")]
-        public ImmutableArray<ModifierGroupCore> ModifierGroups { get; }
     }
 }

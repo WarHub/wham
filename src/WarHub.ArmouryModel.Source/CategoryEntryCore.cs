@@ -7,12 +7,6 @@ namespace WarHub.ArmouryModel.Source
     [XmlType("categoryEntry")]
     public partial class CategoryEntryCore : EntryBaseCore
     {
-        [XmlArray("modifiers")]
-        public ImmutableArray<ModifierCore> Modifiers { get; }
-
-        [XmlArray("modifierGroups")]
-        public ImmutableArray<ModifierGroupCore> ModifierGroups { get; }
-
         [XmlArray("constraints")]
         public ImmutableArray<ConstraintCore> Constraints { get; }
 
