@@ -12,12 +12,6 @@ namespace WarHub.ArmouryModel.Source
         [XmlAttribute("name")]
         public string Name { get; }
 
-        [XmlAttribute("book")]
-        public string Book { get; }
-
-        [XmlAttribute("page")]
-        public string Page { get; }
-
         [XmlAttribute("revision")]
         public int Revision { get; }
 
@@ -33,14 +27,14 @@ namespace WarHub.ArmouryModel.Source
         [XmlAttribute("authorUrl")]
         public string AuthorUrl { get; }
 
+        [XmlArray("publications")]
+        public ImmutableArray<PublicationCore> Publications { get; }
+
         [XmlArray("profiles")]
         public ImmutableArray<ProfileCore> Profiles { get; }
 
         [XmlArray("rules")]
         public ImmutableArray<RuleCore> Rules { get; }
-
-        [XmlArray("infoLinks")]
-        public ImmutableArray<InfoLinkCore> InfoLinks { get; }
 
         [XmlArray("costTypes")]
         public ImmutableArray<CostTypeCore> CostTypes { get; }
@@ -60,6 +54,9 @@ namespace WarHub.ArmouryModel.Source
         [XmlArray("entryLinks")]
         public ImmutableArray<EntryLinkCore> EntryLinks { get; }
 
+        [XmlArray("infoLinks")]
+        public ImmutableArray<InfoLinkCore> InfoLinks { get; }
+
         [XmlArray("sharedSelectionEntries")]
         public ImmutableArray<SelectionEntryCore> SharedSelectionEntries { get; }
 
@@ -71,5 +68,8 @@ namespace WarHub.ArmouryModel.Source
 
         [XmlArray("sharedProfiles")]
         public ImmutableArray<ProfileCore> SharedProfiles { get; }
+
+        [XmlArray("sharedInfoGroups")]
+        public ImmutableArray<InfoGroupCore> SharedInfoGroups { get; }
     }
 }

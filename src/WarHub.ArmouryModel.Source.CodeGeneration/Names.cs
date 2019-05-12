@@ -96,5 +96,7 @@
         public const string Visit = "Visit";
         public const string VisitListNode = "VisitListNode";
         public const string ArgumentOutOfRangeExceptionFull = "System.ArgumentOutOfRangeException";
+        public const string SpecifiedSuffix = "Specified";
+        public const string XmlIgnoreQualified = "System.Xml.Serialization.XmlIgnore";
     }
 }

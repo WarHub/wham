@@ -12,8 +12,8 @@ namespace WarHub.ArmouryModel.Source
         [XmlAttribute("name")]
         public string Name { get; }
 
-        [XmlAttribute("book")]
-        public string Book { get; }
+        [XmlAttribute("publicationId")]
+        public string PublicationId { get; }
 
         [XmlAttribute("page")]
         public string Page { get; }
@@ -21,16 +21,10 @@ namespace WarHub.ArmouryModel.Source
         [XmlAttribute("hidden")]
         public bool IsHidden { get; }
 
-        [XmlArray("profiles")]
-        public ImmutableArray<ProfileCore> Profiles { get; }
-
-        [XmlArray("rules")]
-        public ImmutableArray<RuleCore> Rules { get; }
-
-        [XmlArray("infoLinks")]
-        public ImmutableArray<InfoLinkCore> InfoLinks { get; }
-
         [XmlArray("modifiers")]
         public ImmutableArray<ModifierCore> Modifiers { get; }
+
+        [XmlArray("modifierGroups")]
+        public ImmutableArray<ModifierGroupCore> ModifierGroups { get; }
     }
 }

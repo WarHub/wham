@@ -8,7 +8,7 @@ namespace WarHub.ArmouryModel.Source
     {
         public static CatalogueNode Catalogue(string id, string name, string gameSystemId)
         {
-            return Catalogue(id, name, null, null, 0, "", null, null, null, gameSystemId, 0);
+            return Catalogue(id, name, 0, "", null, null, null, false, gameSystemId, 0);
         }
 
         public static CategoryEntryNode CategoryEntry(string id, string name)
@@ -48,7 +48,7 @@ namespace WarHub.ArmouryModel.Source
 
         public static EntryLinkNode EntryLink(string id, string name, string targetId, EntryLinkKind type)
         {
-            return EntryLink(id, name, default, default, default, targetId, type);
+            return EntryLink(id, name, default, default, default, default, targetId, type);
         }
 
         public static ForceEntryNode ForceEntry(string id, string name)

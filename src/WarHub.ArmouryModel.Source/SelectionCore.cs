@@ -10,8 +10,8 @@ namespace WarHub.ArmouryModel.Source
         [XmlAttribute("entryGroupId")]
         public string EntryGroupId { get; }
 
-        [XmlAttribute("book")]
-        public string Book { get; }
+        [XmlAttribute("publicationId")]
+        public string PublicationId { get; }
 
         [XmlAttribute("page")]
         public string Page { get; }
@@ -28,7 +28,7 @@ namespace WarHub.ArmouryModel.Source
         [XmlArray("costs")]
         public ImmutableArray<CostCore> Costs { get; }
 
-        [XmlArray("categoryLinks")]
-        public ImmutableArray<CategoryLinkCore> CategoryLinks { get; }
+        [XmlArray("categories")]
+        public ImmutableArray<CategoryCore> Categories { get; }
     }
 }

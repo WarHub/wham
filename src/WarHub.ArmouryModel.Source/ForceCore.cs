@@ -19,6 +19,9 @@ namespace WarHub.ArmouryModel.Source
         [XmlArray("selections")]
         public ImmutableArray<SelectionCore> Selections { get; }
 
+        [XmlArray("publications")]
+        public ImmutableArray<PublicationCore> Publications { get; }
+
         [XmlArray("categories")]
         public ImmutableArray<CategoryCore> Categories { get; }
 

@@ -9,10 +9,10 @@ namespace WarHub.ArmouryModel.Source
         [XmlAttribute("name")]
         public string Name { get; }
 
-        [XmlAttribute("characteristicTypeId")]
-        public string CharacteristicTypeId { get; }
+        [XmlAttribute("typeId")]
+        public string TypeId { get; }
 
-        [XmlAttribute("value")]
+        [XmlText]
         public string Value { get; }
     }
 }

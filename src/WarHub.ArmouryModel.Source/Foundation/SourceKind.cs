@@ -5,33 +5,37 @@
         Unknown,
 
         // types
-        CostType, CostTypeList,
         CharacteristicType, CharacteristicTypeList,
+        CostType, CostTypeList,
         ProfileType, ProfileTypeList,
 
         // entries
-        SelectionEntry, SelectionEntryList,
-        SelectionEntryGroup, SelectionEntryGroupList,
         CategoryEntry, CategoryEntryList,
-        ForceEntry, ForceEntryList,
         DataIndexEntry, DataIndexEntryList,
         DataIndexRepositoryUrl, DataIndexRepositoryUrlList,
+        ForceEntry, ForceEntryList,
         Metadata, MetadataList,
+        SelectionEntry, SelectionEntryList,
+        SelectionEntryGroup, SelectionEntryGroupList,
 
         // selectors + modifiers
         Condition, ConditionList,
         ConditionGroup, ConditionGroupList,
         Constraint, ConstraintList,
-        Repeat, RepeatList,
         Modifier, ModifierList,
+        ModifierGroup, ModifierGroupList,
+        Repeat, RepeatList,
 
         // infos
-        Cost, CostList,
         Characteristic, CharacteristicList,
-        Profile, ProfileList,
+        Cost, CostList,
+        InfoGroup, InfoGroupList,
+        Profile, ProfileList, 
+        Publication, PublicationList,
         Rule, RuleList,
 
         // links
+        CatalogueLink, CatalogueLinkList,
         CategoryLink, CategoryLinkList,
         EntryLink, EntryLinkList,
         InfoLink, InfoLinkList,
@@ -47,6 +51,6 @@
         Gamesystem, GamesystemList,
         Roster, RosterList,
         DataIndex, DataIndexList,
-        Datablob, DatablobList
+        Datablob, DatablobList,
     }
 }

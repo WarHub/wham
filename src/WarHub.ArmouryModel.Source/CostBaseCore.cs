@@ -8,8 +8,8 @@ namespace WarHub.ArmouryModel.Source
         [XmlAttribute("name")]
         public string Name { get; }
 
-        [XmlAttribute("costTypeId")]
-        public string CostTypeId { get; }
+        [XmlAttribute("typeId")]
+        public string TypeId { get; }
 
         [XmlAttribute("value")]
         public decimal Value { get; }

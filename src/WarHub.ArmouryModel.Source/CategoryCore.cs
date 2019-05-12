@@ -7,5 +7,7 @@ namespace WarHub.ArmouryModel.Source
     [XmlType("category")]
     public partial class CategoryCore : RosterElementBaseCore
     {
+        [XmlAttribute("primary")]
+        public bool IsPrimary { get; }
     }
 }
