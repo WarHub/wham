@@ -1,0 +1,18 @@
+
+trigger:
+- master
+
+pool:
+  vmImage: 'windows-latest'
+
+variables:
+  buildConfiguration: 'Release'
+  
+steps:
+- task: DotNetCoreInstaller@0
+  inputs:
+    version: '2.2.200'
+
+- script: dotnet restore
+- script: dotnet build -c $(buildConfiguration) --no-restore -v minimal
+- script: dotnet test -c $(buildConfiguration) --no-build -v minimal
