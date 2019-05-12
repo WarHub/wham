@@ -1,21 +1,39 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xs:schema attributeFormDefault="unqualified" elementFormDefault="qualified" xmlns:xs="http://www.w3.org/2001/XMLSchema"
+<xs:schema attributeFormDefault="unqualified" elementFormDefault="qualified"
+           xmlns:xs="http://www.w3.org/2001/XMLSchema"
            targetNamespace="http://www.battlescribe.net/schema/catalogueSchema"
            xmlns:cs="http://www.battlescribe.net/schema/catalogueSchema">
   
-  <!--schema for BattleScribe [version 2.01, (c) Jon Taylor] datafiles (catalogues and game systems)-->
+  <!--schema for BattleScribe [version 2.02, (c) Jon Taylor] datafiles (catalogues and game systems)-->
   <!--schema file author: Amadeusz Sadowski-->
-  <!--for game system, replace xmlns:cs and targetNamespace with http://www.battlescribe.net/schema/gameSystemSchema-->
-  <!--for roster, replace xmlns:cs and targetNamespace with http://www.battlescribe.net/schema/rosterSchema-->
+  <!--for game system, replace 'xmlns:cs' and targetNamespace' values with http://www.battlescribe.net/schema/gameSystemSchema -->
+  <!--for roster, replace 'xmlns:cs' and 'targetNamespace' values with http://www.battlescribe.net/schema/rosterSchema -->
 
   <xs:simpleType name="idtype">
     <xs:restriction base="xs:string" />
   </xs:simpleType>
   
-  <!--profile types-->
+  <!--publication-->
+  <xs:complexType name="Publication">
+    <xs:attribute name="id" type="cs:idtype" use="required" />
+    <xs:attribute name="name" type="xs:string" use="required" />
+  </xs:complexType>
+
+  <xs:complexType name="PublicationList">
+    <xs:sequence>
+      <xs:element name="publication" type="cs:Publication" minOccurs="0" maxOccurs="unbounded" />
+    </xs:sequence>
+  </xs:complexType>
+  
+  <xs:attributeGroup name="PublicationRefAttGroup">
+    <xs:attribute name="publicationId" type="cs:idtype" />
+    <xs:attribute name="page" type="xs:string" />
+  </xs:attributeGroup>
+  
+  <!--characteristic type-->
   <xs:complexType name="CharacteristicType">
-    <xs:attribute name="id" type="cs:idtype" />
-    <xs:attribute name="name" type="xs:string" />
+    <xs:attribute name="id" type="cs:idtype" use="required" />
+    <xs:attribute name="name" type="xs:string" use="required" />
   </xs:complexType>
 
   <xs:complexType name="CharacteristicTypeList">
@@ -24,12 +42,13 @@
     </xs:sequence>
   </xs:complexType>
 
+  <!--profile type-->
   <xs:complexType name="ProfileType">
     <xs:sequence>
-      <xs:element name="characteristicTypes" type="cs:CharacteristicTypeList" />
+      <xs:element name="characteristicTypes" type="cs:CharacteristicTypeList" minOccurs="0" />
     </xs:sequence>
-    <xs:attribute name="id" type="cs:idtype" />
-    <xs:attribute name="name" type="xs:string" />
+    <xs:attribute name="id" type="cs:idtype" use="required" />
+    <xs:attribute name="name" type="xs:string" use="required" />
   </xs:complexType>
 
   <xs:complexType name="ProfileTypeList">
@@ -42,7 +61,7 @@
   <xs:complexType name="CostType">
     <xs:attribute name="id" type="cs:idtype" use="required" />
     <xs:attribute name="name" type="xs:string" use="required" />
-    <xs:attribute name="defaultCostLimit" type="xs:decimal" use="required" />
+    <xs:attribute name="defaultCostLimit" type="xs:decimal" default="-1" />
   </xs:complexType>
 
   <xs:complexType name="CostTypeList">
@@ -51,36 +70,36 @@
     </xs:sequence>
   </xs:complexType>
   
-  <!--basics-->
-  <xs:attributeGroup name="BookReferenceAttGroup">
-    <xs:attribute name="book" type="xs:string" use="optional" />
-    <xs:attribute name="page" type="xs:string" use="optional" />
-  </xs:attributeGroup>
-
-  <xs:group name="BasicEntryNodeGroup">
-    <xs:sequence>
-      <xs:element name="profiles" type="cs:ProfileList" />
-      <xs:element name="rules" type="cs:RuleList" />
-      <xs:element name="infoLinks" type="cs:InfoLinkList" />
-      <xs:element name="modifiers" type="cs:ModifierList" />
-    </xs:sequence>
-  </xs:group>
-
+  <!--entry base-->
   <xs:complexType name="EntryBase">
     <xs:sequence>
-      <xs:group ref="cs:BasicEntryNodeGroup" />
+      <xs:element name="modifiers" type="cs:ModifierList" minOccurs="0" />
+      <xs:element name="modifierGroups" type="cs:ModifierGroupList" minOccurs="0" />
     </xs:sequence>
     <xs:attribute name="id" type="cs:idtype" use="required" />
-    <xs:attribute name="name" type="xs:string" use="optional" />
-    <xs:attributeGroup ref="cs:BookReferenceAttGroup" />
-    <xs:attribute name="hidden" type="xs:boolean" use="required" />
+    <xs:attribute name="name" type="xs:string" />
+    <xs:attributeGroup ref="cs:PublicationRefAttGroup" />
+    <xs:attribute name="hidden" type="xs:boolean" default="false" />
   </xs:complexType>
+
+  <!--info node group-->
+  <xs:group name="InfoNodeGroup">
+    <xs:sequence>
+      <xs:element name="profiles" type="cs:ProfileList" minOccurs="0" />
+      <xs:element name="rules" type="cs:RuleList" minOccurs="0" />
+      <xs:element name="infoGroups" type="cs:InfoGroupList" minOccurs="0" />
+      <xs:element name="infoLinks" type="cs:InfoLinkList" minOccurs="0" />
+    </xs:sequence>
+  </xs:group>
   
-  <!--profile-->
+  <!--characteristic-->
   <xs:complexType name="Characteristic">
-    <xs:attribute name="name" type="xs:string" use="required" />
-    <xs:attribute name="characteristicTypeId" type="cs:idtype" use="required" />
-    <xs:attribute name="value" type="xs:string" use="optional" />
+    <xs:simpleContent>
+      <xs:extension base="xs:string">
+        <xs:attribute name="name" type="xs:string" use="required" />
+        <xs:attribute name="typeId" type="cs:idtype" use="required" />
+      </xs:extension>
+    </xs:simpleContent>
   </xs:complexType>
 
   <xs:complexType name="CharacteristicList">
@@ -88,15 +107,16 @@
       <xs:element name="characteristic" type="cs:Characteristic" minOccurs="0" maxOccurs="unbounded" />
     </xs:sequence>
   </xs:complexType>
-  
+
+  <!--profile-->
   <xs:complexType name="Profile">
     <xs:complexContent>
       <xs:extension base="cs:EntryBase">
         <xs:sequence>
-          <xs:element name="characteristics" type="cs:CharacteristicList" />
+          <xs:element name="characteristics" type="cs:CharacteristicList" minOccurs="0" />
         </xs:sequence>
-        <xs:attribute name="profileTypeId" type="cs:idtype" use="required" />
-        <xs:attribute name="profileTypeName" type="xs:string" use="optional" />
+        <xs:attribute name="typeId" type="cs:idtype" use="required" />
+        <xs:attribute name="typeName" type="xs:string" />
       </xs:extension>
     </xs:complexContent>
   </xs:complexType>
@@ -124,12 +144,30 @@
     </xs:sequence>
   </xs:complexType>
 
-  <!--forceEntry-->
+  <!--info group-->
+  <xs:complexType name="InfoGroup">
+    <xs:complexContent>
+      <xs:extension base="cs:EntryBase">
+        <xs:sequence>
+          <xs:group ref="cs:InfoNodeGroup" />
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="InfoGroupList">
+    <xs:sequence>
+      <xs:element name="infoGroup" type="cs:InfoGroup" minOccurs="0" maxOccurs="unbounded" />
+    </xs:sequence>
+  </xs:complexType>
+
+  <!--category entry-->
   <xs:complexType name="CategoryEntry">
     <xs:complexContent>
       <xs:extension base="cs:EntryBase">
         <xs:sequence>
-          <xs:element name="constraints" type="cs:ConstraintList" />
+          <xs:element name="constraints" type="cs:ConstraintList" minOccurs="0" />
+          <xs:group ref="cs:InfoNodeGroup" />
         </xs:sequence>
       </xs:extension>
     </xs:complexContent>
@@ -141,13 +179,15 @@
     </xs:sequence>
   </xs:complexType>
 
+  <!--force entry-->
   <xs:complexType name="ForceEntry">
     <xs:complexContent>
       <xs:extension base="cs:EntryBase">
         <xs:sequence>
-          <xs:element name="constraints" type="cs:ConstraintList" />
-          <xs:element name="forceEntries" type="cs:ForceEntryList" />
-          <xs:element name="categoryLinks" type="cs:CategoryLinkList" />
+          <xs:element name="constraints" type="cs:ConstraintList" minOccurs="0" />
+          <xs:group ref="cs:InfoNodeGroup" />
+          <xs:element name="forceEntries" type="cs:ForceEntryList" minOccurs="0" />
+          <xs:element name="categoryLinks" type="cs:CategoryLinkList" minOccurs="0" />
         </xs:sequence>
       </xs:extension>
     </xs:complexContent>
@@ -162,7 +202,7 @@
   <!--costs-->
   <xs:complexType name="Cost">
     <xs:attribute name="name" type="xs:string" use="required" />
-    <xs:attribute name="costTypeId" type="cs:idtype" use="required" />
+    <xs:attribute name="typeId" type="cs:idtype" use="required" />
     <xs:attribute name="value" type="xs:decimal" use="required" />
   </xs:complexType>
 
@@ -185,29 +225,31 @@
     </xs:sequence>
   </xs:complexType>
 
-  <!--selectionEntry-->
-  <xs:simpleType name="SelectionEntryKind">
-    <xs:restriction base="xs:string">
-      <xs:enumeration value="upgrade"/>
-      <xs:enumeration value="model"/>
-      <xs:enumeration value="unit"/>
-    </xs:restriction>
-  </xs:simpleType>
-  
-  <xs:complexType name="SelectionEntry">
+
+  <!--selection entry base-->
+  <xs:complexType name="SelectionEntryBase">
     <xs:complexContent>
       <xs:extension base="cs:EntryBase">
         <xs:sequence>
-          <xs:element name="constraints" type="cs:ConstraintList" />
-          <xs:element name="categoryLinks" type="cs:CategoryLinkList" />
-          <xs:element name="selectionEntries" type="cs:SelectionEntryList" />
-          <xs:element name="selectionEntryGroups" type="cs:SelectionEntryGroupList" />
-          <xs:element name="entryLinks" type="cs:EntryLinkList" />
-          <xs:element name="costs" type="cs:CostList" />
+          <xs:element name="constraints" type="cs:ConstraintList" minOccurs="0" />
+          <xs:group ref="cs:InfoNodeGroup" />
+          <xs:element name="categoryLinks" type="cs:CategoryLinkList" minOccurs="0" />
+          <xs:element name="selectionEntries" type="cs:SelectionEntryList" minOccurs="0" />
+          <xs:element name="selectionEntryGroups" type="cs:SelectionEntryGroupList" minOccurs="0" />
+          <xs:element name="entryLinks" type="cs:EntryLinkList" minOccurs="0" />
         </xs:sequence>
-        <xs:attribute name="collective" type="xs:boolean" use="required" />
-        <!--below attribute is deprecated and will probably be removed in future-->
-        <xs:attribute name="categoryEntryId" type="cs:idtype" use="optional" />
+        <xs:attribute name="collective" type="xs:boolean" default="false" />
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  
+  <!--selection entry-->
+  <xs:complexType name="SelectionEntry">
+    <xs:complexContent>
+      <xs:extension base="cs:SelectionEntryBase">
+        <xs:sequence>
+          <xs:element name="costs" type="cs:CostList" minOccurs="0" />
+        </xs:sequence>
         <xs:attribute name="type" type="cs:SelectionEntryKind" use="required" />
       </xs:extension>
     </xs:complexContent>
@@ -219,19 +261,19 @@
     </xs:sequence>
   </xs:complexType>
 
-  <!--selectionEntryGroup-->
+  <xs:simpleType name="SelectionEntryKind">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="upgrade"/>
+      <xs:enumeration value="model"/>
+      <xs:enumeration value="unit"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <!--selection entry group-->
   <xs:complexType name="SelectionEntryGroup">
     <xs:complexContent>
-      <xs:extension base="cs:EntryBase">
-        <xs:sequence>
-          <xs:element name="constraints" type="cs:ConstraintList" />
-          <xs:element name="categoryLinks" type="cs:CategoryLinkList" />
-          <xs:element name="selectionEntries" type="cs:SelectionEntryList" />
-          <xs:element name="selectionEntryGroups" type="cs:SelectionEntryGroupList" />
-          <xs:element name="entryLinks" type="cs:EntryLinkList" />
-        </xs:sequence>
-        <xs:attribute name="collective" type="xs:boolean" use="required" />
-        <xs:attribute name="defaultSelectionEntryId" type="cs:idtype" use="optional" />
+      <xs:extension base="cs:SelectionEntryBase">
+        <xs:attribute name="defaultSelectionEntryId" type="cs:idtype" />
       </xs:extension>
     </xs:complexContent>
   </xs:complexType>
@@ -242,19 +284,12 @@
     </xs:sequence>
   </xs:complexType>
   
-  <!--infoLink-->
-  <xs:simpleType name="InfoLinkKind">
-    <xs:restriction base="xs:string">
-      <xs:enumeration value="profile" />
-      <xs:enumeration value="rule" />
-    </xs:restriction>
-  </xs:simpleType>
-
+  <!--info link-->
   <xs:complexType name="InfoLink">
     <xs:complexContent>
       <xs:extension base="cs:EntryBase">
         <xs:attribute name="targetId" type="cs:idtype" use="required" />
-        <xs:attribute name="type" type="cs:InfoLinkKind" />
+        <xs:attribute name="type" type="cs:InfoLinkKind" use="required" />
       </xs:extension>
     </xs:complexContent>
   </xs:complexType>
@@ -264,16 +299,45 @@
       <xs:element name="infoLink" type="cs:InfoLink" minOccurs="0" maxOccurs="unbounded" />
     </xs:sequence>
   </xs:complexType>
-  
-  <!--categoryLink-->
+
+  <xs:simpleType name="InfoLinkKind">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="infoGroup" />
+      <xs:enumeration value="profile" />
+      <xs:enumeration value="rule" />
+    </xs:restriction>
+  </xs:simpleType>
+
+  <!--catalogue link-->
+  <xs:complexType name="CatalogueLink">
+    <xs:attribute name="id" type="cs:idtype" use="required" />
+    <xs:attribute name="name" type="xs:string" use="required" />
+    <xs:attribute name="targetId" type="cs:idtype" use="required" />
+    <xs:attribute name="type" type="cs:CatalogueLinkKind" use="required" />
+  </xs:complexType>
+
+  <xs:complexType name="CatalogueLinkList">
+    <xs:sequence>
+      <xs:element name="catalogueLink" type="cs:CatalogueLink" minOccurs="0" maxOccurs="unbounded" />
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:simpleType name="CatalogueLinkKind">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="catalogue" />
+    </xs:restriction>
+  </xs:simpleType>
+
+  <!--category link-->
   <xs:complexType name="CategoryLink">
     <xs:complexContent>
       <xs:extension base="cs:EntryBase">
         <xs:sequence>
-          <xs:element name="constraints" type="cs:ConstraintList" />
+          <xs:element name="constraints" type="cs:ConstraintList" minOccurs="0" />
+          <xs:group ref="cs:InfoNodeGroup" />
         </xs:sequence>
         <xs:attribute name="targetId" type="cs:idtype" use="required" />
-        <xs:attribute name="primary" type="xs:boolean" use="required" />
+        <xs:attribute name="primary" type="xs:boolean" default="false" />
       </xs:extension>
     </xs:complexContent>
   </xs:complexType>
@@ -284,21 +348,16 @@
     </xs:sequence>
   </xs:complexType>
 
-  <!--entryLink-->
-  <xs:simpleType name="EntryLinkKind">
-    <xs:restriction base="xs:string">
-      <xs:enumeration value="selectionEntry"/>
-      <xs:enumeration value="selectionEntryGroup"/>
-    </xs:restriction>
-  </xs:simpleType>
-  
+  <!--entry link-->
   <xs:complexType name="EntryLink">
     <xs:complexContent>
       <xs:extension base="cs:EntryBase">
         <xs:sequence>
-          <xs:element name="constraints" type="cs:ConstraintList" />
-          <xs:element name="categoryLinks" type="cs:CategoryLinkList" />
+          <xs:element name="constraints" type="cs:ConstraintList" minOccurs="0" />
+          <xs:group ref="cs:InfoNodeGroup" />
+          <xs:element name="categoryLinks" type="cs:CategoryLinkList" minOccurs="0" />
         </xs:sequence>
+        <xs:attribute name="collective" type="xs:boolean" default="false" />
         <xs:attribute name="targetId" type="cs:idtype" use="required" />
         <xs:attribute name="type" type="cs:EntryLinkKind" use="required" />
       </xs:extension>
@@ -311,19 +370,25 @@
     </xs:sequence>
   </xs:complexType>
 
+  <xs:simpleType name="EntryLinkKind">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="selectionEntry"/>
+      <xs:enumeration value="selectionEntryGroup"/>
+    </xs:restriction>
+  </xs:simpleType>
+
   <!--selector base-->
   <xs:complexType name="SelectorBase">
-    <!--TODO is this enumeration?-->
     <xs:attribute name="field" type="xs:string" />
     <xs:attribute name="scope" type="xs:string" use="required" />
     <xs:attribute name="value" type="xs:decimal" use="required" />
-    <xs:attribute name="percentValue" type="xs:boolean" use="required" />
-    <xs:attribute name="shared" type="xs:boolean" use="required" />
-    <xs:attribute name="includeChildSelections" type="xs:boolean" use="required" />
-    <xs:attribute name="includeChildForces" type="xs:boolean" use="required" />
+    <xs:attribute name="percentValue" type="xs:boolean" default="false" />
+    <xs:attribute name="shared" type="xs:boolean" default="true" />
+    <xs:attribute name="includeChildSelections" type="xs:boolean" default="false" />
+    <xs:attribute name="includeChildForces" type="xs:boolean" default="false" />
   </xs:complexType>
 
-  <!--constraints-->
+  <!--constraint-->
   <xs:complexType name="Constraint">
     <xs:complexContent>
       <xs:extension base="cs:SelectorBase">
@@ -349,9 +414,9 @@
   <!--modifier-->
   <xs:complexType name="Modifier">
     <xs:sequence>
-      <xs:element name="repeats" type="cs:RepeatList" />
-      <xs:element name="conditions" type="cs:ConditionList" />
-      <xs:element name="conditionGroups" type="cs:ConditionGroupList" />
+      <xs:element name="repeats" type="cs:RepeatList" minOccurs="0" />
+      <xs:element name="conditions" type="cs:ConditionList" minOccurs="0" />
+      <xs:element name="conditionGroups" type="cs:ConditionGroupList" minOccurs="0" />
     </xs:sequence>
     <xs:attribute name="type" type="cs:ModifierKind" use="required" />
     <xs:attribute name="field" type="xs:string" use="required" />
@@ -372,6 +437,22 @@
       <xs:enumeration value="append" />
     </xs:restriction>
   </xs:simpleType>
+  
+  <!--modifier group-->
+  <xs:complexType name="ModifierGroup">
+    <xs:sequence>
+      <xs:element name="repeats" type="cs:RepeatList" minOccurs="0" />
+      <xs:element name="conditions" type="cs:ConditionList" minOccurs="0" />
+      <xs:element name="conditionGroups" type="cs:ConditionGroupList" minOccurs="0" />
+      <xs:element name="modifiers" type="cs:ModifierList" minOccurs="0" />
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="ModifierGroupList">
+    <xs:sequence>
+      <xs:element name="modifierGroup" type="cs:ModifierGroup" minOccurs="0" maxOccurs="unbounded" />
+    </xs:sequence>
+  </xs:complexType>
 
   <!--repeat-->
   <xs:complexType name="Repeat">
@@ -379,7 +460,7 @@
       <xs:extension base="cs:SelectorBase">
         <xs:attribute name="childId" type="cs:idtype" use="required" />
         <xs:attribute name="repeats" type="xs:positiveInteger" use="required" />
-        <xs:attribute name="roundUp" type="xs:boolean" use="required" />
+        <xs:attribute name="roundUp" type="xs:boolean" default="false" />
       </xs:extension>
     </xs:complexContent>
   </xs:complexType>
@@ -422,8 +503,8 @@
   <!--condition group-->
   <xs:complexType name="ConditionGroup">
     <xs:sequence>
-      <xs:element name="conditions" type="cs:ConditionList" />
-      <xs:element name="conditionGroups" type="cs:ConditionGroupList" />
+      <xs:element name="conditions" type="cs:ConditionList" minOccurs="0" />
+      <xs:element name="conditionGroups" type="cs:ConditionGroupList" minOccurs="0" />
     </xs:sequence>
     <xs:attribute name="type" type="cs:ConditionGroupKind" use="required" />
   </xs:complexType>
@@ -444,8 +525,8 @@
   <!--roster element base-->
   <xs:complexType name="RosterElementBase">
     <xs:sequence>
-      <xs:element name="rules" type="cs:RuleList" />
-      <xs:element name="profiles" type="cs:ProfileList" />
+      <xs:element name="rules" type="cs:RuleList" minOccurs="0" />
+      <xs:element name="profiles" type="cs:ProfileList" minOccurs="0" />
     </xs:sequence>
     <xs:attribute name="id" type="cs:idtype" use="required" />
     <xs:attribute name="name" type="xs:string" use="required" />
@@ -457,9 +538,10 @@
     <xs:complexContent>
       <xs:extension base="cs:RosterElementBase">
         <xs:sequence>
-          <xs:element name="selections" type="cs:SelectionList" />
-          <xs:element name="categories" type="cs:CategoryList" />
-          <xs:element name="forces" type="cs:ForceList" />
+          <xs:element name="selections" type="cs:SelectionList" minOccurs="0" />
+          <xs:element name="publications" type="cs:PublicationList" minOccurs="0" />
+          <xs:element name="categories" type="cs:CategoryList" minOccurs="0" />
+          <xs:element name="forces" type="cs:ForceList" minOccurs="0" />
         </xs:sequence>
         <xs:attribute name="catalogueId" type="cs:idtype" use="required" />
         <xs:attribute name="catalogueRevision" type="xs:nonNegativeInteger" />
@@ -478,6 +560,7 @@
   <xs:complexType name="Category">
     <xs:complexContent>
       <xs:extension base="cs:RosterElementBase">
+        <xs:attribute name="primary" type="xs:boolean" default="false" />
       </xs:extension>
     </xs:complexContent>
   </xs:complexType>
@@ -493,12 +576,12 @@
     <xs:complexContent>
       <xs:extension base="cs:RosterElementBase">
         <xs:sequence>
-          <xs:element name="selections" type="cs:SelectionList" />
-          <xs:element name="costs" type="cs:CostList" />
-          <xs:element name="categoryLinks" type="cs:CategoryLinkList" />
+          <xs:element name="selections" type="cs:SelectionList" minOccurs="0" />
+          <xs:element name="costs" type="cs:CostList" minOccurs="0" />
+          <xs:element name="categories" type="cs:CategoryList" minOccurs="0" />
         </xs:sequence>
-        <xs:attribute name="entryGroupId" type="cs:idtype" use="optional" />
-        <xs:attributeGroup ref="cs:BookReferenceAttGroup" />
+        <xs:attribute name="entryGroupId" type="cs:idtype" />
+        <xs:attributeGroup ref="cs:PublicationRefAttGroup" />
         <xs:attribute name="number" type="xs:nonNegativeInteger" use="required" />
         <xs:attribute name="type" type="cs:SelectionEntryKind" use="required" />
       </xs:extension>
@@ -511,43 +594,40 @@
     </xs:sequence>
   </xs:complexType>
   
-  <!--datablob-->
-
-  <xs:attributeGroup name="AuthorInfoAttGroup" >
-    <xs:attribute name="authorName" type="xs:string" use="optional" />
-    <xs:attribute name="authorContact" type="xs:string" use="optional" />
-    <xs:attribute name="authorUrl" type="xs:string" use="optional" />
-  </xs:attributeGroup>
-  
-  <xs:complexType name="Datablob">
+  <!--catalogue base-->
+  <xs:complexType name="CatalogueBase">
     <xs:sequence>
-      <xs:element name="profiles" type="cs:ProfileList" />
-      <xs:element name="rules" type="cs:RuleList" />
-      <xs:element name="infoLinks" type="cs:InfoLinkList" />
-      <xs:element name="costTypes" type="cs:CostTypeList" />
-      <xs:element name="profileTypes" type="cs:ProfileTypeList" />
-      <xs:element name="categoryEntries" type="cs:CategoryEntryList" />
-      <xs:element name="forceEntries" type="cs:ForceEntryList" />
-      <xs:element name="selectionEntries" type="cs:SelectionEntryList" />
-      <xs:element name="entryLinks" type="cs:EntryLinkList" />
-      <xs:element name="sharedSelectionEntries" type="cs:SelectionEntryList" />
-      <xs:element name="sharedSelectionEntryGroups" type="cs:SelectionEntryGroupList" />
-      <xs:element name="sharedRules" type="cs:RuleList" />
-      <xs:element name="sharedProfiles" type="cs:ProfileList" />
+      <xs:element name="publications" type="cs:PublicationList" minOccurs="0" />
+      <xs:element name="profiles" type="cs:ProfileList" minOccurs="0" />
+      <xs:element name="rules" type="cs:RuleList" minOccurs="0" />
+      <xs:element name="costTypes" type="cs:CostTypeList" minOccurs="0" />
+      <xs:element name="profileTypes" type="cs:ProfileTypeList" minOccurs="0" />
+      <xs:element name="categoryEntries" type="cs:CategoryEntryList" minOccurs="0" />
+      <xs:element name="forceEntries" type="cs:ForceEntryList" minOccurs="0" />
+      <xs:element name="selectionEntries" type="cs:SelectionEntryList" minOccurs="0" />
+      <xs:element name="entryLinks" type="cs:EntryLinkList" minOccurs="0" />
+      <xs:element name="infoLinks" type="cs:InfoLinkList" minOccurs="0" />
+      <xs:element name="sharedSelectionEntries" type="cs:SelectionEntryList" minOccurs="0" />
+      <xs:element name="sharedSelectionEntryGroups" type="cs:SelectionEntryGroupList" minOccurs="0" />
+      <xs:element name="sharedRules" type="cs:RuleList" minOccurs="0" />
+      <xs:element name="sharedProfiles" type="cs:ProfileList" minOccurs="0" />
+      <xs:element name="sharedInfoGroups" type="cs:InfoGroupList" minOccurs="0" />
     </xs:sequence>
     <xs:attribute name="id" type="cs:idtype" use="required" />
     <xs:attribute name="name" type="xs:string" use="required" />
-    <xs:attributeGroup ref="cs:BookReferenceAttGroup" />
     <xs:attribute name="revision" type="xs:nonNegativeInteger" />
     <xs:attribute name="battleScribeVersion" type="xs:string" />
-    <xs:attributeGroup ref="cs:AuthorInfoAttGroup" />
+    <xs:attribute name="authorName" type="xs:string" />
+    <xs:attribute name="authorContact" type="xs:string" />
+    <xs:attribute name="authorUrl" type="xs:string" />
   </xs:complexType>
 
+  <!--roster-->
   <xs:complexType name="Roster">
     <xs:sequence>
-      <xs:element name="costs" type="cs:CostList" />
-      <xs:element name="costLimits" type="cs:CostLimitList" />
-      <xs:element name="forces" type="cs:ForceList" />
+      <xs:element name="costs" type="cs:CostList" minOccurs="0" />
+      <xs:element name="costLimits" type="cs:CostLimitList" minOccurs="0" />
+      <xs:element name="forces" type="cs:ForceList" minOccurs="0" />
     </xs:sequence>
     <xs:attribute name="id" type="cs:idtype" use="required" />
     <xs:attribute name="name" type="xs:string" use="required" />
@@ -557,21 +637,28 @@
     <xs:attribute name="gameSystemRevision" type="xs:nonNegativeInteger" />
   </xs:complexType>
 
+  <!--catalogue-->
   <xs:complexType name="Catalogue">
     <xs:complexContent>
-      <xs:extension base="cs:Datablob">
+      <xs:extension base="cs:CatalogueBase">
+        <xs:sequence>
+          <xs:element name="catalogueLinks" type="cs:CatalogueLinkList" minOccurs="0" />
+        </xs:sequence>
+        <xs:attribute name="library" type="xs:boolean" default="false" />
         <xs:attribute name="gameSystemId" type="cs:idtype" use="required" />
         <xs:attribute name="gameSystemRevision" type="xs:nonNegativeInteger" />
       </xs:extension>
     </xs:complexContent>
   </xs:complexType>
 
+  <!--gamesystem-->
   <xs:complexType name="GameSystem">
     <xs:complexContent>
-      <xs:extension base="cs:Datablob" />
+      <xs:extension base="cs:CatalogueBase" />
     </xs:complexContent>
   </xs:complexType>
 
+  <!--root elements-->
   <xs:element name="roster" type="cs:Roster" />
   <xs:element name="catalogue" type="cs:Catalogue" />
   <xs:element name="gameSystem" type="cs:GameSystem" />
