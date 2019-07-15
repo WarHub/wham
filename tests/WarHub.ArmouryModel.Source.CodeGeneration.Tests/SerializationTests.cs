@@ -58,7 +58,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration.Tests
 
                 stream.Position = 0;
 
-                var deserialized = (ContainerCore.Builder) new XmlSerializer(typeof(ContainerCore.Builder)).Deserialize(stream);
+                var deserialized = (ContainerCore.Builder)new XmlSerializer(typeof(ContainerCore.Builder)).Deserialize(stream);
 
 
                 Assert.NotNull(deserialized);

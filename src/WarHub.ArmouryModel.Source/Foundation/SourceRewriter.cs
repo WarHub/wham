@@ -38,7 +38,7 @@ namespace WarHub.ArmouryModel.Source
 
         public virtual TNode VisitListElement<TNode>(TNode node) where TNode : SourceNode
         {
-            return (TNode) Visit(node);
+            return (TNode)Visit(node);
         }
     }
 }

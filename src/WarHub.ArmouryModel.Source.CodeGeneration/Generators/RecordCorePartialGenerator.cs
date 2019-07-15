@@ -73,7 +73,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                 MethodDeclaration(Descriptor.CoreType, Names.Update)
                 .AddModifiers(SyntaxKind.PublicKeyword)
                 .MutateIf(
-                    IsDerived && Descriptor.Entries.Length == Descriptor.DerivedEntries.Length, 
+                    IsDerived && Descriptor.Entries.Length == Descriptor.DerivedEntries.Length,
                     x => x.AddModifiers(SyntaxKind.NewKeyword))
                 .AddParameterListParameters(parameters)
                 .AddBodyStatements(
@@ -140,7 +140,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
 
         ParameterSyntax CreateParameter(CoreDescriptor.Entry property)
         {
-            return 
+            return
                 Parameter(property.Identifier)
                 .WithType(property.Type);
         }

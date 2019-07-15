@@ -30,7 +30,7 @@
         Characteristic, CharacteristicList,
         Cost, CostList,
         InfoGroup, InfoGroupList,
-        Profile, ProfileList, 
+        Profile, ProfileList,
         Publication, PublicationList,
         Rule, RuleList,
 

@@ -6,7 +6,7 @@
         public const string NodeSuffix = "Node";
         public const string ListNodeSuffix = "ListNode";
         public const string ListSuffix = "List";
-        public const string CoreSuffix = "Core"; 
+        public const string CoreSuffix = "Core";
         public const string Empty = "Empty";
         public const string Add = nameof(System.Collections.IList.Add);
         public const string AddRange = nameof(System.Collections.Generic.List<int>.AddRange);

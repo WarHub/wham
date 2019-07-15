@@ -39,7 +39,7 @@ namespace WarHub.ArmouryModel.Source.BattleScribe.Tests
             Serialize(readNode);
             var areXmlEqual = AreXmlEqual();
             Assert.True(areXmlEqual);
-            
+
             SourceNode Deserialize()
             {
                 using (var stream = File.OpenRead(input))

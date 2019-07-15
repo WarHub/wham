@@ -67,7 +67,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                 properties,
                 attributeLists);
 
-            
+
         }
 
         private static IEnumerable<INamedTypeSymbol> GetCustomBaseTypesAndSelf(INamedTypeSymbol self)
@@ -123,7 +123,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
             }
             return new CoreDescriptor.SimpleEntry(symbol, typeIdentifier, typeSyntax, attributes);
         }
-        
+
         private static IEnumerable<AttributeListSyntax> GetPropertyAttributeLists(PropertyDeclarationSyntax syntax)
         {
             var xmlAttributeNames = new[] { Names.XmlArray, Names.XmlAttribute, Names.XmlElement, Names.XmlText };

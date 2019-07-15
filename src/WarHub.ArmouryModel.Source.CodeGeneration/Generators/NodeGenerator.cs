@@ -147,7 +147,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
             }
             PropertyDeclarationSyntax CreateExplicitInterfaceCoreProperty()
             {
-                return 
+                return
                     PropertyDeclaration(
                         Descriptor.CoreType,
                         CorePropertyIdentifier)
@@ -195,7 +195,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                         AccessorDeclaration(SyntaxKind.GetAccessorDeclaration)
                         .WithSemicolonTokenDefault());
             }
-                
+
         }
 
         private IEnumerable<MethodDeclarationSyntax> GenerateMutatorMethods()
@@ -276,7 +276,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
             }
             IEnumerable<MethodDeclarationSyntax> WithForSimpleEntry(CoreDescriptor.SimpleEntry entry)
             {
-                yield return 
+                yield return
                     WithBasicPart(entry)
                     .AddParameterListParameters(
                         Parameter(entry.Identifier)

@@ -20,7 +20,7 @@ namespace WarHub.ArmouryModel.Workspaces.Gitree
             Info = info;
             // TOD validate configuration, handle not-found paths
             var documentFindingVisitor = new GitreeRootFindingVisitor(info, this);
-            Datafiles = 
+            Datafiles =
                 info.Configuration.SourceDirectories
                 .SelectMany(documentFindingVisitor.GetRootDocuments)
                 .Select(x => (IDatafileInfo)new GitreeDatafileInfo(x))

@@ -33,19 +33,19 @@ namespace WarHub.ArmouryModel.Workspaces.Gitree.Tests
             Assert.Collection(result.CharacteristicTypes, Assert.NotNull);
             Assert.Empty(result.ProfileTypes);
         }
-        
+
         [Fact]
         public void Visit_SeparatesSeparatable()
         {
             const string costTypeId = "costType1";
-            var catalogue = 
+            var catalogue =
                 NodeFactory.Catalogue("id", "name", "gst-id")
                 .AddCostTypes(NodeFactory.CostType(costTypeId, ""))
                 .AddRules(NodeFactory.Rule("ruleid", "rulename"));
             var rule = catalogue.Rules[0];
             var converter = new SourceNodeToGitreeConverter();
             var result = converter.Visit(catalogue);
-            
+
             Assert.Collection(
                 result.Datablob.Catalogues,
                 cat =>
@@ -73,7 +73,7 @@ namespace WarHub.ArmouryModel.Workspaces.Gitree.Tests
                     NodeFactory.Rule("ruleid2", RuleName));
             var converter = new SourceNodeToGitreeConverter();
             var result = converter.Visit(catalogue);
-            
+
             Assert.Collection(
                 result.Lists.Where(x => x.Items.Length > 0),
                 ruleList => Assert.Collection(

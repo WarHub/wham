@@ -276,7 +276,7 @@ namespace WarHub.ArmouryModel.Workspaces.BattleScribe
                 .Select(CreateEntry)
                 .ToNodeList();
             // TODO use BattleScribe version for DataIndex bs version
-            return 
+            return
                 NodeFactory.DataIndex(
                     ProjectToolset.BattleScribeDataIndexFormatVersion,
                     repoName, repoUrl, repositoryUrls: default, dataIndexEntries: entries);

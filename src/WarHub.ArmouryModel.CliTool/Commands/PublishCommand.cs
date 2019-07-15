@@ -242,7 +242,7 @@ namespace WarHub.ArmouryModel.CliTool.Commands
     {
         static PublishArtifactConverter()
         {
-            ArtifactsByName = 
+            ArtifactsByName =
                 typeof(PublishArtifact)
                 .GetFields(BindingFlags.Public | BindingFlags.Static)
                 .Select(x => (value: Enum.Parse<PublishArtifact>(x.Name), info: x))
@@ -265,7 +265,7 @@ namespace WarHub.ArmouryModel.CliTool.Commands
                 : throw new ValidationArgException($"Unable to parse {value} as a {nameof(PublishArtifact)}.");
         }
     }
-    
+
     public enum PublishArtifact
     {
         None,
