@@ -1,8 +1,5 @@
-﻿using System.Collections.Generic;
-using System.Collections.Immutable;
+﻿using System.Collections.Immutable;
 using System.IO;
-using System.Linq;
-using PowerArgs;
 using WarHub.ArmouryModel.ProjectModel;
 using WarHub.ArmouryModel.Source;
 using WarHub.ArmouryModel.Workspaces.BattleScribe;
@@ -12,22 +9,14 @@ namespace WarHub.ArmouryModel.CliTool.Commands
 {
     public class ConvertXmlCommand : CommandBase
     {
-        [ArgShortcut("s")]
-        [ArgDescription("Directory in which to look for convertible files."), ArgExistingDirectory]
-        [ArgDefaultValue(".")]
-        public string Source { get; set; }
-
-        [ArgShortcut("d")]
-        [ArgDescription("Directory into which to save conversion results.")]
-        [ArgDefaultValue(".")]
-        public string Destination { get; set; }
-
-        protected override void MainCore()
+        public void Run(DirectoryInfo source, DirectoryInfo output, string verbosity)
         {
-            var sourceDir = ResolveSourceDir();
-            var destDir = ResolveDestinationDir();
-            var configInfo = CreateDestinationProjectConfig(sourceDir, destDir);
-            var workspace = CreateXmlWorkspace(sourceDir);
+            SetupLogger(verbosity);
+            Log.Debug("Source resolved to {Source}", source);
+            output.Create();
+            Log.Debug("Destination directory resolved to {Destination}", output);
+            var configInfo = CreateDestinationProjectConfig(source, output);
+            var workspace = CreateXmlWorkspace(source);
             configInfo.WriteFile();
             Log.Information("Project configuration saved as {ConfigFile}", configInfo.Filepath);
 
@@ -75,21 +64,6 @@ namespace WarHub.ArmouryModel.CliTool.Commands
             }
 
             return workspace;
-        }
-
-        private DirectoryInfo ResolveDestinationDir()
-        {
-            var destDir = new DirectoryInfo(Destination ?? ".");
-            destDir.Create();
-            Log.Debug("Destination directory resolved to {Destination}", destDir);
-            return destDir;
-        }
-
-        private DirectoryInfo ResolveSourceDir()
-        {
-            var sourceDir = Source != null ? new DirectoryInfo(Source) : new DirectoryInfo(".");
-            Log.Debug("Source resolved to {Source}", sourceDir);
-            return sourceDir;
         }
 
         private class ConvertedGitreeProjectConfigurationProvider : GitreeProjectConfigurationProvider
