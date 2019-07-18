@@ -10,7 +10,7 @@ variables:
   DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
 
 steps:
-- task: UseDotNet@2
+- task: DotNetCoreInstaller@1
   inputs:
     version: '2.2.205'
 
