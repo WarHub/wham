@@ -32,13 +32,13 @@ steps:
   displayName: Build solution
   inputs:
     command: build
-    arguments: --no-restore
+    arguments: --no-restore -c $(BuildConfiguration)
 
 - task: DotNetCoreCLI@2
   displayName: Run tests
   inputs:
     command: test
-    arguments: -v n --no-build -c $(BuildConfiguration)
+    arguments: --no-build -c $(BuildConfiguration)
 
 - task: CopyFiles@1
   displayName: Collecting packages
