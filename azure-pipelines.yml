@@ -18,7 +18,7 @@ steps:
     dotnet tool install --tool-path . nbgv
     .\nbgv cloud -p src
   displayName: Set build number
-  condition: ne(variables['system.pullrequest.isfork'], true)
+  condition: and(succeeded(), ne(variables['system.pullrequest.isfork'], true))
 
 - script: dotnet --info
   displayName: Show dotnet SDK info
