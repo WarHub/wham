@@ -1,13 +1,9 @@
-﻿using System;
-using PowerArgs;
-using Serilog;
+﻿using Serilog;
 using Serilog.Core;
-using Serilog.Events;
 using Serilog.Sinks.SystemConsole.Themes;
 
 namespace WarHub.ArmouryModel.CliTool.Commands
 {
-    [ArgEnforceCase]
     public abstract class CommandBase
     {
         protected Logger Log { get; private set; }

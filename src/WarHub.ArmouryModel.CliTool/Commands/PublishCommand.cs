@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
-using PowerArgs;
 using WarHub.ArmouryModel.CliTool.Utilities;
 using WarHub.ArmouryModel.ProjectModel;
 using WarHub.ArmouryModel.Source;
@@ -32,15 +31,10 @@ namespace WarHub.ArmouryModel.CliTool.Commands
         public enum ArtifactType
         {
             None,
-            [ArgShortcut("xml")]
             XmlDatafiles,
-            [ArgShortcut("zip")]
             ZippedXmlDatafiles,
-            [ArgShortcut("index")]
             Index,
-            [ArgShortcut("bsi")]
             ZippedIndex,
-            [ArgShortcut("bsr")]
             RepoDistribution
         }
 
