@@ -137,7 +137,7 @@ namespace WarHub.ArmouryModel.Workspaces.Gitree
 
         /// <summary>
         /// All of visited node's children <see cref="ListNode{TChild}"/>s
-        /// of <see cref="SeparatableKinds"/> are rewritten as empty.
+        /// of <see cref="Gitree.SeparatableKinds"/> are rewritten as empty.
         /// These lists' children are not visited.
         /// </summary>
         public class SeparatableChildrenRemover : SourceRewriter

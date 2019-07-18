@@ -4,7 +4,6 @@
     <OutputType>Exe</OutputType>
     <TargetFramework>netcoreapp2.1</TargetFramework>
     <PackAsTool>true</PackAsTool>
-    <LangVersion>latest</LangVersion>
     <AssemblyName>wham</AssemblyName>
     <Description>.NET Core Global Tool for managing, converting and publishing datafiles for WarHub.ArmouryModel (wham). .NET Core SDK v2.1+ required.</Description>
   </PropertyGroup>

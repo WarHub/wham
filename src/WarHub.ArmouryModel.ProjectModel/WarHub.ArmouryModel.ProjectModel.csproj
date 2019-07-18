@@ -2,7 +2,6 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <LangVersion>7.2</LangVersion>
     <Description>This library provides abstract API to operate on wham workspaces and their configuration (.whamproj configuration files). Types provided:
 * IDatafileInfo (and DatafileInfo)
 * IProjectConfigurationProvider (and ProjectConfigurationProviderBase, and Extensions)
