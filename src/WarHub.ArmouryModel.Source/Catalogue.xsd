@@ -598,14 +598,13 @@
   <xs:complexType name="CatalogueBase">
     <xs:sequence>
       <xs:element name="publications" type="cs:PublicationList" minOccurs="0" />
-      <xs:element name="profiles" type="cs:ProfileList" minOccurs="0" />
-      <xs:element name="rules" type="cs:RuleList" minOccurs="0" />
       <xs:element name="costTypes" type="cs:CostTypeList" minOccurs="0" />
       <xs:element name="profileTypes" type="cs:ProfileTypeList" minOccurs="0" />
       <xs:element name="categoryEntries" type="cs:CategoryEntryList" minOccurs="0" />
       <xs:element name="forceEntries" type="cs:ForceEntryList" minOccurs="0" />
       <xs:element name="selectionEntries" type="cs:SelectionEntryList" minOccurs="0" />
       <xs:element name="entryLinks" type="cs:EntryLinkList" minOccurs="0" />
+      <xs:element name="rules" type="cs:RuleList" minOccurs="0" />
       <xs:element name="infoLinks" type="cs:InfoLinkList" minOccurs="0" />
       <xs:element name="sharedSelectionEntries" type="cs:SelectionEntryList" minOccurs="0" />
       <xs:element name="sharedSelectionEntryGroups" type="cs:SelectionEntryGroupList" minOccurs="0" />

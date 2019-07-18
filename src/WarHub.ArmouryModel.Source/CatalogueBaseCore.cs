@@ -30,12 +30,6 @@ namespace WarHub.ArmouryModel.Source
         [XmlArray("publications")]
         public ImmutableArray<PublicationCore> Publications { get; }
 
-        [XmlArray("profiles")]
-        public ImmutableArray<ProfileCore> Profiles { get; }
-
-        [XmlArray("rules")]
-        public ImmutableArray<RuleCore> Rules { get; }
-
         [XmlArray("costTypes")]
         public ImmutableArray<CostTypeCore> CostTypes { get; }
 
@@ -53,6 +47,9 @@ namespace WarHub.ArmouryModel.Source
 
         [XmlArray("entryLinks")]
         public ImmutableArray<EntryLinkCore> EntryLinks { get; }
+
+        [XmlArray("rules")]
+        public ImmutableArray<RuleCore> Rules { get; }
 
         [XmlArray("infoLinks")]
         public ImmutableArray<InfoLinkCore> InfoLinks { get; }
