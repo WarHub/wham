@@ -15,9 +15,9 @@
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <WarningsAsErrors Condition=" '$(Configuration)' == Release ">true</WarningsAsErrors>
     <GeneratePackageOnBuild Condition=" '$(Configuration)' == 'Release' ">true</GeneratePackageOnBuild>
-    <BaseIntermediateOutputPath>$(MSBuildThisFileDirectory)../obj/$(MSBuildProjectName)/</BaseIntermediateOutputPath>
-    <OutputPath>$(MSBuildThisFileDirectory)../bin/$(MSBuildProjectName)/$(Configuration)/</OutputPath>
-    <PackageOutputPath>$(MSBuildThisFileDirectory)../bin/Packages/$(Configuration)/</PackageOutputPath>
+    <BaseIntermediateOutputPath>$(MSBuildThisFileDirectory)obj/$(MSBuildProjectName)/</BaseIntermediateOutputPath>
+    <OutputPath>$(MSBuildThisFileDirectory)bin/$(MSBuildProjectName)/$(Configuration)/</OutputPath>
+    <PackageOutputPath>$(MSBuildThisFileDirectory)bin/Packages/$(Configuration)/</PackageOutputPath>
     <IsTestingOnlyProject>$(MSBuildProjectName.Contains('Test'))</IsTestingOnlyProject>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
