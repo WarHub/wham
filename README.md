@@ -2,11 +2,11 @@
 
 Foundational .NET library for wargame datafile tools, written in C#.
 
-[![NuGet package](https://img.shields.io/nuget/v/WarHub.ArmouryModel.svg)](https://www.nuget.org/packages?q=warhub+armourymodel)
+[![NuGet package](https://img.shields.io/nuget/v/WarHub.ArmouryModel.Source.svg)](https://www.nuget.org/packages?q=wham)
 [![Build Status](https://dev.azure.com/warhub/wham/_apis/build/status/WarHub.wham?branchName=master)](https://dev.azure.com/warhub/wham/_build/latest?definitionId=1&branchName=master)
 [![MyGet package](https://img.shields.io/myget/warhub/v/WarHub.ArmouryModel.Source.svg?label=myget-ci)](https://www.myget.org/feed/Packages/warhub)
 [![Join the chat at gitter!](https://img.shields.io/gitter/room/WarHub/wham.svg)](https://gitter.im/WarHub/wham?utm_source=badge&utm_medium=badge&utm_content=badge)
-[![License](https://img.shields.io/github/license/WarHub/wham.svg)](https://github.com/WarHub/wham/blob/master/LICENSE)
+[![License](https://img.shields.io/github/license/WarHub/wham.svg)](https://github.com/WarHub/wham/blob/master/LICENSE.md)
 
 NuGet packages: [WarHub NuGet](https://www.nuget.org/profiles/warhub)
 
@@ -44,9 +44,8 @@ To install `wham` command line tool:
 1. please install [`.NET Core SDK` v2.1 or higher](https://www.microsoft.com/net/download)
   for your platform.
 2. In your shell/command line run
-  `dotnet tool install -g --add-source https://www.myget.org/F/warhub/api/v3/index.json
- --version 0.5.10-alpha wham`
-3. You can check if the tool is available: `wham version` should show what version exactly is running.
+  `dotnet tool install -g --version 0.6.8-beta-e10d0437a4 wham`
+3. You can check if the tool is available: `wham --version` should show what version exactly is running.
 
 This will install preview of `wham` CLI tool in your user-space (not system global),
 and so it doesn't require root/admin permissions. (Although installation of .NET Core SDK does).
@@ -68,32 +67,9 @@ and so it doesn't require root/admin permissions. (Although installation of .NET
 
 You can always run `wham -?` or `wham -h` or `wham [action] -?` to get help about the tool/action.
 
-* `wham publish [artifacts] [options]` publishes distribution files. Available artifact types
-  (when building multiple, separate with comma and no spaces e.g. `wham publish bsr,zip`):
-    * `bsr` - zipped datafile container with index;
-    * `index` - `index.xml` DataIndex file;
-    * `bsi` - `index.bsi` zipped DataIndex file;
-    * `xml` - `.cat`/`.gst` xml datafiles;
-    * `zip` - `.catz`/`.gstz` zipped xml datafiles.
-   
-  This command outputs generated artifacts in the `artifacts/` directory by default,
-  unless the `.whamproj` configuration specifies otherwise. Both can be overridden 
-  by using `-d <Destination>` option, passing another directory path.
-* `wham convertxml [-s <Source>] [-d <Destination>]` converts xml workspace
-  into *gitree* workspace. Parameters are directory paths
-  (these default to working directory):
-    * `Source` - containing XML/BattleScribe format workspace
-    * `Destination` - where the *gitree* workspace will be rooted (and `.whamproj` written).
-* `wham convertgitree -s <Source> -d <Destination>` converts *gitree* workspace
-  into xml/BattleScribe workspace model. Required parameters are directory paths:
-    * `Source` - where the *gitree* workspace is rooted (and `.whamproj` exists)
-      *or* the path to the `.whamproj` file directly.
-    * `Destination` - directory to write XML/BattleScribe workspace format files in.
-
 ## Development
 
-The development branch is the `master` branch.
-`release` is for stable releases which are pushed to NuGet.
+The development branch is the `master` branch. Stable releases are marked via `vX.Y.Z` tags.
 This project uses `Nerdbank.GitVersioning` package that automatically generates version numbers
 for assemblies and packages from git tree. It won't work if the git clone is *shallow* or otherwise
 incomplete.
@@ -104,7 +80,7 @@ The library is MIT licensed (license in repo root).
 Created by Amadeusz Sadowski ([**@amis92**](https://github.com/amis92)).
 [**BattleScribe**](https://battlescribe.net/) name is used without permission under fair-use laws.
 [`CodeGeneration.Roslyn`][CodeGenRoslyn] is created by Andrew Arnott. Thanks!
-Continuous integration is provided by AppVeyor. Much appreciated!
+Continuous integration is provided by Azure DevOps. Much appreciated!
 
 
 [CodeGenRoslyn]: https://github.com/AArnott/CodeGeneration.Roslyn
