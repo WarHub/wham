@@ -45,21 +45,21 @@ namespace WarHub.ArmouryModel.CliTool.Commands
         }
 
         public void Run(
-            IReadOnlyCollection<string> Artifacts,
-            DirectoryInfo Source,
-            DirectoryInfo Output,
-            Uri Url,
-            IReadOnlyCollection<Uri> AdditionalUrls,
-            bool UrlOnlyIndex,
-            string RepoName,
-            string Filename,
+            IEnumerable<string> artifacts,
+            DirectoryInfo source,
+            DirectoryInfo output,
+            Uri url,
+            IEnumerable<Uri> additionalUrls,
+            bool urlOnlyIndex,
+            string repoName,
+            string filename,
             string verbosity)
         {
             SetupLogger(verbosity);
-            var configInfo = new AutoProjectConfigurationProvider().Create(Source.FullName);
+            var configInfo = new AutoProjectConfigurationProvider().Create(source.FullName);
             Log.Debug("Using configuration: {@Config}", configInfo);
 
-            var artifactTypes = Artifacts
+            var artifactTypes = artifacts
                 .Distinct()
                 .Select(ParseArtifactType)
                 .Where(x => x != ArtifactType.None)
@@ -69,31 +69,31 @@ namespace WarHub.ArmouryModel.CliTool.Commands
                 Log.Information("Nothing to do.");
                 return;
             }
-            Output = Output ?? new DirectoryInfo(configInfo.Configuration.OutputPath);
-            Log.Debug("Writing artifacts to: {Destination}", Output);
-            Output.Create();
+            output = output ?? new DirectoryInfo(configInfo.Configuration.OutputPath);
+            Log.Debug("Writing artifacts to: {Destination}", output);
+            output.Create();
 
             Log.Debug("Loading workspace...");
             var workspace = ReadWorkspaceFromConfig(configInfo);
             Log.Debug(
                 "Workspace loaded. {DatafileCount} datafiles discovered.",
-                workspace.Datafiles.Where(x => x.DataKind.IsDataCatalogueKind()).Count());
+                workspace.Datafiles.Count(x => x.DataKind.IsDataCatalogueKind()));
 
-            var resolvedRepoName = string.IsNullOrWhiteSpace(RepoName) ? GetRepoNameFallback(workspace) : RepoName;
+            var resolvedRepoName = string.IsNullOrWhiteSpace(repoName) ? GetRepoNameFallback(workspace) : repoName;
             Log.Debug("Repository name used is: {RepoName}", resolvedRepoName);
 
-            var resolvedFilename = string.IsNullOrWhiteSpace(Filename) ? Source.Name : Filename;
+            var resolvedFilename = string.IsNullOrWhiteSpace(filename) ? source.Name : filename;
 
             var options = new Options.Builder
             {
                 Artifacts = artifactTypes,
-                Source = Source,
-                Output = Output,
-                Url = Url,
-                AdditionalUrls = AdditionalUrls?.ToImmutableArray() ?? ImmutableArray<Uri>.Empty,
+                Source = source,
+                Output = output,
+                Url = url,
+                AdditionalUrls = additionalUrls?.ToImmutableArray() ?? ImmutableArray<Uri>.Empty,
                 RepoName = resolvedRepoName,
                 Filename = resolvedFilename,
-                UrlOnlyIndex = UrlOnlyIndex
+                UrlOnlyIndex = urlOnlyIndex
             }.ToImmutable();
 
             foreach (var artifactType in options.Artifacts)
