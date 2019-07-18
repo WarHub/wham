@@ -1,5 +1,4 @@
 ﻿using System.IO;
-using PowerArgs;
 using WarHub.ArmouryModel.Source.BattleScribe;
 using WarHub.ArmouryModel.Workspaces.BattleScribe;
 using WarHub.ArmouryModel.Workspaces.Gitree;
@@ -8,21 +7,13 @@ namespace WarHub.ArmouryModel.CliTool.Commands
 {
     public class ConvertGitreeCommand : CommandBase
     {
-        [ArgShortcut("s")]
-        [ArgDescription("Directory in which to look for convertible files."), ArgExistingDirectory, ArgRequired]
-        public string Source { get; set; }
-
-        [ArgShortcut("d")]
-        [ArgDescription("Directory into which to save conversion results"), ArgRequired]
-        public string Destination { get; set; }
-
-        protected override void MainCore()
+        public void Run(DirectoryInfo source, DirectoryInfo output, string verbosity)
         {
-            var workspace = GitreeWorkspace.CreateFromPath(Source);
+            SetupLogger(verbosity);
+            var workspace = GitreeWorkspace.CreateFromPath(source.FullName);
             Log.Debug("Source resolved to {RootPath}", workspace.RootPath);
-            var destDir = new DirectoryInfo(Destination);
-            Log.Debug("Destination resolved to {Destination}", destDir);
-            destDir.Create();
+            Log.Debug("Destination resolved to {Destination}", output);
+            output.Create();
             Log.Information("Converting...");
             foreach (var datafile in workspace.Datafiles)
             {
@@ -32,7 +23,7 @@ namespace WarHub.ArmouryModel.CliTool.Commands
                 var node = datafile.GetData();
                 Log.Verbose("- Loading finished. Saving XML file...");
                 var extension = node.GetXmlDocumentKindOrUnknown().GetXmlFileExtension();
-                var filename = Path.Combine(destDir.FullName, fileDir.Name + extension);
+                var filename = Path.Combine(output.FullName, fileDir.Name + extension);
                 using (var fileStream = File.Create(filename))
                 {
                     node.Serialize(fileStream);

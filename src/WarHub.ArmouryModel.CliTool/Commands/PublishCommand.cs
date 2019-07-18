@@ -3,8 +3,6 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
-using System.Reflection;
-using PowerArgs;
 using WarHub.ArmouryModel.CliTool.Utilities;
 using WarHub.ArmouryModel.ProjectModel;
 using WarHub.ArmouryModel.Source;
@@ -13,127 +11,131 @@ using WarHub.ArmouryModel.Workspaces.Gitree;
 
 namespace WarHub.ArmouryModel.CliTool.Commands
 {
-    public class PublishCommand : CommandBase
+    public partial class PublishCommand : CommandBase
     {
-        [ArgShortcut("a"), ArgPosition(1)]
-        [ArgDefaultValue("bsr")]
-        [ArgDescription(
-            "Kinds of artifacts to publish to output (multiple values allowed)." +
-            " Available values: xml, zip, index, bsi, bsr." +
-            " XML - uncompressed cat/gst XML files;" +
-            " ZIP - zipped catz/gstz XML files;" +
-            " INDEX - index.xml datafile index for hosting on the web;" +
-            " BSI - index.bsi zipped datafile index for hosting on the web;" +
-            " BSR - zipped cat/gst datafile container with index.")]
-        public List<PublishArtifact> Artifacts { get; set; }
+        internal static readonly string[] ArtifactNames = new[] { "xml", "zip", "index", "bsi", "bsr" };
 
-        [ArgShortcut("s")]
-        [ArgDescription("Directory in which to look for project file or datafiles.")]
-        [DefaultValue("."), ArgExistingDirectory]
-        public string Source { get; set; }
-
-        [ArgShortcut("d")]
-        [ArgDescription("Directory to save artifacts to. Overrides default read from .whamproj file.")]
-        public string Destination { get; set; }
-
-        [ArgShortcut("url")]
-        [ArgDescription(
-            "Repository url that gets included in index files" +
-            " and repo distribution (.bsr).")]
-        public string RepoUrl { get; set; }
-
-        [ArgShortcut("additional-urls"), ArgShortcut(ArgShortcutPolicy.ShortcutsOnly)]
-        [ArgDescription(
-            "Repository urls that will get added to index files" +
-            " (doesn't impact indexes in .bsr repo distributions).")]
-        public List<string> AdditionalRepositoryUrls { get; set; }
-
-        [ArgShortcut("no-index-datafiles"), ArgShortcut(ArgShortcutPolicy.ShortcutsOnly)]
-        [ArgDescription(
-            "Remove all data index entries from published indexes" +
-            " (doesn't impact indexes in .bsr repo distributions).")]
-        public bool NoDatafilesInIndex { get; set; }
-
-        [ArgShortcut("name")]
-        [ArgDescription(
-            "Repository name that gets included in index files and repo distribution (.bsr)." +
-            " By default name of the game system file is used, or parent folder name if no game system.")]
-        public string RepoName { get; set; }
-
-        [ArgShortcut("bsr-filename"), ArgShortcut(ArgShortcutPolicy.ShortcutsOnly)]
-        [ArgDescription(
-            "Filename (without extension) for the repo distribution." +
-            " By default parent folder name is used.")]
-        public string BsrFilename { get; set; }
-
-        [ArgShortcut("i")]
-        [ArgDescription("Filename (without extension) for the index files (.xml and .bsi).")]
-        [ArgDefaultValue("index")]
-        public string IndexFilename { get; set; }
-
-        protected override void MainCore()
+        [Record]
+        private partial class Options
         {
-            var configInfo = new AutoProjectConfigurationProvider().Create(Source);
+            public ImmutableArray<ArtifactType> Artifacts { get; }
+            public DirectoryInfo Source { get; }
+            public DirectoryInfo Output { get; }
+            public Uri Url { get; }
+            public ImmutableArray<Uri> AdditionalUrls { get; }
+            public bool UrlOnlyIndex { get; }
+            public string RepoName { get; }
+            public string Filename { get; }
+        }
+
+        public enum ArtifactType
+        {
+            None,
+            XmlDatafiles,
+            ZippedXmlDatafiles,
+            Index,
+            ZippedIndex,
+            RepoDistribution
+        }
+
+        public void Run(
+            IEnumerable<string> artifacts,
+            DirectoryInfo source,
+            DirectoryInfo output,
+            Uri url,
+            IEnumerable<Uri> additionalUrls,
+            bool urlOnlyIndex,
+            string repoName,
+            string filename,
+            string verbosity)
+        {
+            SetupLogger(verbosity);
+            var configInfo = new AutoProjectConfigurationProvider().Create(source.FullName);
             Log.Debug("Using configuration: {@Config}", configInfo);
-            Destination = Destination ?? configInfo.Configuration.OutputPath;
-            Log.Debug("Writing artifacts to: {Destination}", Destination);
+
+            var artifactTypes = artifacts
+                .Distinct()
+                .Select(ParseArtifactType)
+                .Where(x => x != ArtifactType.None)
+                .ToImmutableArray();
+            if (artifactTypes.Length == 0)
+            {
+                Log.Information("Nothing to do.");
+                return;
+            }
+            output = output ?? new DirectoryInfo(configInfo.Configuration.OutputPath);
+            Log.Debug("Writing artifacts to: {Destination}", output);
+            output.Create();
+
             Log.Debug("Loading workspace...");
             var workspace = ReadWorkspaceFromConfig(configInfo);
             Log.Debug(
                 "Workspace loaded. {DatafileCount} datafiles discovered.",
-                workspace.Datafiles.Where(x => x.DataKind.IsDataCatalogueKind()).Count());
-            if (string.IsNullOrWhiteSpace(RepoName))
-            {
-                var gst = (GamesystemNode)workspace.Datafiles
-                    .FirstOrDefault(x => x.DataKind == SourceKind.Gamesystem)
-                    ?.GetData();
-                RepoName = gst?.Name ?? configInfo.GetDirectoryInfo().Name;
-            }
-            Log.Debug("Repository name used is: {RepoName}", RepoName);
+                workspace.Datafiles.Count(x => x.DataKind.IsDataCatalogueKind()));
 
-            foreach (var artifactType in Artifacts.Distinct() ?? Enumerable.Empty<PublishArtifact>())
+            var resolvedRepoName = string.IsNullOrWhiteSpace(repoName) ? GetRepoNameFallback(workspace) : repoName;
+            Log.Debug("Repository name used is: {RepoName}", resolvedRepoName);
+
+            var resolvedFilename = string.IsNullOrWhiteSpace(filename) ? source.Name : filename;
+
+            var options = new Options.Builder
             {
-                CreateArtifact(artifactType, workspace);
+                Artifacts = artifactTypes,
+                Source = source,
+                Output = output,
+                Url = url,
+                AdditionalUrls = additionalUrls?.ToImmutableArray() ?? ImmutableArray<Uri>.Empty,
+                RepoName = resolvedRepoName,
+                Filename = resolvedFilename,
+                UrlOnlyIndex = urlOnlyIndex
+            }.ToImmutable();
+
+            foreach (var artifactType in options.Artifacts)
+            {
+                CreateArtifact(workspace, options, artifactType);
             }
             Log.Verbose("All done.");
         }
 
-        private void CreateArtifact(PublishArtifact artifactType, IWorkspace workspace)
+        private void CreateArtifact(IWorkspace workspace, Options options, ArtifactType artifactType)
         {
-            if (artifactType == PublishArtifact.None)
-            {
-                return;
-            }
-            Directory.CreateDirectory(Destination);
             Log.Information("Creating artifact: {Artifact}", artifactType);
             switch (artifactType)
             {
-                case PublishArtifact.XmlDatafiles:
-                    PublishXml(workspace);
+                case ArtifactType.XmlDatafiles:
+                    PublishXml(workspace, options);
                     break;
-                case PublishArtifact.ZippedXmlDatafiles:
-                    PublishXmlZipped(workspace);
+                case ArtifactType.ZippedXmlDatafiles:
+                    PublishXmlZipped(workspace, options);
                     break;
-                case PublishArtifact.Index:
-                    PublishIndex(workspace);
+                case ArtifactType.Index:
+                    PublishIndex(workspace, options);
                     break;
-                case PublishArtifact.ZippedIndex:
-                    PublishIndexZipped(workspace);
+                case ArtifactType.ZippedIndex:
+                    PublishIndexZipped(workspace, options);
                     break;
-                case PublishArtifact.RepoDistribution:
-                    PublishArtifactRepoDistribution(workspace);
+                case ArtifactType.RepoDistribution:
+                    PublishArtifactRepoDistribution(workspace, options);
                     break;
                 default:
                     break;
             }
         }
 
-        private void PublishArtifactRepoDistribution(IWorkspace workspace)
+        private static string GetRepoNameFallback(IWorkspace workspace)
         {
-            var distro = workspace.CreateRepoDistribution(RepoName, RepoUrl);
+            var gst = (GamesystemNode)workspace.Datafiles
+                .FirstOrDefault(x => x.DataKind == SourceKind.Gamesystem)
+                ?.GetData();
+            return gst?.Name ?? workspace.Info.GetDirectoryInfo().Name;
+        }
+
+        private void PublishArtifactRepoDistribution(IWorkspace workspace, Options options)
+        {
+            var distro = workspace.CreateRepoDistribution(options.RepoName, options.Url?.AbsoluteUri);
             TryCatchLogError(
                 "bsr",
-                () => GetRepoDistributionFilepath(distro),
+                () => Path.Combine(options.Output.FullName, options.Filename + XmlFileExtensions.RepoDistribution),
                 filepath =>
                 {
                     using (var stream = File.OpenWrite(filepath))
@@ -143,57 +145,54 @@ namespace WarHub.ArmouryModel.CliTool.Commands
                 });
         }
 
-        private void PublishIndexZipped(IWorkspace workspace)
+        private void PublishIndexZipped(IWorkspace workspace, Options options)
         {
-            var dataIndex = CreateIndex(workspace);
-            var filename = !string.IsNullOrWhiteSpace(IndexFilename) ? IndexFilename : "index";
-            var filepath = filename + XmlFileExtensions.DataIndexZipped;
-            var datafile = DatafileInfo.Create(XmlFileExtensions.DataIndexFileName, dataIndex);
+            var dataIndex = CreateIndex(workspace, options);
+            var datafile = DatafileInfo.Create(options.Filename + XmlFileExtensions.DataIndexZipped, dataIndex);
             TryCatchLogError(
-                filepath,
-                () => Path.Combine(Destination, filepath),
+                datafile.Filepath,
+                () => Path.Combine(options.Output.FullName, datafile.Filepath),
                 datafile.WriteXmlZippedFile);
         }
 
-        private void PublishIndex(IWorkspace workspace)
+        private void PublishIndex(IWorkspace workspace, Options options)
         {
-            var dataIndex = CreateIndex(workspace);
-            var filename = !string.IsNullOrWhiteSpace(IndexFilename) ? IndexFilename : "index";
-            var datafile = DatafileInfo.Create(filename + XmlFileExtensions.DataIndex, dataIndex);
+            var dataIndex = CreateIndex(workspace, options);
+            var datafile = DatafileInfo.Create(options.Filename + XmlFileExtensions.DataIndex, dataIndex);
             TryCatchLogError(
                 datafile.Filepath,
-                () => Path.Combine(Destination, datafile.Filepath),
+                () => Path.Combine(options.Output.FullName, datafile.Filepath),
                 datafile.WriteXmlFile);
         }
 
-        private DataIndexNode CreateIndex(IWorkspace workspace)
+        private DataIndexNode CreateIndex(IWorkspace workspace, Options options)
         {
-            var dataIndex = workspace.CreateDataIndex(RepoName, RepoUrl, x => x.GetXmlZippedFilename());
-            dataIndex = NoDatafilesInIndex ? dataIndex.WithDataIndexEntries() : dataIndex;
-            dataIndex = AdditionalRepositoryUrls?.Count > 0
-                ? dataIndex.AddRepositoryUrls(AdditionalRepositoryUrls.Select(NodeFactory.DataIndexRepositoryUrl))
+            var dataIndex = workspace.CreateDataIndex(options.RepoName, options.Url?.AbsoluteUri, x => x.GetXmlZippedFilename());
+            dataIndex = options.UrlOnlyIndex ? dataIndex.WithDataIndexEntries() : dataIndex;
+            dataIndex = options.AdditionalUrls.Length > 0
+                ? dataIndex.AddRepositoryUrls(options.AdditionalUrls.Select(x => NodeFactory.DataIndexRepositoryUrl(x.AbsoluteUri)))
                 : dataIndex;
             return dataIndex;
         }
 
-        private void PublishXmlZipped(IWorkspace workspace)
+        private void PublishXmlZipped(IWorkspace workspace, Options options)
         {
             foreach (var datafile in workspace.Datafiles.Where(x => x.DataKind.IsDataCatalogueKind()))
             {
                 TryCatchLogError(
                     datafile.Filepath,
-                    () => Path.Combine(Destination, datafile.GetXmlZippedFilename()),
+                    () => Path.Combine(options.Output.FullName, datafile.GetXmlZippedFilename()),
                     datafile.WriteXmlZippedFile);
             }
         }
 
-        private void PublishXml(IWorkspace workspace)
+        private void PublishXml(IWorkspace workspace, Options options)
         {
             foreach (var datafile in workspace.Datafiles.Where(x => x.DataKind.IsDataCatalogueKind()))
             {
                 TryCatchLogError(
                     datafile.Filepath,
-                    () => Path.Combine(Destination, datafile.GetXmlFilename()),
+                    () => Path.Combine(options.Output.FullName, datafile.GetXmlFilename()),
                     datafile.WriteXmlFile);
             }
         }
@@ -216,12 +215,6 @@ namespace WarHub.ArmouryModel.CliTool.Commands
             }
         }
 
-        private string GetRepoDistributionFilepath(RepoDistribution distribution)
-        {
-            var filename = !string.IsNullOrWhiteSpace(BsrFilename) ? BsrFilename : new DirectoryInfo(Source).Name;
-            return Path.Combine(Destination, filename + XmlFileExtensions.RepoDistribution);
-        }
-
         private static IWorkspace ReadWorkspaceFromConfig(ProjectConfigurationInfo info)
         {
             switch (info.Configuration.FormatProvider)
@@ -236,48 +229,19 @@ namespace WarHub.ArmouryModel.CliTool.Commands
                         $" {info.Configuration.FormatProvider}");
             }
         }
-    }
 
-    public class PublishArtifactConverter
-    {
-        static PublishArtifactConverter()
+        private static ArtifactType ParseArtifactType(string name)
         {
-            ArtifactsByName =
-                typeof(PublishArtifact)
-                .GetFields(BindingFlags.Public | BindingFlags.Static)
-                .Select(x => (value: Enum.Parse<PublishArtifact>(x.Name), info: x))
-                .SelectMany(
-                    x => x.info
-                    .GetCustomAttributes<ArgShortcut>()
-                    .Select(a => a.Shortcut)
-                    .Append(x.info.Name)
-                    .Select(shortcut => (shortcut, x.value)))
-                .ToImmutableDictionary(x => x.shortcut, x => x.value);
+            switch (name)
+            {
+                case "xml": return ArtifactType.XmlDatafiles;
+                case "zip": return ArtifactType.ZippedXmlDatafiles;
+                case "index": return ArtifactType.Index;
+                case "bsi": return ArtifactType.ZippedIndex;
+                case "bsr": return ArtifactType.RepoDistribution;
+                default:
+                    return ArtifactType.None;
+            }
         }
-
-        public static ImmutableDictionary<string, PublishArtifact> ArtifactsByName { get; }
-
-        [ArgReviver]
-        public static PublishArtifact ArtifactReviver(string name, string value)
-        {
-            return ArtifactsByName.TryGetValue(value, out var result)
-                ? result
-                : throw new ValidationArgException($"Unable to parse {value} as a {nameof(PublishArtifact)}.");
-        }
-    }
-
-    public enum PublishArtifact
-    {
-        None,
-        [ArgShortcut("xml")]
-        XmlDatafiles,
-        [ArgShortcut("zip")]
-        ZippedXmlDatafiles,
-        [ArgShortcut("index")]
-        Index,
-        [ArgShortcut("bsi")]
-        ZippedIndex,
-        [ArgShortcut("bsr")]
-        RepoDistribution
     }
 }
