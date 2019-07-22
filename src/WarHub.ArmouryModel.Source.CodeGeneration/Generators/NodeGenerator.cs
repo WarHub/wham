@@ -437,6 +437,8 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                                 Token(SyntaxKind.IntKeyword))))
                     .AddBodyStatements(
                         SwitchStatement(indexIdentifierName)
+                        .WithOpenParenToken(Token(SyntaxKind.OpenParenToken))
+                        .WithCloseParenToken(Token(SyntaxKind.CloseParenToken))
                         .AddSections(
                             CreateSwitchSections()
                             .ToArray()));

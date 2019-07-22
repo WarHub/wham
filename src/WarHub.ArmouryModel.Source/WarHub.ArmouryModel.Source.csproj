@@ -1,4 +1,5 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
+  <Sdk Name="Microsoft.Build.CentralPackageVersions" />
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
@@ -10,9 +11,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="System.Collections.Immutable" Version="1.5.0" />
-    <PackageReference Include="CodeGeneration.Roslyn.BuildTime" Version="0.5.13" PrivateAssets="all" />
-    <DotNetCliToolReference Include="dotnet-codegen" Version="0.5.13" />
+    <PackageReference Include="System.Collections.Immutable" />
+    <PackageReference Include="CodeGeneration.Roslyn.BuildTime" />
   </ItemGroup>
 
   <ItemGroup>

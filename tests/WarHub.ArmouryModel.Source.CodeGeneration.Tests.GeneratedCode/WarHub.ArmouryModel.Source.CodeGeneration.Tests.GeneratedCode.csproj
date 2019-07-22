@@ -1,4 +1,5 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
+  <Sdk Name="Microsoft.Build.CentralPackageVersions" />
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
@@ -31,8 +32,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="CodeGeneration.Roslyn.BuildTime" Version="0.5.13" />
-    <DotNetCliToolReference Include="dotnet-codegen" Version="0.5.13" />
+    <PackageReference Include="CodeGeneration.Roslyn.BuildTime" />
   </ItemGroup>
 
 </Project>
