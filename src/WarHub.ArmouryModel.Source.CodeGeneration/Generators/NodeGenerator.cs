@@ -436,6 +436,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                             PredefinedType(
                                 Token(SyntaxKind.IntKeyword))))
                     .AddBodyStatements(
+                        /* parens required for Roslyn 3.1 until https://github.com/dotnet/roslyn/pull/37301 gets published */
                         SwitchStatement(indexIdentifierName)
                         .WithOpenParenToken(Token(SyntaxKind.OpenParenToken))
                         .WithCloseParenToken(Token(SyntaxKind.CloseParenToken))
