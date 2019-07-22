@@ -11,12 +11,12 @@ namespace WarHub.ArmouryModel.CliTool
 {
     internal static class Program
     {
-        private static readonly string[] _verbosityLevels = new[] { "q", "quiet", "m", "minimal", "n", "normal", "d", "detailed", "diag", "diagnostic" };
+        private static readonly string[] verbosityLevels = new[] { "q", "quiet", "m", "minimal", "n", "normal", "d", "detailed", "diag", "diagnostic" };
 
         private static Option CreateVerbosityOption() =>
             new Option(new[] { "-v", "--verbosity" }, "Set the verbosity level.")
             {
-                Argument = new Argument<string>().FromAmong(_verbosityLevels)
+                Argument = new Argument<string>().FromAmong(verbosityLevels)
             };
 
         private static async Task<int> Main(string[] args)
@@ -24,7 +24,7 @@ namespace WarHub.ArmouryModel.CliTool
             var parser = new CommandLineBuilder()
                 .UseDefaults()
                 .AddCommand(
-                    new Command("convertxml", "Converts BattleScribe XML files into Gitree directory structure.")
+                    new Command("convertxml", "[WIP] Converts BattleScribe XML files into Gitree directory structure.")
                     {
                         new Option(new[] { "-s", "--source" }, "Directory in which to look for XML files.")
                         {
@@ -36,9 +36,10 @@ namespace WarHub.ArmouryModel.CliTool
                         },
                         CreateVerbosityOption()
                     }
+                    .Hidden()
                     .Runs(typeof(ConvertXmlCommand).GetMethod(nameof(ConvertXmlCommand.Run))))
                 .AddCommand(
-                    new Command("convertgitree", "Converts Gitree directory structure into BattleScribe XML files.")
+                    new Command("convertgitree", "[WIP] Converts Gitree directory structure into BattleScribe XML files.")
                     {
                         new Option(new[] { "-s", "--source" }, "Root directory of Gitree to convert.")
                         {
@@ -50,6 +51,7 @@ namespace WarHub.ArmouryModel.CliTool
                         },
                         CreateVerbosityOption()
                     }
+                    .Hidden()
                     .Runs(typeof(ConvertGitreeCommand).GetMethod(nameof(ConvertGitreeCommand.Run))))
                 .AddCommand(
                     new Command("publish", "Publishes given workspace in selected formats, by default a .bsr file.")

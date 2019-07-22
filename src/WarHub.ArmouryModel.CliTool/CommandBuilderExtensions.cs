@@ -8,6 +8,12 @@ namespace WarHub.ArmouryModel.CliTool
 {
     internal static class CommandBuilderExtensions
     {
+        public static T Hidden<T>(this T symbol) where T : Symbol
+        {
+            symbol.IsHidden = true;
+            return symbol;
+        }
+
         public static Command Runs(this Command command, MethodInfo methodInfo)
         {
             command.Handler = CommandHandler.Create(methodInfo);
