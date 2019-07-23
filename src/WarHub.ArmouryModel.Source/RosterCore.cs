@@ -4,11 +4,9 @@ using System.Xml.Serialization;
 namespace WarHub.ArmouryModel.Source
 {
     [WhamNodeCore]
-    [XmlRoot("roster", Namespace = RosterXmlNamespace, IsNullable = false)]
+    [XmlRoot("roster", Namespace = XmlInformation.Namespaces.RosterXmlns, IsNullable = false)]
     public partial class RosterCore
     {
-        public const string RosterXmlNamespace = "http://www.battlescribe.net/schema/rosterSchema";
-
         [XmlAttribute("id")]
         public string Id { get; }
 
@@ -35,7 +33,5 @@ namespace WarHub.ArmouryModel.Source
 
         [XmlArray("forces")]
         public ImmutableArray<ForceCore> Forces { get; }
-
-        public string DefaultXmlNamespace => RosterXmlNamespace;
     }
 }

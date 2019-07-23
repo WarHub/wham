@@ -128,28 +128,28 @@ namespace WarHub.ArmouryModel.Source.BattleScribe
         public static XmlSerializerNamespaces CreateGamesystemXmlSerializerNamespaces()
         {
             var namespaces = new XmlSerializerNamespaces();
-            namespaces.Add("", GamesystemCore.GamesystemXmlNamespace);
+            namespaces.Add("", XmlInformation.Namespaces.GamesystemXmlns);
             return namespaces;
         }
 
         public static XmlSerializerNamespaces CreateCatalogueXmlSerializerNamespaces()
         {
             var namespaces = new XmlSerializerNamespaces();
-            namespaces.Add("", CatalogueCore.CatalogueXmlNamespace);
+            namespaces.Add("", XmlInformation.Namespaces.CatalogueXmlns);
             return namespaces;
         }
 
         public static XmlSerializerNamespaces CreateRosterXmlSerializerNamespaces()
         {
             var namespaces = new XmlSerializerNamespaces();
-            namespaces.Add("", RosterCore.RosterXmlNamespace);
+            namespaces.Add("", XmlInformation.Namespaces.RosterXmlns);
             return namespaces;
         }
 
         public static XmlSerializerNamespaces CreateDataIndexXmlSerializerNamespaces()
         {
             var namespaces = new XmlSerializerNamespaces();
-            namespaces.Add("", DataIndexCore.DataIndexXmlNamespace);
+            namespaces.Add("", XmlInformation.Namespaces.DataIndexXmlns);
             return namespaces;
         }
     }

@@ -11,12 +11,20 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Catalogue.xsd" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="System.Collections.Immutable" />
     <PackageReference Include="CodeGeneration.Roslyn.BuildTime" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\WarHub.ArmouryModel.Source.CodeGeneration\WarHub.ArmouryModel.Source.CodeGeneration.csproj" PrivateAssets="all" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Catalogue.xsd" />
   </ItemGroup>
 
 </Project>
