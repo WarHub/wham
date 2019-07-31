@@ -51,7 +51,6 @@ namespace WarHub.ArmouryModel.Source.BattleScribe.Tests
             };
             xmlSettings.ValidationEventHandler += HandleValidation;
 
-
             using (var reader = XmlReader.Create(File.OpenRead(path), xmlSettings))
             {
                 while (reader.Read()) { }
@@ -100,6 +99,7 @@ namespace WarHub.ArmouryModel.Source.BattleScribe.Tests
                 }
             }
         }
+
         private static XmlSchemaSet ReadSchemaSet(
             XmlInformation.RootElement rootElement,
             ValidationEventHandler validationEventHandler)
