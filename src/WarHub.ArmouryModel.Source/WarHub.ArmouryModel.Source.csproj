@@ -11,7 +11,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="Catalogue.xsd" />
+    <None Include="Catalogue.xsd" />
   </ItemGroup>
 
   <ItemGroup>
@@ -23,8 +23,39 @@
     <ProjectReference Include="..\WarHub.ArmouryModel.Source.CodeGeneration\WarHub.ArmouryModel.Source.CodeGeneration.csproj" PrivateAssets="all" />
   </ItemGroup>
 
+  <!-- Custom resource embedding of 3 XSDs from one file -->
+
+  <PropertyGroup>
+    <CatalogueXsdPath>Catalogue.xsd</CatalogueXsdPath>
+    <CatXmlns>&quot;http://www.battlescribe.net/schema/catalogueSchema&quot;</CatXmlns>
+  </PropertyGroup>
+  
   <ItemGroup>
-    <EmbeddedResource Include="Catalogue.xsd" />
+    <EmbeddedXsdSchema Include="Catalogue.xsd" TargetXmlns="$(CatXmlns)"/>
+    <EmbeddedXsdSchema Include="Roster.xsd" TargetXmlns="&quot;http://www.battlescribe.net/schema/rosterSchema&quot;" />
+    <EmbeddedXsdSchema Include="GameSystem.xsd" TargetXmlns="&quot;http://www.battlescribe.net/schema/gameSystemSchema&quot;" />
   </ItemGroup>
+
+  <Target Name="TransformXsdSchemas"
+          BeforeTargets="BeforeBuild"
+          Inputs="$(CatalogueXsdPath)"
+          Outputs="@(EmbeddedXsdSchema->'$(IntermediateOutputPath)%(Identity)')">
+    <ItemGroup>
+      <EmbeddedXsdSchema Update="@(EmbeddedXsdSchema)"
+                         ResourceOutputPath="$(IntermediateOutputPath)%(Identity)"/>
+    </ItemGroup>
+    <PropertyGroup>
+      <CatalogueXsdContent>$([System.IO.File]::ReadAllText($(CatalogueXsdPath)))</CatalogueXsdContent>
+    </PropertyGroup>
+
+    <WriteLinesToFile File="%(EmbeddedXsdSchema.ResourceOutputPath)"
+                      Lines="$(CatalogueXsdContent.Replace('$(CatXmlns)', '%(TargetXmlns)'))"
+                      Overwrite="true" />
+
+    <ItemGroup>
+      <EmbeddedResource Include="%(EmbeddedXsdSchema.ResourceOutputPath)" />
+      <FileWrites Include="%(EmbeddedXsdSchema.ResourceOutputPath)" />
+    </ItemGroup>
+  </Target>
 
 </Project>

@@ -9,21 +9,27 @@ namespace WarHub.ArmouryModel.Source.Tests
 {
     public class XmlInformationTests
     {
-        [Fact]
-        public void Catalogue_xsd_is_available()
+        [Theory]
+        [InlineData(XmlInformation.RootElement.Catalogue)]
+        [InlineData(XmlInformation.RootElement.GameSystem)]
+        [InlineData(XmlInformation.RootElement.Roster)]
+        public void Per_element_xsd_is_available(XmlInformation.RootElement rootElement)
         {
-            using (var xsdStream = XmlInformation.OpenCatalogueXmlSchemaDefinitionStream())
+            using (var xsdStream = XmlInformation.OpenXsdStream(rootElement))
             {
                 xsdStream.Should().NotBeNull();
             }
         }
 
-        [Fact]
-        public void Catalogue_xsd_has_no_validation_issues()
+        [Theory]
+        [InlineData(XmlInformation.RootElement.Catalogue)]
+        [InlineData(XmlInformation.RootElement.GameSystem)]
+        [InlineData(XmlInformation.RootElement.Roster)]
+        public void Per_element_xsd_has_no_validation_issues(XmlInformation.RootElement rootElement)
         {
             var validationMessages = new List<ValidationEventArgs>();
 
-            var xsd = ReadSchema(AddEventToList);
+            var xsd = ReadSchema(rootElement, AddEventToList);
 
             xsd.Should().NotBeNull();
             validationMessages.Should().BeEmpty();
@@ -31,26 +37,31 @@ namespace WarHub.ArmouryModel.Source.Tests
             void AddEventToList(object sender, ValidationEventArgs e) => validationMessages.Add(e);
         }
 
-        [Fact]
-        public void Catalogue_xsd_contains_Roster_Catalogue_Gamesystem_root_elements()
+        [Theory]
+        [InlineData(XmlInformation.RootElement.Catalogue)]
+        [InlineData(XmlInformation.RootElement.GameSystem)]
+        [InlineData(XmlInformation.RootElement.Roster)]
+        public void Per_element_xsd_contains_Roster_Catalogue_Gamesystem_root_elements(XmlInformation.RootElement rootElement)
         {
-            var schema = ReadSchema(IgnoreEvent);
-
-            schema.TargetNamespace.Should().Be(XmlInformation.Namespaces.CatalogueXmlns);
+            var xmlns = XmlInformation.Namespace(rootElement);
+            var schema = ReadSchema(rootElement, IgnoreEvent);
+            schema.TargetNamespace.Should().Be(xmlns);
             //schema.
             schema.Elements.Names.Should().Contain(new[]
             {
-                new XmlQualifiedName("gameSystem", XmlInformation.Namespaces.CatalogueXmlns),
-                new XmlQualifiedName("catalogue", XmlInformation.Namespaces.CatalogueXmlns),
-                new XmlQualifiedName("roster", XmlInformation.Namespaces.CatalogueXmlns)
+                new XmlQualifiedName("gameSystem", xmlns),
+                new XmlQualifiedName("catalogue", xmlns),
+                new XmlQualifiedName("roster", xmlns)
             });
 
             void IgnoreEvent(object sender, ValidationEventArgs e) { }
         }
 
-        private static XmlSchema ReadSchema(ValidationEventHandler validationEventHandler)
+        private static XmlSchema ReadSchema(
+            XmlInformation.RootElement rootElement,
+            ValidationEventHandler validationEventHandler)
         {
-            using (var xsdStream = XmlInformation.OpenCatalogueXmlSchemaDefinitionStream())
+            using (var xsdStream = XmlInformation.OpenXsdStream(rootElement))
             {
                 var schema = XmlSchema.Read(xsdStream, validationEventHandler);
                 var set = new XmlSchemaSet();

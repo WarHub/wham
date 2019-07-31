@@ -1,7 +1,10 @@
-﻿using Microsoft.XmlDiffPatch;
-using System;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Xml;
+using System.Xml.Schema;
+using FluentAssertions;
+using Microsoft.XmlDiffPatch;
 using Xunit;
 
 namespace WarHub.ArmouryModel.Source.BattleScribe.Tests
@@ -29,6 +32,34 @@ namespace WarHub.ArmouryModel.Source.BattleScribe.Tests
         public void ReadWriteRoster()
         {
             ReadWriteXml(XmlTestData.RosterFilename, s => s.DeserializeRoster());
+        }
+
+        [Theory]
+        [InlineData(XmlTestData.GamesystemFilename, XmlInformation.RootElement.GameSystem)]
+        [InlineData(XmlTestData.Catalogue1Filename, XmlInformation.RootElement.Catalogue)]
+        [InlineData(XmlTestData.Catalogue2Filename, XmlInformation.RootElement.Catalogue)]
+        [InlineData(XmlTestData.RosterFilename, XmlInformation.RootElement.Roster)]
+        public void Validates_with_xsd(string filename, XmlInformation.RootElement rootElement)
+        {
+            var path = Path.Combine(XmlTestData.InputDir, filename);
+            var validation = new List<ValidationEventArgs>();
+            var schemaSet = ReadSchemaSet(rootElement, HandleValidation);
+            var xmlSettings = new XmlReaderSettings
+            {
+                ValidationType = ValidationType.Schema,
+                Schemas = schemaSet
+            };
+            xmlSettings.ValidationEventHandler += HandleValidation;
+
+
+            using (var reader = XmlReader.Create(File.OpenRead(path), xmlSettings))
+            {
+                while (reader.Read()) { }
+            }
+
+            validation.Should().BeEmpty();
+
+            void HandleValidation(object sender, ValidationEventArgs e) => validation.Add(e);
         }
 
         private static void ReadWriteXml(string filename, Func<Stream, SourceNode> deserialize)
@@ -67,6 +98,20 @@ namespace WarHub.ArmouryModel.Source.BattleScribe.Tests
                         return areEqual;
                     }
                 }
+            }
+        }
+        private static XmlSchemaSet ReadSchemaSet(
+            XmlInformation.RootElement rootElement,
+            ValidationEventHandler validationEventHandler)
+        {
+            using (var xsdStream = XmlInformation.OpenXsdStream(rootElement))
+            {
+                var schema = XmlSchema.Read(xsdStream, validationEventHandler);
+                var set = new XmlSchemaSet();
+                set.ValidationEventHandler += validationEventHandler;
+                set.Add(schema);
+                set.Compile();
+                return set;
             }
         }
     }
