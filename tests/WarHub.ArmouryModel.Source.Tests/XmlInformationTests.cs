@@ -22,6 +22,26 @@ namespace WarHub.ArmouryModel.Source.Tests
         }
 
         [Theory]
+        [MemberData(nameof(XslMigrationVersionData))]
+        public void Per_element_xsl_migration_is_available(
+            XmlInformation.RootElement rootElement,
+            XmlInformation.BsDataVersion dataVersion)
+        {
+            using (var migrationXslStream = XmlInformation.OpenMigrationXslStream(rootElement, dataVersion))
+            {
+                migrationXslStream.Should().NotBeNull();
+            }
+        }
+
+        public static IEnumerable<object[]> XslMigrationVersionData()
+        {
+            return
+                from version in XmlInformation.BsDataVersions
+                from element in new[] { XmlInformation.RootElement.GameSystem, XmlInformation.RootElement.Catalogue }
+                select new object[] { element, version };
+        }
+
+        [Theory]
         [InlineData(XmlInformation.RootElement.Catalogue)]
         [InlineData(XmlInformation.RootElement.GameSystem)]
         [InlineData(XmlInformation.RootElement.Roster)]
