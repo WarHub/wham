@@ -5,6 +5,8 @@ namespace WarHub.ArmouryModel.Source
 {
     public static class XmlInformation
     {
+        private const string XsdVersion2_2ResourcePrefix = ThisAssembly.RootNamespace + ".DataFormat.xml.schema.v2_2.";
+
         public static Stream OpenXsdStream(RootElement rootElement)
         {
             return OpenResource(GetResourceName());
@@ -14,11 +16,11 @@ namespace WarHub.ArmouryModel.Source
                 switch (rootElement)
                 {
                     case RootElement.Catalogue:
-                        return ThisAssembly.RootNamespace + ".Catalogue.xsd";
+                        return XsdVersion2_2ResourcePrefix + "Catalogue.xsd";
                     case RootElement.GameSystem:
-                        return ThisAssembly.RootNamespace + ".GameSystem.xsd";
+                        return XsdVersion2_2ResourcePrefix + "GameSystem.xsd";
                     case RootElement.Roster:
-                        return ThisAssembly.RootNamespace + ".Roster.xsd";
+                        return XsdVersion2_2ResourcePrefix + "Roster.xsd";
                     default:
                         throw new ArgumentOutOfRangeException(nameof(rootElement));
                 }
