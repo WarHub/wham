@@ -8,6 +8,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
-* Support for BattleScribe v2.02 data format ([#39](https://github.com/WarHub/wham/pull/39))
+* Support for BattleScribe v2.02 data format ([#39])
 * CLI tool `wham` installable via `dotnet install tool -g wham`
-* XSD for catalogue, roster and game system XML, accessible via `WarHub.AmouryModel.Source.XmlInformation` class
+* XSD for `catalogue`, `roster` and `game system` XML, accessible via
+  `WarHub.AmouryModel.Source.XmlInformation` class
+* Migration XSL transforms for `game system` and `catalogue` XML files,
+  accessible via `WarHub.AmouryModel.Source.XmlInformation` class. Supported
+  BattleScribe versions:
+  - 1.15
+  - 2.00
+  - 2.01
+  - 2.02
+
+
+
+[#39]: https://github.com/WarHub/wham/pull/39
