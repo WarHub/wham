@@ -1,6 +1,5 @@
 ﻿using System.IO;
 using System.Linq;
-using System.Threading.Tasks;
 using System.Xml;
 using System.Xml.Xsl;
 
@@ -23,48 +22,57 @@ namespace WarHub.ArmouryModel.Source.BattleScribe
             }
         }
 
-        public static async Task<Stream> ApplyMigrationsAsync(Stream input)
+        public static Stream ApplyMigrations(Stream input)
         {
-            var stream = await GetSeekableStream(input);
+            var stream = GetSeekableStream(input);
             var (rootElement, _, dataVersion) = ReadDocumentInfo(stream);
             stream.Position = 0;
-            if (dataVersion.Info().IsNewestVersion)
-            {
-                return stream;
-            }
-            var migrationVersions = dataVersion.Info().GetNewerVersions();
-            return migrationVersions.Aggregate(
-                stream,
-                (prev, version) => ApplyMigration(prev, rootElement, version));
+            return
+                rootElement.Info()
+                .AvailableMigrations(dataVersion)
+                .Aggregate(
+                    stream,
+                    (acc, version) =>
+                    {
+                        using (acc)
+                        {
+                            return ApplyMigration(acc, rootElement, version);
+                        }
+                    });
 
-            async Task<Stream> GetSeekableStream(Stream source)
+            Stream GetSeekableStream(Stream source)
             {
                 if (source.CanSeek)
                 {
                     return source;
                 }
                 var memory = new MemoryStream();
-                await source.CopyToAsync(memory);
+                source.CopyTo(memory);
                 memory.Position = 0;
                 return memory;
             }
         }
 
         public static Stream ApplyMigration(
-            Stream previous,
+            Stream inputData,
             XmlInformation.RootElement rootElement,
             XmlInformation.BsDataVersion targetVersion)
         {
-            using (previous)
-            using (var migrationXlsStream = XmlInformation.OpenMigrationXslStream(rootElement, targetVersion))
+            var xslt = CreateXslt();
+            var result = new MemoryStream();
+            var writer = Utilities.BattleScribeConformantXmlWriter.Create(result);
+            xslt.Transform(XmlReader.Create(inputData), writer);
+            result.Position = 0;
+            return result;
+
+            XslCompiledTransform CreateXslt()
             {
-                var xslt = new XslCompiledTransform();
-                xslt.Load(XmlReader.Create(migrationXlsStream));
-                var result = new MemoryStream();
-                var writer = Utilities.BattleScribeConformantXmlWriter.Create(result);
-                xslt.Transform(XmlReader.Create(previous), writer);
-                result.Position = 0;
-                return result;
+                using (var migrationXlsStream = XmlInformation.OpenMigrationXslStream(rootElement, targetVersion))
+                {
+                    var transform = new XslCompiledTransform();
+                    transform.Load(XmlReader.Create(migrationXlsStream));
+                    return transform;
+                }
             }
         }
     }

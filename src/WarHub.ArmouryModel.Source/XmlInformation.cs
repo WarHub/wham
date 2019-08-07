@@ -37,6 +37,7 @@ namespace WarHub.ArmouryModel.Source
 
         public enum BsDataVersion
         {
+            Unknown,
             v1_15,
             v2_00,
             v2_01,
@@ -106,7 +107,9 @@ namespace WarHub.ArmouryModel.Source
             => new RootElementInfo(rootElement);
 
         public static BsDataVersion ParseBsDataVersion(this string dataVersion)
-            => BsDataVersionInfo.BsDataVersionFromString[dataVersion];
+            => BsDataVersionInfo.BsDataVersionFromString.TryGetValue(dataVersion, out var result)
+                ? result
+                : BsDataVersion.Unknown;
 
         public static RootElement ParseRootElement(this string xmlElementName)
             => RootElementInfo.RootElementFromXmlName[xmlElementName];
@@ -123,14 +126,6 @@ namespace WarHub.ArmouryModel.Source
             public string DisplayString => DisplayStrings[Version];
 
             public string FilepathString => FilepathStrings[Version];
-
-            public bool IsNewestVersion => Version == BsDataVersions.Last();
-
-            public IEnumerable<BsDataVersion> GetNewerVersions()
-            {
-                var self = this;
-                return BsDataVersions.SkipWhile(x => x != self.Version);
-            }
 
             internal static ImmutableDictionary<BsDataVersion, string> DisplayStrings { get; }
                 = new Dictionary<BsDataVersion, string>
@@ -163,6 +158,19 @@ namespace WarHub.ArmouryModel.Source
 
             public string XmlElementName => XmlNames[Element];
 
+            public BsDataVersion CurrentVersion => BsDataVersion.v2_02;
+
+            public IEnumerable<BsDataVersion> AvailableMigrations(BsDataVersion sourceVersion)
+            {
+                var self = this;
+                return
+                    sourceVersion != BsDataVersion.Unknown
+                    && sourceVersion != self.CurrentVersion
+                    && Migrations.TryGetValue(self.Element, out var migrationVersions)
+                    ? migrationVersions.SkipWhile(x => x != sourceVersion)
+                    : ImmutableList<BsDataVersion>.Empty;
+            }
+
             internal static ImmutableDictionary<RootElement, string> NamespaceFromElement { get; }
                 = new Dictionary<RootElement, string>
                 {
@@ -170,6 +178,13 @@ namespace WarHub.ArmouryModel.Source
                     [RootElement.DataIndex] = Namespaces.DataIndexXmlns,
                     [RootElement.GameSystem] = Namespaces.GamesystemXmlns,
                     [RootElement.Roster] = Namespaces.RosterXmlns,
+                }.ToImmutableDictionary();
+
+            internal static ImmutableDictionary<RootElement, ImmutableArray<BsDataVersion>> Migrations { get; }
+                = new Dictionary<RootElement, ImmutableArray<BsDataVersion>>
+                {
+                    [RootElement.Catalogue] = BsDataVersions,
+                    [RootElement.GameSystem] = BsDataVersions,
                 }.ToImmutableDictionary();
 
             internal static ImmutableDictionary<string, RootElement> RootElementFromXmlName { get; }
