@@ -19,6 +19,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - 2.00
   - 2.01
   - 2.02
+* Migrations can be applied via `WarHub.ArmourtModel.Source.BattleScribe.DataVersionManagement`
+  type. This type has methods that allow applying single migration XSL, as well as applying
+  migrations that take given input to newest version known.
 
 
 
