@@ -48,7 +48,7 @@ namespace WarHub.ArmouryModel.Source.Tests
         [MemberData(nameof(ThreeRootElements))]
         public void Per_element_xsd_contains_all_root_elements(RootElement rootElement)
         {
-            var xmlns = Namespace(rootElement);
+            var xmlns = rootElement.Info().Namespace;
             var schema = ReadSchema(rootElement, IgnoreEvent);
             schema.TargetNamespace.Should().Be(xmlns);
             //schema.

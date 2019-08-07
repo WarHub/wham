@@ -4,7 +4,10 @@ using System.Xml.Serialization;
 namespace WarHub.ArmouryModel.Source
 {
     [WhamNodeCore]
-    [XmlRoot("catalogue", Namespace = XmlInformation.Namespaces.CatalogueXmlns, IsNullable = false)]
+    [XmlRoot(
+        XmlInformation.RootElementNames.Catalogue,
+        Namespace = XmlInformation.Namespaces.CatalogueXmlns,
+        IsNullable = false)]
     public partial class CatalogueCore : CatalogueBaseCore
     {
         [XmlAttribute("library")]

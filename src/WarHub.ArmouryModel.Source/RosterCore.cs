@@ -4,7 +4,10 @@ using System.Xml.Serialization;
 namespace WarHub.ArmouryModel.Source
 {
     [WhamNodeCore]
-    [XmlRoot("roster", Namespace = XmlInformation.Namespaces.RosterXmlns, IsNullable = false)]
+    [XmlRoot(
+        XmlInformation.RootElementNames.Roster,
+        Namespace = XmlInformation.Namespaces.RosterXmlns,
+        IsNullable = false)]
     public partial class RosterCore
     {
         [XmlAttribute("id")]

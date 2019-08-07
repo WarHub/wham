@@ -3,7 +3,10 @@
 namespace WarHub.ArmouryModel.Source
 {
     [WhamNodeCore]
-    [XmlRoot("gameSystem", Namespace = XmlInformation.Namespaces.GamesystemXmlns, IsNullable = false)]
+    [XmlRoot(
+        XmlInformation.RootElementNames.GameSystem,
+        Namespace = XmlInformation.Namespaces.GamesystemXmlns,
+        IsNullable = false)]
     public partial class GamesystemCore : CatalogueBaseCore
     {
     }

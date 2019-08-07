@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.IO;
-using System.Linq;
 
 namespace WarHub.ArmouryModel.Source
 {
@@ -10,6 +9,38 @@ namespace WarHub.ArmouryModel.Source
     {
         private const string XsdVersion2_2ResourcePrefix = ThisAssembly.RootNamespace + ".DataFormat.xml.schema.v2_2.";
         private const string XslTransformResourceFormat = ThisAssembly.RootNamespace + ".DataFormat.xml.transform.{0}_{1}.xsl";
+
+        public static class Namespaces
+        {
+            public const string CatalogueXmlns = "http://www.battlescribe.net/schema/catalogueSchema";
+            public const string RosterXmlns = "http://www.battlescribe.net/schema/rosterSchema";
+            public const string GamesystemXmlns = "http://www.battlescribe.net/schema/gameSystemSchema";
+            public const string DataIndexXmlns = "http://www.battlescribe.net/schema/dataIndexSchema";
+        }
+
+        public static class RootElementNames
+        {
+            public const string Catalogue = "catalogue";
+            public const string DataIndex = "dataIndex";
+            public const string GameSystem = "gameSystem";
+            public const string Roster = "roster";
+        }
+
+        public enum RootElement
+        {
+            Catalogue,
+            GameSystem,
+            Roster,
+            DataIndex
+        }
+
+        public enum BsDataVersion
+        {
+            v1_15,
+            v2_00,
+            v2_01,
+            v2_02
+        }
 
         public static Stream OpenXsdStream(RootElement rootElement)
         {
@@ -35,7 +66,7 @@ namespace WarHub.ArmouryModel.Source
             return OpenResource(GetResourceName());
             string GetResourceName()
             {
-                return string.Format(XslTransformResourceFormat, GetElementName(), dataVersion.ToFilepathString());
+                return string.Format(XslTransformResourceFormat, GetElementName(), dataVersion.Info().FilepathString);
             }
             string GetElementName()
             {
@@ -58,22 +89,6 @@ namespace WarHub.ArmouryModel.Source
         private static Stream OpenResource(string name)
             => typeof(XmlInformation).Assembly.GetManifestResourceStream(name);
 
-        public enum RootElement
-        {
-            Catalogue,
-            GameSystem,
-            Roster,
-            DataIndex
-        }
-
-        public enum BsDataVersion
-        {
-            v1_15,
-            v2_00,
-            v2_01,
-            v2_02
-        }
-
         public static ImmutableArray<BsDataVersion> BsDataVersions { get; }
             = new[]
             {
@@ -83,53 +98,83 @@ namespace WarHub.ArmouryModel.Source
                 BsDataVersion.v2_02
             }.ToImmutableArray();
 
-        public static ImmutableDictionary<BsDataVersion, string> BsDataVersionDisplayStrings { get; }
-            = new Dictionary<BsDataVersion, string>
+        public static BsDataVersionInfo Info(this BsDataVersion version)
+            => new BsDataVersionInfo(version);
+
+        public static RootElementInfo Info(this RootElement rootElement)
+            => new RootElementInfo(rootElement);
+
+        public struct BsDataVersionInfo
+        {
+            internal BsDataVersionInfo(BsDataVersion version)
             {
-                [BsDataVersion.v1_15] = "1.15",
-                [BsDataVersion.v2_00] = "2.00",
-                [BsDataVersion.v2_01] = "2.01",
-                [BsDataVersion.v2_02] = "2.02"
-            }.ToImmutableDictionary();
-
-        public static ImmutableDictionary<BsDataVersion, string> BsDataVersionFilepathStrings { get; }
-            = BsDataVersionDisplayStrings
-            .Select(x => (key: x.Key, value: x.Value.Replace('.', '_')))
-            .ToImmutableDictionary(x => x.key, x => x.value);
-
-        public static string ToDisplayString(this BsDataVersion dataVersion)
-        {
-            return BsDataVersionDisplayStrings[dataVersion];
-        }
-
-        public static string ToFilepathString(this BsDataVersion dataVersion)
-        {
-            return BsDataVersionFilepathStrings[dataVersion];
-        }
-
-        public static string Namespace(RootElement rootElement)
-        {
-            switch (rootElement)
-            {
-                case RootElement.Catalogue:
-                    return Namespaces.CatalogueXmlns;
-                case RootElement.GameSystem:
-                    return Namespaces.GamesystemXmlns;
-                case RootElement.Roster:
-                    return Namespaces.RosterXmlns;
-                case RootElement.DataIndex:
-                    return Namespaces.DataIndexXmlns;
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(rootElement));
+                Version = version;
             }
+
+            public BsDataVersion Version { get; }
+
+            public string DisplayString => DisplayStrings[Version];
+
+            public string FilepathString => FilepathStrings[Version];
+
+            public static BsDataVersionInfo Parse(string dataVersion)
+                => new BsDataVersionInfo(BsDataVersionFromString[dataVersion]);
+
+            internal static ImmutableDictionary<BsDataVersion, string> DisplayStrings { get; }
+                = new Dictionary<BsDataVersion, string>
+                {
+                    [BsDataVersion.v1_15] = "1.15",
+                    [BsDataVersion.v2_00] = "2.00",
+                    [BsDataVersion.v2_01] = "2.01",
+                    [BsDataVersion.v2_02] = "2.02"
+                }.ToImmutableDictionary();
+
+            internal static ImmutableDictionary<BsDataVersion, string> FilepathStrings { get; }
+                = DisplayStrings
+                .ToImmutableDictionary(x => x.Key, x => x.Value.Replace('.', '_'));
+
+            internal static ImmutableDictionary<string, BsDataVersion> BsDataVersionFromString { get; }
+                = DisplayStrings
+                .ToImmutableDictionary(x => x.Value, x => x.Key);
         }
 
-        public static class Namespaces
+        public struct RootElementInfo
         {
-            public const string CatalogueXmlns = "http://www.battlescribe.net/schema/catalogueSchema";
-            public const string RosterXmlns = "http://www.battlescribe.net/schema/rosterSchema";
-            public const string GamesystemXmlns = "http://www.battlescribe.net/schema/gameSystemSchema";
-            public const string DataIndexXmlns = "http://www.battlescribe.net/schema/dataIndexSchema";
+            internal RootElementInfo(RootElement element)
+            {
+                Element = element;
+            }
+
+            public RootElement Element { get; }
+
+            public string Namespace => NamespaceFromElement[Element];
+
+            public string XmlElementName => XmlNames[Element];
+
+            public static RootElementInfo Parse(string xmlElementName)
+                => new RootElementInfo(RootElementFromXmlName[xmlElementName]);
+
+            internal static ImmutableDictionary<RootElement, string> NamespaceFromElement { get; }
+                = new Dictionary<RootElement, string>
+                {
+                    [RootElement.Catalogue] = Namespaces.CatalogueXmlns,
+                    [RootElement.DataIndex] = Namespaces.DataIndexXmlns,
+                    [RootElement.GameSystem] = Namespaces.GamesystemXmlns,
+                    [RootElement.Roster] = Namespaces.RosterXmlns,
+                }.ToImmutableDictionary();
+
+            internal static ImmutableDictionary<string, RootElement> RootElementFromXmlName { get; }
+                = new Dictionary<string, RootElement>
+                {
+                    [RootElementNames.Catalogue] = RootElement.Catalogue,
+                    [RootElementNames.DataIndex] = RootElement.DataIndex,
+                    [RootElementNames.GameSystem] = RootElement.GameSystem,
+                    [RootElementNames.Roster] = RootElement.Roster,
+                }.ToImmutableDictionary();
+
+            internal static ImmutableDictionary<RootElement, string> XmlNames { get; }
+                = RootElementFromXmlName
+                .ToImmutableDictionary(x => x.Value, x => x.Key);
         }
     }
 }

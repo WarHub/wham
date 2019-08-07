@@ -4,7 +4,10 @@ using System.Xml.Serialization;
 namespace WarHub.ArmouryModel.Source
 {
     [WhamNodeCore]
-    [XmlRoot("dataIndex", Namespace = XmlInformation.Namespaces.DataIndexXmlns)]
+    [XmlRoot(
+        XmlInformation.RootElementNames.DataIndex,
+        Namespace = XmlInformation.Namespaces.DataIndexXmlns,
+        IsNullable = false)]
     public partial class DataIndexCore
     {
         [XmlAttribute("battleScribeVersion")]
