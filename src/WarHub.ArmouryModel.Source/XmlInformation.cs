@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.IO;
+using System.Linq;
 
 namespace WarHub.ArmouryModel.Source
 {
@@ -104,7 +105,13 @@ namespace WarHub.ArmouryModel.Source
         public static RootElementInfo Info(this RootElement rootElement)
             => new RootElementInfo(rootElement);
 
-        public struct BsDataVersionInfo
+        public static BsDataVersion ParseBsDataVersion(this string dataVersion)
+            => BsDataVersionInfo.BsDataVersionFromString[dataVersion];
+
+        public static RootElement ParseRootElement(this string xmlElementName)
+            => RootElementInfo.RootElementFromXmlName[xmlElementName];
+
+        public readonly struct BsDataVersionInfo
         {
             internal BsDataVersionInfo(BsDataVersion version)
             {
@@ -117,8 +124,13 @@ namespace WarHub.ArmouryModel.Source
 
             public string FilepathString => FilepathStrings[Version];
 
-            public static BsDataVersionInfo Parse(string dataVersion)
-                => new BsDataVersionInfo(BsDataVersionFromString[dataVersion]);
+            public bool IsNewestVersion => Version == BsDataVersions.Last();
+
+            public IEnumerable<BsDataVersion> GetNewerVersions()
+            {
+                var self = this;
+                return BsDataVersions.SkipWhile(x => x != self.Version);
+            }
 
             internal static ImmutableDictionary<BsDataVersion, string> DisplayStrings { get; }
                 = new Dictionary<BsDataVersion, string>
@@ -138,7 +150,7 @@ namespace WarHub.ArmouryModel.Source
                 .ToImmutableDictionary(x => x.Value, x => x.Key);
         }
 
-        public struct RootElementInfo
+        public readonly struct RootElementInfo
         {
             internal RootElementInfo(RootElement element)
             {
@@ -150,9 +162,6 @@ namespace WarHub.ArmouryModel.Source
             public string Namespace => NamespaceFromElement[Element];
 
             public string XmlElementName => XmlNames[Element];
-
-            public static RootElementInfo Parse(string xmlElementName)
-                => new RootElementInfo(RootElementFromXmlName[xmlElementName]);
 
             internal static ImmutableDictionary<RootElement, string> NamespaceFromElement { get; }
                 = new Dictionary<RootElement, string>
