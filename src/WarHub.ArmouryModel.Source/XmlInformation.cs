@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 
 namespace WarHub.ArmouryModel.Source
 {
@@ -143,6 +144,69 @@ namespace WarHub.ArmouryModel.Source
             internal static ImmutableDictionary<string, BsDataVersion> BsDataVersionFromString { get; }
                 = DisplayStrings
                 .ToImmutableDictionary(x => x.Value, x => x.Key);
+        }
+
+        public static ImmutableSortedSet<BattleScribeVersion> WellKnownVersions { get; }
+            = ImmutableSortedSet.Create(
+                BattleScribeVersion.V1_15b,
+                BattleScribeVersion.V1_15,
+                BattleScribeVersion.V2_00,
+                BattleScribeVersion.V2_01,
+                BattleScribeVersion.V2_02);
+
+        public sealed class BattleScribeVersion : IComparable<BattleScribeVersion>, IEquatable<BattleScribeVersion>
+        {
+            internal BattleScribeVersion(int major, int minor, string suffix, string rawString = null)
+            {
+                Major = major;
+                Minor = minor;
+                Suffix = suffix;
+                BattleScribeString = rawString ?? $"{Major}.{Minor:D2}{Suffix}";
+            }
+
+            public static BattleScribeVersion V1_15b { get; } = Parse("1.15b");
+            public static BattleScribeVersion V1_15 { get; } = Parse("1.15");
+            public static BattleScribeVersion V2_00 { get; } = Parse("2.00");
+            public static BattleScribeVersion V2_01 { get; } = Parse("2.01");
+            public static BattleScribeVersion V2_02 { get; } = Parse("2.02");
+
+            public int Major { get; }
+
+            public int Minor { get; }
+
+            public string Suffix { get; }
+
+            public bool IsPrerelease => !string.IsNullOrEmpty(Suffix);
+
+            public string BattleScribeString { get; }
+
+            public int CompareTo(BattleScribeVersion other)
+            {
+                return
+                    other is null ? 1
+                    : Major.CompareTo(other.Major) is var majorResult && majorResult != 0 ? majorResult
+                    : Minor.CompareTo(other.Minor) is var minorResult && minorResult != 0 ? minorResult
+                    : string.CompareOrdinal(Suffix, other.Suffix);
+            }
+
+            public bool Equals(BattleScribeVersion other)
+            {
+                return CompareTo(other) == 0;
+            }
+
+            public static BattleScribeVersion Parse(string version)
+            {
+                var match = Regex.Match(version, @"$(\d+)\.(\d+)(.*)^");
+                if (match == null || match.Groups.Count != 4)
+                {
+                    throw new FormatException("Invalid BattleScribe data format");
+                }
+                var major = int.Parse(match.Groups[1].Value);
+                var minor = int.Parse(match.Groups[2].Value);
+                var suffix = match.Groups[3].Value;
+                var suffixNormalized = string.IsNullOrEmpty(suffix) ? null : suffix;
+                return new BattleScribeVersion(major, minor, suffixNormalized, version);
+            }
         }
 
         public readonly struct RootElementInfo
