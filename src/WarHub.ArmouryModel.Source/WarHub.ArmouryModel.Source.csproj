@@ -5,16 +5,13 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <Description>Provides data model for wargaming datafiles, such as BattleScribe. wham core library.</Description>
     <PackageTags>warhub armoury armourymodel wham battlescribe roster catalogue gamesystem cat catz gst gstz ros rosz datafile wh40k 40k bsdata battle scribe</PackageTags>
-    <CatalogueXsdPath>../dataformat/xml/schema/v2_2/Catalogue.xsd</CatalogueXsdPath>
+    <CatalogueXsdPath>../dataformat/xml/schema/v2_02/Catalogue.xsd</CatalogueXsdPath>
     <CatXmlns>"http://www.battlescribe.net/schema/catalogueSchema"</CatXmlns>
   </PropertyGroup>
 
   <ItemGroup>
-    <None Include="$(CatalogueXsdPath)"
-          Link="DataFormat/xml/schema/v2_2/%(Filename)%(Extension)" />
-    <EmbeddedResource Include="../dataformat/**/*"
-                      Exclude="$(CatalogueXsdPath)"
-                      Link="DataFormat/%(RecursiveDir)%(Filename)%(Extension)" />
+    <None Include="$(CatalogueXsdPath)" Link="DataFormat/xml/schema/v2_02/%(Filename)%(Extension)" />
+    <EmbeddedResource Include="../dataformat/**/*" Exclude="$(CatalogueXsdPath)" Link="DataFormat/%(RecursiveDir)%(Filename)%(Extension)" />
   </ItemGroup>
 
   <ItemGroup>
@@ -34,25 +31,18 @@
     <EmbeddedXsdSchema Include="GameSystem.xsd" TargetXmlns='"http://www.battlescribe.net/schema/gameSystemSchema"' />
   </ItemGroup>
 
-  <Target Name="TransformXsdSchemas"
-          BeforeTargets="BeforeBuild"
-          Inputs="$(CatalogueXsdPath)"
-          Outputs="@(EmbeddedXsdSchema->'$(IntermediateOutputPath)%(Identity)')">
+  <Target Name="TransformXsdSchemas" BeforeTargets="BeforeBuild" Inputs="$(CatalogueXsdPath)" Outputs="@(EmbeddedXsdSchema->'$(IntermediateOutputPath)%(Identity)')">
     <ItemGroup>
-      <EmbeddedXsdSchema Update="@(EmbeddedXsdSchema)"
-                         ResourceOutputPath="$(IntermediateOutputPath)%(Identity)" />
+      <EmbeddedXsdSchema Update="@(EmbeddedXsdSchema)" ResourceOutputPath="$(IntermediateOutputPath)%(Identity)" />
     </ItemGroup>
     <PropertyGroup>
       <CatalogueXsdContent>$([System.IO.File]::ReadAllText($(CatalogueXsdPath)))</CatalogueXsdContent>
     </PropertyGroup>
 
-    <WriteLinesToFile File="%(EmbeddedXsdSchema.ResourceOutputPath)"
-                      Lines="$(CatalogueXsdContent.Replace('$(CatXmlns)', '%(TargetXmlns)'))"
-                      Overwrite="true" />
+    <WriteLinesToFile File="%(EmbeddedXsdSchema.ResourceOutputPath)" Lines="$(CatalogueXsdContent.Replace('$(CatXmlns)', '%(TargetXmlns)'))" Overwrite="true" />
 
     <ItemGroup>
-      <EmbeddedResource Include="%(EmbeddedXsdSchema.ResourceOutputPath)"
-                        Link="DataFormat/xml/schema/v2_2/%(Filename)%(Extension)" />
+      <EmbeddedResource Include="%(EmbeddedXsdSchema.ResourceOutputPath)" Link="DataFormat/xml/schema/v2_02/%(Filename)%(Extension)" />
       <FileWrites Include="%(EmbeddedXsdSchema.ResourceOutputPath)" />
     </ItemGroup>
   </Target>

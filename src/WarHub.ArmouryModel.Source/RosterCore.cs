@@ -1,13 +1,11 @@
 ﻿using System.Collections.Immutable;
 using System.Xml.Serialization;
+using WarHub.ArmouryModel.Source.XmlFormat;
 
 namespace WarHub.ArmouryModel.Source
 {
     [WhamNodeCore]
-    [XmlRoot(
-        XmlInformation.RootElementNames.Roster,
-        Namespace = XmlInformation.Namespaces.RosterXmlns,
-        IsNullable = false)]
+    [XmlRoot(RootElementNames.Roster, Namespace = Namespaces.RosterXmlns, IsNullable = false)]
     public partial class RosterCore
     {
         [XmlAttribute("id")]

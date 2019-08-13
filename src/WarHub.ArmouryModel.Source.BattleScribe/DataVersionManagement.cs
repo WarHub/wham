@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Xml;
 using System.Xml.Xsl;
+using WarHub.ArmouryModel.Source.XmlFormat;
 
 namespace WarHub.ArmouryModel.Source.BattleScribe
 {
@@ -9,34 +10,32 @@ namespace WarHub.ArmouryModel.Source.BattleScribe
     {
         public const string BattleScribeVersionAttributeName = "battleScribeVersion";
 
-        public static (XmlInformation.RootElement, string rootNamespace, XmlInformation.BsDataVersion)
-            ReadDocumentInfo(Stream stream)
+        public static VersionedElementInfo ReadRootElementInfo(Stream stream)
         {
             using (var reader = XmlReader.Create(stream))
             {
                 reader.MoveToContent();
                 var rootElement = reader.LocalName.ParseRootElement();
-                var versionAttribute = reader.GetAttribute(BattleScribeVersionAttributeName);
-                var version = versionAttribute.ParseBsDataVersion();
-                return (rootElement, reader.NamespaceURI, version);
+                var versionText = reader.GetAttribute(BattleScribeVersionAttributeName);
+                var version = BattleScribeVersion.Parse(versionText);
+                return new VersionedElementInfo(rootElement, version);
             }
         }
 
         public static Stream ApplyMigrations(Stream input)
         {
             var stream = GetSeekableStream(input);
-            var (rootElement, _, dataVersion) = ReadDocumentInfo(stream);
+            var rootElementInfo = ReadRootElementInfo(stream);
             stream.Position = 0;
             return
-                rootElement.Info()
-                .AvailableMigrations(dataVersion)
+                rootElementInfo.AvailableMigrations()
                 .Aggregate(
                     stream,
-                    (acc, version) =>
+                    (acc, next) =>
                     {
                         using (acc)
                         {
-                            return ApplyMigration(acc, rootElement, version);
+                            return ApplyMigration(acc, next);
                         }
                     });
 
@@ -53,10 +52,7 @@ namespace WarHub.ArmouryModel.Source.BattleScribe
             }
         }
 
-        public static Stream ApplyMigration(
-            Stream inputData,
-            XmlInformation.RootElement rootElement,
-            XmlInformation.BsDataVersion targetVersion)
+        public static Stream ApplyMigration(Stream inputData, VersionedElementInfo elementInfo)
         {
             var xslt = CreateXslt();
             var result = new MemoryStream();
@@ -67,7 +63,7 @@ namespace WarHub.ArmouryModel.Source.BattleScribe
 
             XslCompiledTransform CreateXslt()
             {
-                using (var migrationXlsStream = XmlInformation.OpenMigrationXslStream(rootElement, targetVersion))
+                using (var migrationXlsStream = elementInfo.OpenMigrationXslStream())
                 {
                     var transform = new XslCompiledTransform();
                     transform.Load(XmlReader.Create(migrationXlsStream));

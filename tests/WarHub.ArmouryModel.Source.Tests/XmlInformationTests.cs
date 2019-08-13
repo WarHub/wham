@@ -1,10 +1,10 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using System.Xml;
 using System.Xml.Schema;
 using FluentAssertions;
+using WarHub.ArmouryModel.Source.XmlFormat;
 using Xunit;
-using System.Linq;
-using static WarHub.ArmouryModel.Source.XmlInformation;
 
 namespace WarHub.ArmouryModel.Source.Tests
 {
@@ -12,9 +12,9 @@ namespace WarHub.ArmouryModel.Source.Tests
     {
         [Theory]
         [MemberData(nameof(XslMigrationVersionData))]
-        public void Per_element_xsl_migration_is_available(RootElement rootElement, BsDataVersion dataVersion)
+        public void Per_element_xsl_migration_is_available(VersionedElementInfo elementInfo)
         {
-            using (var migrationXslStream = OpenMigrationXslStream(rootElement, dataVersion))
+            using (var migrationXslStream = elementInfo.OpenMigrationXslStream())
             {
                 migrationXslStream.Should().NotBeNull();
             }
@@ -24,7 +24,7 @@ namespace WarHub.ArmouryModel.Source.Tests
         [MemberData(nameof(ThreeRootElements))]
         public void Per_element_xsd_is_available(RootElement rootElement)
         {
-            using (var xsdStream = OpenXsdStream(rootElement))
+            using (var xsdStream = rootElement.OpenXsdStream())
             {
                 xsdStream.Should().NotBeNull();
             }
@@ -65,9 +65,9 @@ namespace WarHub.ArmouryModel.Source.Tests
         public static IEnumerable<object[]> XslMigrationVersionData()
         {
             return
-                from version in BsDataVersions
-                from element in new[] { RootElement.GameSystem, RootElement.Catalogue }
-                select new object[] { element, version };
+                from perElementMigrations in Resources.XslMigrations
+                from migration in perElementMigrations.Value
+                select new object[] { migration };
         }
 
         public static IEnumerable<object[]> ThreeRootElements()
@@ -81,7 +81,7 @@ namespace WarHub.ArmouryModel.Source.Tests
             RootElement rootElement,
             ValidationEventHandler validationEventHandler)
         {
-            using (var xsdStream = OpenXsdStream(rootElement))
+            using (var xsdStream = rootElement.OpenXsdStream())
             {
                 var schema = XmlSchema.Read(xsdStream, validationEventHandler);
                 var set = new XmlSchemaSet();

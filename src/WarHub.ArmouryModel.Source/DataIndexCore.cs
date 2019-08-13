@@ -1,13 +1,11 @@
 ﻿using System.Collections.Immutable;
 using System.Xml.Serialization;
+using WarHub.ArmouryModel.Source.XmlFormat;
 
 namespace WarHub.ArmouryModel.Source
 {
     [WhamNodeCore]
-    [XmlRoot(
-        XmlInformation.RootElementNames.DataIndex,
-        Namespace = XmlInformation.Namespaces.DataIndexXmlns,
-        IsNullable = false)]
+    [XmlRoot(RootElementNames.DataIndex, Namespace = Namespaces.DataIndexXmlns, IsNullable = false)]
     public partial class DataIndexCore
     {
         [XmlAttribute("battleScribeVersion")]

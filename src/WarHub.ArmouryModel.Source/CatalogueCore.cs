@@ -1,13 +1,11 @@
 ﻿using System.Collections.Immutable;
 using System.Xml.Serialization;
+using WarHub.ArmouryModel.Source.XmlFormat;
 
 namespace WarHub.ArmouryModel.Source
 {
     [WhamNodeCore]
-    [XmlRoot(
-        XmlInformation.RootElementNames.Catalogue,
-        Namespace = XmlInformation.Namespaces.CatalogueXmlns,
-        IsNullable = false)]
+    [XmlRoot(RootElementNames.Catalogue, Namespace = Namespaces.CatalogueXmlns, IsNullable = false)]
     public partial class CatalogueCore : CatalogueBaseCore
     {
         [XmlAttribute("library")]

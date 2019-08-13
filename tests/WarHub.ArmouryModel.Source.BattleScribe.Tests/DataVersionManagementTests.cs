@@ -3,6 +3,7 @@ using System.IO;
 using System.Linq;
 using System.Xml.Linq;
 using FluentAssertions;
+using WarHub.ArmouryModel.Source.XmlFormat;
 using Xunit;
 
 namespace WarHub.ArmouryModel.Source.BattleScribe.Tests
@@ -16,12 +17,7 @@ namespace WarHub.ArmouryModel.Source.BattleScribe.Tests
             {
                 var result = DataVersionManagement.ApplyMigrations(gstStream);
 
-                XDocument.Load(result)
-                    .Root
-                    .Attribute(DataVersionManagement.BattleScribeVersionAttributeName)
-                    .Value
-                    .ParseBsDataVersion()
-                    .Should().Be(XmlInformation.BsDataVersions.Last());
+                GetVersion(result).Should().Be(RootElement.GameSystem.Info().CurrentVersion);
             }
         }
 
@@ -32,26 +28,22 @@ namespace WarHub.ArmouryModel.Source.BattleScribe.Tests
             {
                 var result = DataVersionManagement.ApplyMigrations(gstStream);
 
-                XDocument.Load(result)
-                    .Root
-                    .Attribute(DataVersionManagement.BattleScribeVersionAttributeName)
-                    .Value
-                    .ParseBsDataVersion()
-                    .Should().Be(XmlInformation.BsDataVersions.Last());
+                GetVersion(result).Should().Be(RootElement.Catalogue.Info().CurrentVersion);
             }
         }
 
         [Theory]
         [MemberData(nameof(HandledMigrationInputs))]
-        public void Migrating_elements_succeeds(XmlInformation.RootElement rootElement, string versionString)
+        public void Migrating_elements_succeeds(VersionedElementInfo elementInfo)
         {
             var xmlContent = string.Format(
-                "<{0} {1}='{2}' />",
-                rootElement.Info().XmlElementName,
+                "<{0} {1}='{2}' xmlns='{3}' />",
+                elementInfo.RootElement.Info().XmlElementName,
                 DataVersionManagement.BattleScribeVersionAttributeName,
-                versionString);
+                elementInfo.Version.BattleScribeString,
+                elementInfo.RootElement.Info().Namespace);
             using (var xmlStream = new MemoryStream())
-            using (var writer = new StreamWriter(xmlStream) { AutoFlush = true })
+            using (var writer = new StreamWriter(xmlStream))
             {
                 writer.Write(xmlContent);
                 writer.Flush();
@@ -59,21 +51,25 @@ namespace WarHub.ArmouryModel.Source.BattleScribe.Tests
 
                 var result = DataVersionManagement.ApplyMigrations(xmlStream);
 
-                XDocument.Load(result)
-                    .Root
-                    .Attribute(DataVersionManagement.BattleScribeVersionAttributeName)
-                    .Value
-                    .ParseBsDataVersion()
-                    .Should().Be(XmlInformation.BsDataVersions.Last());
+                GetVersion(result).Should().Be(elementInfo.RootElement.Info().CurrentVersion);
             }
+        }
+
+        private static BattleScribeVersion GetVersion(Stream stream)
+        {
+            var versionText =
+                XDocument.Load(stream)
+                .Root.Attribute(DataVersionManagement.BattleScribeVersionAttributeName)
+                .Value;
+            return BattleScribeVersion.Parse(versionText);
         }
 
         public static IEnumerable<object[]> HandledMigrationInputs()
         {
             return
-                from root in new[] { XmlInformation.RootElement.GameSystem, XmlInformation.RootElement.Catalogue }
-                from targetVersion in root.Info().AvailableMigrations(XmlInformation.BsDataVersion.v1_15)
-                select new object[] { root, targetVersion.Info().DisplayString };
+                from migrations in Resources.XslMigrations
+                from migration in migrations.Value
+                select new object[] { migration };
         }
     }
 }

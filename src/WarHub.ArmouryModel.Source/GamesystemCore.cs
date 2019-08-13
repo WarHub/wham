@@ -1,12 +1,10 @@
 ﻿using System.Xml.Serialization;
+using WarHub.ArmouryModel.Source.XmlFormat;
 
 namespace WarHub.ArmouryModel.Source
 {
     [WhamNodeCore]
-    [XmlRoot(
-        XmlInformation.RootElementNames.GameSystem,
-        Namespace = XmlInformation.Namespaces.GamesystemXmlns,
-        IsNullable = false)]
+    [XmlRoot(RootElementNames.GameSystem, Namespace = Namespaces.GamesystemXmlns, IsNullable = false)]
     public partial class GamesystemCore : CatalogueBaseCore
     {
     }

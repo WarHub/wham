@@ -1,9 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Text;
 using System.Xml.Serialization;
 using WarHub.ArmouryModel.Source.BattleScribe.Utilities;
+using WarHub.ArmouryModel.Source.XmlFormat;
 
 namespace WarHub.ArmouryModel.Source.BattleScribe
 {
@@ -128,28 +127,28 @@ namespace WarHub.ArmouryModel.Source.BattleScribe
         public static XmlSerializerNamespaces CreateGamesystemXmlSerializerNamespaces()
         {
             var namespaces = new XmlSerializerNamespaces();
-            namespaces.Add("", XmlInformation.Namespaces.GamesystemXmlns);
+            namespaces.Add("", Namespaces.GamesystemXmlns);
             return namespaces;
         }
 
         public static XmlSerializerNamespaces CreateCatalogueXmlSerializerNamespaces()
         {
             var namespaces = new XmlSerializerNamespaces();
-            namespaces.Add("", XmlInformation.Namespaces.CatalogueXmlns);
+            namespaces.Add("", Namespaces.CatalogueXmlns);
             return namespaces;
         }
 
         public static XmlSerializerNamespaces CreateRosterXmlSerializerNamespaces()
         {
             var namespaces = new XmlSerializerNamespaces();
-            namespaces.Add("", XmlInformation.Namespaces.RosterXmlns);
+            namespaces.Add("", Namespaces.RosterXmlns);
             return namespaces;
         }
 
         public static XmlSerializerNamespaces CreateDataIndexXmlSerializerNamespaces()
         {
             var namespaces = new XmlSerializerNamespaces();
-            namespaces.Add("", XmlInformation.Namespaces.DataIndexXmlns);
+            namespaces.Add("", Namespaces.DataIndexXmlns);
             return namespaces;
         }
     }

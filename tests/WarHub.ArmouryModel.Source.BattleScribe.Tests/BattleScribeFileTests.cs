@@ -5,6 +5,7 @@ using System.Xml;
 using System.Xml.Schema;
 using FluentAssertions;
 using Microsoft.XmlDiffPatch;
+using WarHub.ArmouryModel.Source.XmlFormat;
 using Xunit;
 
 namespace WarHub.ArmouryModel.Source.BattleScribe.Tests
@@ -35,11 +36,11 @@ namespace WarHub.ArmouryModel.Source.BattleScribe.Tests
         }
 
         [Theory]
-        [InlineData(XmlTestData.GamesystemFilename, XmlInformation.RootElement.GameSystem)]
-        [InlineData(XmlTestData.Catalogue1Filename, XmlInformation.RootElement.Catalogue)]
-        [InlineData(XmlTestData.Catalogue2Filename, XmlInformation.RootElement.Catalogue)]
-        [InlineData(XmlTestData.RosterFilename, XmlInformation.RootElement.Roster)]
-        public void Validates_with_xsd(string filename, XmlInformation.RootElement rootElement)
+        [InlineData(XmlTestData.GamesystemFilename, RootElement.GameSystem)]
+        [InlineData(XmlTestData.Catalogue1Filename, RootElement.Catalogue)]
+        [InlineData(XmlTestData.Catalogue2Filename, RootElement.Catalogue)]
+        [InlineData(XmlTestData.RosterFilename, RootElement.Roster)]
+        public void Validates_with_xsd(string filename, RootElement rootElement)
         {
             var path = Path.Combine(XmlTestData.InputDir, filename);
             var validation = new List<ValidationEventArgs>();
@@ -93,18 +94,17 @@ namespace WarHub.ArmouryModel.Source.BattleScribe.Tests
                 {
                     using (var diffWriter = XmlWriter.Create(diffStream))
                     {
-                        var areEqual = differ.Compare(input, output, false, diffWriter);
-                        return areEqual;
+                        return differ.Compare(input, output, false, diffWriter);
                     }
                 }
             }
         }
 
         private static XmlSchemaSet ReadSchemaSet(
-            XmlInformation.RootElement rootElement,
+            RootElement rootElement,
             ValidationEventHandler validationEventHandler)
         {
-            using (var xsdStream = XmlInformation.OpenXsdStream(rootElement))
+            using (var xsdStream = rootElement.OpenXsdStream())
             {
                 var schema = XmlSchema.Read(xsdStream, validationEventHandler);
                 var set = new XmlSchemaSet();
