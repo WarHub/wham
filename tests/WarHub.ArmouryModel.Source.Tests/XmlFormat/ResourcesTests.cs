@@ -6,9 +6,9 @@ using FluentAssertions;
 using WarHub.ArmouryModel.Source.XmlFormat;
 using Xunit;
 
-namespace WarHub.ArmouryModel.Source.Tests
+namespace WarHub.ArmouryModel.Source.Tests.XmlFormat
 {
-    public class XmlInformationTests
+    public class ResourcesTests
     {
         [Theory]
         [MemberData(nameof(XslMigrationVersionData))]

@@ -51,8 +51,7 @@ namespace WarHub.ArmouryModel.Source.XmlFormat
             var major = int.Parse(match.Groups[1].Value);
             var minor = int.Parse(match.Groups[2].Value);
             var suffix = match.Groups[3].Value;
-            var suffixNormalized = string.IsNullOrEmpty(suffix) ? null : suffix;
-            return new BattleScribeVersion(major, minor, suffixNormalized);
+            return Create(major, minor, suffix);
         }
 
         public static BattleScribeVersion Create(int major, int minor, string suffix = null)

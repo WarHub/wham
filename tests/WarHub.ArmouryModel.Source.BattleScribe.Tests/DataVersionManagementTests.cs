@@ -36,23 +36,44 @@ namespace WarHub.ArmouryModel.Source.BattleScribe.Tests
         [MemberData(nameof(HandledMigrationInputs))]
         public void Migrating_elements_succeeds(VersionedElementInfo elementInfo)
         {
+            using (var xmlStream = CreateEmptyElementStream(elementInfo))
+            {
+                var result = DataVersionManagement.ApplyMigrations(xmlStream);
+
+                GetVersion(result).Should().Be(elementInfo.RootElement.Info().CurrentVersion);
+            }
+        }
+
+        [Theory]
+        [InlineData(RootElement.Catalogue, "1.15")]
+        public void ReadRootElementInfo_succeeds(RootElement rootElement, string versionText)
+        {
+            var elementInfo = 
+                new VersionedElementInfo(
+                    rootElement,
+                    BattleScribeVersion.Parse(versionText));
+            using (var stream = CreateEmptyElementStream(elementInfo))
+            {
+                var result = DataVersionManagement.ReadRootElementInfo(stream);
+
+                result.Should().Be(elementInfo);
+            }
+        }
+
+        private static Stream CreateEmptyElementStream(VersionedElementInfo elementInfo)
+        {
             var xmlContent = string.Format(
                 "<{0} {1}='{2}' xmlns='{3}' />",
                 elementInfo.RootElement.Info().XmlElementName,
                 DataVersionManagement.BattleScribeVersionAttributeName,
                 elementInfo.Version.BattleScribeString,
                 elementInfo.RootElement.Info().Namespace);
-            using (var xmlStream = new MemoryStream())
-            using (var writer = new StreamWriter(xmlStream))
-            {
-                writer.Write(xmlContent);
-                writer.Flush();
-                xmlStream.Position = 0;
-
-                var result = DataVersionManagement.ApplyMigrations(xmlStream);
-
-                GetVersion(result).Should().Be(elementInfo.RootElement.Info().CurrentVersion);
-            }
+            var xmlStream = new MemoryStream();
+            var writer = new StreamWriter(xmlStream);
+            writer.Write(xmlContent);
+            writer.Flush();
+            xmlStream.Position = 0;
+            return xmlStream;
         }
 
         private static BattleScribeVersion GetVersion(Stream stream)

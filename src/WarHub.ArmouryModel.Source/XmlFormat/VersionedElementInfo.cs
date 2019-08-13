@@ -29,10 +29,14 @@ namespace WarHub.ArmouryModel.Source.XmlFormat
 
         public int CompareTo(VersionedElementInfo other)
         {
-            var self = this;
+            return Compare(this, other);
+        }
+
+        public static int Compare(VersionedElementInfo left, VersionedElementInfo right)
+        {
             return
-                self.RootElement.CompareTo(other.RootElement) is var elementResult && elementResult != 0 ? elementResult
-                : BattleScribeVersion.Compare(self.Version, other.Version);
+                left.RootElement.CompareTo(right.RootElement) is var elementResult && elementResult != 0 ? elementResult
+                : BattleScribeVersion.Compare(left.Version, right.Version);
         }
 
         public override string ToString() => $"{RootElement}, Version={Version}";
