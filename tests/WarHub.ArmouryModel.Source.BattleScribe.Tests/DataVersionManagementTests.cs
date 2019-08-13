@@ -48,7 +48,7 @@ namespace WarHub.ArmouryModel.Source.BattleScribe.Tests
         [InlineData(RootElement.Catalogue, "1.15")]
         public void ReadRootElementInfo_succeeds(RootElement rootElement, string versionText)
         {
-            var elementInfo = 
+            var elementInfo =
                 new VersionedElementInfo(
                     rootElement,
                     BattleScribeVersion.Parse(versionText));

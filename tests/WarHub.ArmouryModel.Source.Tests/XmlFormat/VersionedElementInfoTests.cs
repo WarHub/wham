@@ -1,5 +1,4 @@
-﻿using System;
-using FluentAssertions;
+﻿using FluentAssertions;
 using WarHub.ArmouryModel.Source.XmlFormat;
 using Xunit;
 
