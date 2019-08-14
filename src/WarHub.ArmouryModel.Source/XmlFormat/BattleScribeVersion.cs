@@ -74,24 +74,43 @@ namespace WarHub.ArmouryModel.Source.XmlFormat
                 : string.CompareOrdinal(Suffix, other.Suffix);
         }
 
-        public bool Equals(BattleScribeVersion other)
-        {
-            return CompareTo(other) == 0;
-        }
+        public override bool Equals(object obj) => Equals(obj as BattleScribeVersion);
+
+        public bool Equals(BattleScribeVersion other) => CompareTo(other) == 0;
 
         public override string ToString() => BattleScribeString;
 
-        public static int Compare(BattleScribeVersion left, BattleScribeVersion right)
+        public override int GetHashCode()
         {
-            return left is null ? (right is null ? 0 : -1) : left.CompareTo(right);
+            var hashCode = -1092680650;
+            hashCode = hashCode * -1521134295 + Major.GetHashCode();
+            hashCode = hashCode * -1521134295 + Minor.GetHashCode();
+            hashCode = hashCode * -1521134295 + Suffix?.GetHashCode() ?? 0;
+            return hashCode;
         }
 
-        public static bool operator <(BattleScribeVersion left, BattleScribeVersion right) => Compare(left, right) < 0;
+        public static int Compare(BattleScribeVersion left, BattleScribeVersion right)
+            => left is null ? (right is null ? 0 : -1) : left.CompareTo(right);
 
-        public static bool operator <=(BattleScribeVersion left, BattleScribeVersion right) => Compare(left, right) <= 0;
+        public static bool Equals(BattleScribeVersion left, BattleScribeVersion right)
+            => left is null ? right is null : left.Equals(right);
 
-        public static bool operator >(BattleScribeVersion left, BattleScribeVersion right) => Compare(left, right) > 0;
+        public static bool operator <(BattleScribeVersion left, BattleScribeVersion right)
+            => Compare(left, right) < 0;
 
-        public static bool operator >=(BattleScribeVersion left, BattleScribeVersion right) => Compare(left, right) >= 0;
+        public static bool operator <=(BattleScribeVersion left, BattleScribeVersion right)
+            => Compare(left, right) <= 0;
+
+        public static bool operator >(BattleScribeVersion left, BattleScribeVersion right)
+            => Compare(left, right) > 0;
+
+        public static bool operator >=(BattleScribeVersion left, BattleScribeVersion right)
+            => Compare(left, right) >= 0;
+
+        public static bool operator ==(BattleScribeVersion left, BattleScribeVersion right)
+            => left?.Equals(right) ?? right is null;
+
+        public static bool operator !=(BattleScribeVersion left, BattleScribeVersion right)
+            => !(left == right);
     }
 }

@@ -14,19 +14,19 @@ namespace WarHub.ArmouryModel.Source.XmlFormat
                from element in new[] { RootElement.GameSystem, RootElement.Catalogue }
                select new VersionedElementInfo(element, version))
             .Append(new VersionedElementInfo(RootElement.DataIndex, BattleScribeVersion.V2_02))
-            .GroupBy(x => x.RootElement)
+            .GroupBy(x => x.Element)
             .ToImmutableDictionary(x => x.Key, x => x.ToImmutableSortedSet());
 
         public static string GetMigrationResourcePath(this VersionedElementInfo elementInfo) =>
             string.Format(
                 XslTransformResourceFormat,
-                elementInfo.RootElement,
+                elementInfo.Element,
                 elementInfo.Version.FilepathString);
 
         public static string GetXsdResourcePath(this VersionedElementInfo elementInfo) =>
             string.Format(
                 XsdResourceFormat,
-                elementInfo.RootElement,
+                elementInfo.Element,
                 elementInfo.Version.FilepathString);
 
         public static Stream OpenXsdStream(this RootElement rootElement)

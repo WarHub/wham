@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Xml;
 using System.Xml.Serialization;
 using WarHub.ArmouryModel.Source.BattleScribe.Utilities;
 using WarHub.ArmouryModel.Source.XmlFormat;
@@ -12,143 +14,122 @@ namespace WarHub.ArmouryModel.Source.BattleScribe
     /// </summary>
     public class BattleScribeXmlSerializer
     {
-        private Lazy<XmlSerializerNamespaces> LazyGamesystemNamespaces { get; }
-            = new Lazy<XmlSerializerNamespaces>(CreateGamesystemXmlSerializerNamespaces);
+        private readonly Dictionary<RootElement, XmlSerializerNamespaces> namespaces
+            = new Dictionary<RootElement, XmlSerializerNamespaces>();
 
-        private Lazy<XmlSerializerNamespaces> LazyCatalogueNamespaces { get; }
-            = new Lazy<XmlSerializerNamespaces>(CreateCatalogueXmlSerializerNamespaces);
+        private readonly Dictionary<RootElement, XmlSerializer> serializers
+            = new Dictionary<RootElement, XmlSerializer>();
 
-        private Lazy<XmlSerializerNamespaces> LazyRosterNamespaces { get; }
-            = new Lazy<XmlSerializerNamespaces>(CreateRosterXmlSerializerNamespaces);
-
-        private Lazy<XmlSerializerNamespaces> LazyDataIndexNamespaces { get; }
-            = new Lazy<XmlSerializerNamespaces>(CreateDataIndexXmlSerializerNamespaces);
-
-        private Lazy<XmlSerializer> LazyGamesystemSerializer { get; }
-            = new Lazy<XmlSerializer>(CreateGamesystemSerializer);
-
-        private Lazy<XmlSerializer> LazyCatalogueSerializer { get; }
-            = new Lazy<XmlSerializer>(CreateCatalogueSerializer);
-
-        private Lazy<XmlSerializer> LazyRosterSerializer { get; }
-            = new Lazy<XmlSerializer>(CreateRosterSerializer);
-
-        private Lazy<XmlSerializer> LazyDataIndexSerializer { get; }
-            = new Lazy<XmlSerializer>(CreateDataIndexSerializer);
-
-        private Lazy<XmlSerializer> LazyGamesystemDeserializer { get; }
-            = new Lazy<XmlSerializer>(CreateGamesystemDeserializer);
-
-        private Lazy<XmlSerializer> LazyCatalogueDeserializer { get; }
-            = new Lazy<XmlSerializer>(CreateCatalogueDeserializer);
-
-        private Lazy<XmlSerializer> LazyRosterDeserializer { get; }
-            = new Lazy<XmlSerializer>(CreateRosterDeserializer);
-
-        private Lazy<XmlSerializer> LazyDataIndexDeserializer { get; }
-            = new Lazy<XmlSerializer>(CreateDataIndexDeserializer);
+        private readonly Dictionary<RootElement, XmlSerializer> deserializers
+            = new Dictionary<RootElement, XmlSerializer>();
 
         public GamesystemNode DeserializeGamesystem(Stream stream)
-        {
-            var builder = (GamesystemCore.Builder)LazyGamesystemDeserializer.Value.Deserialize(stream);
-            return builder.ToImmutable().ToNode();
-        }
+            => Deserialize<GamesystemCore.Builder>(stream, RootElement.GameSystem).ToImmutable().ToNode();
 
         public CatalogueNode DeserializeCatalogue(Stream stream)
-        {
-            var builder = (CatalogueCore.Builder)LazyCatalogueDeserializer.Value.Deserialize(stream);
-            return builder.ToImmutable().ToNode();
-        }
+            => Deserialize<CatalogueCore.Builder>(stream, RootElement.Catalogue).ToImmutable().ToNode();
 
         public RosterNode DeserializeRoster(Stream stream)
+            => Deserialize<RosterCore.Builder>(stream, RootElement.Roster).ToImmutable().ToNode();
+
+        public DataIndexNode DeserializeDataIndex(Stream stream)
+            => Deserialize<DataIndexCore.Builder>(stream, RootElement.DataIndex).ToImmutable().ToNode();
+
+        public CatalogueNode DeserializeCatalogue(Func<XmlSerializer, object> deserialization)
         {
-            var builder = (RosterCore.Builder)LazyRosterDeserializer.Value.Deserialize(stream);
+            var builder = (CatalogueCore.Builder)deserialization(GetDeserializer(RootElement.Catalogue));
             return builder.ToImmutable().ToNode();
         }
 
-        public DataIndexNode DeserializeDataIndex(Stream stream)
+        public GamesystemNode DeserializeGamesystem(Func<XmlSerializer, object> deserialization)
         {
-            var builder = (DataIndexCore.Builder)LazyDataIndexDeserializer.Value.Deserialize(stream);
+            var builder = (GamesystemCore.Builder)deserialization(GetDeserializer(RootElement.GameSystem));
+            return builder.ToImmutable().ToNode();
+        }
+
+        public RosterNode DeserializeRoster(Func<XmlSerializer, object> deserialization)
+        {
+            var builder = (RosterCore.Builder)deserialization(GetDeserializer(RootElement.Roster));
+            return builder.ToImmutable().ToNode();
+        }
+
+        public DataIndexNode DeserializeDataIndex(Func<XmlSerializer, object> deserialization)
+        {
+            var builder = (DataIndexCore.Builder)deserialization(GetDeserializer(RootElement.DataIndex));
             return builder.ToImmutable().ToNode();
         }
 
         public void SerializeGamesystem(GamesystemNode node, Stream stream)
-        {
-            var fsp = node.GetSerializationProxy();
-            using (var writer = BattleScribeConformantXmlWriter.Create(stream))
-            {
-                LazyGamesystemSerializer.Value.Serialize(writer, fsp, LazyGamesystemNamespaces.Value);
-            }
-        }
+            => Serialize(stream, node.GetSerializationProxy(), node.Kind.ToRootElement());
 
         public void SerializeCatalogue(CatalogueNode node, Stream stream)
-        {
-            var fsp = node.GetSerializationProxy();
-            using (var writer = BattleScribeConformantXmlWriter.Create(stream))
-            {
-                LazyCatalogueSerializer.Value.Serialize(writer, fsp, LazyCatalogueNamespaces.Value);
-            }
-        }
+            => Serialize(stream, node.GetSerializationProxy(), node.Kind.ToRootElement());
 
         public void SerializeRoster(RosterNode node, Stream stream)
-        {
-            var fsp = node.GetSerializationProxy();
-            using (var writer = BattleScribeConformantXmlWriter.Create(stream))
-            {
-                LazyRosterSerializer.Value.Serialize(writer, fsp, LazyRosterNamespaces.Value);
-            }
-        }
+            => Serialize(stream, node.GetSerializationProxy(), node.Kind.ToRootElement());
 
         public void SerializeDataIndex(DataIndexNode node, Stream stream)
+            => Serialize(stream, node.GetSerializationProxy(), node.Kind.ToRootElement());
+
+        private void Serialize(Stream stream, object @object, RootElement rootElement)
         {
-            var fsp = node.GetSerializationProxy();
+            var serializer = GetSerializer(rootElement);
+            var namespaces = GetNamespaces(rootElement);
             using (var writer = BattleScribeConformantXmlWriter.Create(stream))
             {
-                LazyDataIndexSerializer.Value.Serialize(writer, fsp, LazyDataIndexNamespaces.Value);
+                serializer.Serialize(writer, @object, namespaces);
             }
         }
 
-        public static XmlSerializer CreateGamesystemSerializer() => new XmlSerializer(typeof(GamesystemCore.FastSerializationProxy));
-
-        public static XmlSerializer CreateCatalogueSerializer() => new XmlSerializer(typeof(CatalogueCore.FastSerializationProxy));
-
-        public static XmlSerializer CreateRosterSerializer() => new XmlSerializer(typeof(RosterCore.FastSerializationProxy));
-
-        public static XmlSerializer CreateDataIndexSerializer() => new XmlSerializer(typeof(DataIndexCore.FastSerializationProxy));
-
-        public static XmlSerializer CreateGamesystemDeserializer() => new XmlSerializer(typeof(GamesystemCore.Builder));
-
-        public static XmlSerializer CreateCatalogueDeserializer() => new XmlSerializer(typeof(CatalogueCore.Builder));
-
-        public static XmlSerializer CreateRosterDeserializer() => new XmlSerializer(typeof(RosterCore.Builder));
-
-        public static XmlSerializer CreateDataIndexDeserializer() => new XmlSerializer(typeof(DataIndexCore.Builder));
-
-        public static XmlSerializerNamespaces CreateGamesystemXmlSerializerNamespaces()
+        private T Deserialize<T>(Stream stream, RootElement rootElement)
         {
-            var namespaces = new XmlSerializerNamespaces();
-            namespaces.Add("", Namespaces.GamesystemXmlns);
-            return namespaces;
+            var serializer = GetDeserializer(rootElement);
+            return (T)serializer.Deserialize(stream);
         }
 
-        public static XmlSerializerNamespaces CreateCatalogueXmlSerializerNamespaces()
+        private XmlSerializerNamespaces GetNamespaces(RootElement rootElement)
         {
-            var namespaces = new XmlSerializerNamespaces();
-            namespaces.Add("", Namespaces.CatalogueXmlns);
-            return namespaces;
+            if (namespaces.TryGetValue(rootElement, out var cached))
+            {
+                return cached;
+            }
+            var created = CreateNamespaces(rootElement);
+            namespaces[rootElement] = created;
+            return created;
         }
 
-        public static XmlSerializerNamespaces CreateRosterXmlSerializerNamespaces()
+        private XmlSerializer GetSerializer(RootElement rootElement)
         {
-            var namespaces = new XmlSerializerNamespaces();
-            namespaces.Add("", Namespaces.RosterXmlns);
-            return namespaces;
+            if (serializers.TryGetValue(rootElement, out var cached))
+            {
+                return cached;
+            }
+            var created = CreateSerializer(rootElement);
+            serializers[rootElement] = created;
+            return created;
         }
 
-        public static XmlSerializerNamespaces CreateDataIndexXmlSerializerNamespaces()
+        private XmlSerializer GetDeserializer(RootElement rootElement)
+        {
+            if (deserializers.TryGetValue(rootElement, out var cached))
+            {
+                return cached;
+            }
+            var created = CreateDeserializer(rootElement);
+            deserializers[rootElement] = created;
+            return created;
+        }
+
+        private static XmlSerializer CreateSerializer(RootElement rootElement)
+            => new XmlSerializer(rootElement.Info().SerializationProxyType);
+
+        private static XmlSerializer CreateDeserializer(RootElement rootElement)
+            => new XmlSerializer(rootElement.Info().BuilderType);
+
+        private static XmlSerializerNamespaces CreateNamespaces(RootElement rootElement)
         {
             var namespaces = new XmlSerializerNamespaces();
-            namespaces.Add("", Namespaces.DataIndexXmlns);
+            namespaces.Add("", rootElement.Info().Namespace);
             return namespaces;
         }
     }

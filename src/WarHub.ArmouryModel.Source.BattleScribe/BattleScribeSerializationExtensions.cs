@@ -1,5 +1,7 @@
 ﻿using System;
 using System.IO;
+using System.Xml;
+using System.Xml.Serialization;
 using WarHub.ArmouryModel.Source.XmlFormat;
 
 namespace WarHub.ArmouryModel.Source.BattleScribe
@@ -9,7 +11,8 @@ namespace WarHub.ArmouryModel.Source.BattleScribe
     /// </summary>
     public static class BattleScribeSerializationExtensions
     {
-        private static Lazy<BattleScribeXmlSerializer> BSSerializer { get; } = new Lazy<BattleScribeXmlSerializer>();
+        private static Lazy<BattleScribeXmlSerializer> BSSerializer { get; }
+            = new Lazy<BattleScribeXmlSerializer>();
 
         private static BattleScribeXmlSerializer Serializer => BSSerializer.Value;
 
@@ -33,43 +36,94 @@ namespace WarHub.ArmouryModel.Source.BattleScribe
             return Serializer.DeserializeDataIndex(stream);
         }
 
-        public static SourceNode Deserialize(this Stream stream)
+        public static SourceNode DeserializeAuto(
+            this Stream stream,
+            BsDeserializationMode mode = BsDeserializationMode.Simple)
         {
-            var seekableStream = GetSeekableStream(stream);
-            var rootInfo = DataVersionManagement.ReadRootElementInfo(seekableStream);
-            seekableStream.Position = 0;
-            var sourceKind = rootInfo.RootElement.Info().SourceKind;
-            return seekableStream.Deserialize(sourceKind);
-
-            Stream GetSeekableStream(Stream source)
+            switch (mode)
             {
-                if (source.CanSeek)
+                case BsDeserializationMode.Simple:
+                    return DeserializeSimple(stream);
+                case BsDeserializationMode.MigrateOnFailure:
+                    return WithSeekable(seekable =>
+                    {
+                        try
+                        {
+                            return DeserializeSimple(seekable);
+                        }
+                        catch (Exception)
+                        {
+                            return DeserializeMigrating(seekable);
+                        }
+                    });
+                case BsDeserializationMode.MigrateAlways:
+                    return WithSeekable(DeserializeMigrating);
+                default:
+                    throw new ArgumentException("Invalid mode.", nameof(mode));
+            }
+            SourceNode DeserializeSimple(Stream source)
+            {
+                using (var reader = XmlReader.Create(source))
                 {
-                    return source;
+                    var rootInfo = DataVersionManagement.ReadRootElementInfo(reader);
+                    return Deserialize(x => x.Deserialize(reader), rootInfo.Element);
                 }
-                var memory = new MemoryStream();
-                source.CopyTo(memory);
-                memory.Position = 0;
-                return memory;
+            }
+            SourceNode DeserializeMigrating(Stream source)
+            {
+                var (migrated, info) =
+                    DataVersionManagement.Migrate(
+                        () =>
+                        {
+                            source.Position = 0;
+                            return source;
+                        });
+                using (migrated)
+                {
+                    return Deserialize(migrated, info.Element);
+                }
+            }
+            SourceNode WithSeekable(Func<Stream, SourceNode> func)
+            {
+                if (stream.CanSeek)
+                {
+                    return func(stream);
+                }
+                else
+                {
+                    using (var memory = new MemoryStream())
+                    {
+                        stream.CopyTo(memory);
+                        memory.Position = 0;
+                        return func(memory);
+                    }
+                }
             }
         }
 
-        public static SourceNode Deserialize(this Stream stream, SourceKind sourceKind)
+        private static SourceNode Deserialize(Stream stream, RootElement rootElement)
         {
-            switch (sourceKind)
+            return Deserialize(x => x.Deserialize(stream), rootElement);
+        }
+
+        private static SourceNode Deserialize(
+            Func<XmlSerializer, object> deserialization,
+            RootElement rootElement)
+        {
+            switch (rootElement)
             {
-                case SourceKind.Catalogue:
-                    return stream.DeserializeCatalogue();
-                case SourceKind.Gamesystem:
-                    return stream.DeserializeGamesystem();
-                case SourceKind.Roster:
-                    return stream.DeserializeRoster();
-                case SourceKind.DataIndex:
-                    return stream.DeserializeDataIndex();
+                case RootElement.Catalogue:
+                    return Serializer.DeserializeCatalogue(deserialization);
+                case RootElement.GameSystem:
+                    return Serializer.DeserializeGamesystem(deserialization);
+                case RootElement.Roster:
+                    return Serializer.DeserializeRoster(deserialization);
+                case RootElement.DataIndex:
+                    return Serializer.DeserializeDataIndex(deserialization);
                 default:
                     throw new ArgumentException(
-                        $"Deserialization is not supported for this {nameof(SourceKind)}.",
-                        nameof(sourceKind));
+                        $"Deserialization is not supported for this {nameof(RootElement)}.",
+                        nameof(rootElement));
             }
         }
 
@@ -90,7 +144,9 @@ namespace WarHub.ArmouryModel.Source.BattleScribe
                     Serializer.SerializeDataIndex((DataIndexNode)node, stream);
                     return;
                 default:
-                    throw new ArgumentException($"{nameof(node)} type's ({node?.GetType()}) serialization is not supported.", nameof(node));
+                    throw new ArgumentException(
+                        $"{nameof(node)} type's ({node?.GetType()}) serialization is not supported.",
+                        nameof(node));
             }
         }
 
@@ -113,5 +169,23 @@ namespace WarHub.ArmouryModel.Source.BattleScribe
         {
             return node.Core.ToSerializationProxy();
         }
+    }
+
+    public enum BsDeserializationMode
+    {
+        /// <summary>
+        /// This mode means that no additional action will be taken aside of deserialization.
+        /// </summary>
+        Simple,
+
+        /// <summary>
+        /// In this mode if the first deserialization fails, migrations (if available) will be applied.
+        /// </summary>
+        MigrateOnFailure,
+
+        /// <summary>
+        /// In this mode, migrations (if available) are applied.
+        /// </summary>
+        MigrateAlways,
     }
 }
