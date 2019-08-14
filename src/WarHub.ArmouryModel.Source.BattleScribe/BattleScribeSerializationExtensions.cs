@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using WarHub.ArmouryModel.Source.XmlFormat;
 
 namespace WarHub.ArmouryModel.Source.BattleScribe
 {
@@ -32,6 +33,46 @@ namespace WarHub.ArmouryModel.Source.BattleScribe
             return Serializer.DeserializeDataIndex(stream);
         }
 
+        public static SourceNode Deserialize(this Stream stream)
+        {
+            var seekableStream = GetSeekableStream(stream);
+            var rootInfo = DataVersionManagement.ReadRootElementInfo(seekableStream);
+            seekableStream.Position = 0;
+            var sourceKind = rootInfo.RootElement.Info().SourceKind;
+            return seekableStream.Deserialize(sourceKind);
+
+            Stream GetSeekableStream(Stream source)
+            {
+                if (source.CanSeek)
+                {
+                    return source;
+                }
+                var memory = new MemoryStream();
+                source.CopyTo(memory);
+                memory.Position = 0;
+                return memory;
+            }
+        }
+
+        public static SourceNode Deserialize(this Stream stream, SourceKind sourceKind)
+        {
+            switch (sourceKind)
+            {
+                case SourceKind.Catalogue:
+                    return stream.DeserializeCatalogue();
+                case SourceKind.Gamesystem:
+                    return stream.DeserializeGamesystem();
+                case SourceKind.Roster:
+                    return stream.DeserializeRoster();
+                case SourceKind.DataIndex:
+                    return stream.DeserializeDataIndex();
+                default:
+                    throw new ArgumentException(
+                        $"Deserialization is not supported for this {nameof(SourceKind)}.",
+                        nameof(sourceKind));
+            }
+        }
+
         public static void Serialize(this SourceNode node, Stream stream)
         {
             switch (node.Kind)
@@ -49,7 +90,7 @@ namespace WarHub.ArmouryModel.Source.BattleScribe
                     Serializer.SerializeDataIndex((DataIndexNode)node, stream);
                     return;
                 default:
-                    throw new ArgumentException($"{nameof(node)} type's ({node?.GetType()}) serialization is not supported.");
+                    throw new ArgumentException($"{nameof(node)} type's ({node?.GetType()}) serialization is not supported.", nameof(node));
             }
         }
 

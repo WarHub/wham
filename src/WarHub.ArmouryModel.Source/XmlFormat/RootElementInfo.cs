@@ -5,7 +5,7 @@ namespace WarHub.ArmouryModel.Source.XmlFormat
 {
     public readonly struct RootElementInfo
     {
-        internal RootElementInfo(RootElement element)
+        public RootElementInfo(RootElement element)
         {
             Element = element;
         }
@@ -15,6 +15,8 @@ namespace WarHub.ArmouryModel.Source.XmlFormat
         public string Namespace => NamespaceFromElement[Element];
 
         public string XmlElementName => XmlNames[Element];
+
+        public SourceKind SourceKind => SourceKindFromElement[Element];
 
         public BattleScribeVersion CurrentVersion
         {
@@ -33,7 +35,27 @@ namespace WarHub.ArmouryModel.Source.XmlFormat
             }
         }
 
+        public static ImmutableSortedSet<RootElement> AllElements { get; }
+            = ImmutableSortedSet.Create(
+                RootElement.Catalogue,
+                RootElement.GameSystem,
+                RootElement.Roster,
+                RootElement.DataIndex);
+
         public override string ToString() => Element.ToString();
+
+        internal static ImmutableDictionary<RootElement, SourceKind> SourceKindFromElement { get; }
+            = new Dictionary<RootElement, SourceKind>
+            {
+                [RootElement.Catalogue] = SourceKind.Catalogue,
+                [RootElement.DataIndex] = SourceKind.DataIndex,
+                [RootElement.GameSystem] = SourceKind.Gamesystem,
+                [RootElement.Roster] = SourceKind.Roster,
+            }.ToImmutableDictionary();
+
+        public static ImmutableDictionary<SourceKind, RootElement> ElementFromSourceKind { get; }
+            = SourceKindFromElement
+            .ToImmutableDictionary(x => x.Value, x => x.Key);
 
         internal static ImmutableDictionary<RootElement, string> NamespaceFromElement { get; }
             = new Dictionary<RootElement, string>
