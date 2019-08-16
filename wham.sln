@@ -40,7 +40,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		nuget.config = nuget.config
 		Packages.props = Packages.props
 		README.md = README.md
-		src\version.json = src\version.json
+		version.json = version.json
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WarHub.ArmouryModel.Workspaces.Gitree", "src\WarHub.ArmouryModel.Workspaces.Gitree\WarHub.ArmouryModel.Workspaces.Gitree.csproj", "{D06E2A07-E93D-4AA2-858E-D2694F4DB94D}"
