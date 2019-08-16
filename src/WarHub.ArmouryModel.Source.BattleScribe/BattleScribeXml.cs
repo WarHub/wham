@@ -1,5 +1,4 @@
 ﻿using System.IO;
-using System.Xml;
 
 namespace WarHub.ArmouryModel.Source.BattleScribe
 {
@@ -55,7 +54,6 @@ namespace WarHub.ArmouryModel.Source.BattleScribe
             return stream.DeserializeCatalogue();
         }
 
-
         /// <summary>
         /// Loads BattleScribe roster from (unzipped) .ros file from <paramref name="path"/>.
         /// </summary>
@@ -78,7 +76,6 @@ namespace WarHub.ArmouryModel.Source.BattleScribe
         {
             return stream.DeserializeRoster();
         }
-
 
         /// <summary>
         /// Loads BattleScribe data index from (unzipped) .xml file from <paramref name="path"/>.

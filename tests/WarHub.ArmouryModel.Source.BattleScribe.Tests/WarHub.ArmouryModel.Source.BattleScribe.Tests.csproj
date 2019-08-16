@@ -6,6 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="FluentAssertions" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" />
     <PackageReference Include="XmlDiffPatch.Core" />
     <PackageReference Include="xunit" />
@@ -18,7 +19,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="XmlTestDatafiles\*">
+    <None Update="XmlTestDatafiles/**/*">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>

@@ -1,14 +1,13 @@
 ﻿using System.Collections.Immutable;
 using System.Xml.Serialization;
+using WarHub.ArmouryModel.Source.XmlFormat;
 
 namespace WarHub.ArmouryModel.Source
 {
     [WhamNodeCore]
-    [XmlRoot("dataIndex", Namespace = DataIndexXmlNamespace)]
+    [XmlRoot(RootElementNames.DataIndex, Namespace = Namespaces.DataIndexXmlns, IsNullable = false)]
     public partial class DataIndexCore
     {
-        public const string DataIndexXmlNamespace = "http://www.battlescribe.net/schema/dataIndexSchema";
-
         [XmlAttribute("battleScribeVersion")]
         public string BattleScribeVersion { get; }
 
@@ -23,7 +22,5 @@ namespace WarHub.ArmouryModel.Source
 
         [XmlArray("dataIndexEntries")]
         public ImmutableArray<DataIndexEntryCore> DataIndexEntries { get; }
-
-        public string DefaultXmlNamespace => DataIndexXmlNamespace;
     }
 }

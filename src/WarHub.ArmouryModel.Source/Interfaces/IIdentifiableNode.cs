@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace WarHub.ArmouryModel.Source
+﻿namespace WarHub.ArmouryModel.Source
 {
     public interface IIdentifiableNode
     {

@@ -1,6 +1,6 @@
 ﻿namespace WarHub.ArmouryModel.Source
 {
-    public abstract class NodeCore
+    public abstract class NodeCore : ICore<SourceNode>
     {
         public SourceNode ToNode(SourceNode parent = null)
         {

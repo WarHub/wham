@@ -8,18 +8,13 @@ using Newtonsoft.Json.Serialization;
 namespace WarHub.ArmouryModel.ProjectModel
 {
     /// <summary>
-    /// Ignores "defaultXmlNamespace" property, as well as collections with no elements.
+    /// Ignores collections with no elements.
     /// </summary>
     internal class IgnoringEmptyCollectionsContractResolver : CamelCasePropertyNamesContractResolver
     {
         protected override JsonProperty CreateProperty(MemberInfo member, MemberSerialization memberSerialization)
         {
             var prop = base.CreateProperty(member, memberSerialization);
-            if (prop.PropertyName.Equals("defaultXmlNamespace", StringComparison.OrdinalIgnoreCase))
-            {
-                prop.Ignored = true;
-                return prop;
-            }
             if (!prop.PropertyType.IsGenericType || prop.PropertyType.GetGenericTypeDefinition() != typeof(ImmutableArray<>))
             {
                 return prop;
