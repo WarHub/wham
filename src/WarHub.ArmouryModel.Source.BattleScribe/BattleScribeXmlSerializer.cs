@@ -14,6 +14,11 @@ namespace WarHub.ArmouryModel.Source.BattleScribe
     /// </summary>
     public class BattleScribeXmlSerializer
     {
+        private static Lazy<BattleScribeXmlSerializer> LazyInstance { get; }
+            = new Lazy<BattleScribeXmlSerializer>();
+
+        public static BattleScribeXmlSerializer Instance => LazyInstance.Value;
+
         private readonly Dictionary<RootElement, XmlSerializerNamespaces> namespaces
             = new Dictionary<RootElement, XmlSerializerNamespaces>();
 
@@ -23,40 +28,41 @@ namespace WarHub.ArmouryModel.Source.BattleScribe
         private readonly Dictionary<RootElement, XmlSerializer> deserializers
             = new Dictionary<RootElement, XmlSerializer>();
 
-        public GamesystemNode DeserializeGamesystem(Stream stream)
-            => Deserialize<GamesystemCore.Builder>(stream, RootElement.GameSystem).ToImmutable().ToNode();
-
-        public CatalogueNode DeserializeCatalogue(Stream stream)
-            => Deserialize<CatalogueCore.Builder>(stream, RootElement.Catalogue).ToImmutable().ToNode();
-
-        public RosterNode DeserializeRoster(Stream stream)
-            => Deserialize<RosterCore.Builder>(stream, RootElement.Roster).ToImmutable().ToNode();
-
-        public DataIndexNode DeserializeDataIndex(Stream stream)
-            => Deserialize<DataIndexCore.Builder>(stream, RootElement.DataIndex).ToImmutable().ToNode();
-
         public CatalogueNode DeserializeCatalogue(Func<XmlSerializer, object> deserialization)
-        {
-            var builder = (CatalogueCore.Builder)deserialization(GetDeserializer(RootElement.Catalogue));
-            return builder.ToImmutable().ToNode();
-        }
+            => Deserialize<CatalogueCore.Builder>(deserialization, RootElement.Catalogue)
+            .ToImmutable().ToNode();
 
         public GamesystemNode DeserializeGamesystem(Func<XmlSerializer, object> deserialization)
-        {
-            var builder = (GamesystemCore.Builder)deserialization(GetDeserializer(RootElement.GameSystem));
-            return builder.ToImmutable().ToNode();
-        }
+            => Deserialize<GamesystemCore.Builder>(deserialization, RootElement.GameSystem)
+            .ToImmutable().ToNode();
 
         public RosterNode DeserializeRoster(Func<XmlSerializer, object> deserialization)
-        {
-            var builder = (RosterCore.Builder)deserialization(GetDeserializer(RootElement.Roster));
-            return builder.ToImmutable().ToNode();
-        }
+            => Deserialize<RosterCore.Builder>(deserialization, RootElement.Roster)
+            .ToImmutable().ToNode();
 
         public DataIndexNode DeserializeDataIndex(Func<XmlSerializer, object> deserialization)
+            => Deserialize<DataIndexCore.Builder>(deserialization, RootElement.DataIndex)
+            .ToImmutable().ToNode();
+
+        public SourceNode Deserialize(
+            Func<XmlSerializer, object> deserialization,
+            RootElement rootElement)
         {
-            var builder = (DataIndexCore.Builder)deserialization(GetDeserializer(RootElement.DataIndex));
-            return builder.ToImmutable().ToNode();
+            switch (rootElement)
+            {
+                case RootElement.Catalogue:
+                    return DeserializeCatalogue(deserialization);
+                case RootElement.GameSystem:
+                    return DeserializeGamesystem(deserialization);
+                case RootElement.Roster:
+                    return DeserializeRoster(deserialization);
+                case RootElement.DataIndex:
+                    return DeserializeDataIndex(deserialization);
+                default:
+                    throw new ArgumentException(
+                        $"Deserialization is not supported for this {nameof(RootElement)}.",
+                        nameof(rootElement));
+            }
         }
 
         public void SerializeGamesystem(GamesystemNode node, Stream stream)
@@ -71,6 +77,29 @@ namespace WarHub.ArmouryModel.Source.BattleScribe
         public void SerializeDataIndex(DataIndexNode node, Stream stream)
             => Serialize(stream, node.GetSerializationProxy(), node.Kind.ToRootElement());
 
+        public void Serialize(SourceNode node, Stream stream)
+        {
+            switch (node.Kind)
+            {
+                case SourceKind.Gamesystem:
+                    SerializeGamesystem((GamesystemNode)node, stream);
+                    return;
+                case SourceKind.Catalogue:
+                    SerializeCatalogue((CatalogueNode)node, stream);
+                    return;
+                case SourceKind.Roster:
+                    SerializeRoster((RosterNode)node, stream);
+                    return;
+                case SourceKind.DataIndex:
+                    SerializeDataIndex((DataIndexNode)node, stream);
+                    return;
+                default:
+                    throw new ArgumentException(
+                        $"{nameof(node)} type's ({node?.GetType()}) serialization is not supported.",
+                        nameof(node));
+            }
+        }
+
         private void Serialize(Stream stream, object @object, RootElement rootElement)
         {
             var serializer = GetSerializer(rootElement);
@@ -81,10 +110,10 @@ namespace WarHub.ArmouryModel.Source.BattleScribe
             }
         }
 
-        private T Deserialize<T>(Stream stream, RootElement rootElement)
+        private T Deserialize<T>(Func<XmlSerializer, object> deserialization, RootElement rootElement)
         {
             var serializer = GetDeserializer(rootElement);
-            return (T)serializer.Deserialize(stream);
+            return (T)deserialization(serializer);
         }
 
         private XmlSerializerNamespaces GetNamespaces(RootElement rootElement)

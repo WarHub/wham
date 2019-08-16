@@ -2,6 +2,7 @@
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Xml;
 using System.Xml.Linq;
 using FluentAssertions;
 using WarHub.ArmouryModel.Source.XmlFormat;
@@ -12,26 +13,47 @@ namespace WarHub.ArmouryModel.Source.BattleScribe.Tests
     public class DataVersionManagementTests
     {
         [Theory]
+        [InlineData(MigrationMode.None, "XmlTestDatafiles/Warhammer 40,000 8th Edition.gst")]
+        [InlineData(MigrationMode.OnFailure, "XmlTestDatafiles/v1_15/Warhammer40K.gst")]
+        [InlineData(MigrationMode.Always, "XmlTestDatafiles/v1_15/Warhammer40K.gst")]
+        public void DeserializeAuto_works_with_any_mode(MigrationMode mode, string filepath)
+        {
+            using (var stream = File.OpenRead(filepath))
+            {
+                var result = stream.DeserializeSourceNodeAuto(mode);
+
+                result
+                    .Should().NotBeNull()
+                    .And.BeOfType<GamesystemNode>();
+            }
+        }
+
+        [Theory]
         [InlineData("XmlTestDatafiles/v1_15/Warhammer40K.gst")]
         [InlineData("XmlTestDatafiles/v1_15/Space Marines - Codex (2015).cat")]
-        public void Migrate_on_old_files_succeeds(string filepath)
+        public void ReadMigrated_on_old_files_succeeds(string filepath)
         {
-            var (result, inputInfo) = DataVersionManagement.Migrate(() => File.OpenRead(filepath));
-            using (result)
+            using (var file = File.OpenRead(filepath))
             {
-                GetVersion(result).Should().Be(inputInfo.Element.Info().CurrentVersion);
+                var (result, info) = DataVersionManagement.ReadMigrated(file);
+                using (result)
+                {
+                    GetVersion(result).Should().Be(info.Element.Info().CurrentVersion);
+                }
             }
         }
 
         [Theory]
         [MemberData(nameof(HandledMigrationInputs))]
-        public void Migrate_on_handled_empty_elements_succeeds(VersionedElementInfo elementInfo)
+        public void ReadMigrated_on_handled_empty_elements_succeeds(VersionedElementInfo elementInfo)
         {
-            var (result, inputInfo) = DataVersionManagement.Migrate(
-                () => CreateEmptyElementStream(elementInfo));
-            using (result)
+            using (var emptyElementStream = CreateEmptyElementStream(elementInfo))
             {
-                GetVersion(result).Should().Be(inputInfo.Element.Info().CurrentVersion);
+                var (reader, info) = DataVersionManagement.ReadMigrated(emptyElementStream);
+                using (reader)
+                {
+                    GetVersion(reader).Should().Be(info.Element.Info().CurrentVersion);
+                }
             }
         }
 
@@ -89,10 +111,10 @@ namespace WarHub.ArmouryModel.Source.BattleScribe.Tests
             return xmlStream;
         }
 
-        private static BattleScribeVersion GetVersion(Stream stream)
+        private static BattleScribeVersion GetVersion(XmlReader reader)
         {
             var versionText =
-                XDocument.Load(stream)
+                XDocument.Load(reader)
                 .Root.Attribute(DataVersionManagement.BattleScribeVersionAttributeName)
                 .Value;
             return BattleScribeVersion.Parse(versionText);
