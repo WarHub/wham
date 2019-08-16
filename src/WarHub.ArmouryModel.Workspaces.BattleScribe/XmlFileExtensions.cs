@@ -106,7 +106,7 @@ namespace WarHub.ArmouryModel.Workspaces.BattleScribe
             => SourceKinds.TryGetValue(docKind, out var kind) ? kind : SourceKind.Unknown;
 
         public static string GetXmlFileExtension(this XmlDocumentKind kind)
-            => ExtensionsByKinds[kind].First();
+            => ExtensionsByKinds[kind][0];
 
         public static string GetXmlZippedFileExtension(this XmlDocumentKind kind)
             => ExtensionsByKinds[kind].First(ZippedExtensions.Contains);
@@ -181,7 +181,6 @@ namespace WarHub.ArmouryModel.Workspaces.BattleScribe
             }
         }
 
-
         public static void WriteXmlFile(this IDatafileInfo datafile, string filepath)
         {
             using (var stream = File.Create(filepath))
@@ -253,7 +252,6 @@ namespace WarHub.ArmouryModel.Workspaces.BattleScribe
                 }
             }
         }
-
 
         public static IEnumerable<XmlDocument> GetDocuments(this XmlWorkspace workspace, params SourceKind[] kinds)
             => workspace.GetDocuments(kinds.AsEnumerable());
