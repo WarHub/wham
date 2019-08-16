@@ -44,7 +44,7 @@ To install `wham` command line tool:
 1. please install [`.NET Core SDK` v2.1 or higher](https://www.microsoft.com/net/download)
   for your platform.
 2. In your shell/command line run
-  `dotnet tool install wham -g --version 0.6.16`
+  `dotnet tool install wham -g --version 0.6.17`
 3. You can check if the tool is available: `wham --version` should show what version exactly is running.
 
 This will install preview of `wham` CLI tool in your user-space (not system global),

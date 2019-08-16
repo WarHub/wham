@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [0.6.16] - 2019-08-16
+## [0.6.17] - 2019-08-16
 
 ### Added
 * Support for BattleScribe v2.02 data format ([#39])
@@ -30,5 +30,5 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 [#39]: https://github.com/WarHub/wham/pull/39
 
 
-[Unreleased]: https://github.com/WarHub/wham/compare/v0.6.16...HEAD
-[0.6.16]: https://github.com/WarHub/wham/compare/v0.3.0...v0.6.16
+[Unreleased]: https://github.com/WarHub/wham/compare/v0.6.17...HEAD
+[0.6.17]: https://github.com/WarHub/wham/compare/v0.3.0...v0.6.17
