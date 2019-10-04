@@ -6,7 +6,7 @@ namespace WarHub.ArmouryModel.Source.XmlFormat
 {
     public static class Resources
     {
-        private const string XsdResourceFormat = ThisAssembly.RootNamespace + ".DataFormat.xml.schema.v{1}.{0}.xsd";
+        private const string XsdResourceFormat = ThisAssembly.RootNamespace + ".DataFormat.xml.schema.latest.{0}.xsd";
         private const string XslTransformResourceFormat = ThisAssembly.RootNamespace + ".DataFormat.xml.transform.{0}_{1}.xsl";
 
         public static ImmutableDictionary<RootElement, ImmutableSortedSet<VersionedElementInfo>> XslMigrations { get; }
@@ -17,26 +17,23 @@ namespace WarHub.ArmouryModel.Source.XmlFormat
             .GroupBy(x => x.Element)
             .ToImmutableDictionary(x => x.Key, x => x.ToImmutableSortedSet());
 
-        public static string GetMigrationResourcePath(this VersionedElementInfo elementInfo) =>
+        private static string GetMigrationResourcePath(this VersionedElementInfo elementInfo) =>
             string.Format(
                 XslTransformResourceFormat,
                 elementInfo.Element,
                 elementInfo.Version.FilepathString);
 
-        public static string GetXsdResourcePath(this VersionedElementInfo elementInfo) =>
-            string.Format(
-                XsdResourceFormat,
-                elementInfo.Element,
-                elementInfo.Version.FilepathString);
+        private static string GetXsdResourcePath(this RootElement rootElement) =>
+            string.Format(XsdResourceFormat, rootElement);
 
         public static Stream OpenXsdStream(this RootElement rootElement)
         {
-            return new VersionedElementInfo(rootElement, rootElement.Info().CurrentVersion).OpenXsdStream();
+            return OpenResource(rootElement.GetXsdResourcePath());
         }
 
-        public static Stream OpenXsdStream(this VersionedElementInfo elementInfo)
+        private static Stream OpenXsdStream(this VersionedElementInfo elementInfo)
         {
-            return OpenResource(elementInfo.GetXsdResourcePath());
+            return OpenResource(elementInfo.Element.GetXsdResourcePath());
         }
 
         public static Stream OpenMigrationXslStream(this VersionedElementInfo elementInfo)

@@ -17,5 +17,8 @@ namespace WarHub.ArmouryModel.Source
 
         [XmlAttribute("type")]
         public CatalogueLinkKind Type { get; }
+
+        [XmlAttribute("importRootEntries")]
+        public bool ImportRootEntries { get; }
     }
 }

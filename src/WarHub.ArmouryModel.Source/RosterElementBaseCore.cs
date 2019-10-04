@@ -15,6 +15,15 @@ namespace WarHub.ArmouryModel.Source
         [XmlAttribute("entryId")]
         public string EntryId { get; }
 
+        [XmlAttribute("entryGroupId")]
+        public string EntryGroupId { get; }
+
+        [XmlAttribute("publicationId")]
+        public string PublicationId { get; }
+
+        [XmlAttribute("page")]
+        public string Page { get; }
+
         [XmlArray("rules")]
         public ImmutableArray<RuleCore> Rules { get; }
 

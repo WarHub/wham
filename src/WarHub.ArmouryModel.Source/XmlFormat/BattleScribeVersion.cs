@@ -13,19 +13,26 @@ namespace WarHub.ArmouryModel.Source.XmlFormat
             Suffix = suffix;
         }
 
+        /// <summary>
+        /// BattleScribe v1.13b is the oldest "compatible"-ish format.
+        /// </summary>
+        public static BattleScribeVersion V1_13b { get; } = Create(1, 13, "b");
         public static BattleScribeVersion V1_15b { get; } = Create(1, 15, "b");
         public static BattleScribeVersion V1_15 { get; } = Create(1, 15);
         public static BattleScribeVersion V2_00 { get; } = Create(2, 0);
         public static BattleScribeVersion V2_01 { get; } = Create(2, 1);
         public static BattleScribeVersion V2_02 { get; } = Create(2, 2);
+        public static BattleScribeVersion V2_03 { get; } = Create(2, 3);
 
         public static ImmutableSortedSet<BattleScribeVersion> WellKnownVersions { get; }
             = ImmutableSortedSet.Create(
+                V1_13b,
                 V1_15b,
                 V1_15,
                 V2_00,
                 V2_01,
-                V2_02);
+                V2_02,
+                V2_03);
 
         public int Major { get; }
 
