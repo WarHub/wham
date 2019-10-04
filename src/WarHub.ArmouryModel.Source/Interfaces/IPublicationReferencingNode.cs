@@ -7,5 +7,5 @@
     }
 
     partial class EntryBaseNode : IPublicationReferencingNode { }
-    partial class SelectionNode : IPublicationReferencingNode { }
+    partial class RosterElementBaseNode : IPublicationReferencingNode { }
 }

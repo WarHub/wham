@@ -9,6 +9,9 @@ namespace WarHub.ArmouryModel.Source
         [XmlAttribute("collective")]
         public bool Collective { get; }
 
+        [XmlAttribute("import")]
+        public bool Import { get; }
+
         [XmlArray("constraints")]
         public ImmutableArray<ConstraintCore> Constraints { get; }
 

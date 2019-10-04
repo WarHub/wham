@@ -7,15 +7,6 @@ namespace WarHub.ArmouryModel.Source
     [XmlType("selection")]
     public partial class SelectionCore : RosterElementBaseCore
     {
-        [XmlAttribute("entryGroupId")]
-        public string EntryGroupId { get; }
-
-        [XmlAttribute("publicationId")]
-        public string PublicationId { get; }
-
-        [XmlAttribute("page")]
-        public string Page { get; }
-
         [XmlAttribute("number")]
         public int Number { get; }
 

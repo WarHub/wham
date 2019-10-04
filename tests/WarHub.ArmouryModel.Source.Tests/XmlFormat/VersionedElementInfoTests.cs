@@ -22,12 +22,10 @@ namespace WarHub.ArmouryModel.Source.Tests.XmlFormat
         [InlineData(RootElement.Catalogue)]
         [InlineData(RootElement.GameSystem)]
         [InlineData(RootElement.DataIndex)]
-        public void AvailableMigrations_returns_migration_for_previous_version(RootElement rootElement)
+        public void AvailableMigrations_returns_migration_for_previous_migratable_version(RootElement rootElement)
         {
             var current = rootElement.Info().CurrentVersion;
-            var previous =
-                BattleScribeVersion.WellKnownVersions.Reverse()
-                .FirstOrDefault(x => x < current);
+            var previous = BattleScribeVersion.V2_01;
             var element = new VersionedElementInfo(rootElement, previous);
 
             var migrations = element.AvailableMigrations();

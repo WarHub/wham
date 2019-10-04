@@ -48,7 +48,7 @@ namespace WarHub.ArmouryModel.Source
 
         public static EntryLinkNode EntryLink(string id, string name, string targetId, EntryLinkKind type)
         {
-            return EntryLink(id, name, default, default, default, default, targetId, type);
+            return EntryLink(id, name, default, default, default, default, default, targetId, type);
         }
 
         public static ForceEntryNode ForceEntry(string id, string name)
@@ -83,12 +83,12 @@ namespace WarHub.ArmouryModel.Source
 
         public static SelectionEntryNode SelectionEntry(string id, string name)
         {
-            return SelectionEntry(id, name, default, default, default, default, default, SelectionEntryKind.Upgrade);
+            return SelectionEntry(id, name, default, default, default, default, default, default, SelectionEntryKind.Upgrade);
         }
 
         public static SelectionEntryGroupNode SelectionEntryGroup(string id, string name)
         {
-            return SelectionEntryGroup(id, name, default, default, default, default, default);
+            return SelectionEntryGroup(id, name, default, default, default, default, default, default);
         }
     }
 }

@@ -10,6 +10,9 @@ namespace WarHub.ArmouryModel.Source
         [XmlAttribute("collective")]
         public bool Collective { get; }
 
+        [XmlAttribute("import")]
+        public bool Import { get; }
+
         [XmlAttribute("targetId")]
         public string TargetId { get; }
 
@@ -33,5 +36,8 @@ namespace WarHub.ArmouryModel.Source
 
         [XmlArray("categoryLinks")]
         public ImmutableArray<CategoryLinkCore> CategoryLinks { get; }
+
+        [XmlArray("costs")]
+        public ImmutableArray<CostCore> Costs { get; }
     }
 }
