@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+* Support for BattleScribe v2.03 data format ([#47])
+* "Latest" channel (folder) for Catalogue.xsd
+
+### Changed
+* Current version of schema changed to v2.03 (latest)
+
+[#47]: https://github.com/WarHub/wham/pull/47
+
 ## [0.6.17] - 2019-08-16
 
 ### Added
