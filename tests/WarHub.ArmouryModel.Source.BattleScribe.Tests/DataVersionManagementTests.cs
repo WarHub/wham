@@ -38,7 +38,7 @@ namespace WarHub.ArmouryModel.Source.BattleScribe.Tests
                 var (result, info) = DataVersionManagement.ReadMigrated(file);
                 using (result)
                 {
-                    GetVersion(result).Should().Be(info.Element.Info().CurrentVersion);
+                    GetVersion(result).Should().Be(info.Version);
                 }
             }
         }
@@ -52,7 +52,7 @@ namespace WarHub.ArmouryModel.Source.BattleScribe.Tests
                 var (reader, info) = DataVersionManagement.ReadMigrated(emptyElementStream);
                 using (reader)
                 {
-                    GetVersion(reader).Should().Be(info.Element.Info().CurrentVersion);
+                    GetVersion(reader).Should().Be(info.Version);
                 }
             }
         }
