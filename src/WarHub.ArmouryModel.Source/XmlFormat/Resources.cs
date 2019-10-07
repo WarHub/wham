@@ -8,9 +8,16 @@ namespace WarHub.ArmouryModel.Source.XmlFormat
     {
         private const string XsdResourceFormat = ThisAssembly.RootNamespace + ".DataFormat.xml.schema.latest.{0}.xsd";
         private const string XslTransformResourceFormat = ThisAssembly.RootNamespace + ".DataFormat.xml.transform.{0}_{1}.xsl";
+        private static readonly ImmutableArray<BattleScribeVersion> catAndGstMigrations =
+            ImmutableArray.Create(
+                BattleScribeVersion.V1_15,
+                BattleScribeVersion.V2_00,
+                BattleScribeVersion.V2_01,
+                BattleScribeVersion.V2_02,
+                BattleScribeVersion.V2_03);
 
         public static ImmutableDictionary<RootElement, ImmutableSortedSet<VersionedElementInfo>> XslMigrations { get; }
-            = (from version in new[] { BattleScribeVersion.V1_15, BattleScribeVersion.V2_00, BattleScribeVersion.V2_01, BattleScribeVersion.V2_02 }
+            = (from version in catAndGstMigrations
                from element in new[] { RootElement.GameSystem, RootElement.Catalogue }
                select new VersionedElementInfo(element, version))
             .Append(new VersionedElementInfo(RootElement.DataIndex, BattleScribeVersion.V2_02))

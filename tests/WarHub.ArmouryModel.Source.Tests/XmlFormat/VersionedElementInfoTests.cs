@@ -30,7 +30,7 @@ namespace WarHub.ArmouryModel.Source.Tests.XmlFormat
 
             var migrations = element.AvailableMigrations();
 
-            migrations.Should().HaveCount(1, "because we're migrating from previous version.");
+            migrations.Should().HaveCountGreaterOrEqualTo(1, "because we're migrating from some previous version.");
         }
 
         [Theory]
