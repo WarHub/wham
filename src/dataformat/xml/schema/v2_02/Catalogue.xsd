@@ -532,6 +532,8 @@
     <xs:attribute name="id" type="tns:idtype" use="required" />
     <xs:attribute name="name" type="xs:string" use="required" />
     <xs:attribute name="entryId" type="tns:idtype" use="required" />
+    <xs:attribute name="entryGroupId" type="tns:idtype" />
+    <xs:attributeGroup ref="tns:PublicationRefAttGroup" />
   </xs:complexType>
   
   <!--force-->
@@ -581,8 +583,6 @@
           <xs:element name="costs" type="tns:CostList" minOccurs="0" />
           <xs:element name="categories" type="tns:CategoryList" minOccurs="0" />
         </xs:sequence>
-        <xs:attribute name="entryGroupId" type="tns:idtype" />
-        <xs:attributeGroup ref="tns:PublicationRefAttGroup" />
         <xs:attribute name="number" type="xs:nonNegativeInteger" use="required" />
         <xs:attribute name="type" type="tns:SelectionEntryKind" use="required" />
       </xs:extension>
