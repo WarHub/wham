@@ -7,21 +7,21 @@ namespace WarHub.ArmouryModel.Source.BattleScribe.Utilities
     /// This means that every one of the five entity-escapable characters is escaped:
     /// &amp;, &quot;, &apos;, &gt;, and &lt;
     /// </summary>
-    public static partial class BattleScribeXmlEncoder
+    public static class BattleScribeXmlEncoder
     {
-        const char amp = '&';
-        const char lt = '<';
-        const char gt = '>';
-        const char apos = '\'';
-        const char quot = '"';
-        const char cr = '\r';
-        const char lf = '\n';
-        const string ampString = "&amp;";
-        const string ltString = "&lt;";
-        const string gtString = "&gt;";
-        const string quotString = "&quot;";
-        const string aposString = "&apos;";
-        static readonly char[] xmlEscaped = new[] { amp, lt, gt, apos, quot };
+        private const char Amp = '&';
+        private const char Lt = '<';
+        private const char Gt = '>';
+        private const char Apos = '\'';
+        private const char Quot = '"';
+        private const char Cr = '\r';
+        private const char Lf = '\n';
+        private const string AmpString = "&amp;";
+        private const string LtString = "&lt;";
+        private const string GtString = "&gt;";
+        private const string QuotString = "&quot;";
+        private const string AposString = "&apos;";
+        private static readonly char[] xmlEscaped = new[] { Amp, Lt, Gt, Apos, Quot };
 
         /// <summary>
         /// Escapes all XML entity-escapable characters and replaces CRLF with just LF.
@@ -31,45 +31,45 @@ namespace WarHub.ArmouryModel.Source.BattleScribe.Utilities
         public static string Encode(string text)
         {
             var sb = new StringBuilder(text.Length);
-            bool noEscaped = text.IndexOfAny(xmlEscaped) < 0;
+            var noEscaped = text.IndexOfAny(xmlEscaped) < 0;
             if (noEscaped)
             {
                 return text;
             }
-            for (int i = 0; i < text.Length; i++)
+            for (var i = 0; i < text.Length; i++)
             {
                 var c = text[i];
                 switch (c)
                 {
-                    case amp:
-                        sb.Append(ampString);
+                    case Amp:
+                        sb.Append(AmpString);
                         break;
-                    case lt:
-                        sb.Append(ltString);
+                    case Lt:
+                        sb.Append(LtString);
                         break;
-                    case gt:
-                        sb.Append(gtString);
+                    case Gt:
+                        sb.Append(GtString);
                         break;
-                    case quot:
-                        sb.Append(quotString);
+                    case Quot:
+                        sb.Append(QuotString);
                         break;
-                    case apos:
-                        sb.Append(aposString);
+                    case Apos:
+                        sb.Append(AposString);
                         break;
-                    case cr:
+                    case Cr:
                         {
                             var nextIndex = i + 1;
-                            if (nextIndex < text.Length && text[nextIndex] == lf)
+                            if (nextIndex < text.Length && text[nextIndex] == Lf)
                             {
                                 // we've got CR LF
                                 // skip LF
                                 i = nextIndex;
                                 // normalize to LF
-                                sb.Append(lf);
+                                sb.Append(Lf);
                             }
                             else
                             {
-                                sb.Append(cr);
+                                sb.Append(Cr);
                             }
                         }
                         break;

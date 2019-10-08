@@ -1,10 +1,8 @@
 ﻿using System.IO;
-using System.Threading.Tasks;
 using System.Xml;
 
 namespace WarHub.ArmouryModel.Source.BattleScribe.Utilities
 {
-
     /// <summary>
     /// XmlWriter that encodes quotes and apostrophes conforming to BattleScribe format;
     /// both are escaped in attributes and in elements' text.

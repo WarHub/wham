@@ -15,12 +15,11 @@ namespace WarHub.ArmouryModel.Source.BattleScribe.Utilities
             BaseWriter = baseWriter;
         }
 
-        const char space = ' ';
-        const char slash = '/';
-        const char gt = '>';
-        const int smallestNonSpecial = gt + 1;
+        private const char Space = ' ';
+        private const char Slash = '/';
+        private const char Gt = '>';
+        private const int SmallestNonSpecial = Gt + 1;
         private char? last;
-        private readonly char[] pattern = new[] { ' ', '/', '>' };
         private readonly char[] patternToWrite = new[] { '/', '>' };
 
         public override Encoding Encoding => BaseWriter.Encoding;
@@ -31,7 +30,7 @@ namespace WarHub.ArmouryModel.Source.BattleScribe.Utilities
 
         public override void Write(char value)
         {
-            if (value < smallestNonSpecial || value != space && value != slash && value != gt)
+            if (value < SmallestNonSpecial || (value != Space && value != Slash && value != Gt))
             {
                 BaseWriter.Write(value);
                 return;
@@ -40,21 +39,21 @@ namespace WarHub.ArmouryModel.Source.BattleScribe.Utilities
             switch (last)
             {
                 case null:
-                    if (value == space)
+                    if (value == Space)
                     {
-                        last = space;
+                        last = Space;
                         return;
                     }
                     break;
-                case space:
-                    if (value == slash)
+                case Space:
+                    if (value == Slash)
                     {
-                        last = slash;
+                        last = Slash;
                         return;
                     }
                     break;
-                case slash:
-                    if (value == gt)
+                case Slash:
+                    if (value == Gt)
                     {
                         last = null;
                         BaseWriter.Write(patternToWrite, 0, 2);
@@ -75,7 +74,7 @@ namespace WarHub.ArmouryModel.Source.BattleScribe.Utilities
 
         public override void Write(char[] buffer, int index, int count)
         {
-            int offset = 0;
+            var offset = 0;
             while (last != null && offset < count)
             {
                 Write(buffer[index + offset++]);
@@ -84,20 +83,20 @@ namespace WarHub.ArmouryModel.Source.BattleScribe.Utilities
             var startingOffset = offset;
             while (offset < countWithMargin)
             {
-                while (buffer[index + offset] != space && offset < countWithMargin)
+                while (buffer[index + offset] != Space && offset < countWithMargin)
                 {
                     offset++;
                 }
                 // offset <= countWithMargin || offset < countWithMargin && buffer[index + offset] == space
                 var current = index + offset;
-                if (buffer[current] == space && buffer[current + 1] == slash && buffer[current + 2] == gt)
+                if (buffer[current] == Space && buffer[current + 1] == Slash && buffer[current + 2] == Gt)
                 {
                     // write since last startingOffset until current position, exclusive
                     BaseWriter.Write(buffer, index + startingOffset, offset - startingOffset);
                     // next batch will start after space
                     startingOffset = offset + 1;
                     // we mark '>' as "checked"
-                    offset = offset + 2;
+                    offset += 2;
                 }
                 offset++;
             }
