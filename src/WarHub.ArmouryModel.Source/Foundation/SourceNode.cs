@@ -114,22 +114,36 @@ namespace WarHub.ArmouryModel.Source
 
         /// <summary>
         /// Traverses ancestry path up to the root and finds first node that is assignable to
-        /// <typeparamref name="TNode"/> type and satisfying provided <paramref name="predicate"/>.
+        /// <typeparamref name="TNode"/> type (and satisfying <paramref name="predicate"/> if provided).
         /// First visited node is this node.
         /// </summary>
         /// <typeparam name="TNode">Type of node to return.</typeparam>
-        /// <param name="predicate">Determines if the node should be returned.</param>
+        /// <param name="predicate">Determines if the node should be returned. If null, predicate check is skipped.</param>
         /// <returns>First ancestor (or self) that satisfies both conditions.</returns>
-        public TNode FirstAncestorOrSelf<TNode>(Func<TNode, bool> predicate) where TNode : class
+        public TNode FirstAncestorOrSelf<TNode>(Func<TNode, bool> predicate = null) where TNode : class
         {
             var node = this;
-            while (node != null)
+            if (predicate is null)
             {
-                if (node is TNode typedNode && predicate(typedNode))
+                while (node != null)
                 {
-                    return typedNode;
+                    if (node is TNode typedNode)
+                    {
+                        return typedNode;
+                    }
+                    node = node.Parent;
                 }
-                node = node.Parent;
+            }
+            else
+            {
+                while (node != null)
+                {
+                    if (node is TNode typedNode && predicate(typedNode))
+                    {
+                        return typedNode;
+                    }
+                    node = node.Parent;
+                }
             }
             return null;
         }

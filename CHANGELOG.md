@@ -13,8 +13,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 * Current version of schema changed to v2.03 (latest)
+* `NodeFactory` in `WarHub.ArmouryModel.Source` namespace was rewritten to provide
+  much more defaults, use other Nodes as value providers, and add more methods ([#58]).
 
 [#47]: https://github.com/WarHub/wham/pull/47
+[#58]: https://github.com/WarHub/wham/pull/58
 
 ## [0.6.17] - 2019-08-16
 
