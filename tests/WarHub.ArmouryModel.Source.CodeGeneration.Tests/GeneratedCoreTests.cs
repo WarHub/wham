@@ -9,19 +9,19 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration.Tests
         [Fact]
         public void With_SimpleProperty_DoesNotModifyInstance()
         {
-            const string newName = "New Name";
+            const string NewName = "New Name";
             var subject = new ItemCore.Builder().ToImmutable();
-            subject.WithName(newName);
+            subject.WithName(NewName);
             Assert.Null(subject.Name);
         }
 
         [Fact]
         public void With_SimpleProperty_CreatesModifiedInstance()
         {
-            const string newName = "New Name";
+            const string NewName = "New Name";
             var subject = new ItemCore.Builder().ToImmutable();
-            var newInstance = subject.WithName(newName);
-            Assert.Equal(newName, newInstance.Name);
+            var newInstance = subject.WithName(NewName);
+            Assert.Equal(NewName, newInstance.Name);
         }
 
         [Fact]
@@ -45,8 +45,8 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration.Tests
         [Fact]
         public void ToBuilder_CopiesSimpleProperty()
         {
-            const string name = "Name";
-            var subject = new ItemCore.Builder() { Name = name }.ToImmutable();
+            const string Name = "Name";
+            var subject = new ItemCore.Builder() { Name = Name }.ToImmutable();
             var builder = subject.ToBuilder();
             Assert.Equal(subject.Name, builder.Name);
         }
@@ -54,11 +54,11 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration.Tests
         [Fact]
         public void ToBuilder_CopiesCollectionProperty()
         {
-            const string itemId = "qwerty12345";
-            var itemBuilder = new ItemCore.Builder() { Id = itemId };
+            const string ItemId = "qwerty12345";
+            var itemBuilder = new ItemCore.Builder() { Id = ItemId };
             var container = new ContainerCore.Builder() { Items = { itemBuilder } }.ToImmutable();
             var builder = container.ToBuilder();
-            Assert.Collection(builder.Items, x => Assert.Same(itemId, x.Id));
+            Assert.Collection(builder.Items, x => Assert.Same(ItemId, x.Id));
         }
     }
 }

@@ -1,8 +1,7 @@
-﻿using Microsoft.CodeAnalysis;
+﻿using System.Collections.Generic;
+using System.Threading;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using System.Collections.Generic;
-using System.Threading;
 using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
 namespace WarHub.ArmouryModel.Source.CodeGeneration
@@ -34,6 +33,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                 .AddMembers(
                     GenerateFseMembers());
         }
+
         private BaseListSyntax GenerateFseBaseList()
         {
             return BaseList()
@@ -48,8 +48,8 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
 
         private IEnumerable<MemberDeclarationSyntax> GenerateFseMembers()
         {
-            const string enumerablePropName = "Enumerable";
-            TypeSyntax collectionType = Descriptor.CoreType.ToImmutableArrayType();
+            const string EnumerablePropName = "Enumerable";
+            var collectionType = Descriptor.CoreType.ToImmutableArrayType();
             yield return CreateConstructor();
             yield return CreateBackingProperty();
             yield return CreateCountProperty();
@@ -61,27 +61,27 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
 
             MemberDeclarationSyntax CreateConstructor()
             {
-                const string paramName = "enumerable";
+                const string ParamName = "enumerable";
                 return
                     ConstructorDeclaration(Names.FastSerializationEnumerable)
                     .AddModifiers(SyntaxKind.PublicKeyword)
                     .AddParameterListParameters(
                         Parameter(
-                            Identifier(paramName))
+                            Identifier(ParamName))
                         .WithType(collectionType))
                     .AddBodyStatements(
                         ExpressionStatement(
                             AssignmentExpression(
                                 SyntaxKind.SimpleAssignmentExpression,
-                                IdentifierName(enumerablePropName),
-                                IdentifierName(paramName))));
+                                IdentifierName(EnumerablePropName),
+                                IdentifierName(ParamName))));
             }
             MemberDeclarationSyntax CreateBackingProperty()
             {
                 return
                     PropertyDeclaration(
                         collectionType,
-                        enumerablePropName)
+                        EnumerablePropName)
                     .AddModifiers(SyntaxKind.PrivateKeyword)
                     .AddAccessorListAccessors(
                         AccessorDeclaration(SyntaxKind.GetAccessorDeclaration)
@@ -97,40 +97,40 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                     .AddModifiers(SyntaxKind.PublicKeyword)
                     .WithExpressionBodyFull(
                         ConditionalExpression(
-                            IdentifierName(enumerablePropName)
+                            IdentifierName(EnumerablePropName)
                             .MemberAccess(
                                 IdentifierName(nameof(System.Collections.Immutable.ImmutableArray<int>.IsDefault))),
                             LiteralExpression(SyntaxKind.NumericLiteralExpression, Literal(0)),
-                            IdentifierName(enumerablePropName)
+                            IdentifierName(EnumerablePropName)
                             .MemberAccess(
                                 IdentifierName(nameof(System.Collections.Immutable.ImmutableArray<int>.Length)))));
             }
             MemberDeclarationSyntax CreateIndexer()
             {
-                const string indexParamName = "index";
+                const string IndexParamName = "index";
                 return
                     IndexerDeclaration(
                         IdentifierName(Names.FastSerializationProxy))
                     .AddModifiers(SyntaxKind.PublicKeyword)
                     .AddParameterListParameters(
                         Parameter(
-                            Identifier(indexParamName))
+                            Identifier(IndexParamName))
                         .WithType(
                             PredefinedType(
                                 Token(SyntaxKind.IntKeyword))))
                     .WithExpressionBodyFull(
                         ElementAccessExpression(
-                            IdentifierName(enumerablePropName))
+                            IdentifierName(EnumerablePropName))
                         .AddArgumentListArguments(
                             Argument(
-                                IdentifierName(indexParamName)))
+                                IdentifierName(IndexParamName)))
                         .MemberAccess(
                             IdentifierName(Names.ToSerializationProxy))
                         .InvokeWithArguments());
             }
             MemberDeclarationSyntax CreateAddMethod()
             {
-                const string paramName = "item";
+                const string ParamName = "item";
                 return
                     MethodDeclaration(
                         PredefinedType(
@@ -143,7 +143,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                                 CreateObsoleteAttribute())))
                     .AddParameterListParameters(
                         Parameter(
-                            Identifier(paramName))
+                            Identifier(ParamName))
                         .WithType(
                             IdentifierName(Names.FastSerializationProxy)))
                     .WithExpressionBodyFull(
@@ -165,7 +165,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
             }
             MemberDeclarationSyntax CreateGetEnumeratorMethod()
             {
-                const string itemVarName = "item";
+                const string ItemVarName = "item";
                 return
                     MethodDeclaration(
                         GenericName(
@@ -177,17 +177,17 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                     .AddModifiers(SyntaxKind.PublicKeyword)
                     .AddBodyStatements(
                         IfStatement(
-                            IdentifierName(enumerablePropName)
+                            IdentifierName(EnumerablePropName)
                             .MemberAccess(
                                 IdentifierName(nameof(System.Collections.Immutable.ImmutableArray<int>.IsDefaultOrEmpty))),
                             YieldStatement(SyntaxKind.YieldBreakStatement)),
                         ForEachStatement(
                             IdentifierName("var"),
-                            Identifier(itemVarName),
-                            IdentifierName(enumerablePropName),
+                            Identifier(ItemVarName),
+                            IdentifierName(EnumerablePropName),
                             YieldStatement(
                                 SyntaxKind.YieldReturnStatement,
-                                IdentifierName(itemVarName)
+                                IdentifierName(ItemVarName)
                                 .MemberAccess(
                                     IdentifierName(Names.ToSerializationProxy))
                                 .InvokeWithArguments())));
@@ -207,7 +207,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
             }
             MemberDeclarationSyntax CreateImplicitCastOperator()
             {
-                const string paramName = "enumerable";
+                const string ParamName = "enumerable";
                 return
                     ConversionOperatorDeclaration(
                         Token(SyntaxKind.ImplicitKeyword),
@@ -217,7 +217,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                         SyntaxKind.StaticKeyword)
                     .AddParameterListParameters(
                         Parameter(
-                            Identifier(paramName))
+                            Identifier(ParamName))
                         .WithType(collectionType))
                     .AddBodyStatements(
                         ReturnStatement(
@@ -225,7 +225,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                                 IdentifierName(Names.FastSerializationEnumerable))
                             .AddArgumentListArguments(
                                 Argument(
-                                    IdentifierName(paramName)))));
+                                    IdentifierName(ParamName)))));
             }
         }
     }

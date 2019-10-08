@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace WarHub.ArmouryModel.ProjectModel
+﻿namespace WarHub.ArmouryModel.ProjectModel
 {
     [Record]
     public partial class ProjectConfigurationInfo

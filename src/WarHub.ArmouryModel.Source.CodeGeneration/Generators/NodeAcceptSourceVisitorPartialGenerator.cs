@@ -1,7 +1,7 @@
-﻿using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Threading;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
 namespace WarHub.ArmouryModel.Source.CodeGeneration
@@ -30,7 +30,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
 
         private MemberDeclarationSyntax AcceptMethod()
         {
-            const string visitor = "visitor";
+            const string Visitor = "visitor";
             return
                 MethodDeclaration(
                     PredefinedType(Token(SyntaxKind.VoidKeyword)),
@@ -40,12 +40,12 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                     SyntaxKind.OverrideKeyword)
                 .AddParameterListParameters(
                     Parameter(
-                        Identifier(visitor))
+                        Identifier(Visitor))
                     .WithType(
                         IdentifierName(Names.SourceVisitor)))
                 .AddBodyStatements(
                     ExpressionStatement(
-                        IdentifierName(visitor)
+                        IdentifierName(Visitor)
                         .MemberAccess(
                             IdentifierName(Names.Visit + Descriptor.RawModelName))
                         .InvokeWithArguments(
@@ -54,7 +54,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
 
         private MemberDeclarationSyntax AcceptGenericMethod()
         {
-            const string visitor = "visitor";
+            const string Visitor = "visitor";
             return
                 MethodDeclaration(
                     IdentifierName(Names.SourceVisitorTypeParameter),
@@ -66,14 +66,14 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                     SyntaxKind.OverrideKeyword)
                 .AddParameterListParameters(
                     Parameter(
-                        Identifier(visitor))
+                        Identifier(Visitor))
                     .WithType(
                         GenericName(Names.SourceVisitor)
                         .AddTypeArgumentListArguments(
                             IdentifierName(Names.SourceVisitorTypeParameter))))
                 .AddBodyStatements(
                     ReturnStatement(
-                        IdentifierName(visitor)
+                        IdentifierName(Visitor)
                         .MemberAccess(
                             IdentifierName(Names.Visit + Descriptor.RawModelName))
                         .InvokeWithArguments(

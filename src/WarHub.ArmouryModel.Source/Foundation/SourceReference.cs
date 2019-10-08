@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.Immutable;
-using System.Text;
-
-namespace WarHub.ArmouryModel.Source.Foundation
+﻿namespace WarHub.ArmouryModel.Source.Foundation
 {
     public abstract class SourceReference
     {

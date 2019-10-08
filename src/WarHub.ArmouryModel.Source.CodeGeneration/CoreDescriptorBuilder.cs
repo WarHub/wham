@@ -1,12 +1,12 @@
-﻿using CodeGeneration.Roslyn;
-using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using System.Threading;
+using CodeGeneration.Roslyn;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace WarHub.ArmouryModel.Source.CodeGeneration
 {
@@ -15,8 +15,8 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
         private const string ImmutableArrayMetadataName = "System.Collections.Immutable.ImmutableArray`1";
         private const string WhamNodeCoreAttributeMetadataName = "WarHub.ArmouryModel.Source.WhamNodeCoreAttribute";
 
-        private static SymbolCache<INamedTypeSymbol> ImmutableArraySymbolCache = new SymbolCache<INamedTypeSymbol>(ImmutableArrayMetadataName);
-        private static SymbolCache<INamedTypeSymbol> WhamNodeCoreAttributeSymbolCache = new SymbolCache<INamedTypeSymbol>(WhamNodeCoreAttributeMetadataName);
+        private static SymbolCache<INamedTypeSymbol> immutableArraySymbolCache = new SymbolCache<INamedTypeSymbol>(ImmutableArrayMetadataName);
+        private static SymbolCache<INamedTypeSymbol> whamNodeCoreAttributeSymbolCache = new SymbolCache<INamedTypeSymbol>(WhamNodeCoreAttributeMetadataName);
 
         public CoreDescriptorBuilder(TransformationContext context, CancellationToken cancellationToken)
         {
@@ -24,8 +24,8 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
             Compilation = context.Compilation;
             TypeDeclaration = (ClassDeclarationSyntax)context.ProcessingNode;
             CancellationToken = cancellationToken;
-            UpdateNamedTypeSymbolCache(ref ImmutableArraySymbolCache, Compilation);
-            UpdateNamedTypeSymbolCache(ref WhamNodeCoreAttributeSymbolCache, Compilation);
+            UpdateNamedTypeSymbolCache(ref immutableArraySymbolCache, Compilation);
+            UpdateNamedTypeSymbolCache(ref whamNodeCoreAttributeSymbolCache, Compilation);
             TypeSymbol = GetNamedTypeSymbol(TypeDeclaration);
         }
 
@@ -33,14 +33,13 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
         private CSharpCompilation Compilation { get; }
         private ClassDeclarationSyntax TypeDeclaration { get; }
         private CancellationToken CancellationToken { get; }
-        public INamedTypeSymbol ImmutableArraySymbol => ImmutableArraySymbolCache.Symbol;
+        public INamedTypeSymbol ImmutableArraySymbol => immutableArraySymbolCache.Symbol;
         public INamedTypeSymbol TypeSymbol { get; }
 
         public CoreDescriptor CreateDescriptor()
         {
             var firstDeclaration =
-                NodeFromLocation(
-                    TypeSymbol.Locations.First())
+                NodeFromLocation(TypeSymbol.Locations[0])
                 .FirstAncestorOrSelf<ClassDeclarationSyntax>();
 
             var attributeLists = GetClassAttributeLists().ToImmutableArray();
@@ -66,8 +65,6 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                 firstDeclaration.Identifier.WithoutTrivia(),
                 properties,
                 attributeLists);
-
-
         }
 
         private static IEnumerable<INamedTypeSymbol> GetCustomBaseTypesAndSelf(INamedTypeSymbol self)
@@ -116,7 +113,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                 {
                     return new CoreDescriptor.CollectionEntry(symbol, typeIdentifier, (NameSyntax)typeSyntax, attributes);
                 }
-                if (namedType.GetAttributes().Any(a => a.AttributeClass == WhamNodeCoreAttributeSymbolCache.Symbol))
+                if (namedType.GetAttributes().Any(a => a.AttributeClass == whamNodeCoreAttributeSymbolCache.Symbol))
                 {
                     return new CoreDescriptor.ComplexEntry(symbol, typeIdentifier, (NameSyntax)typeSyntax, attributes);
                 }
@@ -149,12 +146,12 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
             }
         }
 
-        private struct SymbolCache<T>
+        private readonly struct SymbolCache<T>
         {
             public SymbolCache(string fullMetadataName)
             {
                 FullMetadataName = fullMetadataName;
-                Symbol = default(T);
+                Symbol = default;
                 Compilation = null;
             }
 

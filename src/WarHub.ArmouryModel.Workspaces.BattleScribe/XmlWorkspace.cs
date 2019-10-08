@@ -1,8 +1,5 @@
-﻿using System.Collections.Generic;
-using System.Collections.Immutable;
-using System.IO;
+﻿using System.Collections.Immutable;
 using System.Linq;
-using MoreLinq;
 using WarHub.ArmouryModel.ProjectModel;
 
 namespace WarHub.ArmouryModel.Workspaces.BattleScribe
@@ -10,7 +7,7 @@ namespace WarHub.ArmouryModel.Workspaces.BattleScribe
     /// <summary>
     /// Provides methods to map folder contents to BattleScribe XML documents and load them on demand.
     /// </summary>
-    public class XmlWorkspace : IWorkspace
+    public sealed class XmlWorkspace : IWorkspace
     {
         private XmlWorkspace(ProjectConfigurationInfo info)
         {
@@ -47,8 +44,6 @@ namespace WarHub.ArmouryModel.Workspaces.BattleScribe
         /// <returns>Workspace created from the directory with all files with well-known extensions.</returns>
         public static XmlWorkspace CreateFromDirectory(string path)
         {
-            var dirInfo = new DirectoryInfo(path);
-
             var info = new BattleScribeProjectConfigurationProvider().Create(path);
             return new XmlWorkspace(info);
         }
@@ -56,24 +51,6 @@ namespace WarHub.ArmouryModel.Workspaces.BattleScribe
         public static XmlWorkspace CreateFromConfigurationInfo(ProjectConfigurationInfo info)
         {
             return new XmlWorkspace(info);
-        }
-
-        private static string GetLongestCommonPath(IEnumerable<FileInfo> files)
-        {
-            return files
-                .Select(x => x.Directory)
-                .Select(
-                    x => MoreEnumerable
-                    .Generate(x, y => y.Parent)
-                    .Select(y => y.FullName)
-                    .Reverse()
-                    .ToImmutableArray()
-                    .AsEnumerable())
-                .Aggregate(
-                    (left, right) =>
-                    left.Zip(right, (x1, x2) => x1 == x2 ? x1 : null)
-                    .Where(x => x != null))
-                .LastOrDefault();
         }
     }
 }

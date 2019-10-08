@@ -1,17 +1,17 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using CodeGeneration.Roslyn;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.CSharp;
-using System.Collections.Generic;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace WarHub.ArmouryModel.Source.CodeGeneration
 {
     public class WhamNodeGenerator : ICodeGenerator
     {
-        private static readonly DiagnosticDescriptor ExceptionDiagDescriptor
+        private static readonly DiagnosticDescriptor exceptionDiagDescriptor
             = new DiagnosticDescriptor(
                 id: "WHAMGEN",
                 title: "Error when generating code.",
@@ -46,7 +46,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                 }
                 progress.Report(
                     Diagnostic.Create(
-                        ExceptionDiagDescriptor,
+                        exceptionDiagDescriptor,
                         context.ProcessingNode.GetLocation(),
                         messageArgs: e.ToString()));
             }

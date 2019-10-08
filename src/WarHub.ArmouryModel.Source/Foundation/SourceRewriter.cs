@@ -22,13 +22,15 @@ namespace WarHub.ArmouryModel.Source
             {
                 var item = list[i];
                 var visited = VisitListElement(item);
-                if (item != visited && alternate == null)
+                if (alternate is null)
                 {
-                    alternate = ImmutableArray.CreateBuilder<TNode>(n);
-                    alternate.AddRange(list.Take(i));
+                    if (item != visited)
+                    {
+                        alternate = ImmutableArray.CreateBuilder<TNode>(n);
+                        alternate.AddRange(list.Take(i));
+                    }
                 }
-
-                if (alternate != null && visited != null && !visited.IsKind(SourceKind.Unknown))
+                else if (visited?.IsKind(SourceKind.Unknown) == false)
                 {
                     alternate.Add(visited);
                 }

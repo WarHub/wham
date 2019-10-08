@@ -15,6 +15,7 @@ namespace WarHub.ArmouryModel.Workspaces.Gitree
             var escaped = Regex.Escape(new string(InvalidChars));
             EscapingRegex = new Regex($@"[\s{escaped}]+");
         }
+
         private static Regex EscapingRegex { get; }
         private static char[] InvalidChars { get; }
 

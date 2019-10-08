@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 
@@ -55,8 +54,8 @@ namespace WarHub.ArmouryModel.Source.XmlFormat
         public override int GetHashCode()
         {
             var hashCode = 870344294;
-            hashCode = hashCode * -1521134295 + Element.GetHashCode();
-            hashCode = hashCode * -1521134295 + Version?.GetHashCode() ?? 0;
+            hashCode = (hashCode * -1521134295) + Element.GetHashCode();
+            hashCode = (hashCode * -1521134295) + Version?.GetHashCode() ?? 0;
             return hashCode;
         }
 

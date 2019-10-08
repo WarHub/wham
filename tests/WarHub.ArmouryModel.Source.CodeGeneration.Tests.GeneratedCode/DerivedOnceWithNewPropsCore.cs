@@ -3,6 +3,6 @@
     [WhamNodeCore]
     public partial class DerivedOnceWithNewPropsCore : AbstractBaseCore
     {
-        public System.Boolean Flag { get; }
+        public bool Flag { get; }
     }
 }

@@ -31,7 +31,7 @@ namespace WarHub.ArmouryModel.Source
             }
 
             var array = new ArrayElement<T>[items.Length];
-            for (int i = 0; i < items.Length; i++)
+            for (var i = 0; i < items.Length; i++)
             {
                 array[i].Value = items[i];
             }
@@ -47,7 +47,7 @@ namespace WarHub.ArmouryModel.Source
             }
 
             var array = new T[items.Length];
-            for (int i = 0; i < items.Length; i++)
+            for (var i = 0; i < items.Length; i++)
             {
                 array[i] = items[i].Value;
             }

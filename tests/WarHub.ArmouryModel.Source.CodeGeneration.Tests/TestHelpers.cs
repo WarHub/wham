@@ -7,7 +7,6 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration.Tests
 {
     public static class TestHelpers
     {
-
         public static RootContainerNode EmptyRootNode
             => new RootContainerCore.Builder().ToImmutable().ToNode();
 
@@ -20,7 +19,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration.Tests
         public static RecursiveContainerNode EmptyRecursiveNode
             => new RecursiveContainerCore.Builder().ToImmutable().ToNode();
 
-        public class SymmetricTree
+        public static class SymmetricTree
         {
             public static RootContainerNode Create()
             {

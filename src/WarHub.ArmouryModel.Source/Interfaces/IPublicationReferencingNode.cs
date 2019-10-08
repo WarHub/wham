@@ -6,6 +6,6 @@
         string Page { get; }
     }
 
-    partial class EntryBaseNode : IPublicationReferencingNode { }
-    partial class RosterElementBaseNode : IPublicationReferencingNode { }
+    public partial class EntryBaseNode : IPublicationReferencingNode { }
+    public partial class RosterElementBaseNode : IPublicationReferencingNode { }
 }

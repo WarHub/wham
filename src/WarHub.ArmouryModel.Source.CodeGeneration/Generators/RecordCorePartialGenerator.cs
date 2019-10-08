@@ -1,10 +1,10 @@
-﻿using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using System.Threading;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
 namespace WarHub.ArmouryModel.Source.CodeGeneration
@@ -93,7 +93,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
             }
             if (IsDerived)
             {
-                string baseTypeName = Descriptor.TypeSymbol.BaseType.Name;
+                var baseTypeName = Descriptor.TypeSymbol.BaseType.Name;
                 yield return
                     MethodDeclaration(
                         IdentifierName(baseTypeName),
@@ -138,7 +138,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
             }
         }
 
-        ParameterSyntax CreateParameter(CoreDescriptor.Entry property)
+        private ParameterSyntax CreateParameter(CoreDescriptor.Entry property)
         {
             return
                 Parameter(property.Identifier)

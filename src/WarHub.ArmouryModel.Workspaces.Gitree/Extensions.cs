@@ -1,10 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System.Collections.Generic;
 
 namespace WarHub.ArmouryModel.Workspaces.Gitree
 {
-    static class Extensions
+    internal static class Extensions
     {
         public static KeyValuePair<TKey, TValue> ToKeyValuePair<TKey, TValue>(this (TKey key, TValue value) tuple)
         {

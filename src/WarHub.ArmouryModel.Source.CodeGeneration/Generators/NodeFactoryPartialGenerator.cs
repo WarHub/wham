@@ -1,10 +1,10 @@
-﻿using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
 namespace WarHub.ArmouryModel.Source.CodeGeneration
@@ -34,7 +34,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
 
         private IEnumerable<MemberDeclarationSyntax> GenerateFactoryMethods()
         {
-            const string list = "list";
+            const string List = "list";
             var methodName = Descriptor.RawModelName;
             yield return CreateForNode(
                 CreateNodeListParameter,
@@ -48,13 +48,13 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
             // NodeList parameter
             yield return CreateForList(
                 Parameter(
-                    Identifier(list))
+                    Identifier(List))
                 .WithType(
                     Descriptor.GetNodeTypeIdentifierName().ToNodeListType()),
                 ObjectCreationExpression(
                     Descriptor.GetListNodeTypeIdentifierName())
                 .InvokeWithArguments(
-                    IdentifierName(list)
+                    IdentifierName(List)
                         .MemberAccess(
                             IdentifierName(Names.ToCoreArray))
                         .InvokeWithArguments(),
@@ -62,14 +62,14 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
             // params parameter
             yield return CreateForList(
                 Parameter(
-                    Identifier(list))
+                    Identifier(List))
                 .AddModifiers(SyntaxKind.ParamsKeyword)
                 .WithType(
                     Descriptor.GetNodeTypeIdentifierName().ToArrayType()),
                 ObjectCreationExpression(
                     Descriptor.GetListNodeTypeIdentifierName())
                 .InvokeWithArguments(
-                    IdentifierName(list)
+                    IdentifierName(List)
                         .MemberAccess(
                             IdentifierName(Names.ToNodeList))
                         .InvokeWithArguments()

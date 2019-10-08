@@ -6,6 +6,5 @@ namespace WarHub.ArmouryModel.Source
     [XmlType("costLimit")]
     public partial class CostLimitCore : CostBaseCore
     {
-
     }
 }

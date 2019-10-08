@@ -1,8 +1,6 @@
-﻿using System.Collections.Generic;
-
-namespace WarHub.ArmouryModel.Source
+﻿namespace WarHub.ArmouryModel.Source
 {
-    public struct ChildInfo
+    public readonly struct ChildInfo
     {
         public ChildInfo(string name, SourceNode node)
         {

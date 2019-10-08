@@ -90,9 +90,9 @@ namespace WarHub.ArmouryModel.Source.XmlFormat
         public override int GetHashCode()
         {
             var hashCode = -1092680650;
-            hashCode = hashCode * -1521134295 + Major.GetHashCode();
-            hashCode = hashCode * -1521134295 + Minor.GetHashCode();
-            hashCode = hashCode * -1521134295 + Suffix?.GetHashCode() ?? 0;
+            hashCode = (hashCode * -1521134295) + Major.GetHashCode();
+            hashCode = (hashCode * -1521134295) + Minor.GetHashCode();
+            hashCode = (hashCode * -1521134295) + Suffix?.GetHashCode() ?? 0;
             return hashCode;
         }
 

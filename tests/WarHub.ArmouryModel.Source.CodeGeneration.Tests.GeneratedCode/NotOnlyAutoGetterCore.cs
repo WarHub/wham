@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace WarHub.ArmouryModel.Source.CodeGeneration.Tests.GeneratedCode
+﻿namespace WarHub.ArmouryModel.Source.CodeGeneration.Tests.GeneratedCode
 {
     [WhamNodeCore]
     public partial class NotOnlyAutoGetterCore
@@ -12,8 +8,8 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration.Tests.GeneratedCode
             return new NotOnlyAutoGetterCore(Name: "", DefaultValue: "");
         }
 
-        private string _fullProperty;
-        private string _fullBodiedProperty;
+        private string fullProperty;
+        private string fullBodiedProperty;
 
         public string Name { get; }
 
@@ -25,19 +21,19 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration.Tests.GeneratedCode
 
         public string FullProperty
         {
-            get => _fullProperty;
-            set => _fullProperty = value;
+            get => fullProperty;
+            set => fullProperty = value;
         }
 
         public string FullBodiedProperty
         {
             get
             {
-                return _fullBodiedProperty;
+                return fullBodiedProperty;
             }
             set
             {
-                _fullBodiedProperty = value;
+                fullBodiedProperty = value;
             }
         }
     }

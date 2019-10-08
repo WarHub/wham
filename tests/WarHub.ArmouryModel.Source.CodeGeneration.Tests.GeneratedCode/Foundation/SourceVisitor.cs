@@ -1,17 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace WarHub.ArmouryModel.Source.CodeGeneration.Tests.GeneratedCode
+﻿namespace WarHub.ArmouryModel.Source.CodeGeneration.Tests.GeneratedCode
 {
     public abstract partial class SourceVisitor
     {
         public virtual void Visit(SourceNode node)
         {
-            if (node != null)
-            {
-                node.Accept(this);
-            }
+            node?.Accept(this);
         }
 
         public virtual void DefaultVisit(SourceNode node)

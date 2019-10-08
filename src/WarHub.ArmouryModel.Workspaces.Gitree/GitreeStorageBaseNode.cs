@@ -4,7 +4,7 @@ namespace WarHub.ArmouryModel.Workspaces.Gitree
 {
     internal abstract class GitreeStorageBaseNode
     {
-        public GitreeStorageBaseNode(FileSystemInfo fileSystemInfo, GitreeStorageFolderNode parent, GitreeWorkspace workspace)
+        protected GitreeStorageBaseNode(FileSystemInfo fileSystemInfo, GitreeStorageFolderNode parent, GitreeWorkspace workspace)
         {
             FileSystemInfo = fileSystemInfo;
             Parent = parent;

@@ -1,7 +1,5 @@
 ﻿using System;
 using System.IO;
-using System.Text;
-using System.Xml;
 using System.Xml.Serialization;
 using Xunit;
 
@@ -25,7 +23,7 @@ namespace WarHub.ArmouryModel.Source.BattleScribe.Tests
             {
                 CreateDir();
                 // ReSharper disable once UnusedVariable
-                var serializers = new[]
+                _ = new[]
                 {
                     new XmlSerializer(typeof(GamesystemCore.Builder)),
                     new XmlSerializer(typeof(CatalogueCore.Builder)),

@@ -19,7 +19,6 @@ namespace WarHub.ArmouryModel.Workspaces.Gitree
         // TODO should be optimized to read data type from single "root" file
         public SourceKind DataKind => GetData().Kind;
 
-
         private WeakReference<SourceNode> WeakData { get; } = new WeakReference<SourceNode>(null);
 
         public SourceNode GetData()

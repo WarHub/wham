@@ -10,26 +10,25 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration.Tests
 {
     public class GeneratedNodeTests
     {
-        public const string containerId = "cont1";
-        public const string containerName = "container name";
-        public const string itemId = "item1";
-        public const string itemName = "item name";
+        public const string ContainerId = "cont1";
+        public const string ContainerName = "container name";
+        public const string ItemId = "item1";
+        public const string ItemName = "item name";
 
         public class OneItemContainerPackage
         {
-
             public static ContainerNode CreateContainer()
             {
                 return new ContainerCore.Builder
                 {
-                    Id = containerId,
-                    Name = containerName,
+                    Id = ContainerId,
+                    Name = ContainerName,
                     Items =
                 {
                     new ItemCore.Builder
                     {
-                        Id = itemId,
-                        Name = itemName
+                        Id = ItemId,
+                        Name = ItemName
                     }
                 }
                 }.ToImmutable().ToNode();
@@ -46,7 +45,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration.Tests
         [Fact]
         public void FactoryMethod_GivenNoItems_CreatesValidNode()
         {
-            var container = GeneratedCode.NodeFactory.Container(containerId, containerName);
+            var container = GeneratedCode.NodeFactory.Container(ContainerId, ContainerName);
 
             Assert.Empty(container.Items);
         }
@@ -57,71 +56,71 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration.Tests
             var container = OneItemContainerPackage.CreateContainer();
 
             container.Deconstruct(out var id, out var name, out var items);
-            Assert.Equal(containerId, id);
-            Assert.Equal(containerName, name);
+            Assert.Equal(ContainerId, id);
+            Assert.Equal(ContainerName, name);
             Assert.Collection(
                 items,
                 x =>
                 {
-                    Assert.Equal(itemId, x.Id);
-                    Assert.Equal(itemName, x.Name);
+                    Assert.Equal(ItemId, x.Id);
+                    Assert.Equal(ItemName, x.Name);
                 });
         }
 
         [Fact]
         public void With_CollectionProperty_ParamsOverride_ReplacesItems()
         {
-            const string item1Id = "id1";
-            const string item2Id = "id2";
-            var item1 = new ItemCore.Builder { Id = item1Id };
-            var item2Node = new ItemCore.Builder { Id = item2Id }.ToImmutable().ToNode();
+            const string Item1Id = "id1";
+            const string Item2Id = "id2";
+            var item1 = new ItemCore.Builder { Id = Item1Id };
+            var item2Node = new ItemCore.Builder { Id = Item2Id }.ToImmutable().ToNode();
             var container = new ContainerCore.Builder { Items = { item1 } }.ToImmutable().ToNode();
             var newContainer = container.WithItems(item2Node);
             Assert.NotSame(container, newContainer);
             Assert.Collection(
                 container.Items,
-                x => Assert.Equal(item1Id, x.Id));
+                x => Assert.Equal(Item1Id, x.Id));
             Assert.Collection(
                 newContainer.Items,
-                x => Assert.Equal(item2Id, x.Id));
+                x => Assert.Equal(Item2Id, x.Id));
         }
 
         [Fact]
         public void Add_CollectionProperty_ParamsOverride_AddsItems()
         {
-            const string item1Id = "id1";
-            const string item2Id = "id2";
-            var item1 = new ItemCore.Builder { Id = item1Id };
-            var item2Node = new ItemCore.Builder { Id = item2Id }.ToImmutable().ToNode();
+            const string Item1Id = "id1";
+            const string Item2Id = "id2";
+            var item1 = new ItemCore.Builder { Id = Item1Id };
+            var item2Node = new ItemCore.Builder { Id = Item2Id }.ToImmutable().ToNode();
             var container = new ContainerCore.Builder { Items = { item1 } }.ToImmutable().ToNode();
             var newContainer = container.AddItems(item2Node);
             Assert.NotSame(container, newContainer);
             Assert.Collection(
                 container.Items,
-                x => Assert.Equal(item1Id, x.Id));
+                x => Assert.Equal(Item1Id, x.Id));
             Assert.Collection(
                 newContainer.Items,
-                x => Assert.Equal(item1Id, x.Id),
-                x => Assert.Equal(item2Id, x.Id));
+                x => Assert.Equal(Item1Id, x.Id),
+                x => Assert.Equal(Item2Id, x.Id));
         }
 
         [Fact]
         public void Add_CollectionProperty_IEnumerableOverride_AddsItems()
         {
-            const string item1Id = "id1";
-            const string item2Id = "id2";
-            var item1 = new ItemCore.Builder { Id = item1Id };
-            var item2Node = new ItemCore.Builder { Id = item2Id }.ToImmutable().ToNode();
+            const string Item1Id = "id1";
+            const string Item2Id = "id2";
+            var item1 = new ItemCore.Builder { Id = Item1Id };
+            var item2Node = new ItemCore.Builder { Id = Item2Id }.ToImmutable().ToNode();
             var container = new ContainerCore.Builder { Items = { item1 } }.ToImmutable().ToNode();
             var newContainer = container.AddItems(new[] { item2Node }.ToImmutableList());
             Assert.NotSame(container, newContainer);
             Assert.Collection(
                 container.Items,
-                x => Assert.Equal(item1Id, x.Id));
+                x => Assert.Equal(Item1Id, x.Id));
             Assert.Collection(
                 newContainer.Items,
-                x => Assert.Equal(item1Id, x.Id),
-                x => Assert.Equal(item2Id, x.Id));
+                x => Assert.Equal(Item1Id, x.Id),
+                x => Assert.Equal(Item2Id, x.Id));
         }
 
         [Fact]
@@ -193,11 +192,11 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration.Tests
         [Fact]
         public void Children_OnRoot_ReturnsOnlyDirectChildren()
         {
-            const string container1Id = "container1";
-            const string container2Id = "container2";
+            const string Container1Id = "container1";
+            const string Container2Id = "container2";
             var root = EmptyRootNode
-                .AddLeftContainers(OneItemContainerPackage.CreateContainer().WithId(container1Id))
-                .AddRightContainers(OneItemContainerPackage.CreateContainer().WithId(container2Id));
+                .AddLeftContainers(OneItemContainerPackage.CreateContainer().WithId(Container1Id))
+                .AddRightContainers(OneItemContainerPackage.CreateContainer().WithId(Container2Id));
             var children = root.Children();
 
             Assert.Collection(children,
@@ -205,10 +204,10 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration.Tests
                 x => Assert.IsType<ContainerListNode>(x));
 
             Assert.Collection((ContainerListNode)children.ElementAt(0),
-                x => Assert.True(x is ContainerNode c && c.Id == container1Id));
+                x => Assert.True(x is ContainerNode c && c.Id == Container1Id));
 
             Assert.Collection((ContainerListNode)children.ElementAt(1),
-                x => Assert.True(x is ContainerNode c && c.Id == container2Id));
+                x => Assert.True(x is ContainerNode c && c.Id == Container2Id));
         }
 
         [Fact]
@@ -230,13 +229,13 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration.Tests
         [Fact]
         public void ChildrenInfos_OfList_ReturnsChildrenInfos()
         {
-            const string child1Id = "child1";
-            const string child2Id = "child2";
+            const string Child1Id = "child1";
+            const string Child2Id = "child2";
             var container =
                 NodeFactory.Container("id", "container")
                 .AddItems(
-                    NodeFactory.Item(child1Id, ""),
-                    NodeFactory.Item(child2Id, ""));
+                    NodeFactory.Item(Child1Id, ""),
+                    NodeFactory.Item(Child2Id, ""));
             var list = container.Items;
 
             Assert.Collection(
@@ -259,7 +258,6 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration.Tests
             var contains = root.Contains(item);
             Assert.True(contains);
         }
-
 
         [Fact]
         public void Contains_Child_ReturnsFalse()
@@ -338,7 +336,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration.Tests
         {
             var container = OneItemContainerPackage.CreateContainer();
             var item = container.Items[0];
-            var ancestor = item.FirstAncestorOrSelf<ContainerNode>(x => true);
+            var ancestor = item.FirstAncestorOrSelf<ContainerNode>(_ => true);
             Assert.Same(container, ancestor);
         }
 
@@ -347,7 +345,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration.Tests
         {
             var container = OneItemContainerPackage.CreateContainer();
             var item = container.Items[0];
-            var ancestor = item.FirstAncestorOrSelf<ContainerNode>(x => false);
+            var ancestor = item.FirstAncestorOrSelf<ContainerNode>(_ => false);
             Assert.Null(ancestor);
         }
 
@@ -356,7 +354,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration.Tests
         {
             var root = EmptyRootNode.AddLeftContainers(EmptyContainerNode.AddItems(EmptyItemNode));
             var item = root.LeftContainers[0].Items[0];
-            var ancestor = item.FirstAncestorOrSelf<RootContainerNode>(x => true);
+            var ancestor = item.FirstAncestorOrSelf<RootContainerNode>(_ => true);
             Assert.Same(root, ancestor);
         }
 
@@ -365,33 +363,33 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration.Tests
         {
             var root = EmptyRootNode.AddLeftContainers(EmptyContainerNode.AddItems(EmptyItemNode));
             var item = root.LeftContainers[0].Items[0];
-            var ancestor = item.FirstAncestorOrSelf<RootContainerNode>(x => false);
+            var ancestor = item.FirstAncestorOrSelf<RootContainerNode>(_ => false);
             Assert.Null(ancestor);
         }
 
         [Fact]
         public void FirstAncestorOrSelf_OnRecursiveTreeItem_GivenContainerName_FindsContainer()
         {
-            const string rootName = "root";
-            const string name1 = "container1";
-            const string name2 = "container2";
-            const string name3 = "container3";
-            const string name4 = "container4";
+            const string RootName = "root";
+            const string Name1 = "container1";
+            const string Name2 = "container2";
+            const string Name3 = "container3";
+            const string Name4 = "container4";
             var container = EmptyRecursiveNode;
-            var root = EmptyRecursiveNode.WithName(rootName)
+            var root = EmptyRecursiveNode.WithName(RootName)
                 .AddContainers(
-                    container.WithName(name1)
+                    container.WithName(Name1)
                     .AddContainers(
-                        container.WithName(name2)
+                        container.WithName(Name2)
                         .AddContainers(
-                            container.WithName(name3)
+                            container.WithName(Name3)
                             .AddContainers(
-                                container.WithName(name4)
+                                container.WithName(Name4)
                                 .AddItems(EmptyItemNode)))));
             var item = root.Descendants().OfType<ItemNode>().Single();
             var expected = root.Containers[0].Containers[0];
             // act
-            var actual = item.FirstAncestorOrSelf<RecursiveContainerNode>(x => x.Name == name2);
+            var actual = item.FirstAncestorOrSelf<RecursiveContainerNode>(x => x.Name == Name2);
             Assert.Same(expected, actual);
         }
     }

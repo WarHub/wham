@@ -1,14 +1,14 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Collections;
+using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.Linq;
 using System.Diagnostics;
+using System.Linq;
 
 namespace WarHub.ArmouryModel.Source
 {
     [DebuggerDisplay("Count = {" + nameof(Count) + "}")]
-    public partial struct NodeList<TNode> : IReadOnlyList<TNode>, IContainerProvider<TNode>
+    public readonly struct NodeList<TNode> : IReadOnlyList<TNode>, IContainerProvider<TNode>, IEquatable<NodeList<TNode>>
         where TNode : SourceNode
     {
         // TODO a lot of optimizations here
@@ -41,11 +41,8 @@ namespace WarHub.ArmouryModel.Source
         }
 
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
-    }
 
-    // equality implementation
-    partial struct NodeList<TNode> : IEquatable<NodeList<TNode>>
-    {
+        // equality implementation
         public bool Equals(NodeList<TNode> other)
         {
             return Equals(Container, other.Container);
@@ -71,25 +68,26 @@ namespace WarHub.ArmouryModel.Source
         {
             return !(left == right);
         }
-    }
 
-    partial struct NodeList<TNode>
-    {
         public NodeList<TNode> Add(TNode item)
         {
             return this.Append(item).ToNodeList();
         }
+
         public NodeList<TNode> AddRange(IEnumerable<TNode> items)
         {
             return this.Concat(items).ToNodeList();
         }
     }
+
     internal interface IContainerProvider<out TNode> where TNode : SourceNode
     {
         IContainer<TNode> Container { get; }
     }
 
-
+    /// <summary>
+    /// Contains factory and extension methods for creating <see cref="NodeList{TNode}"/>
+    /// </summary>
     public static class NodeList
     {
         /// <summary>
@@ -165,8 +163,8 @@ namespace WarHub.ArmouryModel.Source
         }
 
         internal static ImmutableArray<TCore> ToCoreArray<TCore, TNode>(this NodeList<TNode> list)
-            where TNode : SourceNode, INodeWithCore<TCore>
             where TCore : ICore<TNode>
+            where TNode : SourceNode, INodeWithCore<TCore>
         {
             // shortcuts for easy cases
             if (list.Count == 0)
@@ -180,7 +178,7 @@ namespace WarHub.ArmouryModel.Source
             // manual recovery of cores
             var count = list.Count;
             var builder = ImmutableArray.CreateBuilder<TCore>(count);
-            for (int i = 0; i < count; i++)
+            for (var i = 0; i < count; i++)
             {
                 INodeWithCore<TCore> item = list[i];
                 builder.Add(item.Core);

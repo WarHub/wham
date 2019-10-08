@@ -2,7 +2,7 @@
 
 namespace WarHub.ArmouryModel.Source
 {
-    internal struct NodeCollectionContainerProxy<TChildNode> : IContainer<TChildNode>
+    internal readonly struct NodeCollectionContainerProxy<TChildNode> : IContainer<TChildNode>
         where TChildNode : SourceNode
     {
         public NodeCollectionContainerProxy(ImmutableArray<TChildNode> nodes)

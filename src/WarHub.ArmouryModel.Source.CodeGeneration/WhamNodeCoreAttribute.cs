@@ -1,6 +1,6 @@
-﻿using CodeGeneration.Roslyn;
-using System;
+﻿using System;
 using System.Diagnostics;
+using CodeGeneration.Roslyn;
 using WarHub.ArmouryModel.Source.CodeGeneration;
 
 namespace WarHub.ArmouryModel.Source

@@ -1,17 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace WarHub.ArmouryModel.Source
+﻿namespace WarHub.ArmouryModel.Source
 {
     public abstract partial class SourceVisitor
     {
         public virtual void Visit(SourceNode node)
         {
-            if (node != null)
-            {
-                node.Accept(this);
-            }
+            node?.Accept(this);
         }
 
         public virtual void DefaultVisit(SourceNode node)
