@@ -8,7 +8,6 @@ using WarHub.ArmouryModel.Source;
 
 namespace WarHub.ArmouryModel.Workspaces.Gitree
 {
-
     internal class SourceNodeToGitreeConverter : SourceVisitor<GitreeNode>
     {
         private SeparatableChildrenRemover SeparatableRemover { get; }
@@ -54,7 +53,7 @@ namespace WarHub.ArmouryModel.Workspaces.Gitree
             var names = nodes.ToImmutableDictionary(x => x, SelectName);
             var nameCounts = names.Values
                 .Distinct(StringComparer.OrdinalIgnoreCase)
-                .ToDictionary(x => x, x => 0, StringComparer.OrdinalIgnoreCase);
+                .ToDictionary(x => x, _ => 0, StringComparer.OrdinalIgnoreCase);
             var folders = nodes
                 .Select(Visit)
                 .Scan(default(GitreeNode), AssignIdentifiers)
@@ -103,7 +102,7 @@ namespace WarHub.ArmouryModel.Workspaces.Gitree
         /// Visitor that adds visited node to appropriate list
         /// of an empty <see cref="DatablobNode"/> which is returned.
         /// </summary>
-        public class DatablobRewriter : SourceRewriter
+        public sealed class DatablobRewriter : SourceRewriter
         {
             private DatablobRewriter(SourceNode nodeToAdd)
             {

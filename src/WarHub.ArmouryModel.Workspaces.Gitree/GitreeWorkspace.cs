@@ -11,8 +11,7 @@ using WarHub.ArmouryModel.ProjectModel;
 
 namespace WarHub.ArmouryModel.Workspaces.Gitree
 {
-
-    public class GitreeWorkspace : IWorkspace
+    public sealed class GitreeWorkspace : IWorkspace
     {
         private GitreeWorkspace(ProjectConfigurationInfo info)
         {
@@ -27,11 +26,7 @@ namespace WarHub.ArmouryModel.Workspaces.Gitree
                 .ToImmutableArray();
         }
 
-        private GitreeStorageFolderNode Root { get; }
-
         internal JsonSerializer Serializer { get; }
-
-        private ProjectConfiguration ProjectConfiguration => Info.Configuration;
 
         public string RootPath => Info.GetDirectoryInfo().FullName;
 

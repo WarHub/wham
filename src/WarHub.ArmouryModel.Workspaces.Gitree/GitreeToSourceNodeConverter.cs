@@ -36,7 +36,6 @@ namespace WarHub.ArmouryModel.Workspaces.Gitree
             var dict = lists
                 .SelectMany(x =>
                 {
-
                     var nodes = ParseList(x);
                     return GetAliases(x.Name)
                     .Select(alias => (alias, nodes).ToKeyValuePair());
@@ -67,7 +66,7 @@ namespace WarHub.ArmouryModel.Workspaces.Gitree
                 .ToImmutableDictionary(node => ValueTuple.Create(node.Datablob.Meta.PrevIdentifier));
             var orderedList = ImmutableArray.CreateBuilder<SourceNode>(blobList.Items.Length);
             string prevId = null;
-            for (int i = 0; i < n; i++)
+            for (var i = 0; i < n; i++)
             {
                 var gitreeNode = nodesByPrevIdentifier[ValueTuple.Create(prevId)];
                 prevId = gitreeNode.Datablob.Meta.Identifier;

@@ -14,8 +14,8 @@ namespace WarHub.ArmouryModel.Workspaces.Gitree
     /// </summary>
     public class GitreeWriter
     {
-        const string Extension = ".json";
-        const string ExtensionPattern = "*.json";
+        private const string Extension = ".json";
+        private const string ExtensionPattern = "*.json";
 
         private JsonSerializer Serializer { get; } = ProjectModel.JsonUtilities.CreateSerializer();
 
