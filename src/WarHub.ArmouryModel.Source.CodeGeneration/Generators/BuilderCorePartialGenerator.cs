@@ -1,10 +1,9 @@
-﻿using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
-using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
 namespace WarHub.ArmouryModel.Source.CodeGeneration
@@ -107,7 +106,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
             IEnumerable<MemberDeclarationSyntax> CreateArrayProperty()
             {
                 var propertyName = collectionEntry.Identifier.ValueText;
-                var fieldName = $"_{Char.ToLowerInvariant(propertyName[0])}{propertyName.Substring(1)}";
+                var fieldName = $"_{char.ToLowerInvariant(propertyName[0])}{propertyName.Substring(1)}";
                 yield return
                     FieldDeclaration(
                         VariableDeclaration(

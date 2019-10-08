@@ -1,8 +1,7 @@
-﻿using Microsoft.CodeAnalysis;
+﻿using System.Collections.Generic;
+using System.Threading;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using System.Collections.Generic;
-using System.Threading;
 using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
 namespace WarHub.ArmouryModel.Source.CodeGeneration
@@ -42,7 +41,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
 
         private IEnumerable<MethodDeclarationSyntax> GetToNodeMethods()
         {
-            const string parentLocal = "parent";
+            const string ParentLocal = "parent";
             var nodeTypeIdentifierName = Descriptor.GetNodeTypeIdentifierName();
             var derivedToNodeName = (IsDerived ? BaseType.Name : "") + Names.ToNode;
             var abstractToNodeName = Descriptor.CoreTypeIdentifier.Text + Names.ToNode;
@@ -80,7 +79,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                     .AddModifiers(SyntaxKind.ProtectedKeyword, SyntaxKind.SealedKeyword, SyntaxKind.OverrideKeyword)
                     .AddParameterListParameters(
                         Parameter(
-                            Identifier(parentLocal))
+                            Identifier(ParentLocal))
                         .WithType(
                             IdentifierName(Names.SourceNode)))
                     .Mutate(x => ForwardExpressionToNode(x, Names.ToNode));
@@ -111,7 +110,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                                 Argument(
                                     ThisExpression()),
                                 Argument(
-                                    IdentifierName(parentLocal)))));
+                                    IdentifierName(ParentLocal)))));
             }
             MethodDeclarationSyntax ToNodeExplicitInterfaceMethod()
             {
@@ -124,7 +123,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                             .AddTypeArgumentListArguments(nodeTypeIdentifierName)))
                     .AddParameterListParameters(
                         Parameter(
-                            Identifier(parentLocal))
+                            Identifier(ParentLocal))
                         .WithType(
                             IdentifierName(Names.SourceNode)))
                     .Mutate(x => ForwardExpressionToNode(x, Names.ToNode));
@@ -134,7 +133,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                 return method
                     .AddParameterListParameters(
                         Parameter(
-                            Identifier(parentLocal))
+                            Identifier(ParentLocal))
                         .WithType(
                             IdentifierName(Names.SourceNode))
                         .WithDefault(
@@ -148,7 +147,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                     .WithExpressionBodyFull(
                         IdentifierName(targetName)
                         .InvokeWithArguments(
-                            IdentifierName(parentLocal)));
+                            IdentifierName(ParentLocal)));
             }
         }
     }

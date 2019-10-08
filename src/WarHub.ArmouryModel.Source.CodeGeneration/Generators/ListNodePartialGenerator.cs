@@ -1,9 +1,8 @@
-﻿using Microsoft.CodeAnalysis;
+﻿using System.Collections.Generic;
+using System.Threading;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
 using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
 namespace WarHub.ArmouryModel.Source.CodeGeneration
@@ -59,27 +58,27 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
 
         private ConstructorDeclarationSyntax GenerateConstructor()
         {
-            const string cores = "cores";
-            const string parent = "parent";
+            const string Cores = "cores";
+            const string Parent = "parent";
             return
                 ConstructorDeclaration(
                     Descriptor.GetListNodeTypeName())
                 .AddModifiers(SyntaxKind.ProtectedKeyword, SyntaxKind.InternalKeyword)
                 .AddParameterListParameters(
                     Parameter(
-                        Identifier(cores))
+                        Identifier(Cores))
                     .WithType(Descriptor.CoreType.ToImmutableArrayType()),
                     Parameter(
-                        Identifier(parent))
+                        Identifier(Parent))
                     .WithType(
                         IdentifierName(Names.SourceNode)))
                 .WithInitializer(
                     ConstructorInitializer(SyntaxKind.BaseConstructorInitializer)
                     .AddArgumentListArguments(
                         Argument(
-                            IdentifierName(parent))))
+                            IdentifierName(Parent))))
                 .AddBodyStatements(
-                    IdentifierName(cores)
+                    IdentifierName(Cores)
                         .MemberAccess(
                             IdentifierName(Names.ToNodeList))
                         .InvokeWithArguments(
@@ -133,7 +132,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
 
         private MemberDeclarationSyntax AcceptMethod()
         {
-            const string visitor = "visitor";
+            const string Visitor = "visitor";
             return
                 MethodDeclaration(
                     PredefinedType(Token(SyntaxKind.VoidKeyword)),
@@ -143,12 +142,12 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                     SyntaxKind.OverrideKeyword)
                 .AddParameterListParameters(
                     Parameter(
-                        Identifier(visitor))
+                        Identifier(Visitor))
                     .WithType(
                         IdentifierName(Names.SourceVisitor)))
                 .AddBodyStatements(
                     ExpressionStatement(
-                        IdentifierName(visitor)
+                        IdentifierName(Visitor)
                         .MemberAccess(
                             IdentifierName(Names.Visit + Descriptor.RawModelName + Names.ListSuffix))
                         .InvokeWithArguments(
@@ -157,7 +156,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
 
         private MemberDeclarationSyntax AcceptGenericMethod()
         {
-            const string visitor = "visitor";
+            const string Visitor = "visitor";
             return
                 MethodDeclaration(
                     IdentifierName(Names.SourceVisitorTypeParameter),
@@ -169,14 +168,14 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                     SyntaxKind.OverrideKeyword)
                 .AddParameterListParameters(
                     Parameter(
-                        Identifier(visitor))
+                        Identifier(Visitor))
                     .WithType(
                         GenericName(Names.SourceVisitor)
                         .AddTypeArgumentListArguments(
                             IdentifierName(Names.SourceVisitorTypeParameter))))
                 .AddBodyStatements(
                     ReturnStatement(
-                        IdentifierName(visitor)
+                        IdentifierName(Visitor)
                         .MemberAccess(
                             IdentifierName(Names.Visit + Descriptor.RawModelName + Names.ListSuffix))
                         .InvokeWithArguments(
@@ -185,7 +184,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
 
         private MemberDeclarationSyntax CreateWithNodesMethod()
         {
-            const string nodes = "nodes";
+            const string Nodes = "nodes";
             return
                 MethodDeclaration(
                         GenericName(Names.ListNode)
@@ -197,12 +196,12 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                         SyntaxKind.OverrideKeyword)
                     .AddParameterListParameters(
                         Parameter(
-                                Identifier(nodes))
+                                Identifier(Nodes))
                             .WithType(
                                 Descriptor.GetNodeTypeIdentifierName().ToNodeListType()))
                     .AddBodyStatements(
                         ReturnStatement(
-                            IdentifierName(nodes)
+                            IdentifierName(Nodes)
                                 .MemberAccess(
                                     IdentifierName(Names.ToListNode))
                                 .InvokeWithArguments()));

@@ -1,10 +1,10 @@
-﻿using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Microsoft.CodeAnalysis.CSharp;
-using System.Linq;
+﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
-using System;
 
 namespace WarHub.ArmouryModel.Source.CodeGeneration
 {
@@ -269,6 +269,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
         {
             return condition ? mutation(original) : original;
         }
+
         public static T MutateIf<T>(this T original, bool condition, Func<T, T> mutationIf, Func<T, T> mutationElse)
         {
             return condition ? mutationIf(original) : mutationElse(original);

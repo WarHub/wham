@@ -1,9 +1,8 @@
-﻿using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
-using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
 namespace WarHub.ArmouryModel.Source.CodeGeneration
@@ -29,7 +28,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
 
         private IEnumerable<MethodDeclarationSyntax> GenerateConvenienceMutators(CoreDescriptor.CollectionEntry entry)
         {
-            const string nodesParamName = "nodes";
+            const string NodesParamName = "nodes";
             var nodeType = Descriptor.GetNodeTypeIdentifierName();
             var entryNodeType = entry.GetNodeTypeIdentifierName();
             yield return CreateWithParams();
@@ -42,7 +41,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                 {
                     yield return
                         Parameter(
-                            Identifier(nodesParamName))
+                            Identifier(NodesParamName))
                         .AddModifiers(SyntaxKind.ParamsKeyword)
                         .WithType(
                             entryNodeType.ToArrayType());
@@ -50,7 +49,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                 ExpressionSyntax CreateNodesExpression()
                 {
                     return
-                        IdentifierName(nodesParamName)
+                        IdentifierName(NodesParamName)
                         .MemberAccess(
                             IdentifierName(Names.ToNodeList))
                         .InvokeWithArguments();
@@ -63,7 +62,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                 {
                     yield return
                         Parameter(
-                            Identifier(nodesParamName))
+                            Identifier(NodesParamName))
                         .AddModifiers(SyntaxKind.ParamsKeyword)
                         .WithType(
                             entryNodeType.ToArrayType());
@@ -77,7 +76,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                         .MemberAccess(
                             IdentifierName(Names.AddRange))
                         .InvokeWithArguments(
-                            IdentifierName(nodesParamName));
+                            IdentifierName(NodesParamName));
                 }
             }
             MethodDeclarationSyntax CreateAddEnumerable()
@@ -87,7 +86,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                 {
                     yield return
                         Parameter(
-                            Identifier(nodesParamName))
+                            Identifier(NodesParamName))
                         .WithType(
                             entryNodeType.ToIEnumerableType());
                 }
@@ -100,7 +99,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                         .MemberAccess(
                             IdentifierName(Names.AddRange))
                         .InvokeWithArguments(
-                            IdentifierName(nodesParamName));
+                            IdentifierName(NodesParamName));
                 }
             }
             MethodDeclarationSyntax CreateMutator(string prefix, IEnumerable<ParameterSyntax> parameters, ExpressionSyntax nodesExpression)

@@ -25,7 +25,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
 
         protected override IEnumerable<MemberDeclarationSyntax> GenerateMembers()
         {
-            const string node = "node";
+            const string Node = "node";
             // VisitXyzList
             yield return
                 CreateVisitMethodBase(
@@ -35,7 +35,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                         ReturnStatement(
                             IdentifierName(Names.VisitListNode)
                                 .InvokeWithArguments(
-                                    IdentifierName(node))));
+                                    IdentifierName(Node))));
             // VisitXyz
             var nonSimpleEntries = Descriptor.Entries.Where(x => !x.IsSimple).ToImmutableArray();
             yield return
@@ -47,7 +47,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                         // short cirtuiting until visiting Tokens (simple properties) gets added
                         x =>
                             x.AddBodyStatements(
-                                ReturnStatement(IdentifierName(node))),
+                                ReturnStatement(IdentifierName(Node))),
                         x =>
                             x.AddBodyStatements(
                                 nonSimpleEntries
@@ -66,7 +66,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                             SyntaxKind.OverrideKeyword)
                         .AddParameterListParameters(
                             Parameter(
-                                    Identifier(node))
+                                    Identifier(Node))
                                 .WithType(type));
             }
 
@@ -80,7 +80,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                         entry,
                         IdentifierName(Names.Visit)
                             .InvokeWithArguments(
-                                IdentifierName(node)
+                                IdentifierName(Node)
                                     .MemberAccess(entry.IdentifierName))
                             .Cast(targetType));
             }
@@ -102,11 +102,11 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
             {
                 return
                     ReturnStatement(
-                        IdentifierName(node)
+                        IdentifierName(Node)
                             .MemberAccess(
                                 IdentifierName(Names.UpdateWith))
                             .InvokeWithArguments(
-                                IdentifierName(node)
+                                IdentifierName(Node)
                                     .MemberAccess(
                                         IdentifierName(Names.Core))
                                     .MemberAccess(
@@ -118,7 +118,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                 ExpressionSyntax SimpleArgument(CoreDescriptor.SimpleEntry entry)
                 {
                     return
-                        IdentifierName(node)
+                        IdentifierName(Node)
                             .MemberAccess(
                                 IdentifierName(Names.Core))
                             .MemberAccess(entry.IdentifierName);

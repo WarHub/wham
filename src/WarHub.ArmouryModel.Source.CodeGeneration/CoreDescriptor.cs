@@ -1,26 +1,31 @@
-﻿using Microsoft.CodeAnalysis;
+﻿using System.Collections.Immutable;
+using System.Linq;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using System.Collections.Immutable;
-using System.Linq;
 
 namespace WarHub.ArmouryModel.Source.CodeGeneration
 {
-    internal partial class CoreDescriptor
+    internal class CoreDescriptor
     {
-        public CoreDescriptor(INamedTypeSymbol TypeSymbol, NameSyntax CoreType, SyntaxToken CoreTypeIdentifier, ImmutableArray<Entry> Entries, ImmutableArray<AttributeListSyntax> CoreTypeAttributeLists)
+        public CoreDescriptor(
+            INamedTypeSymbol typeSymbol,
+            NameSyntax coreType,
+            SyntaxToken coreTypeIdentifier,
+            ImmutableArray<Entry> entries,
+            ImmutableArray<AttributeListSyntax> coreTypeAttributeLists)
         {
-            this.TypeSymbol = TypeSymbol;
-            this.CoreType = CoreType;
-            this.CoreTypeIdentifier = CoreTypeIdentifier;
-            this.RawModelName = CoreTypeIdentifier.ValueText.StripSuffixes();
-            this.Entries = Entries;
-            this.CoreTypeAttributeLists = CoreTypeAttributeLists;
-            DeclaredEntries = Entries
-                .Where(x => x.Symbol.ContainingType == TypeSymbol)
+            TypeSymbol = typeSymbol;
+            CoreType = coreType;
+            CoreTypeIdentifier = coreTypeIdentifier;
+            RawModelName = coreTypeIdentifier.ValueText.StripSuffixes();
+            Entries = entries;
+            CoreTypeAttributeLists = coreTypeAttributeLists;
+            DeclaredEntries = entries
+                .Where(x => x.Symbol.ContainingType == typeSymbol)
                 .ToImmutableArray();
-            DerivedEntries = Entries
-                .Where(x => x.Symbol.ContainingType != TypeSymbol)
+            DerivedEntries = entries
+                .Where(x => x.Symbol.ContainingType != typeSymbol)
                 .ToImmutableArray();
         }
 
@@ -45,15 +50,15 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
 
         internal abstract class Entry
         {
-            public Entry(IPropertySymbol Symbol, SyntaxToken Identifier, TypeSyntax Type, ImmutableArray<AttributeListSyntax> AttributeLists)
+            protected Entry(IPropertySymbol symbol, SyntaxToken identifier, TypeSyntax type, ImmutableArray<AttributeListSyntax> attributeLists)
             {
-                this.Symbol = Symbol;
-                this.Identifier = Identifier;
-                this.IdentifierName = SyntaxFactory.IdentifierName(Identifier);
-                this.Type = Type;
-                this.AttributeLists = AttributeLists;
-                this.CamelCaseIdentifier = SyntaxFactory.Identifier(Identifier.ValueText.ToLowerFirstLetter());
-                this.CamelCaseIdentifierName = SyntaxFactory.IdentifierName(this.CamelCaseIdentifier);
+                Symbol = symbol;
+                Identifier = identifier;
+                IdentifierName = SyntaxFactory.IdentifierName(identifier);
+                Type = type;
+                AttributeLists = attributeLists;
+                CamelCaseIdentifier = SyntaxFactory.Identifier(identifier.ValueText.ToLowerFirstLetter());
+                CamelCaseIdentifierName = SyntaxFactory.IdentifierName(CamelCaseIdentifier);
             }
 
             public IPropertySymbol Symbol { get; }
@@ -83,8 +88,8 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
 
         internal class SimpleEntry : Entry
         {
-            public SimpleEntry(IPropertySymbol Symbol, SyntaxToken Identifier, TypeSyntax Type, ImmutableArray<AttributeListSyntax> AttributeLists)
-                : base(Symbol, Identifier, Type, AttributeLists)
+            public SimpleEntry(IPropertySymbol symbol, SyntaxToken identifier, TypeSyntax type, ImmutableArray<AttributeListSyntax> attributeLists)
+                : base(symbol, identifier, type, attributeLists)
             {
             }
 
@@ -95,10 +100,10 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
 
         internal class CollectionEntry : Entry
         {
-            public CollectionEntry(IPropertySymbol Symbol, SyntaxToken Identifier, NameSyntax Type, ImmutableArray<AttributeListSyntax> AttributeLists)
-                : base(Symbol, Identifier, Type, AttributeLists)
+            public CollectionEntry(IPropertySymbol symbol, SyntaxToken identifier, NameSyntax type, ImmutableArray<AttributeListSyntax> attributeLists)
+                : base(symbol, identifier, type, attributeLists)
             {
-                CollectionTypeParameter = (NameSyntax)Type
+                CollectionTypeParameter = (NameSyntax)type
                     .DescendantNodesAndSelf()
                     .OfType<GenericNameSyntax>()
                     .First()
@@ -115,10 +120,10 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
 
         internal class ComplexEntry : Entry
         {
-            public ComplexEntry(IPropertySymbol Symbol, SyntaxToken Identifier, NameSyntax Type, ImmutableArray<AttributeListSyntax> AttributeLists)
-                : base(Symbol, Identifier, Type, AttributeLists)
+            public ComplexEntry(IPropertySymbol symbol, SyntaxToken identifier, NameSyntax type, ImmutableArray<AttributeListSyntax> attributeLists)
+                : base(symbol, identifier, type, attributeLists)
             {
-                this.Type = Type;
+                Type = type;
             }
 
             public new NameSyntax Type { get; }

@@ -1,9 +1,7 @@
-﻿using Microsoft.CodeAnalysis;
+﻿using System.Collections.Generic;
+using System.Threading;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
 using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
 namespace WarHub.ArmouryModel.Source.CodeGeneration
@@ -53,7 +51,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
 
         private IEnumerable<MemberDeclarationSyntax> GetFastSerializationProxyMembers()
         {
-            const string propertyName = "Immutable";
+            const string PropertyName = "Immutable";
 
             yield return CreateConstructor();
             yield return CreateBackingProperty();
@@ -67,27 +65,27 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
             }
             MemberDeclarationSyntax CreateConstructor()
             {
-                const string paramName = "immutable";
+                const string ParamName = "immutable";
                 return
                     ConstructorDeclaration(Names.FastSerializationProxy)
                     .AddModifiers(SyntaxKind.PublicKeyword)
                     .AddParameterListParameters(
                         Parameter(
-                            Identifier(paramName))
+                            Identifier(ParamName))
                         .WithType(Descriptor.CoreType))
                     .AddBodyStatements(
                         ExpressionStatement(
                             AssignmentExpression(
                                 SyntaxKind.SimpleAssignmentExpression,
-                                IdentifierName(propertyName),
-                                IdentifierName(paramName))));
+                                IdentifierName(PropertyName),
+                                IdentifierName(ParamName))));
             }
             MemberDeclarationSyntax CreateBackingProperty()
             {
                 return
                     PropertyDeclaration(
                         Descriptor.CoreType,
-                        propertyName)
+                        PropertyName)
                     .AddModifiers(SyntaxKind.InternalKeyword)
                     .AddAccessorListAccessors(
                         AccessorDeclaration(SyntaxKind.GetAccessorDeclaration)
@@ -95,7 +93,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
             }
             PropertyDeclarationSyntax CreateProperty(CoreDescriptor.Entry entry)
             {
-                TypeSyntax propertyType = entry is CoreDescriptor.CollectionEntry collectionEntry
+                var propertyType = entry is CoreDescriptor.CollectionEntry collectionEntry
                     ? QualifiedName(collectionEntry.CollectionTypeParameter, IdentifierName(Names.FastSerializationEnumerable))
                     : entry is CoreDescriptor.ComplexEntry complexEntry
                     ? QualifiedName(complexEntry.Type, IdentifierName(Names.FastSerializationProxy))
@@ -107,7 +105,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                     .AddAccessorListAccessors(
                         AccessorDeclaration(SyntaxKind.GetAccessorDeclaration)
                         .WithExpressionBodyFull(
-                            IdentifierName(propertyName)
+                            IdentifierName(PropertyName)
                             .MemberAccess(entry.IdentifierName)
                             .MutateIf(
                                 entry.IsComplex,

@@ -1,12 +1,11 @@
-﻿using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
-using MoreLinq;
-using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using System.Threading;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
+using MoreLinq;
 using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
 namespace WarHub.ArmouryModel.Source.CodeGeneration
@@ -60,27 +59,27 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
 
         private ConstructorDeclarationSyntax GenerateConstructor()
         {
-            const string coreLocal = "core";
-            const string parentLocal = "parent";
+            const string CoreLocal = "core";
+            const string ParentLocal = "parent";
             return
                 ConstructorDeclaration(
                     Descriptor.GetNodeTypeName())
                 .AddModifiers(SyntaxKind.ProtectedKeyword, SyntaxKind.InternalKeyword)
                 .AddParameterListParameters(
                     Parameter(
-                        Identifier(coreLocal))
+                        Identifier(CoreLocal))
                     .WithType(Descriptor.CoreType),
                     Parameter(
-                        Identifier(parentLocal))
+                        Identifier(ParentLocal))
                     .WithType(
                         IdentifierName(Names.SourceNode)))
                 .WithInitializer(
                     ConstructorInitializer(SyntaxKind.BaseConstructorInitializer)
                     .AddArgumentListArguments(
                         Argument(
-                            IdentifierName(coreLocal)),
+                            IdentifierName(CoreLocal)),
                         Argument(
-                            IdentifierName(parentLocal))))
+                            IdentifierName(ParentLocal))))
                 .AddBodyStatements(
                     GetBodyStatements());
             IEnumerable<StatementSyntax> GetBodyStatements()
@@ -88,7 +87,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                 yield return
                     CorePropertyIdentifierName
                     .Assign(
-                        IdentifierName(coreLocal))
+                        IdentifierName(CoreLocal))
                     .AsStatement();
                 foreach (var entry in Descriptor.DeclaredEntries.Where(x => !x.IsSimple))
                 {
@@ -170,7 +169,6 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                     .WithExpressionBodyFull(
                         CorePropertyIdentifierName
                         .MemberAccess(entry.IdentifierName));
-
             }
             PropertyDeclarationSyntax CreateComplexProperty(CoreDescriptor.ComplexEntry entry)
             {
@@ -182,7 +180,6 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                     .AddAccessorListAccessors(
                         AccessorDeclaration(SyntaxKind.GetAccessorDeclaration)
                         .WithSemicolonTokenDefault());
-
             }
             PropertyDeclarationSyntax CreateCollectionProperty(CoreDescriptor.CollectionEntry entry)
             {
@@ -195,12 +192,11 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                         AccessorDeclaration(SyntaxKind.GetAccessorDeclaration)
                         .WithSemicolonTokenDefault());
             }
-
         }
 
         private IEnumerable<MethodDeclarationSyntax> GenerateMutatorMethods()
         {
-            const string coreParameter = "core";
+            const string CoreParameter = "core";
             yield return UpdateWithMethod();
             if (IsDerived)
             {
@@ -221,7 +217,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                     .AddModifiers(SyntaxKind.ProtectedKeyword, SyntaxKind.InternalKeyword)
                     .AddParameterListParameters(
                         Parameter(
-                            Identifier(coreParameter))
+                            Identifier(CoreParameter))
                         .WithType(Descriptor.CoreType));
                 if (IsAbstract)
                 {
@@ -236,7 +232,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                             ObjectCreationExpression(
                                 Descriptor.GetNodeTypeIdentifierName())
                             .InvokeWithArguments(
-                                IdentifierName(coreParameter),
+                                IdentifierName(CoreParameter),
                                 LiteralExpression(SyntaxKind.NullLiteralExpression))));
             }
             MethodDeclarationSyntax DerivedUpdateWithMethod()
@@ -252,7 +248,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                         SyntaxKind.OverrideKeyword)
                     .AddParameterListParameters(
                         Parameter(
-                            Identifier(coreParameter))
+                            Identifier(CoreParameter))
                         .WithType(
                             IdentifierName(BaseType.Name)))
                     .AddBodyStatements(
@@ -261,7 +257,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                             .InvokeWithArguments(
                                 CastExpression(
                                     Descriptor.CoreType,
-                                    IdentifierName(coreParameter)))));
+                                    IdentifierName(CoreParameter)))));
             }
             MethodDeclarationSyntax WithBasicPart(CoreDescriptor.Entry entry)
             {
@@ -419,8 +415,8 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
             }
             MemberDeclarationSyntax GetChild()
             {
-                const string indexParam = "index";
-                var indexIdentifierName = IdentifierName(indexParam);
+                const string IndexParam = "index";
+                var indexIdentifierName = IdentifierName(IndexParam);
                 return
                     MethodDeclaration(
                         IdentifierName(Names.SourceNode),
@@ -431,7 +427,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                         SyntaxKind.OverrideKeyword)
                     .AddParameterListParameters(
                         Parameter(
-                            Identifier(indexParam))
+                            Identifier(IndexParam))
                         .WithType(
                             PredefinedType(
                                 Token(SyntaxKind.IntKeyword))))

@@ -1,8 +1,8 @@
-﻿using Microsoft.CodeAnalysis;
+﻿using System.Collections.Generic;
+using System.Threading;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using System.Collections.Generic;
-using System.Threading;
 using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
 namespace WarHub.ArmouryModel.Source.CodeGeneration
@@ -28,7 +28,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
 
         protected override IEnumerable<MemberDeclarationSyntax> GenerateMembers()
         {
-            const string node = "node";
+            const string Node = "node";
             yield return CreateVisitMethod(
                 Names.Visit + Descriptor.RawModelName,
                 Descriptor.GetNodeTypeIdentifierName());
@@ -46,7 +46,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                         SyntaxKind.VirtualKeyword)
                     .AddParameterListParameters(
                         Parameter(
-                            Identifier(node))
+                            Identifier(Node))
                         .WithType(type))
                     .AddBodyStatements(
                         ReturnStatement(
@@ -54,7 +54,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                             .MemberAccess(
                                 IdentifierName(Names.DefaultVisit))
                             .InvokeWithArguments(
-                                IdentifierName(node))));
+                                IdentifierName(Node))));
             }
         }
     }

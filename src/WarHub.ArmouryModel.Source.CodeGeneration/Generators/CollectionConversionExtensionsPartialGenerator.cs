@@ -1,8 +1,7 @@
-﻿using Microsoft.CodeAnalysis;
+﻿using System.Collections.Generic;
+using System.Threading;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using System.Collections.Generic;
-using System.Threading;
 using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
 namespace WarHub.ArmouryModel.Source.CodeGeneration
@@ -39,7 +38,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
 
         private MemberDeclarationSyntax GenerateListNodeToCoreArray()
         {
-            const string list = "list";
+            const string List = "list";
             return
                 MethodDeclaration(
                     Descriptor.CoreType.ToImmutableArrayType(),
@@ -54,7 +53,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
             {
                 yield return
                     Parameter(
-                        Identifier(list))
+                        Identifier(List))
                     .AddModifiers(SyntaxKind.ThisKeyword)
                     .WithType(
                         Descriptor.GetListNodeTypeIdentifierName());
@@ -62,7 +61,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
             ExpressionSyntax CreateReturnExpression()
             {
                 return
-                    IdentifierName(list)
+                    IdentifierName(List)
                     .MemberAccess(
                         IdentifierName(Names.NodeList))
                     .MemberAccess(
@@ -73,7 +72,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
 
         private MemberDeclarationSyntax GenerateNodeListToCoreArray()
         {
-            const string nodes = "nodes";
+            const string Nodes = "nodes";
             return
                 MethodDeclaration(
                     Descriptor.CoreType.ToImmutableArrayType(),
@@ -88,7 +87,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
             {
                 yield return
                     Parameter(
-                        Identifier(nodes))
+                        Identifier(Nodes))
                     .AddModifiers(SyntaxKind.ThisKeyword)
                     .WithType(
                         Descriptor.GetNodeTypeIdentifierName().ToNodeListType());
@@ -96,7 +95,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
             ExpressionSyntax CreateReturnExpression()
             {
                 return
-                    IdentifierName(nodes)
+                    IdentifierName(Nodes)
                     .MemberAccess(
                         GenericName(
                             Identifier(Names.ToCoreArray))
@@ -109,8 +108,8 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
 
         private MemberDeclarationSyntax GenerateCoreArrayToListNode()
         {
-            const string cores = "cores";
-            const string parent = "parent";
+            const string Cores = "cores";
+            const string Parent = "parent";
             return
                 MethodDeclaration(
                     Descriptor.GetListNodeTypeIdentifierName(),
@@ -125,13 +124,13 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
             {
                 yield return
                     Parameter(
-                        Identifier(cores))
+                        Identifier(Cores))
                     .AddModifiers(SyntaxKind.ThisKeyword)
                     .WithType(
                         Descriptor.CoreType.ToImmutableArrayType());
                 yield return
                     Parameter(
-                        Identifier(parent))
+                        Identifier(Parent))
                     .WithType(
                         IdentifierName(Names.SourceNode));
             }
@@ -142,15 +141,15 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                         Descriptor.GetListNodeTypeIdentifierName())
                     .AddArgumentListArguments(
                         Argument(
-                            IdentifierName(cores)),
-                        Argument(IdentifierName(parent)));
+                            IdentifierName(Cores)),
+                        Argument(IdentifierName(Parent)));
             }
         }
 
         private MemberDeclarationSyntax GenerateCoreArrayToNodeList()
         {
-            const string cores = "cores";
-            const string parent = "parent";
+            const string Cores = "cores";
+            const string Parent = "parent";
             return
                 MethodDeclaration(
                     Descriptor.GetNodeTypeIdentifierName().ToNodeListType(),
@@ -165,20 +164,20 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
             {
                 yield return
                     Parameter(
-                        Identifier(cores))
+                        Identifier(Cores))
                     .AddModifiers(SyntaxKind.ThisKeyword)
                     .WithType(
                         Descriptor.CoreType.ToImmutableArrayType());
                 yield return
                     Parameter(
-                        Identifier(parent))
+                        Identifier(Parent))
                     .WithType(
                         IdentifierName(Names.SourceNode));
             }
             ExpressionSyntax CreateToNodeListExpression()
             {
                 return
-                    IdentifierName(cores)
+                    IdentifierName(Cores)
                     .MemberAccess(
                         GenericName(
                             Identifier(Names.ToNodeList))
@@ -186,14 +185,14 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                             Descriptor.GetNodeTypeIdentifierName(),
                             Descriptor.CoreType))
                     .InvokeWithArguments(
-                            IdentifierName(parent));
+                            IdentifierName(Parent));
             }
         }
 
         private MemberDeclarationSyntax GenerateNodeListToListNode()
         {
-            const string nodes = "nodes";
-            const string parent = "parent";
+            const string Nodes = "nodes";
+            const string Parent = "parent";
             return
                 MethodDeclaration(
                         Descriptor.GetListNodeTypeIdentifierName(),
@@ -208,13 +207,13 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
             {
                 yield return
                     Parameter(
-                            Identifier(nodes))
+                            Identifier(Nodes))
                         .AddModifiers(SyntaxKind.ThisKeyword)
                         .WithType(
                             Descriptor.GetNodeTypeIdentifierName().ToNodeListType());
                 yield return
                     Parameter(
-                            Identifier(parent))
+                            Identifier(Parent))
                         .WithType(
                             IdentifierName(Names.SourceNode))
                         .WithDefault(
@@ -224,20 +223,20 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
             ExpressionSyntax CreateReturnExpression()
             {
                 return
-                    IdentifierName(nodes)
+                    IdentifierName(Nodes)
                         .MemberAccess(
                             IdentifierName(Names.ToCoreArray))
                         .InvokeWithArguments()
                         .MemberAccess(
                             IdentifierName(Names.ToListNode))
                         .InvokeWithArguments(
-                            IdentifierName(parent));
+                            IdentifierName(Parent));
             }
         }
 
         private MemberDeclarationSyntax GenerateToImmutableRecursive()
         {
-            const string builders = "builders";
+            const string Builders = "builders";
             return
                 MethodDeclaration(
                     Descriptor.CoreType.ToImmutableArrayType(),
@@ -252,7 +251,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
             {
                 yield return
                     Parameter(
-                        Identifier(builders))
+                        Identifier(Builders))
                     .AddModifiers(SyntaxKind.ThisKeyword)
                     .WithType(
                         Descriptor.CoreType.ToListOfBuilderType());
@@ -260,7 +259,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
             ExpressionSyntax CreateReturnExpression()
             {
                 return
-                    IdentifierName(builders)
+                    IdentifierName(Builders)
                     .MemberAccess(
                         GenericName(
                             Identifier(Names.ToImmutableRecursive))
@@ -273,7 +272,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
 
         private MemberDeclarationSyntax GenerateToBuildersList()
         {
-            const string cores = "cores";
+            const string Cores = "cores";
             return
                 MethodDeclaration(
                     Descriptor.CoreType.ToListOfBuilderType(),
@@ -288,7 +287,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
             {
                 yield return
                     Parameter(
-                        Identifier(cores))
+                        Identifier(Cores))
                     .AddModifiers(SyntaxKind.ThisKeyword)
                     .WithType(
                         Descriptor.CoreType.ToImmutableArrayType());
@@ -296,7 +295,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
             ExpressionSyntax CreateReturnExpression()
             {
                 return
-                    IdentifierName(cores)
+                    IdentifierName(Cores)
                     .MemberAccess(
                         GenericName(
                             Identifier(Names.ToBuildersList))
