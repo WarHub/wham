@@ -9,8 +9,8 @@ namespace WarHub.ArmouryModel.ProjectModel
     /// </summary>
     internal class MultilineJsonStringConverter : JsonConverter
     {
-        const char LF = '\n';
-        const string stringLF = "\n";
+        private const char LF = '\n';
+        private const string StringLF = "\n";
 
         public override bool CanConvert(Type objectType)
         {
@@ -19,7 +19,7 @@ namespace WarHub.ArmouryModel.ProjectModel
 
         public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
         {
-            if (reader.TokenType == JsonToken.Null || reader.TokenType != JsonToken.StartArray && reader.TokenType != JsonToken.String)
+            if (reader.TokenType == JsonToken.Null || (reader.TokenType != JsonToken.StartArray && reader.TokenType != JsonToken.String))
             {
                 return null;
             }
@@ -48,7 +48,7 @@ namespace WarHub.ArmouryModel.ProjectModel
                 ReadUntilStringOrEndArray();
             }
             while (reader.TokenType == JsonToken.String);
-            return string.Join(stringLF, lines);
+            return string.Join(StringLF, lines);
             void ReadUntilStringOrEndArray()
             {
                 while (reader.Read() && reader.TokenType != JsonToken.String && reader.TokenType != JsonToken.EndArray)

@@ -6,6 +6,7 @@ namespace WarHub.ArmouryModel.ProjectModel
     {
         [JsonProperty("gitree")]
         Gitree = 0,
+
         [JsonProperty("bsxml")]
         BattleScribeXml = 1,
     }
