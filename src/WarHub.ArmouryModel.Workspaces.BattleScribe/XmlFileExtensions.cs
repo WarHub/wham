@@ -7,6 +7,7 @@ using System.Linq;
 using WarHub.ArmouryModel.ProjectModel;
 using WarHub.ArmouryModel.Source;
 using WarHub.ArmouryModel.Source.BattleScribe;
+using WarHub.ArmouryModel.Source.XmlFormat;
 
 namespace WarHub.ArmouryModel.Workspaces.BattleScribe
 {
@@ -273,10 +274,9 @@ namespace WarHub.ArmouryModel.Workspaces.BattleScribe
                 .Where(x => x.DataKind.IsDataCatalogueKind())
                 .Select(CreateEntry)
                 .ToNodeList();
-            // TODO use BattleScribe version for DataIndex bs version
             return
                 NodeFactory.DataIndex(
-                    ProjectToolset.BattleScribeDataIndexFormatVersion,
+                    RootElement.DataIndex.Info().CurrentVersion.BattleScribeString,
                     repoName, repoUrl, repositoryUrls: default, dataIndexEntries: entries);
             DataIndexEntryNode CreateEntry(IDatafileInfo datafile)
             {
