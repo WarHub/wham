@@ -1,12 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Xunit;
-using System.Collections.Immutable;
-using System.Linq;
+﻿using NSubstitute;
 using WarHub.ArmouryModel.Source.CodeGeneration.Tests.GeneratedCode;
+using Xunit;
 using static WarHub.ArmouryModel.Source.CodeGeneration.Tests.TestHelpers;
-using NSubstitute;
 
 namespace WarHub.ArmouryModel.Source.CodeGeneration.Tests
 {

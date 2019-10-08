@@ -3,6 +3,5 @@
     [WhamNodeCore]
     public partial class DerivedOnceCore : AbstractBaseCore
     {
-
     }
 }

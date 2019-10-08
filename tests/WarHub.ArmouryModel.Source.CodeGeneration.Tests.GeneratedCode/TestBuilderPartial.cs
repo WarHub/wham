@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace WarHub.ArmouryModel.Source.CodeGeneration.Tests.GeneratedCode
+﻿namespace WarHub.ArmouryModel.Source.CodeGeneration.Tests.GeneratedCode
 {
     // test to check builder is partial, won't compile otherwise
     [WhamNodeCore]
@@ -10,14 +6,13 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration.Tests.GeneratedCode
     {
         public string Name { get; }
 
-        partial class Builder
+        public partial class Builder
         {
-
         }
 
-        private void CallBuilder()
+        public void CallBuilder()
         {
-            var builder = new Builder
+            _ = new Builder
             {
                 Name = "test"
             };

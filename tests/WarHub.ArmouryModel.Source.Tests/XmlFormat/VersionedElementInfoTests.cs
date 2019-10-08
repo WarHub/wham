@@ -24,7 +24,6 @@ namespace WarHub.ArmouryModel.Source.Tests.XmlFormat
         [InlineData(RootElement.DataIndex)]
         public void AvailableMigrations_returns_migration_for_previous_migratable_version(RootElement rootElement)
         {
-            var current = rootElement.Info().CurrentVersion;
             var previous = BattleScribeVersion.V2_01;
             var element = new VersionedElementInfo(rootElement, previous);
 

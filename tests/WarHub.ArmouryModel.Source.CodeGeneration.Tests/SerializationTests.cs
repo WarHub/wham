@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.IO;
 using System.Xml.Serialization;
 using WarHub.ArmouryModel.Source.CodeGeneration.Tests.GeneratedCode;
@@ -11,9 +11,9 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration.Tests
         [Fact]
         public void CheckEmptyDeserialization()
         {
-            var containerXml = "<container/>";
+            const string ContainerXml = "<container/>";
             var serializer = new XmlSerializer(typeof(ContainerCore.Builder));
-            var container = (ContainerCore.Builder)serializer.Deserialize(new StringReader(containerXml));
+            var container = (ContainerCore.Builder)serializer.Deserialize(new StringReader(ContainerXml));
             Assert.Null(container.Id);
             Assert.Null(container.Name);
             Assert.Empty(container.Items);
@@ -23,35 +23,35 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration.Tests
         [Fact]
         public void ProfileTypeSerializesAndDeserializes()
         {
-            string emptyGuid = Guid.Empty.ToString();
-            const string containerName = "Container0";
-            const string item1Name = "Item1";
-            const string item2Name = "Item2";
-            const string item3Name = "Item3";
+            var emptyGuid = Guid.Empty.ToString();
+            const string ContainerName = "Container0";
+            const string Item1Name = "Item1";
+            const string Item2Name = "Item2";
+            const string Item3Name = "Item3";
             var profileType = new ContainerCore.Builder
             {
                 Id = emptyGuid,
-                Name = containerName,
+                Name = ContainerName,
                 Items =
                 {
                     new ItemCore.Builder
                     {
                         Id = emptyGuid,
-                        Name = item1Name
+                        Name = Item1Name
                     },
                     new ItemCore.Builder
                     {
                         Id = emptyGuid,
-                        Name = item2Name
+                        Name = Item2Name
                     },
                     new ItemCore.Builder
                     {
                         Id = emptyGuid,
-                        Name = item3Name
+                        Name = Item3Name
                     }
                 },
             }.ToImmutable();
-            XmlSerializer serializer = new XmlSerializer(typeof(ContainerCore.FastSerializationProxy));
+            var serializer = new XmlSerializer(typeof(ContainerCore.FastSerializationProxy));
             using (var stream = new MemoryStream())
             {
                 serializer.Serialize(stream, profileType.ToSerializationProxy());
@@ -60,14 +60,13 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration.Tests
 
                 var deserialized = (ContainerCore.Builder)new XmlSerializer(typeof(ContainerCore.Builder)).Deserialize(stream);
 
-
                 Assert.NotNull(deserialized);
-                Assert.Equal(containerName, deserialized.Name);
+                Assert.Equal(ContainerName, deserialized.Name);
                 Assert.Collection(
                     deserialized.Items,
-                    x => Assert.Equal(item1Name, x.Name),
-                    x => Assert.Equal(item2Name, x.Name),
-                    x => Assert.Equal(item3Name, x.Name));
+                    x => Assert.Equal(Item1Name, x.Name),
+                    x => Assert.Equal(Item2Name, x.Name),
+                    x => Assert.Equal(Item3Name, x.Name));
             }
         }
     }
