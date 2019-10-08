@@ -7,9 +7,6 @@ namespace WarHub.ArmouryModel.Source
     [XmlType("selectionEntry")]
     public partial class SelectionEntryCore : SelectionEntryBaseCore
     {
-        [XmlAttribute("categoryEntryId")]
-        public string CategoryEntryId { get; }
-
         [XmlAttribute("type")]
         public SelectionEntryKind Type { get; }
 
