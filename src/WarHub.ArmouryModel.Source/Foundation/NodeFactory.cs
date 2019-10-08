@@ -442,7 +442,6 @@ namespace WarHub.ArmouryModel.Source
                 isHidden: false,
                 collective: false,
                 import: true,
-                categoryEntryId: null,
                 type: SelectionEntryKind.Upgrade);
         }
 

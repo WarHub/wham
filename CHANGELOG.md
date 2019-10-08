@@ -16,8 +16,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * `NodeFactory` in `WarHub.ArmouryModel.Source` namespace was rewritten to provide
   much more defaults, use other Nodes as value providers, and add more methods ([#58]).
 
+## Removed
+* `SelectionEntryNode.CategoryEntryId` property was removed. It was a leftover from old format, pre-2.01 ([#59]).
+
 [#47]: https://github.com/WarHub/wham/pull/47
 [#58]: https://github.com/WarHub/wham/pull/58
+[#59]: https://github.com/WarHub/wham/pull/59
 
 ## [0.6.17] - 2019-08-16
 
