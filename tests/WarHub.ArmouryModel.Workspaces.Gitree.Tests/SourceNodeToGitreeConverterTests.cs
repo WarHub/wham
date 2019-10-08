@@ -37,11 +37,11 @@ namespace WarHub.ArmouryModel.Workspaces.Gitree.Tests
         [Fact]
         public void Visit_SeparatesSeparatable()
         {
-            const string costTypeId = "costType1";
+            const string CostTypeId = "costType1";
             var catalogue =
-                NodeFactory.Catalogue("id", "name", "gst-id")
-                .AddCostTypes(NodeFactory.CostType(costTypeId, ""))
-                .AddRules(NodeFactory.Rule("ruleid", "rulename"));
+                NodeFactory.Catalogue(NodeFactory.Gamesystem())
+                .AddCostTypes(NodeFactory.CostType(CostTypeId, "pts", -1))
+                .AddRules(NodeFactory.Rule("rulename"));
             var rule = catalogue.Rules[0];
             var converter = new SourceNodeToGitreeConverter();
             var result = converter.Visit(catalogue);
@@ -52,7 +52,7 @@ namespace WarHub.ArmouryModel.Workspaces.Gitree.Tests
                 {
                     Assert.Collection(
                         cat.CostTypes,
-                        x => Assert.Equal(costTypeId, x.Id));
+                        x => Assert.Equal(CostTypeId, x.Id));
                     Assert.Empty(cat.Rules);
                 });
             Assert.Collection(
@@ -67,10 +67,10 @@ namespace WarHub.ArmouryModel.Workspaces.Gitree.Tests
         {
             const string RuleName = "Test Rule";
             var catalogue =
-                NodeFactory.Catalogue("id", "name", "gst-id")
+                NodeFactory.Catalogue(NodeFactory.Gamesystem())
                 .AddRules(
-                    NodeFactory.Rule("ruleid1", RuleName),
-                    NodeFactory.Rule("ruleid2", RuleName));
+                    NodeFactory.Rule(RuleName),
+                    NodeFactory.Rule(RuleName));
             var converter = new SourceNodeToGitreeConverter();
             var result = converter.Visit(catalogue);
 
@@ -91,8 +91,8 @@ namespace WarHub.ArmouryModel.Workspaces.Gitree.Tests
         public void Visit_ListWithSanitizableNames_AssignsSanitizedNames(string ruleName)
         {
             var catalogue =
-                NodeFactory.Catalogue("id", "name", "gst-id")
-                .AddRules(NodeFactory.Rule("ruleid", ruleName));
+                NodeFactory.Catalogue(NodeFactory.Gamesystem())
+                .AddRules(NodeFactory.Rule(ruleName));
             var converter = new SourceNodeToGitreeConverter();
             var result = converter.Visit(catalogue);
 
