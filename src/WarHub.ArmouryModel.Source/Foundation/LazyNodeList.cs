@@ -31,7 +31,7 @@ namespace WarHub.ArmouryModel.Source
             {
                 var coreValue = Cores[index];
                 Interlocked.CompareExchange(ref value, coreValue.ToNode(Parent), null);
-                value._indexInParent = index;
+                value.IndexInParentLazy = index;
             }
             return value;
         }
@@ -48,18 +48,16 @@ namespace WarHub.ArmouryModel.Source
 
             public int SlotCount => 1;
 
-            private SourceNode Parent { get; }
+            public SourceNode Parent { get; }
 
-            private ImmutableArray<TCore> Cores { get; }
-
-            ImmutableArray<TCore> INodeListWithCoreArray<TNode, TCore>.Cores => Cores;
+            public ImmutableArray<TCore> Cores { get; }
 
             public TNode GetNodeSlot(int index)
             {
                 if (node == null)
                 {
                     Interlocked.CompareExchange(ref node, Cores[0].ToNode(Parent), null);
-                    node._indexInParent = index;
+                    node.IndexInParentLazy = index;
                 }
                 return node;
             }
@@ -78,11 +76,9 @@ namespace WarHub.ArmouryModel.Source
 
             public int SlotCount => 2;
 
-            private SourceNode Parent { get; }
+            public SourceNode Parent { get; }
 
-            private ImmutableArray<TCore> Cores { get; }
-
-            ImmutableArray<TCore> INodeListWithCoreArray<TNode, TCore>.Cores => Cores;
+            public ImmutableArray<TCore> Cores { get; }
 
             public TNode GetNodeSlot(int index)
             {
@@ -100,7 +96,7 @@ namespace WarHub.ArmouryModel.Source
                 if (node == null)
                 {
                     Interlocked.CompareExchange(ref node, Cores[index].ToNode(Parent), null);
-                    node._indexInParent = index;
+                    node.IndexInParentLazy = index;
                 }
                 return node;
             }
@@ -120,11 +116,9 @@ namespace WarHub.ArmouryModel.Source
 
             public int SlotCount => 3;
 
-            private SourceNode Parent { get; }
+            public SourceNode Parent { get; }
 
-            private ImmutableArray<TCore> Cores { get; }
-
-            ImmutableArray<TCore> INodeListWithCoreArray<TNode, TCore>.Cores => Cores;
+            public ImmutableArray<TCore> Cores { get; }
 
             public TNode GetNodeSlot(int index)
             {
@@ -143,7 +137,7 @@ namespace WarHub.ArmouryModel.Source
                 if (node == null)
                 {
                     Interlocked.CompareExchange(ref node, Cores[index].ToNode(Parent), null);
-                    node._indexInParent = index;
+                    node.IndexInParentLazy = index;
                 }
                 return node;
             }

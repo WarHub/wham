@@ -5,14 +5,14 @@
         string Id { get; }
     }
 
-    partial class CatalogueBaseNode : IIdentifiableNode { }
-    partial class CatalogueLinkNode : IIdentifiableNode { }
-    partial class CharacteristicTypeNode : IIdentifiableNode { }
-    partial class ConstraintNode : IIdentifiableNode { }
-    partial class CostTypeNode : IIdentifiableNode { }
-    partial class EntryBaseNode : IIdentifiableNode { }
-    partial class ProfileTypeNode : IIdentifiableNode { }
-    partial class PublicationNode : IIdentifiableNode { }
-    partial class RosterElementBaseNode : IIdentifiableNode { }
-    partial class RosterNode : IIdentifiableNode { }
+    public partial class CatalogueBaseNode : IIdentifiableNode { }
+    public partial class CatalogueLinkNode : IIdentifiableNode { }
+    public partial class CharacteristicTypeNode : IIdentifiableNode { }
+    public partial class ConstraintNode : IIdentifiableNode { }
+    public partial class CostTypeNode : IIdentifiableNode { }
+    public partial class EntryBaseNode : IIdentifiableNode { }
+    public partial class ProfileTypeNode : IIdentifiableNode { }
+    public partial class PublicationNode : IIdentifiableNode { }
+    public partial class RosterElementBaseNode : IIdentifiableNode { }
+    public partial class RosterNode : IIdentifiableNode { }
 }

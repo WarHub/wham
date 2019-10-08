@@ -39,7 +39,7 @@ namespace WarHub.ArmouryModel.Source
         /// </summary>
         /// <param name="index">0-based index of element in this list.</param>
         /// <returns>Retrieved child element.</returns>
-        public TChild this[int index] => (TChild)GetChild(index);
+        public TChild this[int index] => NodeList[index];
 
         public override IEnumerable<SourceNode> Children() => NodeList;
 
@@ -55,8 +55,8 @@ namespace WarHub.ArmouryModel.Source
 
         protected internal override SourceNode GetChild(int index) => NodeList[index];
 
-        public IEnumerator<TChild> GetEnumerator() => NodeList.GetEnumerator();
+        IEnumerator<TChild> IEnumerable<TChild>.GetEnumerator() => NodeList.GetEnumerator();
 
-        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+        IEnumerator IEnumerable.GetEnumerator() => NodeList.GetEnumerator();
     }
 }

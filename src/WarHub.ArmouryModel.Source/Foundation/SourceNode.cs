@@ -19,10 +19,15 @@ namespace WarHub.ArmouryModel.Source
             Tree = parent?.Tree;
         }
 
-        internal int? _indexInParent;
+        // this should be private but has to be also set in NodeList<TNode> when creating the node
+        // TODO consider a better approach with either eager initialization in ctor
+        internal int? IndexInParentLazy;
 
         NodeCore INodeWithCore<NodeCore>.Core => Core;
 
+        /// <summary>
+        /// Gets the parent of this node, if any.
+        /// </summary>
         public SourceNode Parent { get; }
 
         internal SourceTree Tree { get; set; }
@@ -42,7 +47,7 @@ namespace WarHub.ArmouryModel.Source
         /// <summary>
         /// Gets index in parent, or -1 if no parent.
         /// </summary>
-        public int IndexInParent => _indexInParent ?? CalculateAndSaveIndexInParent();
+        public int IndexInParent => IndexInParentLazy ?? CalculateAndSaveIndexInParent();
 
         /// <summary>
         /// Traverses ancestry path and returns each node beginning with this node's parent, if any.
@@ -230,7 +235,7 @@ namespace WarHub.ArmouryModel.Source
         private int CalculateAndSaveIndexInParent()
         {
             var indexInParent = CalculateIndex();
-            _indexInParent = indexInParent;
+            IndexInParentLazy = indexInParent;
             return indexInParent;
 
             int CalculateIndex()
@@ -239,16 +244,15 @@ namespace WarHub.ArmouryModel.Source
                 {
                     return -1;
                 }
-                var index = 0;
-                foreach (var sibling in Parent.Children())
+                for (var index = 0; index < Parent.ChildrenCount; index++)
                 {
+                    var sibling = Parent.GetChild(index);
                     if (ReferenceEquals(this, sibling))
                     {
-                        break;
+                        return index;
                     }
-                    index++;
                 }
-                return index;
+                return -1;
             }
         }
     }

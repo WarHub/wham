@@ -8,6 +8,7 @@ namespace WarHub.ArmouryModel.Source.XmlFormat
     {
         private const string XsdResourceFormat = ThisAssembly.RootNamespace + ".DataFormat.xml.schema.latest.{0}.xsd";
         private const string XslTransformResourceFormat = ThisAssembly.RootNamespace + ".DataFormat.xml.transform.{0}_{1}.xsl";
+
         private static readonly ImmutableArray<BattleScribeVersion> catAndGstMigrations =
             ImmutableArray.Create(
                 BattleScribeVersion.V1_15,
@@ -36,11 +37,6 @@ namespace WarHub.ArmouryModel.Source.XmlFormat
         public static Stream OpenXsdStream(this RootElement rootElement)
         {
             return OpenResource(rootElement.GetXsdResourcePath());
-        }
-
-        private static Stream OpenXsdStream(this VersionedElementInfo elementInfo)
-        {
-            return OpenResource(elementInfo.Element.GetXsdResourcePath());
         }
 
         public static Stream OpenMigrationXslStream(this VersionedElementInfo elementInfo)
