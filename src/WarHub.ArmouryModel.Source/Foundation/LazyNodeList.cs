@@ -44,7 +44,7 @@ namespace WarHub.ArmouryModel.Source
                 Parent = parent;
             }
 
-            private TNode _node;
+            private TNode node;
 
             public int SlotCount => 1;
 
@@ -56,12 +56,12 @@ namespace WarHub.ArmouryModel.Source
 
             public TNode GetNodeSlot(int index)
             {
-                if (_node == null)
+                if (node == null)
                 {
-                    Interlocked.CompareExchange(ref _node, Cores[0].ToNode(Parent), null);
-                    _node._indexInParent = index;
+                    Interlocked.CompareExchange(ref node, Cores[0].ToNode(Parent), null);
+                    node._indexInParent = index;
                 }
-                return _node;
+                return node;
             }
         }
 
@@ -73,8 +73,8 @@ namespace WarHub.ArmouryModel.Source
                 Parent = parent;
             }
 
-            private TNode _node0;
-            private TNode _node1;
+            private TNode node0;
+            private TNode node1;
 
             public int SlotCount => 2;
 
@@ -88,8 +88,8 @@ namespace WarHub.ArmouryModel.Source
             {
                 switch (index)
                 {
-                    case 0: return GetNode(ref _node0, 0);
-                    case 1: return GetNode(ref _node1, 1);
+                    case 0: return GetNode(ref node0, 0);
+                    case 1: return GetNode(ref node1, 1);
                     default:
                         throw new IndexOutOfRangeException("Index was outside the bounds of the array");
                 }
@@ -114,9 +114,9 @@ namespace WarHub.ArmouryModel.Source
                 Parent = parent;
             }
 
-            private TNode _node0;
-            private TNode _node1;
-            private TNode _node2;
+            private TNode node0;
+            private TNode node1;
+            private TNode node2;
 
             public int SlotCount => 3;
 
@@ -130,9 +130,9 @@ namespace WarHub.ArmouryModel.Source
             {
                 switch (index)
                 {
-                    case 0: return GetNode(ref _node0, 0);
-                    case 1: return GetNode(ref _node1, 1);
-                    case 2: return GetNode(ref _node2, 2);
+                    case 0: return GetNode(ref node0, 0);
+                    case 1: return GetNode(ref node1, 1);
+                    case 2: return GetNode(ref node2, 2);
                     default:
                         throw new IndexOutOfRangeException("Index was outside the bounds of the array");
                 }
@@ -165,8 +165,8 @@ namespace WarHub.ArmouryModel.Source
     internal static class LazyNodeListExtensions
     {
         public static NodeList<TNode> ToNodeList<TNode, TCore>(this ImmutableArray<TCore> cores, SourceNode parent = null)
-            where TCore : ICore<TNode>
             where TNode : SourceNode, INodeWithCore<TCore>
+            where TCore : ICore<TNode>
         {
             var container = LazyNodeList<TNode, TCore>.CreateContainer(cores, parent);
             return new NodeList<TNode>(container);

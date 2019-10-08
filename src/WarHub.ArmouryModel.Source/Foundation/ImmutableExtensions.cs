@@ -6,14 +6,14 @@ using System.Linq;
 
 namespace WarHub.ArmouryModel.Source
 {
-    public static class ImmutableExtensions
+    internal static class ImmutableExtensions
     {
         public static ImmutableArray<TCore> ToImmutableRecursive<TBuilder, TCore>(this ImmutableArray<TBuilder>.Builder builders)
             where TBuilder : IBuilder<TCore>
         {
             var count = builders.Count;
             var resultBuilder = ImmutableArray.CreateBuilder<TCore>(count);
-            for (int i = 0; i < count; i++)
+            for (var i = 0; i < count; i++)
             {
                 resultBuilder.Add(builders[i].ToImmutable());
             }
@@ -25,7 +25,7 @@ namespace WarHub.ArmouryModel.Source
         {
             var count = builders.Count;
             var resultBuilder = ImmutableArray.CreateBuilder<TCore>(count);
-            for (int i = 0; i < count; i++)
+            for (var i = 0; i < count; i++)
             {
                 resultBuilder.Add(builders[i].ToImmutable());
             }
@@ -58,15 +58,15 @@ namespace WarHub.ArmouryModel.Source
             return new CollectionLikeWrapper<T>(collection, declaredCount);
         }
 
-        private struct CollectionLikeWrapper<T> : ICollection<T>
+        private readonly struct CollectionLikeWrapper<T> : ICollection<T>
         {
             public CollectionLikeWrapper(IEnumerable<T> collection, int declaredCount)
             {
-                _collection = collection;
+                this.collection = collection;
                 Count = declaredCount;
             }
 
-            private readonly IEnumerable<T> _collection;
+            private readonly IEnumerable<T> collection;
 
             public int Count { get; }
 
@@ -80,13 +80,13 @@ namespace WarHub.ArmouryModel.Source
 
             public void CopyTo(T[] array, int arrayIndex)
             {
-                foreach (var item in _collection)
+                foreach (var item in collection)
                 {
                     array[arrayIndex++] = item;
                 }
             }
 
-            public IEnumerator<T> GetEnumerator() => _collection.GetEnumerator();
+            public IEnumerator<T> GetEnumerator() => collection.GetEnumerator();
 
             public bool Remove(T item) => throw new NotSupportedException();
 

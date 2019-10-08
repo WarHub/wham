@@ -1,14 +1,14 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Collections;
+using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.Linq;
 using System.Diagnostics;
+using System.Linq;
 
 namespace WarHub.ArmouryModel.Source
 {
     [DebuggerDisplay("Count = {" + nameof(Count) + "}")]
-    public struct NodeList<TNode> : IReadOnlyList<TNode>, IContainerProvider<TNode>, IEquatable<NodeList<TNode>>
+    public readonly struct NodeList<TNode> : IReadOnlyList<TNode>, IContainerProvider<TNode>, IEquatable<NodeList<TNode>>
         where TNode : SourceNode
     {
         // TODO a lot of optimizations here
@@ -85,6 +85,9 @@ namespace WarHub.ArmouryModel.Source
         IContainer<TNode> Container { get; }
     }
 
+    /// <summary>
+    /// Contains factory and extension methods for creating <see cref="NodeList{TNode}"/>
+    /// </summary>
     public static class NodeList
     {
         /// <summary>

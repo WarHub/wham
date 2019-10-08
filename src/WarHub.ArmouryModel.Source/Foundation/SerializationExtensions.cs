@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Immutable;
 
 namespace WarHub.ArmouryModel.Source
 {
@@ -7,11 +6,11 @@ namespace WarHub.ArmouryModel.Source
     {
         Type GetSerializationType();
         object GetSerializableObject();
-
     }
 
     internal static class SerializationExtensions
     {
+        // TODO
         // generate similar for every type
         //internal static CharacteristicType.FastSerializationEnumerable ToFastSerializationEnumerable(this ImmutableArray<CharacteristicType> enumerable)
         //{

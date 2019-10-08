@@ -2,7 +2,6 @@
 {
     public abstract class SourceTree
     {
-
         public abstract string FilePath { get; }
 
         public bool TryGetRoot(out SourceNode root)

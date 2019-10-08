@@ -12,7 +12,7 @@ namespace WarHub.ArmouryModel.Source
     [DebuggerDisplay("{" + nameof(Kind) + "}, Children = {" + nameof(ChildrenCount) + "}")]
     public abstract partial class SourceNode : INodeWithCore<NodeCore>
     {
-        public SourceNode(NodeCore core, SourceNode parent)
+        protected SourceNode(NodeCore core, SourceNode parent)
         {
             Core = core;
             Parent = parent;
@@ -239,7 +239,7 @@ namespace WarHub.ArmouryModel.Source
                 {
                     return -1;
                 }
-                int index = 0;
+                var index = 0;
                 foreach (var sibling in Parent.Children())
                 {
                     if (ReferenceEquals(this, sibling))
