@@ -15,13 +15,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * Current version of schema changed to v2.03 (latest)
 * `NodeFactory` in `WarHub.ArmouryModel.Source` namespace was rewritten to provide
   much more defaults, use other Nodes as value providers, and add more methods ([#58]).
+* `INodeWithCore<TCore>` is now covariant on `TCore` parameter, updating it's
+  signature to `interface INodeWithCore<out TCore>` ([#63]).
 
 ## Removed
 * `SelectionEntryNode.CategoryEntryId` property was removed. It was a leftover from old format, pre-2.01 ([#59]).
+* `SourceNode.Core` property was removed (#59). All other classes that
+  previously declared it still have it.
+* `SourceNode(NodeCore core, SourceNode parent)` constructor was replaced with
+  a new one: `SourceNode(SourceNode parent)` since the `Core` property is no
+  longer part of this type  ([#63]).
+* `SourceNode` no longer implements `INodeWithCore<NodeCore>`  ([#63]).
+
 
 [#47]: https://github.com/WarHub/wham/pull/47
 [#58]: https://github.com/WarHub/wham/pull/58
 [#59]: https://github.com/WarHub/wham/pull/59
+[#63]: https://github.com/WarHub/wham/pull/63
 
 ## [0.6.17] - 2019-08-16
 
