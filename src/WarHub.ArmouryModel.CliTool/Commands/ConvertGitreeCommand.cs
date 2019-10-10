@@ -11,6 +11,7 @@ namespace WarHub.ArmouryModel.CliTool.Commands
         {
             SetupLogger(verbosity);
             var workspace = GitreeWorkspace.CreateFromPath(source.FullName);
+            Log.Warning("This command is a Work In Progress. It may not work correctly.");
             Log.Debug("Source resolved to {RootPath}", workspace.RootPath);
             Log.Debug("Destination resolved to {Destination}", output);
             output.Create();

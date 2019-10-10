@@ -12,6 +12,7 @@ namespace WarHub.ArmouryModel.CliTool.Commands
         public void Run(DirectoryInfo source, DirectoryInfo output, string verbosity)
         {
             SetupLogger(verbosity);
+            Log.Warning("This command is a Work In Progress. It may not work correctly.");
             Log.Debug("Source resolved to {Source}", source);
             output.Create();
             Log.Debug("Destination directory resolved to {Destination}", output);
