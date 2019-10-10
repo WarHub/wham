@@ -16,6 +16,7 @@
 
         public const string NamespaceSystemCollectionsGeneric = "System.Collections.Generic";
         public const string NamespaceSystemCollectionsImmutable = "System.Collections.Immutable";
+        public const string NamespaceSystemDiagnostics = "System.Diagnostics";
 
         public const string IBuilder = "IBuilder";
         public const string IBuildable = "IBuildable";
@@ -98,5 +99,8 @@
         public const string ArgumentOutOfRangeExceptionFull = "System.ArgumentOutOfRangeException";
         public const string SpecifiedSuffix = "Specified";
         public const string XmlIgnoreQualified = "System.Xml.Serialization.XmlIgnore";
+        public const string DebuggerBrowsableFull = NamespaceSystemDiagnostics + ".DebuggerBrowsable";
+        public const string DebuggerBrowsableStateFull = NamespaceSystemDiagnostics + ".DebuggerBrowsableState";
+        public const string DebuggerBrowsableStateNever = "Never";
     }
 }

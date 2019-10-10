@@ -1,4 +1,6 @@
-﻿namespace WarHub.ArmouryModel.Source
+﻿using System;
+
+namespace WarHub.ArmouryModel.Source
 {
     public abstract class SourceTree
     {
@@ -20,7 +22,13 @@
 
         public SourceTree WithRoot(SourceNode root)
         {
-            var newNode = root.Core.ToNode();
+            if (!(root is INodeWithCore<NodeCore> rootWithCore))
+            {
+                throw new ArgumentException(
+                    "Tree root must be an " + nameof(INodeWithCore<NodeCore>),
+                    nameof(root));
+            }
+            var newNode = rootWithCore.Core.ToNode();
             var newTree = WithRootCore(newNode);
             newNode.Tree = newTree;
             return newTree;

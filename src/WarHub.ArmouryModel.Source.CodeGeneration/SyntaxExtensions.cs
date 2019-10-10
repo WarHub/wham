@@ -60,6 +60,11 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
             return syntax.AddModifiers(modifier.Select(Token).ToArray());
         }
 
+        public static PropertyDeclarationSyntax AddAttributeListAttribute(this PropertyDeclarationSyntax syntax, AttributeSyntax attribute)
+        {
+            return syntax.AddAttributeLists(AttributeList(SingletonSeparatedList(attribute)));
+        }
+
         public static PropertyDeclarationSyntax AddAttributeLists(this PropertyDeclarationSyntax syntax, IEnumerable<AttributeListSyntax> lists)
         {
             return syntax.AddAttributeLists(lists.ToArray());
