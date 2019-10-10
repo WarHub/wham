@@ -8,7 +8,7 @@ namespace WarHub.ArmouryModel.Source
     public abstract class ListNode<TChild> : SourceNode, IListNode, IReadOnlyList<TChild>
         where TChild : SourceNode
     {
-        protected ListNode(SourceNode parent) : base(null, parent)
+        protected ListNode(SourceNode parent) : base(parent)
         {
         }
 

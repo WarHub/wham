@@ -76,12 +76,17 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                 .WithInitializer(
                     ConstructorInitializer(SyntaxKind.BaseConstructorInitializer)
                     .AddArgumentListArguments(
-                        Argument(
-                            IdentifierName(CoreLocal)),
-                        Argument(
-                            IdentifierName(ParentLocal))))
+                        GetBaseArguments()))
                 .AddBodyStatements(
                     GetBodyStatements());
+            IEnumerable<ArgumentSyntax> GetBaseArguments()
+            {
+                if (IsDerived)
+                {
+                    yield return Argument(IdentifierName(CoreLocal));
+                }
+                yield return Argument(IdentifierName(ParentLocal));
+            }
             IEnumerable<StatementSyntax> GetBodyStatements()
             {
                 yield return
@@ -139,10 +144,13 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                     PropertyDeclaration(
                         Descriptor.CoreType,
                         CorePropertyIdentifier)
-                    .AddModifiers(SyntaxKind.ProtectedKeyword, SyntaxKind.InternalKeyword, SyntaxKind.NewKeyword)
+                    .AddModifiers(SyntaxKind.ProtectedKeyword, SyntaxKind.InternalKeyword)
+                    .MutateIf(IsDerived, x => x.AddModifiers(SyntaxKind.NewKeyword))
                     .AddAccessorListAccessors(
                         AccessorDeclaration(SyntaxKind.GetAccessorDeclaration)
-                        .WithSemicolonTokenDefault());
+                        .WithSemicolonTokenDefault())
+                    .MutateIf(IsAbstract, x =>
+                        x.AddAttributeListAttribute(DebuggerBrowsableNeverAttribute));
             }
             PropertyDeclarationSyntax CreateExplicitInterfaceCoreProperty()
             {
@@ -157,7 +165,8 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                             .AddTypeArgumentListArguments(
                                 Descriptor.CoreType)))
                     .WithExpressionBodyFull(
-                        CorePropertyIdentifierName);
+                        CorePropertyIdentifierName)
+                    .AddAttributeListAttribute(DebuggerBrowsableNeverAttribute);
             }
             PropertyDeclarationSyntax CreateSimpleProperty(CoreDescriptor.SimpleEntry entry)
             {

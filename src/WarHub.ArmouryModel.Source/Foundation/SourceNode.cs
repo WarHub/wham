@@ -10,20 +10,18 @@ namespace WarHub.ArmouryModel.Source
     /// This class is abstract.
     /// </summary>
     [DebuggerDisplay("{" + nameof(Kind) + "}, Children = {" + nameof(ChildrenCount) + "}")]
-    public abstract partial class SourceNode : INodeWithCore<NodeCore>
+    public abstract partial class SourceNode
     {
-        protected SourceNode(NodeCore core, SourceNode parent)
+        protected SourceNode(SourceNode parent)
         {
-            Core = core;
             Parent = parent;
             Tree = parent?.Tree;
         }
 
         // this should be private but has to be also set in NodeList<TNode> when creating the node
         // TODO consider a better approach with either eager initialization in ctor
+        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         internal int? IndexInParentLazy;
-
-        NodeCore INodeWithCore<NodeCore>.Core => Core;
 
         /// <summary>
         /// Gets the parent of this node, if any.
@@ -31,8 +29,6 @@ namespace WarHub.ArmouryModel.Source
         public SourceNode Parent { get; }
 
         internal SourceTree Tree { get; set; }
-
-        protected internal NodeCore Core { get; }
 
         /// <summary>
         /// Gets the kind of this node.

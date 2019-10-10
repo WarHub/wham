@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using Microsoft.CodeAnalysis;
@@ -74,5 +75,19 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
         {
             return Enumerable.Empty<BaseTypeSyntax>();
         }
+
+        private static Lazy<AttributeSyntax> DebuggerBrowsableNeverAttributeLazy { get; } = new Lazy<AttributeSyntax>(() =>
+        {
+            return
+                Attribute(
+                    ParseName(Names.DebuggerBrowsableFull))
+                .AddArgumentListArguments(
+                    AttributeArgument(
+                        ParseName(Names.DebuggerBrowsableStateFull)
+                        .MemberAccess(
+                            IdentifierName(Names.DebuggerBrowsableStateNever))));
+        });
+
+        protected AttributeSyntax DebuggerBrowsableNeverAttribute => DebuggerBrowsableNeverAttributeLazy.Value;
     }
 }
