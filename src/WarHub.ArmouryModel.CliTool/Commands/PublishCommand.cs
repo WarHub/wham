@@ -6,6 +6,8 @@ using System.Linq;
 using WarHub.ArmouryModel.CliTool.Utilities;
 using WarHub.ArmouryModel.ProjectModel;
 using WarHub.ArmouryModel.Source;
+using WarHub.ArmouryModel.Source.BattleScribe;
+using WarHub.ArmouryModel.Source.XmlFormat;
 using WarHub.ArmouryModel.Workspaces.BattleScribe;
 using WarHub.ArmouryModel.Workspaces.Gitree;
 
@@ -52,6 +54,10 @@ namespace WarHub.ArmouryModel.CliTool.Commands
             SetupLogger(verbosity);
             var configInfo = new AutoProjectConfigurationProvider().Create(source.FullName);
             Log.Debug("Using configuration: {@Config}", configInfo);
+            if (configInfo.Configuration.FormatProvider == ProjectFormatProviderType.Gitree)
+            {
+                Log.Warning("Gitree feature is a Work In Progress. It may not work as expected, or at all.");
+            }
 
             var artifactTypes = artifacts
                 .Distinct()
@@ -72,6 +78,8 @@ namespace WarHub.ArmouryModel.CliTool.Commands
             Log.Debug(
                 "Workspace loaded. {DatafileCount} datafiles discovered.",
                 workspace.Datafiles.Count(x => x.DataKind.IsDataCatalogueKind()));
+
+            CheckBattleScribeVersionCompatibility(workspace);
 
             var resolvedRepoName = string.IsNullOrWhiteSpace(repoName) ? GetRepoNameFallback(workspace) : repoName;
             Log.Debug("Repository name used is: {RepoName}", resolvedRepoName);
@@ -95,6 +103,26 @@ namespace WarHub.ArmouryModel.CliTool.Commands
                 CreateArtifact(workspace, options, artifactType);
             }
             Log.Verbose("All done.");
+        }
+
+        private void CheckBattleScribeVersionCompatibility(IWorkspace workspace)
+        {
+            foreach (var file in workspace.Datafiles)
+            {
+                var node = file.GetData();
+                if (node is IRootNode rootNode && !string.IsNullOrWhiteSpace(rootNode.BattleScribeVersion))
+                {
+                    var version = BattleScribeVersion.Parse(rootNode.BattleScribeVersion);
+                    var maxSupportedVersion = node.Kind.ToRootElement().Info().CurrentVersion;
+                    if (version > maxSupportedVersion)
+                    {
+                        Log.Warning(
+                            "Processing {File} which has BattleScribeVersion higher than supported" +
+                            " ({NodeVersion} > {SupportedVersion}).",
+                            file, version, maxSupportedVersion);
+                    }
+                }
+            }
         }
 
         private void CreateArtifact(IWorkspace workspace, Options options, ArtifactType artifactType)

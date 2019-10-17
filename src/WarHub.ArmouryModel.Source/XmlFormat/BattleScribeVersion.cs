@@ -48,6 +48,12 @@ namespace WarHub.ArmouryModel.Source.XmlFormat
 
         public string FilepathString => $"{Major}_{Minor:D2}{Suffix}";
 
+        public BattleScribeVersion WithMajor(int major) => Create(major, Minor, Suffix);
+
+        public BattleScribeVersion WithMinor(int minor) => Create(Major, minor, Suffix);
+
+        public BattleScribeVersion WithSuffix(string suffix) => Create(Major, Minor, suffix);
+
         public static BattleScribeVersion Parse(string version)
         {
             var match = Regex.Match(version, @"^(\d+)\.(\d+)(.*)$");

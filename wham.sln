@@ -49,6 +49,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WarHub.ArmouryModel.Workspa
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WarHub.ArmouryModel.Source.Tests", "tests\WarHub.ArmouryModel.Source.Tests\WarHub.ArmouryModel.Source.Tests.csproj", "{B8B445FE-6EA4-4378-9420-8E051C909D76}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WarHub.ArmouryModel.CliTool.Tests", "tests\WarHub.ArmouryModel.CliTool.Tests\WarHub.ArmouryModel.CliTool.Tests.csproj", "{9570B242-401D-4875-BB21-53A67231B5E4}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -107,6 +109,10 @@ Global
 		{B8B445FE-6EA4-4378-9420-8E051C909D76}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B8B445FE-6EA4-4378-9420-8E051C909D76}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B8B445FE-6EA4-4378-9420-8E051C909D76}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9570B242-401D-4875-BB21-53A67231B5E4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9570B242-401D-4875-BB21-53A67231B5E4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9570B242-401D-4875-BB21-53A67231B5E4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9570B242-401D-4875-BB21-53A67231B5E4}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -125,6 +131,7 @@ Global
 		{D06E2A07-E93D-4AA2-858E-D2694F4DB94D} = {6055CEFB-2A8B-45E3-B6D7-B9DB2A4FE612}
 		{DEE04C3C-7A20-43F0-B289-6A0CB938DAB3} = {8C4E7D04-65AF-421E-9432-7741ADAF4714}
 		{B8B445FE-6EA4-4378-9420-8E051C909D76} = {8C4E7D04-65AF-421E-9432-7741ADAF4714}
+		{9570B242-401D-4875-BB21-53A67231B5E4} = {8C4E7D04-65AF-421E-9432-7741ADAF4714}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {DAF2775E-5311-44A8-B7CB-F4A55225705A}

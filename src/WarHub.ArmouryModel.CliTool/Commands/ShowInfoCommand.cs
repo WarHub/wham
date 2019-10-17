@@ -2,9 +2,9 @@
 
 namespace WarHub.ArmouryModel.CliTool.Commands
 {
-    public class ShowInfoCommand : CommandBase
+    public static class ShowInfoCommand
     {
-        public void Main(IConsole console)
+        public static void Run(IConsole console)
         {
             console.Out.WriteLine($"Product: {ThisAssembly.AssemblyName} {ThisAssembly.AssemblyInformationalVersion}");
             console.Out.WriteLine($"Configuration: {ThisAssembly.AssemblyConfiguration}");

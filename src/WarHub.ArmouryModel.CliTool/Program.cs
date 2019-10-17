@@ -9,19 +9,29 @@ using WarHub.ArmouryModel.CliTool.Commands;
 
 namespace WarHub.ArmouryModel.CliTool
 {
-    internal static class Program
+    public static class Program
     {
         private static readonly string[] verbosityLevels = new[] { "q", "quiet", "m", "minimal", "n", "normal", "d", "detailed", "diag", "diagnostic" };
 
-        private static Option CreateVerbosityOption() =>
-            new Option(new[] { "-v", "--verbosity" }, "Set the verbosity level.")
-            {
-                Argument = new Argument<string>().FromAmong(verbosityLevels)
-            };
+        internal static async Task<int> Main(string[] args)
+            => await CreateParser().InvokeAsync(args);
 
-        private static async Task<int> Main(string[] args)
+        public static Parser CreateParser()
         {
-            var parser = new CommandLineBuilder()
+            var infoOption = new Option("--info", "Display product information: name, configuration, various versions");
+            return new CommandLineBuilder()
+                .AddOption(infoOption)
+                .UseMiddlewareOrdered(MiddlewareOrder.Preprocessing, async (ctx, next) =>
+                {
+                    if (ctx.ParseResult.HasOption(infoOption))
+                    {
+                        ShowInfoCommand.Run(ctx.Console);
+                    }
+                    else
+                    {
+                        await next(ctx);
+                    }
+                })
                 .UseDefaults()
                 .AddCommand(
                     new Command("convertxml", "[WIP] Converts BattleScribe XML files into Gitree directory structure.")
@@ -109,10 +119,7 @@ namespace WarHub.ArmouryModel.CliTool
                     }
                     .Runs(typeof(PublishCommand).GetMethod(nameof(PublishCommand.Run))))
                 .Build();
-            return await parser.InvokeAsync(args);
         }
-
-        private static DirectoryInfo GetCurrentDirectoryInfo() => new DirectoryInfo(".");
 
         internal static LogEventLevel GetLogLevel(string verbosity)
         {
@@ -138,5 +145,13 @@ namespace WarHub.ArmouryModel.CliTool
                     return LogEventLevel.Information;
             }
         }
+
+        private static DirectoryInfo GetCurrentDirectoryInfo() => new DirectoryInfo(".");
+
+        private static Option CreateVerbosityOption() =>
+            new Option(new[] { "-v", "--verbosity" }, "Set the verbosity level.")
+            {
+                Argument = new Argument<string>().FromAmong(verbosityLevels)
+            };
     }
 }
