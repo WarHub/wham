@@ -16,7 +16,7 @@ steps:
     version: '2.2.300'
 
 - script: |
-    dotnet tool install --tool-path . nbgv
+    dotnet tool install --tool-path . nbgv --version 3.0.26
     .\nbgv cloud -p src
   displayName: Set build number
   condition: and(succeeded(), ne(variables['system.pullrequest.isfork'], true))
