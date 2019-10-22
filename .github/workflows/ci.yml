@@ -15,7 +15,7 @@ jobs:
       with:
         dotnet-version: '2.2.301'
     - name: NuGet restore
-      run: dotnet restore -v m
+      run: dotnet restore -v m --disable-parallel
     - name: Build
       shell: pwsh
       run: dotnet build --no-restore -c ${{ matrix.BuildConfiguration }}
