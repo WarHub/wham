@@ -3,7 +3,7 @@
            xmlns:xs="http://www.w3.org/2001/XMLSchema"
            xmlns:tns="http://www.battlescribe.net/schema/catalogueSchema"
            targetNamespace="http://www.battlescribe.net/schema/catalogueSchema">
-  
+
   <!--schema for BattleScribe [version 2.03, (c) Jon Taylor] datafiles (catalogues and game systems)-->
   <!--schema file author: Amadeusz Sadowski-->
   <!--for game system, replace 'xmlns:tns' and 'targetNamespace' values with http://www.battlescribe.net/schema/gameSystemSchema -->
@@ -13,7 +13,7 @@
   <xs:simpleType name="idtype">
     <xs:restriction base="xs:string" />
   </xs:simpleType>
-  
+
   <!--publication-->
   <xs:complexType name="Publication">
     <xs:attribute name="id" type="tns:idtype" use="required" />
@@ -25,12 +25,12 @@
       <xs:element name="publication" type="tns:Publication" minOccurs="0" maxOccurs="unbounded" />
     </xs:sequence>
   </xs:complexType>
-  
+
   <xs:attributeGroup name="PublicationRefAttGroup">
     <xs:attribute name="publicationId" type="tns:idtype" />
     <xs:attribute name="page" type="xs:string" />
   </xs:attributeGroup>
-  
+
   <!--characteristic type-->
   <xs:complexType name="CharacteristicType">
     <xs:attribute name="id" type="tns:idtype" use="required" />
@@ -57,7 +57,7 @@
       <xs:element name="profileType" type="tns:ProfileType" minOccurs="0" maxOccurs="unbounded" />
     </xs:sequence>
   </xs:complexType>
-  
+
   <!--cost type-->
   <xs:complexType name="CostType">
     <xs:attribute name="id" type="tns:idtype" use="required" />
@@ -70,7 +70,7 @@
       <xs:element name="costType" type="tns:CostType" minOccurs="0" maxOccurs="unbounded" />
     </xs:sequence>
   </xs:complexType>
-  
+
   <!--entry base-->
   <xs:complexType name="EntryBase">
     <xs:sequence>
@@ -92,7 +92,7 @@
       <xs:element name="infoLinks" type="tns:InfoLinkList" minOccurs="0" />
     </xs:sequence>
   </xs:group>
-  
+
   <!--characteristic-->
   <xs:complexType name="Characteristic">
     <xs:simpleContent>
@@ -199,7 +199,7 @@
       <xs:element name="forceEntry" type="tns:ForceEntry" minOccurs="0" maxOccurs="unbounded" />
     </xs:sequence>
   </xs:complexType>
-  
+
   <!--costs-->
   <xs:complexType name="Cost">
     <xs:attribute name="name" type="xs:string" use="required" />
@@ -244,7 +244,7 @@
       </xs:extension>
     </xs:complexContent>
   </xs:complexType>
-  
+
   <!--selection entry-->
   <xs:complexType name="SelectionEntry">
     <xs:complexContent>
@@ -285,7 +285,7 @@
       <xs:element name="selectionEntryGroup" type="tns:SelectionEntryGroup" minOccurs="0" maxOccurs="unbounded" />
     </xs:sequence>
   </xs:complexType>
-  
+
   <!--info link-->
   <xs:complexType name="InfoLink">
     <xs:complexContent>
@@ -440,9 +440,13 @@
       <xs:enumeration value="increment" />
       <xs:enumeration value="decrement" />
       <xs:enumeration value="append" />
+      <xs:enumeration value="add" />
+      <xs:enumeration value="remove" />
+      <xs:enumeration value="set-primary" />
+      <xs:enumeration value="unset-primary" />
     </xs:restriction>
   </xs:simpleType>
-  
+
   <!--modifier group-->
   <xs:complexType name="ModifierGroup">
     <xs:sequence>
@@ -469,14 +473,14 @@
       </xs:extension>
     </xs:complexContent>
   </xs:complexType>
-  
+
   <xs:complexType name="RepeatList">
     <xs:sequence>
       <xs:element name="repeat" type="tns:Repeat" minOccurs="0" maxOccurs="unbounded" />
     </xs:sequence>
   </xs:complexType>
 
-  <!--condition--> 
+  <!--condition-->
   <xs:complexType name="Condition">
     <xs:complexContent>
       <xs:extension base="tns:SelectorBase">
@@ -526,7 +530,7 @@
       <xs:enumeration value="or" />
     </xs:restriction>
   </xs:simpleType>
-  
+
   <!--roster element base-->
   <xs:complexType name="RosterElementBase">
     <xs:sequence>
@@ -539,7 +543,7 @@
     <xs:attribute name="entryGroupId" type="tns:idtype" />
     <xs:attributeGroup ref="tns:PublicationRefAttGroup" />
   </xs:complexType>
-  
+
   <!--force-->
   <xs:complexType name="Force">
     <xs:complexContent>
@@ -577,7 +581,7 @@
       <xs:element name="category" type="tns:Category" minOccurs="0" maxOccurs="unbounded" />
     </xs:sequence>
   </xs:complexType>
-  
+
   <!--selection-->
   <xs:complexType name="Selection">
     <xs:complexContent>
@@ -598,7 +602,7 @@
       <xs:element name="selection" type="tns:Selection" minOccurs="0" maxOccurs="unbounded" />
     </xs:sequence>
   </xs:complexType>
-  
+
   <!--catalogue base-->
   <xs:complexType name="CatalogueBase">
     <xs:sequence>
