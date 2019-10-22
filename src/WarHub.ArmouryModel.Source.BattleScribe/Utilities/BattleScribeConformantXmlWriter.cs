@@ -9,7 +9,7 @@ namespace WarHub.ArmouryModel.Source.BattleScribe.Utilities
     /// </summary>
     public sealed class BattleScribeConformantXmlWriter : XmlWriter
     {
-        public BattleScribeConformantXmlWriter(XmlWriter writer)
+        internal BattleScribeConformantXmlWriter(XmlWriter writer)
         {
             BaseWriter = writer;
         }
@@ -30,10 +30,21 @@ namespace WarHub.ArmouryModel.Source.BattleScribe.Utilities
             return Create(stream, InternalXmlWriterSettings);
         }
 
+        public new static XmlWriter Create(TextWriter writer)
+        {
+            return Create(writer, InternalXmlWriterSettings);
+        }
+
         public new static XmlWriter Create(Stream stream, XmlWriterSettings settings)
         {
-            var bsTextWriter = new BattleScribeConformantTextWriter(new StreamWriter(stream));
-            return new BattleScribeConformantXmlWriter(Create(bsTextWriter, settings));
+            return Create(new StreamWriter(stream), settings);
+        }
+
+        public new static XmlWriter Create(TextWriter writer, XmlWriterSettings settings)
+        {
+            var bsTextWriter = new BattleScribeConformantTextWriter(writer);
+            var xmlWriter = XmlWriter.Create(bsTextWriter, settings);
+            return new BattleScribeConformantXmlWriter(xmlWriter);
         }
 
         protected override void Dispose(bool disposing)

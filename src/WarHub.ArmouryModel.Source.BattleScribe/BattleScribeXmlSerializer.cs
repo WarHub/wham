@@ -11,7 +11,7 @@ namespace WarHub.ArmouryModel.Source.BattleScribe
     /// Caches namespaces and serializers required for serialization and deserialization,
     /// and provides methods for performing those operations in strongly typed fashion.
     /// </summary>
-    public class BattleScribeXmlSerializer
+    internal class BattleScribeXmlSerializer
     {
         private static Lazy<BattleScribeXmlSerializer> LazyInstance { get; }
             = new Lazy<BattleScribeXmlSerializer>();
@@ -64,33 +64,33 @@ namespace WarHub.ArmouryModel.Source.BattleScribe
             }
         }
 
-        public void SerializeGamesystem(GamesystemNode node, Stream stream)
-            => Serialize(stream, node.GetSerializationProxy(), node.Kind.ToRootElement());
+        public void SerializeGamesystem(GamesystemNode node, TextWriter writer)
+            => Serialize(writer, node.GetSerializationProxy(), node.Kind.ToRootElement());
 
-        public void SerializeCatalogue(CatalogueNode node, Stream stream)
-            => Serialize(stream, node.GetSerializationProxy(), node.Kind.ToRootElement());
+        public void SerializeCatalogue(CatalogueNode node, TextWriter writer)
+            => Serialize(writer, node.GetSerializationProxy(), node.Kind.ToRootElement());
 
-        public void SerializeRoster(RosterNode node, Stream stream)
-            => Serialize(stream, node.GetSerializationProxy(), node.Kind.ToRootElement());
+        public void SerializeRoster(RosterNode node, TextWriter writer)
+            => Serialize(writer, node.GetSerializationProxy(), node.Kind.ToRootElement());
 
-        public void SerializeDataIndex(DataIndexNode node, Stream stream)
-            => Serialize(stream, node.GetSerializationProxy(), node.Kind.ToRootElement());
+        public void SerializeDataIndex(DataIndexNode node, TextWriter writer)
+            => Serialize(writer, node.GetSerializationProxy(), node.Kind.ToRootElement());
 
-        public void Serialize(SourceNode node, Stream stream)
+        public void Serialize(SourceNode node, TextWriter writer)
         {
             switch (node.Kind)
             {
                 case SourceKind.Gamesystem:
-                    SerializeGamesystem((GamesystemNode)node, stream);
+                    SerializeGamesystem((GamesystemNode)node, writer);
                     return;
                 case SourceKind.Catalogue:
-                    SerializeCatalogue((CatalogueNode)node, stream);
+                    SerializeCatalogue((CatalogueNode)node, writer);
                     return;
                 case SourceKind.Roster:
-                    SerializeRoster((RosterNode)node, stream);
+                    SerializeRoster((RosterNode)node, writer);
                     return;
                 case SourceKind.DataIndex:
-                    SerializeDataIndex((DataIndexNode)node, stream);
+                    SerializeDataIndex((DataIndexNode)node, writer);
                     return;
                 default:
                     throw new ArgumentException(
@@ -99,13 +99,13 @@ namespace WarHub.ArmouryModel.Source.BattleScribe
             }
         }
 
-        private void Serialize(Stream stream, object @object, RootElement rootElement)
+        private void Serialize(TextWriter writer, object @object, RootElement rootElement)
         {
             var serializer = GetSerializer(rootElement);
             var namespaces = GetNamespaces(rootElement);
-            using (var writer = BattleScribeConformantXmlWriter.Create(stream))
+            using (var bsWriter = BattleScribeConformantXmlWriter.Create(writer))
             {
-                serializer.Serialize(writer, @object, namespaces);
+                serializer.Serialize(bsWriter, @object, namespaces);
             }
         }
 
