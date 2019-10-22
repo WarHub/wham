@@ -39,7 +39,12 @@ namespace WarHub.ArmouryModel.Source.BattleScribe
 
         public static void Serialize(this SourceNode node, Stream stream)
         {
-            Serializer.Serialize(node, stream);
+            Serializer.Serialize(node, new StreamWriter(stream));
+        }
+
+        public static void Serialize(this SourceNode node, TextWriter writer)
+        {
+            Serializer.Serialize(node, writer);
         }
 
         public static GamesystemCore.FastSerializationProxy GetSerializationProxy(this GamesystemNode node)

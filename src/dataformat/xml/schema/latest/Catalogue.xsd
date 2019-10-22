@@ -440,6 +440,10 @@
       <xs:enumeration value="increment" />
       <xs:enumeration value="decrement" />
       <xs:enumeration value="append" />
+      <xs:enumeration value="add" />
+      <xs:enumeration value="remove" />
+      <xs:enumeration value="set-primary" />
+      <xs:enumeration value="unset-primary" />
     </xs:restriction>
   </xs:simpleType>
   

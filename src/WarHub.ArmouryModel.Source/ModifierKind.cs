@@ -14,6 +14,18 @@ namespace WarHub.ArmouryModel.Source
         Decrement,
 
         [XmlEnum("append")]
-        Append
+        Append,
+
+        [XmlEnum("add")]
+        Add,
+
+        [XmlEnum("remove")]
+        Remove,
+
+        [XmlEnum("set-primary")]
+        SetPrimary,
+
+        [XmlEnum("unset-primary")]
+        UnsetPrimary
     }
 }
