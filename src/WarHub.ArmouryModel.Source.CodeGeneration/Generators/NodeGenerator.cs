@@ -238,11 +238,17 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                     .AddModifiers(SyntaxKind.VirtualKeyword)
                     .AddBodyStatements(
                         ReturnStatement(
-                            ObjectCreationExpression(
-                                Descriptor.GetNodeTypeIdentifierName())
-                            .InvokeWithArguments(
-                                IdentifierName(CoreParameter),
-                                LiteralExpression(SyntaxKind.NullLiteralExpression))));
+                            ConditionalExpression(
+                                BinaryExpression(
+                                    SyntaxKind.EqualsExpression,
+                                    ThisExpression().MemberAccess(CorePropertyIdentifierName),
+                                    IdentifierName(CoreParameter)),
+                                ThisExpression(),
+                                ObjectCreationExpression(
+                                    Descriptor.GetNodeTypeIdentifierName())
+                                .InvokeWithArguments(
+                                    IdentifierName(CoreParameter),
+                                    LiteralExpression(SyntaxKind.NullLiteralExpression)))));
             }
             MethodDeclarationSyntax DerivedUpdateWithMethod()
             {

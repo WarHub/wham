@@ -5,6 +5,7 @@ using System.Threading;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using MoreLinq;
 using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
 namespace WarHub.ArmouryModel.Source.CodeGeneration
@@ -65,7 +66,6 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
         private IEnumerable<MethodDeclarationSyntax> GenerateUpdateMethods()
         {
             var abstractBaseUpdateName = Names.Update + Descriptor.CoreTypeIdentifier.Text;
-            var arguments = Descriptor.Entries.Select(x => x.IdentifierName).ToArray();
             var parameters = Descriptor.Entries
                 .Select(CreateParameter)
                 .ToImmutableArray();
@@ -77,12 +77,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                     x => x.AddModifiers(SyntaxKind.NewKeyword))
                 .AddParameterListParameters(parameters)
                 .AddBodyStatements(
-                    ReturnStatement(
-                        IsAbstract ?
-                        IdentifierName(abstractBaseUpdateName)
-                        .InvokeWithArguments(arguments) :
-                        ObjectCreationExpression(Descriptor.CoreType)
-                        .WithArguments(arguments)));
+                        UpdateStatements());
             if (IsAbstract)
             {
                 yield return
@@ -104,7 +99,46 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                     .AddBodyStatements(
                         ReturnStatement(
                             IdentifierName(Names.Update)
-                            .InvokeWithArguments(arguments)));
+                            .InvokeWithArguments(
+                                Descriptor.Entries.Select(x => x.IdentifierName))));
+            }
+            IEnumerable<StatementSyntax> UpdateStatements()
+            {
+                if (IsAbstract)
+                {
+                    yield return
+                        ReturnStatement(
+                            IdentifierName(abstractBaseUpdateName)
+                            .InvokeWithArguments(
+                                Descriptor.Entries.Select(x => x.IdentifierName)));
+                    yield break;
+                }
+                const string EqualVarName = "equal";
+                yield return
+                    LocalDeclarationStatement(
+                        VariableDeclaration(
+                            IdentifierName("var"))
+                        .AddVariables(
+                            VariableDeclarator(EqualVarName)
+                            .WithInitializer(
+                                EqualsValueClause(
+                                    EqualsInitializer()))));
+                yield return
+                    ReturnStatement(
+                        ConditionalExpression(
+                            IdentifierName(EqualVarName),
+                            ThisExpression(),
+                            ObjectCreationExpression(Descriptor.CoreType)
+                            .WithArguments(
+                                Descriptor.Entries.Select(x => x.IdentifierName))));
+                ExpressionSyntax EqualsInitializer() =>
+                    (from entry in Descriptor.Entries
+                     let idName = entry.IdentifierName
+                     let thisAccess =
+                        ThisExpression()
+                        .MemberAccess(idName)
+                     select BinaryExpression(SyntaxKind.EqualsExpression, thisAccess, idName))
+                    .Aggregate((x, y) => BinaryExpression(SyntaxKind.LogicalAndExpression, x, y));
             }
         }
 
@@ -114,7 +148,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
             MethodDeclarationSyntax CreateRecordMutator(CoreDescriptor.Entry entry)
             {
                 var arguments = Descriptor.Entries.Select(x => x.IdentifierName);
-                var mutator =
+                return
                     MethodDeclaration(
                         Descriptor.CoreType,
                         GetMutatorIdentifier())
@@ -127,14 +161,18 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                         .WithType(entry.Type))
                     .AddBodyStatements(
                         ReturnStatement(
-                            IdentifierName(Names.Update)
-                            .InvokeWithArguments(arguments)));
-                return mutator;
+                            ConditionalExpression(
+                                BinaryExpression(
+                                    SyntaxKind.EqualsExpression,
+                                    ThisExpression()
+                                    .MemberAccess(entry.IdentifierName),
+                                    entry.IdentifierName),
+                                ThisExpression(),
+                                IdentifierName(Names.Update)
+                                .InvokeWithArguments(arguments))));
 
-                SyntaxToken GetMutatorIdentifier()
-                {
-                    return Identifier($"{Names.WithPrefix}{entry.Identifier.ValueText}");
-                }
+                SyntaxToken GetMutatorIdentifier() =>
+                    Identifier(Names.WithPrefix + entry.Identifier.ValueText);
             }
         }
 
