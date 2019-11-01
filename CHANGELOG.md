@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 * Support for BattleScribe v2.03 data format ([#47])
-* "Latest" channel (folder) for Catalogue.xsd
+* "Latest" channel (folder) for `Catalogue.xsd`.
 * `wham --info` command that displays more detailed program info ([#64]).
 
 ### Changed
@@ -18,6 +18,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   much more defaults, use other Nodes as value providers, and add more methods ([#58]).
 * `INodeWithCore<TCore>` is now covariant on `TCore` parameter, updating it's
   signature to `interface INodeWithCore<out TCore>` ([#63]).
+* Cores and Nodes' With and Update methods now check for equality of old and new,
+  and when they're equal, return current instance ([#75]).
+* `SourceRewriter` implementation fixed to actually work ([#75]).
 
 ## Removed
 * `SelectionEntryNode.CategoryEntryId` property was removed. It was a leftover from old format, pre-2.01 ([#59]).
@@ -34,6 +37,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 [#59]: https://github.com/WarHub/wham/pull/59
 [#63]: https://github.com/WarHub/wham/pull/63
 [#64]: https://github.com/WarHub/wham/pull/64
+[#75]: https://github.com/WarHub/wham/pull/75
 
 ## [0.6.17] - 2019-08-16
 
