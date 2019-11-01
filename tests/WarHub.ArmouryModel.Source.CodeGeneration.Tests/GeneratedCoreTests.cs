@@ -1,4 +1,5 @@
 ﻿using System.Collections.Immutable;
+using FluentAssertions;
 using WarHub.ArmouryModel.Source.CodeGeneration.Tests.GeneratedCode;
 using Xunit;
 
@@ -7,12 +8,28 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration.Tests
     public class GeneratedCoreTests
     {
         [Fact]
+        public void Update_with_current_values_returns_this_instance()
+        {
+            var subject = new ContainerCore("id", "name", ImmutableArray<ItemCore>.Empty);
+            var result = subject.Update("id", "name", ImmutableArray<ItemCore>.Empty);
+            result.Should().BeSameAs(subject);
+        }
+
+        [Fact]
         public void With_SimpleProperty_DoesNotModifyInstance()
         {
             const string NewName = "New Name";
             var subject = new ItemCore.Builder().ToImmutable();
             subject.WithName(NewName);
             Assert.Null(subject.Name);
+        }
+
+        [Fact]
+        public void With_SimpleProperty_when_new_value_equals_old_returns_this_instance()
+        {
+            var subject = new ItemCore("1", "item");
+            var result = subject.WithName("item");
+            result.Should().BeSameAs(subject);
         }
 
         [Fact]
@@ -31,6 +48,15 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration.Tests
             var subject = new ContainerCore.Builder().ToImmutable();
             subject.WithItems(new[] { item }.ToImmutableArray());
             Assert.Empty(subject.Items);
+        }
+
+        [Fact]
+        public void With_CollectionProperty_when_new_value_equals_old_returns_this_instance()
+        {
+            var subject = new ContainerCore.Builder().ToImmutable()
+                .WithItems(ImmutableArray.Create(new ItemCore("1", "item")));
+            var result = subject.WithItems(subject.Items);
+            result.Should().BeSameAs(subject);
         }
 
         [Fact]

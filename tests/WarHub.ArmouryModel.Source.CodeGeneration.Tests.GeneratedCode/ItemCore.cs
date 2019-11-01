@@ -11,10 +11,5 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration.Tests.GeneratedCode
 
         [XmlAttribute("name")]
         public string Name { get; }
-
-        //public static CharacteristicType EmptyInstance { get; } = new Builder
-        //{
-        //    Id = Guid.Empty.ToString()
-        //}.ToImmutable();
     }
 }
