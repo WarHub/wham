@@ -15,27 +15,35 @@ namespace WarHub.ArmouryModel.Source
             return list.WithNodes(VisitNodeList(list.NodeList));
         }
 
-        public virtual NodeList<TNode> VisitNodeList<TNode>(NodeList<TNode> list) where TNode : SourceNode
+        public virtual NodeList<TNode> VisitNodeList<TNode>(NodeList<TNode> list)
+            where TNode : SourceNode
         {
-            ImmutableArray<TNode>.Builder alternate = null;
+            ImmutableArray<TNode>.Builder builder = null;
             for (int i = 0, n = list.Count; i < n; i++)
             {
-                var item = list[i];
-                var visited = VisitListElement(item);
-                if (alternate is null)
+                var original = list[i];
+                var returned = VisitListElement(original);
+                var itemChanged = original != returned;
+                var builderExists = builder is { };
+                if (itemChanged || builderExists)
                 {
-                    if (item != visited)
+                    if (itemChanged && !builderExists)
                     {
-                        alternate = ImmutableArray.CreateBuilder<TNode>(n);
-                        alternate.AddRange(list.Take(i));
+                        builder = ImmutableArray.CreateBuilder<TNode>(n);
+                        builder.AddRange(list.Take(i));
+                    }
+                    if (returned is { })
+                    {
+                        builder.Add(returned);
                     }
                 }
-                else if (visited?.IsKind(SourceKind.Unknown) == false)
-                {
-                    alternate.Add(visited);
-                }
             }
-            return alternate?.MoveToImmutable().ToNodeList() ?? list;
+            return
+                builder is null
+                    ? list
+                    : builder.Capacity == builder.Count
+                        ? builder.MoveToImmutable().ToNodeList()
+                        : builder.ToImmutable().ToNodeList();
         }
 
         public virtual TNode VisitListElement<TNode>(TNode node) where TNode : SourceNode
