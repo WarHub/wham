@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
+using FluentAssertions;
 using MoreLinq;
 using WarHub.ArmouryModel.Source.CodeGeneration.Tests.GeneratedCode;
 using Xunit;
@@ -15,7 +16,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration.Tests
         public const string ItemId = "item1";
         public const string ItemName = "item name";
 
-        public class OneItemContainerPackage
+        public static class OneItemContainerPackage
         {
             public static ContainerNode CreateContainer()
             {
@@ -391,6 +392,27 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration.Tests
             // act
             var actual = item.FirstAncestorOrSelf<RecursiveContainerNode>(x => x.Name == Name2);
             Assert.Same(expected, actual);
+        }
+
+        [Fact]
+        public void With_when_value_equals_old_returns_this_instance()
+        {
+            var subject = NodeFactory.Container("id", "name", NodeFactory.ItemList(NodeFactory.Item("a", "b")));
+            var result = subject
+                .WithId("id")
+                .WithName("name")
+                .WithItems(subject.Items.NodeList);
+            result.Should().BeSameAs(subject);
+        }
+
+        [Fact]
+        public void WithNodes_when_NodeList_equals_old_returns_this_instance()
+        {
+            var subject = NodeFactory.ItemList(
+                NodeFactory.Item("1", "a1"),
+                NodeFactory.Item("2", "a2"));
+            var result = subject.WithNodes(subject.NodeList);
+            result.Should().BeSameAs(subject);
         }
     }
 }

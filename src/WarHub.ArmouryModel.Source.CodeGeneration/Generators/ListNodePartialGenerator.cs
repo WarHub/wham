@@ -184,27 +184,33 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
 
         private MemberDeclarationSyntax CreateWithNodesMethod()
         {
-            const string Nodes = "nodes";
+            const string NodesVarName = "nodes";
             return
                 MethodDeclaration(
-                        GenericName(Names.ListNode)
-                            .AddTypeArgumentListArguments(
-                                Descriptor.GetNodeTypeIdentifierName()),
-                        Names.WithNodes)
-                    .AddModifiers(
-                        SyntaxKind.PublicKeyword,
-                        SyntaxKind.OverrideKeyword)
-                    .AddParameterListParameters(
-                        Parameter(
-                                Identifier(Nodes))
-                            .WithType(
-                                Descriptor.GetNodeTypeIdentifierName().ToNodeListType()))
-                    .AddBodyStatements(
-                        ReturnStatement(
-                            IdentifierName(Nodes)
-                                .MemberAccess(
-                                    IdentifierName(Names.ToListNode))
-                                .InvokeWithArguments()));
+                    GenericName(Names.ListNode)
+                    .AddTypeArgumentListArguments(
+                        Descriptor.GetNodeTypeIdentifierName()),
+                    Names.WithNodes)
+                .AddModifiers(
+                    SyntaxKind.PublicKeyword,
+                    SyntaxKind.OverrideKeyword)
+                .AddParameterListParameters(
+                    Parameter(
+                        Identifier(NodesVarName))
+                    .WithType(
+                        Descriptor.GetNodeTypeIdentifierName().ToNodeListType()))
+                .AddBodyStatements(
+                    ReturnStatement(
+                        ConditionalExpression(
+                            BinaryExpression(
+                                SyntaxKind.EqualsExpression,
+                                ThisExpression().MemberAccess(IdentifierName(Names.NodeList)),
+                                IdentifierName(NodesVarName)),
+                            ThisExpression(),
+                            IdentifierName(NodesVarName)
+                            .MemberAccess(
+                                IdentifierName(Names.ToListNode))
+                            .InvokeWithArguments())));
         }
     }
 }
