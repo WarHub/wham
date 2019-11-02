@@ -352,13 +352,7 @@
   <!--entry link-->
   <xs:complexType name="EntryLink">
     <xs:complexContent>
-      <xs:extension base="tns:EntryBase">
-        <xs:sequence>
-          <xs:element name="constraints" type="tns:ConstraintList" minOccurs="0" />
-          <xs:group ref="tns:InfoNodeGroup" />
-          <xs:element name="categoryLinks" type="tns:CategoryLinkList" minOccurs="0" />
-        </xs:sequence>
-        <xs:attribute name="collective" type="xs:boolean" default="false" />
+      <xs:extension base="tns:SelectionEntryBase">
         <xs:attribute name="targetId" type="tns:idtype" use="required" />
         <xs:attribute name="type" type="tns:EntryLinkKind" use="required" />
       </xs:extension>
