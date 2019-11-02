@@ -45,5 +45,13 @@ namespace WarHub.ArmouryModel.Source.Tests.DataFormat
 
             modifier.Type.Should().Be(kindValue);
         }
+
+        [Fact]
+        public void EntryLink_can_contain_costs()
+        {
+            var link = EntryLink(SelectionEntry());
+            var result = link.AddCosts(Cost(CostType(), 1));
+            result.Costs[0].Value.Should().Be(1);
+        }
     }
 }
