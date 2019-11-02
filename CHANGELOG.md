@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * Support for BattleScribe v2.03 data format ([#47])
 * "Latest" channel (folder) for `Catalogue.xsd`.
 * `wham --info` command that displays more detailed program info ([#64]).
+* EntryLink now has `SelectionEntries`, `SelectionEntryGroups` and `EntryLinks` lists ([#77]).
 
 ### Changed
 * Current version of schema changed to v2.03 (latest)
@@ -21,6 +22,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * Cores and Nodes' With and Update methods now check for equality of old and new,
   and when they're equal, return current instance ([#75]).
 * `SourceRewriter` implementation fixed to actually work ([#75]).
+* EntryLink now inherits from SelectionEntryBase instead of EntryBase ([#77]).
 
 ## Removed
 * `SelectionEntryNode.CategoryEntryId` property was removed. It was a leftover from old format, pre-2.01 ([#59]).
@@ -38,6 +40,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 [#63]: https://github.com/WarHub/wham/pull/63
 [#64]: https://github.com/WarHub/wham/pull/64
 [#75]: https://github.com/WarHub/wham/pull/75
+[#77]: https://github.com/WarHub/wham/pull/77
 
 ## [0.6.17] - 2019-08-16
 
