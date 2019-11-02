@@ -7,7 +7,6 @@ namespace WarHub.ArmouryModel.Source.Tests.DataFormat
 {
     public class XmlSchema2_01Tests
     {
-
         [Fact]
         public void EntryLink_can_contain_entries()
         {
