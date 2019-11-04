@@ -16,6 +16,9 @@ namespace WarHub.ArmouryModel.Source.BattleScribe
         private static Lazy<BattleScribeXmlSerializer> LazyInstance { get; }
             = new Lazy<BattleScribeXmlSerializer>();
 
+        /// <summary>
+        /// Gets a static instance of this class.
+        /// </summary>
         public static BattleScribeXmlSerializer Instance => LazyInstance.Value;
 
         private readonly Dictionary<RootElement, XmlSerializerNamespaces> namespaces

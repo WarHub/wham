@@ -54,5 +54,23 @@ namespace WarHub.ArmouryModel.Source.Tests.DataFormat
             var result = link.AddCosts(Cost(CostType(), 1));
             result.Costs[0].Value.Should().Be(1);
         }
+
+        [Fact]
+        public void Entry_link_can_contain_cost_in_schema()
+        {
+            const string XmlText = @"
+<gameSystem id='1' name='test' revision='1' battleScribeVersion='2.01' xmlns='http://www.battlescribe.net/schema/gameSystemSchema'>
+  <entryLinks>
+    <entryLink id='2' targetId='123' type='selectionEntry'>
+      <costs>
+        <cost id='3' name='c1' value='123'/>
+      </costs>
+    </entryLink>
+  </entryLinks>
+</gameSystem>";
+            var messages = SchemaUtils.Validate(XmlText);
+
+            messages.Should().BeEmpty();
+        }
     }
 }
