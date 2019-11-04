@@ -2,16 +2,15 @@
 
 Foundational .NET library for wargame datafile tools, written in C#.
 
-[![NuGet package](https://img.shields.io/nuget/v/WarHub.ArmouryModel.Source.svg)](https://www.nuget.org/packages?q=wham)
+[![CI GitHub Action](https://github.com/WarHub/wham/workflows/CI/badge.svg)](https://github.com/WarHub/wham/actions?query=workflow%3ACI+branch%3Amaster)
 [![Build Status](https://dev.azure.com/warhub/wham/_apis/build/status/WarHub.wham?branchName=master)](https://dev.azure.com/warhub/wham/_build/latest?definitionId=1&branchName=master)
-[![MyGet package](https://img.shields.io/myget/warhub/vpre/WarHub.ArmouryModel.Source.svg?label=myget-ci)](https://www.myget.org/feed/Packages/warhub)
+
 [![Join the chat at gitter!](https://img.shields.io/gitter/room/WarHub/wham.svg)](https://gitter.im/WarHub/wham?utm_source=badge&utm_medium=badge&utm_content=badge)
 [![License](https://img.shields.io/github/license/WarHub/wham.svg)](https://github.com/WarHub/wham/blob/master/LICENSE.md)
 
-NuGet packages: [WarHub NuGet](https://www.nuget.org/profiles/warhub)
-
-MyGet packages (Continuous Integration channel):
-[WarHub MyGet](https://www.myget.org/feed/Packages/warhub)
+Packages:
+[![NuGet packages](https://img.shields.io/nuget/v/WarHub.ArmouryModel.Source.svg?logo=nuget)](https://www.nuget.org/profiles/warhub)
+[![MyGet package](https://img.shields.io/myget/warhub/vpre/WarHub.ArmouryModel.Source.svg?label=MyGet%20CI)](https://www.myget.org/feed/Packages/warhub)
 
 ## Overview
 
@@ -44,7 +43,7 @@ To install `wham` command line tool:
 1. please install [`.NET Core SDK` v2.1 or higher](https://www.microsoft.com/net/download)
   for your platform.
 2. In your shell/command line run
-  `dotnet tool install wham -g --version 0.6.17`
+  `dotnet tool install wham -g --version 0.7.0`
 3. You can check if the tool is available: `wham --version` should show what version exactly is running.
 
 This will install preview of `wham` CLI tool in your user-space (not system global),

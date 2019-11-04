@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+
+## [0.7.0] - 2019-11-05
+
 ### Added
 * Support for BattleScribe v2.03 data format ([#47])
 * "Latest" channel (folder) for `Catalogue.xsd`.
@@ -65,5 +68,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 [#39]: https://github.com/WarHub/wham/pull/39
 
 
-[Unreleased]: https://github.com/WarHub/wham/compare/v0.6.17...HEAD
+[Unreleased]: https://github.com/WarHub/wham/compare/v0.7.0...HEAD
+[0.7.0]: https://github.com/WarHub/wham/compare/v0.6.17...v0.7.0
 [0.6.17]: https://github.com/WarHub/wham/compare/v0.3.0...v0.6.17
