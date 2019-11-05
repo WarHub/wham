@@ -11,13 +11,14 @@ variables:
 
 steps:
 - task: UseDotNet@2
-  displayName: 'Use .NET Core SDK v2.2.300'
+  displayName: 'Install .NET Core SDK 3.0'
   inputs:
-    version: '2.2.300'
+    version: '3.0.100'
 
-- script: |
-    dotnet tool install --tool-path . nbgv --version 3.0.26
-    .\nbgv cloud -p src
+- script: dotnet tool restore
+  displayName: Restore dotnet tools
+
+- script: dotnet nbgv cloud
   displayName: Set build number
   condition: and(succeeded(), ne(variables['system.pullrequest.isfork'], true))
 
@@ -28,7 +29,7 @@ steps:
   displayName: Restore NuGet packages
   inputs:
     command: restore
-    arguments: -v m
+    verbosityRestore: Minimal
 
 - task: DotNetCoreCLI@2
   displayName: Build solution
