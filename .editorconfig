@@ -197,22 +197,11 @@ dotnet_diagnostic.CA1710.severity = none
 # CA2007: Consider calling ConfigureAwait on the awaited task
 dotnet_diagnostic.CA2007.severity = silent
 
-# temporary diagnostic blocks
-
-# CA1806: Do not ignore method results
-#dotnet_diagnostic.CA1806.severity = none
-
-# CA1031: Do not catch general exception types
-dotnet_diagnostic.CA1031.severity = none
-
-# CA1033: Interface methods should be callable by child types
-dotnet_diagnostic.CA1033.severity = none
-
 # CA1054: Uri parameters should not be strings
-dotnet_diagnostic.CA1054.severity = none
+dotnet_diagnostic.CA1054.severity = silent
 
 # CA1056: Uri properties should not be strings
-dotnet_diagnostic.CA1056.severity = none
+dotnet_diagnostic.CA1056.severity = silent
 
 # CA1062: Validate arguments of public methods
-dotnet_diagnostic.CA1062.severity = none
+dotnet_diagnostic.CA1062.severity = silent

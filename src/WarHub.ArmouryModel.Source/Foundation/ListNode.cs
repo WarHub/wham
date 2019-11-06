@@ -52,12 +52,14 @@ namespace WarHub.ArmouryModel.Source
 
         public abstract ListNode<TChild> WithNodes(NodeList<TChild> nodes);
 
-        protected internal override int ChildrenCount => NodeList.Count;
-
-        protected internal override SourceNode GetChild(int index) => NodeList[index];
+        public IEnumerator<TChild> GetEnumerator() => NodeList.GetEnumerator();
 
         IEnumerator<TChild> IEnumerable<TChild>.GetEnumerator() => NodeList.GetEnumerator();
 
         IEnumerator IEnumerable.GetEnumerator() => NodeList.GetEnumerator();
+
+        protected internal override int ChildrenCount => NodeList.Count;
+
+        protected internal override SourceNode GetChild(int index) => NodeList[index];
     }
 }
