@@ -22,7 +22,7 @@ namespace WarHub.ArmouryModel.Source.XmlFormat
             return
                 self.Version != null
                 && self.Version != self.Element.Info().CurrentVersion
-                && Resources.XslMigrations.TryGetValue(self.Element, out var migrations)
+                && XmlResources.XslMigrations.TryGetValue(self.Element, out var migrations)
                 ? migrations.Where(x => x.Version > self.Version).ToImmutableList()
                 : ImmutableList<VersionedElementInfo>.Empty;
         }
@@ -67,6 +67,26 @@ namespace WarHub.ArmouryModel.Source.XmlFormat
         public static bool operator !=(VersionedElementInfo left, VersionedElementInfo right)
         {
             return !(left == right);
+        }
+
+        public static bool operator <(VersionedElementInfo left, VersionedElementInfo right)
+        {
+            return left.CompareTo(right) < 0;
+        }
+
+        public static bool operator <=(VersionedElementInfo left, VersionedElementInfo right)
+        {
+            return left.CompareTo(right) <= 0;
+        }
+
+        public static bool operator >(VersionedElementInfo left, VersionedElementInfo right)
+        {
+            return left.CompareTo(right) > 0;
+        }
+
+        public static bool operator >=(VersionedElementInfo left, VersionedElementInfo right)
+        {
+            return left.CompareTo(right) >= 0;
         }
     }
 }

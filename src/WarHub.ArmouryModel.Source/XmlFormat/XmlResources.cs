@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace WarHub.ArmouryModel.Source.XmlFormat
 {
-    public static class Resources
+    public static class XmlResources
     {
         private const string XsdResourceFormat = ThisAssembly.RootNamespace + ".DataFormat.xml.schema.latest.{0}.xsd";
         private const string XslTransformResourceFormat = ThisAssembly.RootNamespace + ".DataFormat.xml.transform.{0}_{1}.xsl";
@@ -45,6 +45,6 @@ namespace WarHub.ArmouryModel.Source.XmlFormat
         }
 
         private static Stream OpenResource(string name)
-            => typeof(Resources).Assembly.GetManifestResourceStream(name);
+            => typeof(XmlResources).Assembly.GetManifestResourceStream(name);
     }
 }

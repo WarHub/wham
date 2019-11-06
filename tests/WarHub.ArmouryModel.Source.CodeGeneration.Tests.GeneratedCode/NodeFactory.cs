@@ -1,7 +1,7 @@
 ﻿namespace WarHub.ArmouryModel.Source.CodeGeneration.Tests.GeneratedCode
 {
     // public declaration
-    public partial class NodeFactory
+    public static partial class NodeFactory
     {
     }
 }

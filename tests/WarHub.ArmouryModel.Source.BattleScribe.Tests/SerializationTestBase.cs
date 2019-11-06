@@ -17,7 +17,7 @@ namespace WarHub.ArmouryModel.Source.BattleScribe.Tests
             public const string RosterFilename = "Wham Demo Test Roster.ros";
         }
 
-        public class XmlDataFixture : IDisposable
+        public sealed class XmlDataFixture : IDisposable
         {
             public XmlDataFixture()
             {

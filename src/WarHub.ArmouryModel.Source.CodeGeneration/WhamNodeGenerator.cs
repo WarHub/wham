@@ -20,7 +20,9 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                 defaultSeverity: DiagnosticSeverity.Error,
                 isEnabledByDefault: true);
 
+#pragma warning disable CA1801 // Unused parameter.
         public WhamNodeGenerator(AttributeData attributeData)
+#pragma warning restore CA1801 // Unused parameter.
         {
         }
 

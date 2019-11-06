@@ -65,7 +65,7 @@ namespace WarHub.ArmouryModel.Source.Tests.XmlFormat
         public static IEnumerable<object[]> XslMigrationVersionData()
         {
             return
-                from perElementMigrations in Resources.XslMigrations
+                from perElementMigrations in XmlResources.XslMigrations
                 from migration in perElementMigrations.Value
                 select new object[] { migration };
         }

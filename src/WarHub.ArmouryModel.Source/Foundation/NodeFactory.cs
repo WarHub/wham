@@ -5,7 +5,7 @@ using WarHub.ArmouryModel.Source.XmlFormat;
 
 namespace WarHub.ArmouryModel.Source
 {
-    public partial class NodeFactory
+    public static partial class NodeFactory
     {
         private static class Defaults
         {

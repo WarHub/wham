@@ -11,7 +11,7 @@ namespace WarHub.ArmouryModel.Source.BattleScribe
     /// Caches namespaces and serializers required for serialization and deserialization,
     /// and provides methods for performing those operations in strongly typed fashion.
     /// </summary>
-    internal class BattleScribeXmlSerializer
+    public sealed class BattleScribeXmlSerializer
     {
         private static Lazy<BattleScribeXmlSerializer> LazyInstance { get; }
             = new Lazy<BattleScribeXmlSerializer>();

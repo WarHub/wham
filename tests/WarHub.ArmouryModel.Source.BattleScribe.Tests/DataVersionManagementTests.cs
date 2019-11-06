@@ -126,7 +126,7 @@ namespace WarHub.ArmouryModel.Source.BattleScribe.Tests
         public static IEnumerable<object[]> HandledMigrationInputs()
         {
             return
-                from migrations in Resources.XslMigrations
+                from migrations in XmlResources.XslMigrations
                 from migration in migrations.Value
                 select new object[] { migration };
         }

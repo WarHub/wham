@@ -61,27 +61,12 @@ namespace WarHub.ArmouryModel.CliTool
         public static Argument RequireAbsoluteUrl(this Argument argument)
         {
             return argument
-                .WithValidator(result => result.Tokens.Select(UrlIsNotAbsoluteMessage)
-                .FirstOrDefault());
-
-            string UrlIsNotAbsoluteMessage(Token token)
-            {
-                try
-                {
-                    new Uri(token.Value, UriKind.Absolute);
-                }
-                catch (UriFormatException e)
-                {
-                    return $"{argument} has invalid value '{token.Value}'. {e.Message}";
-                }
-#pragma warning disable RCS1075 // Avoid empty catch clause that catches System.Exception.
-                catch (Exception)
-                {
-                    // anything else is of no concern
-                }
-#pragma warning restore RCS1075 // Avoid empty catch clause that catches System.Exception.
-                return null;
-            }
+                .WithValidator(symbol =>
+                    (from token in symbol.Tokens
+                    let value = token.Value
+                    where !Uri.TryCreate(value, UriKind.Absolute, out var _)
+                    select $"Invalid URI '{value}'.")
+                    .FirstOrDefault());
         }
     }
 
