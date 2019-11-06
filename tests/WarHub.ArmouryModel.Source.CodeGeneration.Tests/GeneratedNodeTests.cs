@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Globalization;
 using System.Linq;
 using FluentAssertions;
 using MoreLinq;
@@ -246,7 +247,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration.Tests
 
             void AssertChild(KeyValuePair<int, ChildInfo> pair)
             {
-                Assert.Equal(pair.Key.ToString(), pair.Value.Name);
+                Assert.Equal(pair.Key.ToString("D", CultureInfo.InvariantCulture), pair.Value.Name);
                 Assert.Same(list[pair.Key], pair.Value.Node);
             }
         }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Immutable;
+using System.Globalization;
 using System.Text.RegularExpressions;
 
 namespace WarHub.ArmouryModel.Source.XmlFormat
@@ -61,8 +62,8 @@ namespace WarHub.ArmouryModel.Source.XmlFormat
             {
                 throw new FormatException("Invalid BattleScribe data format");
             }
-            var major = int.Parse(match.Groups[1].Value);
-            var minor = int.Parse(match.Groups[2].Value);
+            var major = int.Parse(match.Groups[1].Value, CultureInfo.InvariantCulture);
+            var minor = int.Parse(match.Groups[2].Value, CultureInfo.InvariantCulture);
             var suffix = match.Groups[3].Value;
             return Create(major, minor, suffix);
         }

@@ -82,7 +82,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
 
         private static string StripSuffix(this string text, string suffix)
         {
-            return text.EndsWith(suffix) ? text.Substring(0, text.Length - suffix.Length) : text;
+            return text.EndsWith(suffix, StringComparison.Ordinal) ? text.Substring(0, text.Length - suffix.Length) : text;
         }
 
         public static QualifiedNameSyntax ToNestedBuilderType(this NameSyntax type)

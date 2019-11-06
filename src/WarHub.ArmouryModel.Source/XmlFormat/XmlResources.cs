@@ -1,4 +1,5 @@
 ﻿using System.Collections.Immutable;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 
@@ -27,12 +28,13 @@ namespace WarHub.ArmouryModel.Source.XmlFormat
 
         private static string GetMigrationResourcePath(this VersionedElementInfo elementInfo) =>
             string.Format(
+                CultureInfo.InvariantCulture,
                 XslTransformResourceFormat,
                 elementInfo.Element,
                 elementInfo.Version.FilepathString);
 
         private static string GetXsdResourcePath(this RootElement rootElement) =>
-            string.Format(XsdResourceFormat, rootElement);
+            string.Format(CultureInfo.InvariantCulture, XsdResourceFormat, rootElement);
 
         public static Stream OpenXsdStream(this RootElement rootElement)
         {
