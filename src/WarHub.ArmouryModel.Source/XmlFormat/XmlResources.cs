@@ -11,17 +11,17 @@ namespace WarHub.ArmouryModel.Source.XmlFormat
 
         private static readonly ImmutableArray<BattleScribeVersion> catAndGstMigrations =
             ImmutableArray.Create(
-                BattleScribeVersion.V1_15,
-                BattleScribeVersion.V2_00,
-                BattleScribeVersion.V2_01,
-                BattleScribeVersion.V2_02,
-                BattleScribeVersion.V2_03);
+                BattleScribeVersion.V1x15,
+                BattleScribeVersion.V2x00,
+                BattleScribeVersion.V2x01,
+                BattleScribeVersion.V2x02,
+                BattleScribeVersion.V2x03);
 
         public static ImmutableDictionary<RootElement, ImmutableSortedSet<VersionedElementInfo>> XslMigrations { get; }
             = (from version in catAndGstMigrations
                from element in new[] { RootElement.GameSystem, RootElement.Catalogue }
                select new VersionedElementInfo(element, version))
-            .Append(new VersionedElementInfo(RootElement.DataIndex, BattleScribeVersion.V2_02))
+            .Append(new VersionedElementInfo(RootElement.DataIndex, BattleScribeVersion.V2x02))
             .GroupBy(x => x.Element)
             .ToImmutableDictionary(x => x.Key, x => x.ToImmutableSortedSet());
 

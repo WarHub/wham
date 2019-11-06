@@ -33,7 +33,7 @@ namespace WarHub.ArmouryModel.Source.XmlFormat
                     case RootElement.GameSystem:
                     case RootElement.Roster:
                     case RootElement.DataIndex:
-                        return BattleScribeVersion.V2_03;
+                        return BattleScribeVersion.V2x03;
                     default:
                         return null;
                 }
