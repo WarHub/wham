@@ -12,7 +12,7 @@
         {
         }
 
-        public void CallBuilder()
+        public static void CallBuilder()
         {
             _ = new Builder
             {

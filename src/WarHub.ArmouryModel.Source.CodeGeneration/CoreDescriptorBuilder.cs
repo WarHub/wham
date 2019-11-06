@@ -33,7 +33,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
         private CSharpCompilation Compilation { get; }
         private ClassDeclarationSyntax TypeDeclaration { get; }
         private CancellationToken CancellationToken { get; }
-        public INamedTypeSymbol ImmutableArraySymbol => immutableArraySymbolCache.Symbol;
+        public static INamedTypeSymbol ImmutableArraySymbol => immutableArraySymbolCache.Symbol;
         public INamedTypeSymbol TypeSymbol { get; }
 
         public CoreDescriptor CreateDescriptor()
@@ -101,7 +101,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
             return xmlAttributes.Select(att => SyntaxFactory.AttributeList().AddAttributes(att));
         }
 
-        private CoreDescriptor.Entry CreateRecordEntry(IPropertySymbol symbol, PropertyDeclarationSyntax syntax)
+        private static CoreDescriptor.Entry CreateRecordEntry(IPropertySymbol symbol, PropertyDeclarationSyntax syntax)
         {
             var typeString = symbol.Type.ToDisplayString();
             var typeSyntax = SyntaxFactory.ParseTypeName(typeString);

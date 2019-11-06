@@ -193,7 +193,7 @@ namespace WarHub.ArmouryModel.CliTool.Commands
                 datafile.WriteXmlFile);
         }
 
-        private DataIndexNode CreateIndex(IWorkspace workspace, Options options)
+        private static DataIndexNode CreateIndex(IWorkspace workspace, Options options)
         {
             var dataIndex = workspace.CreateDataIndex(options.RepoName, options.Url?.AbsoluteUri, x => x.GetXmlZippedFilename());
             dataIndex = options.UrlOnlyIndex ? dataIndex.WithDataIndexEntries() : dataIndex;

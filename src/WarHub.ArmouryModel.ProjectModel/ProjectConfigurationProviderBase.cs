@@ -6,8 +6,6 @@ namespace WarHub.ArmouryModel.ProjectModel
 {
     public abstract class ProjectConfigurationProviderBase : IProjectConfigurationProvider
     {
-        public string CurrentToolsetVersion => ProjectToolset.Version;
-
         public ProjectConfigurationInfo Create(string path)
         {
             return CreateCore(path);
@@ -53,7 +51,7 @@ namespace WarHub.ArmouryModel.ProjectModel
             return new ProjectConfigurationInfo(filepath, config);
         }
 
-        protected string CreateDefaultFilename(string directory)
+        protected static string CreateDefaultFilename(string directory)
         {
             var dir = new DirectoryInfo(directory);
             var folderName = dir.Parent != null ? dir.Name : "project";
@@ -64,7 +62,7 @@ namespace WarHub.ArmouryModel.ProjectModel
         protected virtual ProjectConfiguration CreateDefaultCore(string directory)
         {
             return new ProjectConfiguration(
-                CurrentToolsetVersion,
+                ProjectToolset.Version,
                 DefaultDirectoryReferences,
                 ProjectConfiguration.DefaultOutputPath,
                 ProviderType);
@@ -77,7 +75,7 @@ namespace WarHub.ArmouryModel.ProjectModel
         protected virtual ProjectConfiguration SanitizeConfiguration(ProjectConfiguration raw)
         {
             return raw.Update(
-                raw.ToolsetVersion ?? CurrentToolsetVersion,
+                raw.ToolsetVersion ?? ProjectToolset.Version,
                 raw.SourceDirectories.IsDefaultOrEmpty ? DefaultDirectoryReferences : raw.SourceDirectories,
                 string.IsNullOrWhiteSpace(raw.OutputPath) ? ProjectConfiguration.DefaultOutputPath : raw.OutputPath,
                 raw.FormatProvider);
