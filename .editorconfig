@@ -231,6 +231,3 @@ dotnet_diagnostic.CA1815.severity = none
 
 # CA1822: Mark members as static
 dotnet_diagnostic.CA1822.severity = none
-
-# CA2000: Dispose objects before losing scope
-dotnet_diagnostic.CA2000.severity = none

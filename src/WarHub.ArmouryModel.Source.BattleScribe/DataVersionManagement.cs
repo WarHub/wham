@@ -37,7 +37,7 @@ namespace WarHub.ArmouryModel.Source.BattleScribe
         {
             var info = ReadRootElementInfo(inputReader);
             var migrations = info.AvailableMigrations();
-            var migrated =
+            var migratedReader =
                 migrations.Aggregate(
                     inputReader,
                     (previous, migration) =>
@@ -51,14 +51,15 @@ namespace WarHub.ArmouryModel.Source.BattleScribe
                         }
                     });
             var migratedVersionInfo = migrations.Count > 0 ? migrations.Last() : info;
-            return (migrated, migratedVersionInfo);
+            return (migratedReader, migratedVersionInfo);
         }
 
         public static (XmlReader reader, VersionedElementInfo info) ReadMigrated(Stream input)
         {
-            var settings = new XmlReaderSettings() { CloseInput = false };
-            var inputReader = XmlReader.Create(input, settings);
-            return ReadMigrated(inputReader);
+#pragma warning disable CA2000 // Dispose objects before losing scope
+            // created reader will be either returned or disposed of in this method:
+            return ReadMigrated(XmlReader.Create(input));
+#pragma warning restore CA2000 // Dispose objects before losing scope
         }
 
         public static VersionedElementInfo WriteMigrated(Stream input, Stream output)
@@ -82,19 +83,18 @@ namespace WarHub.ArmouryModel.Source.BattleScribe
 
             XslCompiledTransform CreateXslt()
             {
-                using (var migrationXlsStream = migrationInfo.OpenMigrationXslStream())
-                {
-                    var transform = new XslCompiledTransform();
-                    transform.Load(XmlReader.Create(migrationXlsStream));
-                    return transform;
-                }
+                using var migrationXlsStream = migrationInfo.OpenMigrationXslStream();
+                var stylesheet = XmlReader.Create(migrationXlsStream);
+                var transform = new XslCompiledTransform();
+                transform.Load(stylesheet);
+                return transform;
             }
         }
 
         public static void ApplyMigration(VersionedElementInfo migrationInfo, Stream input, Stream output)
         {
-            var settings = new XmlReaderSettings() { CloseInput = false };
-            ApplyMigration(migrationInfo, XmlReader.Create(input, settings), output);
+            using var reader = XmlReader.Create(input);
+            ApplyMigration(migrationInfo, reader, output);
         }
 
         public static SourceNode DeserializeMigrated(Stream input)
