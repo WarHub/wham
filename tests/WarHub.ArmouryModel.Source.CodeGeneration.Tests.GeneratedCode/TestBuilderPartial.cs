@@ -6,11 +6,13 @@
     {
         public string Name { get; }
 
+#pragma warning disable CA1034 // Nested types should not be visible
         public partial class Builder
+#pragma warning restore CA1034 // Nested types should not be visible
         {
         }
 
-        public void CallBuilder()
+        public static void CallBuilder()
         {
             _ = new Builder
             {

@@ -34,7 +34,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                     GenerateFseMembers());
         }
 
-        private BaseListSyntax GenerateFseBaseList()
+        private static BaseListSyntax GenerateFseBaseList()
         {
             return BaseList()
                 .AddTypes(

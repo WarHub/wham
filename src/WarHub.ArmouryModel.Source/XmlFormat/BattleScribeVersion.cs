@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Immutable;
+using System.Globalization;
 using System.Text.RegularExpressions;
 
 namespace WarHub.ArmouryModel.Source.XmlFormat
@@ -16,23 +17,23 @@ namespace WarHub.ArmouryModel.Source.XmlFormat
         /// <summary>
         /// BattleScribe v1.13b is the oldest "compatible"-ish format.
         /// </summary>
-        public static BattleScribeVersion V1_13b { get; } = Create(1, 13, "b");
-        public static BattleScribeVersion V1_15b { get; } = Create(1, 15, "b");
-        public static BattleScribeVersion V1_15 { get; } = Create(1, 15);
-        public static BattleScribeVersion V2_00 { get; } = Create(2, 0);
-        public static BattleScribeVersion V2_01 { get; } = Create(2, 1);
-        public static BattleScribeVersion V2_02 { get; } = Create(2, 2);
-        public static BattleScribeVersion V2_03 { get; } = Create(2, 3);
+        public static BattleScribeVersion V1x13b { get; } = Create(1, 13, "b");
+        public static BattleScribeVersion V1x15b { get; } = Create(1, 15, "b");
+        public static BattleScribeVersion V1x15 { get; } = Create(1, 15);
+        public static BattleScribeVersion V2x00 { get; } = Create(2, 0);
+        public static BattleScribeVersion V2x01 { get; } = Create(2, 1);
+        public static BattleScribeVersion V2x02 { get; } = Create(2, 2);
+        public static BattleScribeVersion V2x03 { get; } = Create(2, 3);
 
         public static ImmutableSortedSet<BattleScribeVersion> WellKnownVersions { get; }
             = ImmutableSortedSet.Create(
-                V1_13b,
-                V1_15b,
-                V1_15,
-                V2_00,
-                V2_01,
-                V2_02,
-                V2_03);
+                V1x13b,
+                V1x15b,
+                V1x15,
+                V2x00,
+                V2x01,
+                V2x02,
+                V2x03);
 
         public int Major { get; }
 
@@ -61,8 +62,8 @@ namespace WarHub.ArmouryModel.Source.XmlFormat
             {
                 throw new FormatException("Invalid BattleScribe data format");
             }
-            var major = int.Parse(match.Groups[1].Value);
-            var minor = int.Parse(match.Groups[2].Value);
+            var major = int.Parse(match.Groups[1].Value, CultureInfo.InvariantCulture);
+            var minor = int.Parse(match.Groups[2].Value, CultureInfo.InvariantCulture);
             var suffix = match.Groups[3].Value;
             return Create(major, minor, suffix);
         }

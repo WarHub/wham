@@ -94,7 +94,7 @@ namespace WarHub.ArmouryModel.Workspaces.Gitree
             }
         }
 
-        private string GetFilename(GitreeNode nodeFolder)
+        private static string GetFilename(GitreeNode nodeFolder)
         {
             var filenameBase = nodeFolder.IsLeaf ? nodeFolder.Datablob.Meta.Identifier : nodeFolder.WrappedNode.Kind.ToString();
             return (filenameBase + Extension).FilenameSanitize();

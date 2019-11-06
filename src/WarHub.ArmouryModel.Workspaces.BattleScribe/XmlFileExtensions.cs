@@ -123,19 +123,14 @@ namespace WarHub.ArmouryModel.Workspaces.BattleScribe
 
         public static IDatafileInfo GetDatafileInfo(this FileInfo file)
         {
-            switch (file.GetXmlDocumentKind())
+            return (file.GetXmlDocumentKind()) switch
             {
-                case XmlDocumentKind.Gamesystem:
-                    return new LazyWeakXmlDatafileInfo<GamesystemNode>(file.FullName, SourceKind.Gamesystem);
-                case XmlDocumentKind.Catalogue:
-                    return new LazyWeakXmlDatafileInfo<CatalogueNode>(file.FullName, SourceKind.Catalogue);
-                case XmlDocumentKind.Roster:
-                    return new LazyWeakXmlDatafileInfo<RosterNode>(file.FullName, SourceKind.Roster);
-                case XmlDocumentKind.DataIndex:
-                    return new LazyWeakXmlDatafileInfo<DataIndexNode>(file.FullName, SourceKind.DataIndex);
-                default:
-                    return new UnknownTypeDatafileInfo(file.FullName);
-            }
+                XmlDocumentKind.Gamesystem => new LazyWeakXmlDatafileInfo<GamesystemNode>(file.FullName, SourceKind.Gamesystem),
+                XmlDocumentKind.Catalogue => new LazyWeakXmlDatafileInfo<CatalogueNode>(file.FullName, SourceKind.Catalogue),
+                XmlDocumentKind.Roster => new LazyWeakXmlDatafileInfo<RosterNode>(file.FullName, SourceKind.Roster),
+                XmlDocumentKind.DataIndex => new LazyWeakXmlDatafileInfo<DataIndexNode>(file.FullName, SourceKind.DataIndex),
+                _ => new UnknownTypeDatafileInfo(file.FullName),
+            };
         }
 
         /// <summary>

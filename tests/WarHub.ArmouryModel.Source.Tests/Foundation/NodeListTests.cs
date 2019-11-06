@@ -1,4 +1,5 @@
-﻿using System.Collections.Immutable;
+﻿using System;
+using System.Collections.Immutable;
 using System.Linq;
 using Xunit;
 
@@ -16,7 +17,7 @@ namespace WarHub.ArmouryModel.Source.Tests.Foundation
         [Fact]
         public void CreateFromParams_WithEmpty_ReturnsDefault()
         {
-            var result = NodeList.Create(new SourceNode[0]);
+            var result = NodeList.Create(Array.Empty<SourceNode>());
             Assert.Equal(default, result);
         }
 

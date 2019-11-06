@@ -104,15 +104,14 @@ namespace WarHub.ArmouryModel.Source.BattleScribe.Tests
             RootElement rootElement,
             ValidationEventHandler validationEventHandler)
         {
-            using (var xsdStream = rootElement.OpenXsdStream())
-            {
-                var schema = XmlSchema.Read(xsdStream, validationEventHandler);
-                var set = new XmlSchemaSet();
-                set.ValidationEventHandler += validationEventHandler;
-                set.Add(schema);
-                set.Compile();
-                return set;
-            }
+            using var xsdStream = rootElement.OpenXsdStream();
+            using var reader = XmlReader.Create(xsdStream);
+            var schema = XmlSchema.Read(reader, validationEventHandler);
+            var set = new XmlSchemaSet();
+            set.ValidationEventHandler += validationEventHandler;
+            set.Add(schema);
+            set.Compile();
+            return set;
         }
     }
 }

@@ -33,7 +33,7 @@ namespace WarHub.ArmouryModel.Workspaces.Gitree
             return item;
         }
 
-        private (DatablobNode node, SourceNode wrappedNode) ReadDocumentNodes(GitreeStorageFileNode document)
+        private static (DatablobNode node, SourceNode wrappedNode) ReadDocumentNodes(GitreeStorageFileNode document)
         {
             var node = document.GetRoot();
             var wrappedNode = node

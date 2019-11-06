@@ -4,7 +4,7 @@ using WarHub.ArmouryModel.Source;
 namespace WarHub.ArmouryModel.ProjectModel
 {
     [Record]
-    public partial class DatafileInfo<TData> : IDatafileInfo<TData>
+    public sealed partial class DatafileInfo<TData> : IDatafileInfo<TData>
         where TData : SourceNode
     {
         // TODO internal ctor

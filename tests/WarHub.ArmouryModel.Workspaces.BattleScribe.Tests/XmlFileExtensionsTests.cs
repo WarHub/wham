@@ -16,7 +16,8 @@ namespace WarHub.ArmouryModel.Workspaces.BattleScribe.Tests
         public void ReadExistingRepoDistribution()
         {
             const string RepoFilename = "Files/repo.bsr";
-            var repo = File.OpenRead(RepoFilename).ReadRepoDistribution();
+            using var fileStream = File.OpenRead(RepoFilename);
+            var repo = fileStream.ReadRepoDistribution();
             Assert.Equal(DataIndexFilename, repo.Index.Filepath);
             Assert.Equal(
                 "A_Song_Of_Ice_and_Fire_Miniatures_Game.gst",

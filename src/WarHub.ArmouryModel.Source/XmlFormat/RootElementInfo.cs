@@ -4,7 +4,7 @@ using System.Collections.Immutable;
 
 namespace WarHub.ArmouryModel.Source.XmlFormat
 {
-    public readonly struct RootElementInfo
+    public readonly struct RootElementInfo : IEquatable<RootElementInfo>
     {
         public RootElementInfo(RootElement element)
         {
@@ -33,7 +33,7 @@ namespace WarHub.ArmouryModel.Source.XmlFormat
                     case RootElement.GameSystem:
                     case RootElement.Roster:
                     case RootElement.DataIndex:
-                        return BattleScribeVersion.V2_03;
+                        return BattleScribeVersion.V2x03;
                     default:
                         return null;
                 }
@@ -48,6 +48,31 @@ namespace WarHub.ArmouryModel.Source.XmlFormat
                 RootElement.DataIndex);
 
         public override string ToString() => Element.ToString();
+
+        public override bool Equals(object obj)
+        {
+            return obj is RootElementInfo info && Equals(info);
+        }
+
+        public bool Equals(RootElementInfo other)
+        {
+            return Element == other.Element;
+        }
+
+        public override int GetHashCode()
+        {
+            return -703426257 + Element.GetHashCode();
+        }
+
+        public static bool operator ==(RootElementInfo left, RootElementInfo right)
+        {
+            return left.Equals(right);
+        }
+
+        public static bool operator !=(RootElementInfo left, RootElementInfo right)
+        {
+            return !(left == right);
+        }
 
         internal static ImmutableDictionary<RootElement, SourceKind> SourceKindFromElement { get; }
             = new Dictionary<RootElement, SourceKind>

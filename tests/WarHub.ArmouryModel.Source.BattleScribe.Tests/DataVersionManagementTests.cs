@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -96,6 +97,7 @@ namespace WarHub.ArmouryModel.Source.BattleScribe.Tests
         private static Stream CreateEmptyElementStream(VersionedElementInfo elementInfo)
         {
             var xmlContent = string.Format(
+                CultureInfo.InvariantCulture,
                 "<{0} {1}='{2}' xmlns='{3}' />",
                 elementInfo.Element.Info().XmlElementName,
                 DataVersionManagement.BattleScribeVersionAttributeName,
@@ -126,7 +128,7 @@ namespace WarHub.ArmouryModel.Source.BattleScribe.Tests
         public static IEnumerable<object[]> HandledMigrationInputs()
         {
             return
-                from migrations in Resources.XslMigrations
+                from migrations in XmlResources.XslMigrations
                 from migration in migrations.Value
                 select new object[] { migration };
         }

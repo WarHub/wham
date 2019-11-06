@@ -24,7 +24,7 @@ namespace WarHub.ArmouryModel.Source.Tests.XmlFormat
         [InlineData(RootElement.DataIndex)]
         public void AvailableMigrations_returns_migration_for_previous_migratable_version(RootElement rootElement)
         {
-            var previous = BattleScribeVersion.V2_01;
+            var previous = BattleScribeVersion.V2x01;
             var element = new VersionedElementInfo(rootElement, previous);
 
             var migrations = element.AvailableMigrations();
@@ -63,8 +63,8 @@ namespace WarHub.ArmouryModel.Source.Tests.XmlFormat
                 (from root in RootElementInfo.AllElements.Except(new[] { RootElement.Roster })
                  from version in new[] { null, root.Info().CurrentVersion }
                  select new VersionedElementInfo(root, version))
-                .Append(new VersionedElementInfo(RootElement.Roster, BattleScribeVersion.V1_15b))
-                .Append(new VersionedElementInfo((RootElement)1000, BattleScribeVersion.V1_15))
+                .Append(new VersionedElementInfo(RootElement.Roster, BattleScribeVersion.V1x15b))
+                .Append(new VersionedElementInfo((RootElement)1000, BattleScribeVersion.V1x15))
                 .Select(x => new object[] { x });
         }
 

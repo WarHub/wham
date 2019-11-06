@@ -78,6 +78,11 @@ namespace WarHub.ArmouryModel.Source
         {
             return this.Concat(items).ToNodeList();
         }
+
+        public NodeList<SourceNode> ToNodeList()
+        {
+            return new NodeList<SourceNode>(Container);
+        }
     }
 
     internal interface IContainerProvider<out TNode> where TNode : SourceNode

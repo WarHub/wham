@@ -88,6 +88,6 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                             IdentifierName(Names.DebuggerBrowsableStateNever))));
         });
 
-        protected AttributeSyntax DebuggerBrowsableNeverAttribute => DebuggerBrowsableNeverAttributeLazy.Value;
+        protected static AttributeSyntax DebuggerBrowsableNeverAttribute => DebuggerBrowsableNeverAttributeLazy.Value;
     }
 }

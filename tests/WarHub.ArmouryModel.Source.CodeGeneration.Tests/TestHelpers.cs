@@ -5,7 +5,7 @@ using Xunit;
 
 namespace WarHub.ArmouryModel.Source.CodeGeneration.Tests
 {
-    public static class TestHelpers
+    internal static class TestHelpers
     {
         public static RootContainerNode EmptyRootNode
             => new RootContainerCore.Builder().ToImmutable().ToNode();
