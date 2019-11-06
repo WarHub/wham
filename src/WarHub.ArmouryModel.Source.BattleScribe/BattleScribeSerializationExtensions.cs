@@ -1,4 +1,7 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
+using System.Xml;
+using System.Xml.Serialization;
 
 namespace WarHub.ArmouryModel.Source.BattleScribe
 {
@@ -12,23 +15,26 @@ namespace WarHub.ArmouryModel.Source.BattleScribe
 
         public static GamesystemNode DeserializeGamesystem(this Stream stream)
         {
-            return Serializer.DeserializeGamesystem(x => x.Deserialize(stream));
+            return Serializer.DeserializeGamesystem(DeserializeStreamFunc(stream));
         }
 
         public static CatalogueNode DeserializeCatalogue(this Stream stream)
         {
-            return Serializer.DeserializeCatalogue(x => x.Deserialize(stream));
+            return Serializer.DeserializeCatalogue(DeserializeStreamFunc(stream));
         }
 
         public static RosterNode DeserializeRoster(this Stream stream)
         {
-            return Serializer.DeserializeRoster(x => x.Deserialize(stream));
+            return Serializer.DeserializeRoster(DeserializeStreamFunc(stream));
         }
 
         public static DataIndexNode DeserializeDataIndex(this Stream stream)
         {
-            return Serializer.DeserializeDataIndex(x => x.Deserialize(stream));
+            return Serializer.DeserializeDataIndex(DeserializeStreamFunc(stream));
         }
+
+        private static Func<XmlSerializer, object> DeserializeStreamFunc(Stream stream)
+            => x => x.Deserialize(XmlReader.Create(stream));
 
         public static SourceNode DeserializeSourceNodeAuto(
             this Stream stream,

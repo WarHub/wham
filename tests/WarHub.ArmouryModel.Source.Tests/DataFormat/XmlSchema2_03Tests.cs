@@ -1,4 +1,5 @@
 ﻿using System.IO;
+using System.Xml;
 using System.Xml.Serialization;
 using FluentAssertions;
 using WarHub.ArmouryModel.Source.BattleScribe;
@@ -17,7 +18,7 @@ namespace WarHub.ArmouryModel.Source.Tests.DataFormat
         public void ModifierKind_correctly_parses_category_kinds(string kindString, ModifierKind kindValue)
         {
             var xml = $"<modifier type=\"{kindString}\" />";
-            using var reader = new StringReader(xml);
+            using var reader = XmlReader.Create(new StringReader(xml));
             var modifier = (ModifierCore.Builder)new XmlSerializer(typeof(ModifierCore.Builder)).Deserialize(reader);
 
             modifier.Type.Should().Be(kindValue);

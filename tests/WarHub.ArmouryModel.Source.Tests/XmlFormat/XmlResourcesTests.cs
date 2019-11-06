@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Xml;
 using System.Xml.Schema;
@@ -8,7 +9,7 @@ using Xunit;
 
 namespace WarHub.ArmouryModel.Source.Tests.XmlFormat
 {
-    public class ResourcesTests
+    public class XmlResourcesTests
     {
         [Theory]
         [MemberData(nameof(XslMigrationVersionData))]
@@ -81,15 +82,14 @@ namespace WarHub.ArmouryModel.Source.Tests.XmlFormat
             RootElement rootElement,
             ValidationEventHandler validationEventHandler)
         {
-            using (var xsdStream = rootElement.OpenXsdStream())
-            {
-                var schema = XmlSchema.Read(xsdStream, validationEventHandler);
-                var set = new XmlSchemaSet();
-                set.ValidationEventHandler += validationEventHandler;
-                set.Add(schema);
-                set.Compile();
-                return set.Schemas().Cast<XmlSchema>().Single();
-            }
+            using var xsdStream = rootElement.OpenXsdStream();
+            using var reader = XmlReader.Create(xsdStream);
+            var schema = XmlSchema.Read(reader, validationEventHandler);
+            var set = new XmlSchemaSet();
+            set.ValidationEventHandler += validationEventHandler;
+            set.Add(schema);
+            set.Compile();
+            return set.Schemas().Cast<XmlSchema>().Single();
         }
     }
 }

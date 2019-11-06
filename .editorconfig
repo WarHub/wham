@@ -234,12 +234,3 @@ dotnet_diagnostic.CA1822.severity = none
 
 # CA2000: Dispose objects before losing scope
 dotnet_diagnostic.CA2000.severity = none
-
-# CA5369: Use XmlReader For Deserialize
-dotnet_diagnostic.CA5369.severity = none
-
-# CA5371: Use XmlReader For Schema Read
-dotnet_diagnostic.CA5371.severity = none
-
-# CA1825: Avoid zero-length array allocations.
-dotnet_diagnostic.CA1825.severity = none
