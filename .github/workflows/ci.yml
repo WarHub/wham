@@ -12,8 +12,8 @@ jobs:
     steps:
     - uses: actions/checkout@v1
     - uses: actions/setup-dotnet@v1
-      with:
-        dotnet-version: '2.2.301'
+    - name: Dotnet tools restore
+      run: dotnet tool restore
     - name: NuGet restore
       run: dotnet restore -v m
     - name: Build
@@ -25,5 +25,5 @@ jobs:
     - name: Publish NuGet artifacts
       uses: actions/upload-artifact@v1
       with:
-        name: nugets
+        name: nugets-${{ runner.os }}
         path: bin/Packages/${{ matrix.BuildConfiguration }}
