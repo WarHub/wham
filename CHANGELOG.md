@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+* Renamed `BattleScribeVersion` static well-known values from `V0_00` to `V0x00` ([#86]).
+* Renamed `Resources` to `XmlResources` (`.Source` library) ([#86]).
+
+[#86]: https://github.com/WarHub/wham/pull/86
 
 ## [0.7.0] - 2019-11-05
 
