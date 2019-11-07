@@ -7,11 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+* `NodeList<T>.Slice(int, int)` method to support ranges in C#8 ([#89]).
+
 ### Changed
 * Renamed `BattleScribeVersion` static well-known values from `V0_00` to `V0x00` ([#86]).
 * Renamed `Resources` to `XmlResources` (`.Source` library) ([#86]).
+* Changed `NodeList<T>.GetEnumerator()` and `ListNode<T>.GetEnumerator()`
+  return type to custom enumerator `NodeList<T>.Enumerator` that's optimized
+  for performance ([#89]).
 
 [#86]: https://github.com/WarHub/wham/pull/86
+[#89]: https://github.com/WarHub/wham/pull/89
 
 ## [0.7.0] - 2019-11-05
 
