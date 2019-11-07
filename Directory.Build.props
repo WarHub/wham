@@ -28,11 +28,11 @@
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
     <IncludeSymbols>true</IncludeSymbols>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
-    <EnableSourceLink>true</EnableSourceLink>
   </PropertyGroup>
 
   <PropertyGroup Condition=" $(IsTestingOnlyProject) ">
     <IsPackable>false</IsPackable>
+    <EnableSourceLink>false</EnableSourceLink>
   </PropertyGroup>
 
   <ItemGroup>
