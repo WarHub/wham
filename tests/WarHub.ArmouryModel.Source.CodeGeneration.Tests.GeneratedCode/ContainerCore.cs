@@ -1,7 +1,7 @@
 ﻿using System.Collections.Immutable;
 using System.Xml.Serialization;
 
-namespace WarHub.ArmouryModel.Source.CodeGeneration.Tests.GeneratedCode
+namespace WarHub.ArmouryModel.Source
 {
     [WhamNodeCore]
     [XmlType("container")]

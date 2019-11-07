@@ -2,7 +2,6 @@
 using System.IO;
 using System.Xml;
 using System.Xml.Serialization;
-using WarHub.ArmouryModel.Source.CodeGeneration.Tests.GeneratedCode;
 using Xunit;
 
 namespace WarHub.ArmouryModel.Source.CodeGeneration.Tests

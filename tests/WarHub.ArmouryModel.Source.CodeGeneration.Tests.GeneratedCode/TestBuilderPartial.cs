@@ -1,4 +1,4 @@
-﻿namespace WarHub.ArmouryModel.Source.CodeGeneration.Tests.GeneratedCode
+﻿namespace WarHub.ArmouryModel.Source
 {
     // test to check builder is partial, won't compile otherwise
     [WhamNodeCore]

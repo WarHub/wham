@@ -4,7 +4,6 @@ using System.Globalization;
 using System.Linq;
 using FluentAssertions;
 using MoreLinq;
-using WarHub.ArmouryModel.Source.CodeGeneration.Tests.GeneratedCode;
 using Xunit;
 using static WarHub.ArmouryModel.Source.CodeGeneration.Tests.TestHelpers;
 

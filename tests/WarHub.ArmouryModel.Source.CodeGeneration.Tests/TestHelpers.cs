@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using WarHub.ArmouryModel.Source.CodeGeneration.Tests.GeneratedCode;
 using Xunit;
 
 namespace WarHub.ArmouryModel.Source.CodeGeneration.Tests
