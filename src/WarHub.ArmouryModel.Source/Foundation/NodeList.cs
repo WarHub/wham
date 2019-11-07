@@ -1,95 +1,8 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.Diagnostics;
-using System.Linq;
 
 namespace WarHub.ArmouryModel.Source
 {
-    [DebuggerDisplay("Count = {" + nameof(Count) + "}")]
-    public readonly struct NodeList<TNode> : IReadOnlyList<TNode>, IContainerProvider<TNode>, IEquatable<NodeList<TNode>>
-        where TNode : SourceNode
-    {
-        // TODO a lot of optimizations here
-
-        internal NodeList(IContainer<TNode> container)
-        {
-            Container = container;
-        }
-
-        internal IContainer<TNode> Container { get; }
-
-        public TNode this[int index] => Container.GetNodeSlot(index);
-
-        public int Count => Container?.SlotCount ?? 0;
-
-        IContainer<TNode> IContainerProvider<TNode>.Container => Container;
-
-        public IEnumerator<TNode> GetEnumerator()
-        {
-            var count = Count;
-            for (var i = 0; i < count; i++)
-            {
-                yield return this[i];
-            }
-        }
-
-        public static implicit operator NodeList<SourceNode>(NodeList<TNode> nodeList)
-        {
-            return new NodeList<SourceNode>(nodeList.Container);
-        }
-
-        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
-
-        // equality implementation
-        public bool Equals(NodeList<TNode> other)
-        {
-            return Equals(Container, other.Container);
-        }
-
-        public override bool Equals(object obj)
-        {
-            if (obj is null) return false;
-            return obj is NodeList<TNode> list && Equals(list);
-        }
-
-        public override int GetHashCode()
-        {
-            return Container?.GetHashCode() ?? 0;
-        }
-
-        public static bool operator ==(NodeList<TNode> left, NodeList<TNode> right)
-        {
-            return left.Equals(right);
-        }
-
-        public static bool operator !=(NodeList<TNode> left, NodeList<TNode> right)
-        {
-            return !(left == right);
-        }
-
-        public NodeList<TNode> Add(TNode item)
-        {
-            return this.Append(item).ToNodeList();
-        }
-
-        public NodeList<TNode> AddRange(IEnumerable<TNode> items)
-        {
-            return this.Concat(items).ToNodeList();
-        }
-
-        public NodeList<SourceNode> ToNodeList()
-        {
-            return new NodeList<SourceNode>(Container);
-        }
-    }
-
-    internal interface IContainerProvider<out TNode> where TNode : SourceNode
-    {
-        IContainer<TNode> Container { get; }
-    }
-
     /// <summary>
     /// Contains factory and extension methods for creating <see cref="NodeList{TNode}"/>
     /// </summary>
@@ -111,7 +24,7 @@ namespace WarHub.ArmouryModel.Source
                 return default;
             }
             var nodeArray = nodes.ToImmutableArray();
-            return new NodeList<TNode>(CreateContainerForNodeArray(nodeArray));
+            return CreateContainerForNodeArray(nodeArray).ToNodeList();
         }
 
         /// <summary>
@@ -125,16 +38,16 @@ namespace WarHub.ArmouryModel.Source
         public static NodeList<TNode> Create<TNode>(IEnumerable<TNode> nodes)
             where TNode : SourceNode
         {
-            if (nodes is IContainerProvider<TNode> nodeList)
+            if (nodes is IContainerProvider<TNode> containerProvider)
             {
-                return new NodeList<TNode>(nodeList.Container);
+                return containerProvider.Container.ToNodeList();
             }
             var nodeArray = nodes.ToImmutableArray();
             if (nodeArray.Length == 0)
             {
                 return default;
             }
-            return new NodeList<TNode>(CreateContainerForNodeArray(nodeArray));
+            return CreateContainerForNodeArray(nodeArray).ToNodeList();
         }
 
         /// <summary>
@@ -190,6 +103,10 @@ namespace WarHub.ArmouryModel.Source
             }
             return builder.MoveToImmutable();
         }
+
+        internal static NodeList<TNode> ToNodeList<TNode>(this IContainer<TNode> container)
+            where TNode : SourceNode
+            => new NodeList<TNode>(container);
 
         private static IContainer<TNode> CreateContainerForNodeArray<TNode>(ImmutableArray<TNode> nodes)
             where TNode : SourceNode

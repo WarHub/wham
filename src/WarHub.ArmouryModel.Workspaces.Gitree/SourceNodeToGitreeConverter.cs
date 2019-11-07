@@ -26,12 +26,11 @@ namespace WarHub.ArmouryModel.Workspaces.Gitree
 
         private ImmutableArray<GitreeListNode> CreateLists(SourceNode node)
         {
-            var listFolders = node
+            return node
                 .ChildrenInfos()
                 .Select(CreateListOption)
                 .Values()
                 .ToImmutableArray();
-            return listFolders;
 
             Option<GitreeListNode> CreateListOption(ChildInfo info)
             {
@@ -54,13 +53,12 @@ namespace WarHub.ArmouryModel.Workspaces.Gitree
             var nameCounts = names.Values
                 .Distinct(StringComparer.OrdinalIgnoreCase)
                 .ToDictionary(x => x, _ => 0, StringComparer.OrdinalIgnoreCase);
-            var folders = nodes
+            return nodes
                 .Select(Visit)
                 .Scan(default(GitreeNode), AssignIdentifiers)
                 // skip seed
                 .Skip(1)
                 .ToImmutableArray();
-            return folders;
 
             GitreeNode AssignIdentifiers(GitreeNode prevTreeNode, GitreeNode treeNode)
             {
@@ -76,8 +74,7 @@ namespace WarHub.ArmouryModel.Workspaces.Gitree
             {
                 var name = names[node];
                 var repetitions = nameCounts[name]++;
-                var identifier = repetitions == 0 ? name : $"{name} - {repetitions}";
-                return identifier;
+                return repetitions == 0 ? name : $"{name} - {repetitions}";
             }
         }
 
@@ -89,8 +86,7 @@ namespace WarHub.ArmouryModel.Workspaces.Gitree
         private static string SelectName(SourceNode node)
         {
             var name = node is INameableNode named ? named.Name : node.Kind.ToString();
-            var sanitized = name.FilenameSanitize();
-            return sanitized;
+            return name.FilenameSanitize();
         }
 
         private static DatablobNode BlobWith(SourceNode node)

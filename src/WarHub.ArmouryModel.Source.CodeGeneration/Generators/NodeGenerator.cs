@@ -99,7 +99,8 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                     yield return CreateNotSimpleInitialization(entry);
                 }
             }
-            StatementSyntax CreateNotSimpleInitialization(CoreDescriptor.Entry entry)
+
+            static StatementSyntax CreateNotSimpleInitialization(CoreDescriptor.Entry entry)
             {
                 return
                     CorePropertyIdentifierName
@@ -168,7 +169,8 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                         CorePropertyIdentifierName)
                     .AddAttributeListAttribute(DebuggerBrowsableNeverAttribute);
             }
-            PropertyDeclarationSyntax CreateSimpleProperty(CoreDescriptor.SimpleEntry entry)
+
+            static PropertyDeclarationSyntax CreateSimpleProperty(CoreDescriptor.SimpleEntry entry)
             {
                 return
                     PropertyDeclaration(
@@ -179,7 +181,8 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                         CorePropertyIdentifierName
                         .MemberAccess(entry.IdentifierName));
             }
-            PropertyDeclarationSyntax CreateComplexProperty(CoreDescriptor.ComplexEntry entry)
+
+            static PropertyDeclarationSyntax CreateComplexProperty(CoreDescriptor.ComplexEntry entry)
             {
                 return
                     PropertyDeclaration(
@@ -190,7 +193,8 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                         AccessorDeclaration(SyntaxKind.GetAccessorDeclaration)
                         .WithSemicolonTokenDefault());
             }
-            PropertyDeclarationSyntax CreateCollectionProperty(CoreDescriptor.CollectionEntry entry)
+
+            static PropertyDeclarationSyntax CreateCollectionProperty(CoreDescriptor.CollectionEntry entry)
             {
                 return
                     PropertyDeclaration(
@@ -397,7 +401,8 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                     .AddModifiers(SyntaxKind.PublicKeyword, SyntaxKind.OverrideKeyword)
                     .AddBodyStatements(
                         children.Select(CreateStatement));
-                StatementSyntax CreateStatement(CoreDescriptor.Entry entry)
+
+                static StatementSyntax CreateStatement(CoreDescriptor.Entry entry)
                 {
                     return
                         YieldStatement(
@@ -420,7 +425,8 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                     .AddModifiers(SyntaxKind.PublicKeyword, SyntaxKind.OverrideKeyword)
                     .AddBodyStatements(
                         children.Select(CreateStatement));
-                StatementSyntax CreateStatement(CoreDescriptor.Entry entry)
+
+                static StatementSyntax CreateStatement(CoreDescriptor.Entry entry)
                 {
                     return
                         YieldStatement(
@@ -488,7 +494,8 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                                 .AddArgumentListArguments(
                                     Argument(indexIdentifierName)))));
             }
-            QualifiedNameSyntax CreateIEnumerableOf(TypeSyntax typeParameter)
+
+            static QualifiedNameSyntax CreateIEnumerableOf(TypeSyntax typeParameter)
             {
                 return
                     QualifiedName(

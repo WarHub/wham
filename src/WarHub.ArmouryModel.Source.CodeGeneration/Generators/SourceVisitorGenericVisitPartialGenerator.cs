@@ -35,7 +35,8 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
             yield return CreateVisitMethod(
                 Names.Visit + Descriptor.RawModelName + Names.ListSuffix,
                 Descriptor.GetListNodeTypeIdentifierName());
-            MethodDeclarationSyntax CreateVisitMethod(string methodName, IdentifierNameSyntax type)
+
+            static MethodDeclarationSyntax CreateVisitMethod(string methodName, IdentifierNameSyntax type)
             {
                 return
                     MethodDeclaration(

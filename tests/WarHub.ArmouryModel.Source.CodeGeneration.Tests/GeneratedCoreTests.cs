@@ -1,6 +1,5 @@
 ﻿using System.Collections.Immutable;
 using FluentAssertions;
-using WarHub.ArmouryModel.Source.CodeGeneration.Tests.GeneratedCode;
 using Xunit;
 
 namespace WarHub.ArmouryModel.Source.CodeGeneration.Tests

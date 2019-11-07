@@ -58,7 +58,8 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                     .WithType(
                         Descriptor.GetListNodeTypeIdentifierName());
             }
-            ExpressionSyntax CreateReturnExpression()
+
+            static ExpressionSyntax CreateReturnExpression()
             {
                 return
                     IdentifierName(List)
@@ -220,7 +221,8 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                             EqualsValueClause(
                                 LiteralExpression(SyntaxKind.NullLiteralExpression)));
             }
-            ExpressionSyntax CreateReturnExpression()
+
+            static ExpressionSyntax CreateReturnExpression()
             {
                 return
                     IdentifierName(Nodes)

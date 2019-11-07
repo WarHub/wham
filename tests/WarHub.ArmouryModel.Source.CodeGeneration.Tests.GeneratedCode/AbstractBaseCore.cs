@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Immutable;
 
-namespace WarHub.ArmouryModel.Source.CodeGeneration.Tests.GeneratedCode
+namespace WarHub.ArmouryModel.Source
 {
     [WhamNodeCore]
     public abstract partial class AbstractBaseCore

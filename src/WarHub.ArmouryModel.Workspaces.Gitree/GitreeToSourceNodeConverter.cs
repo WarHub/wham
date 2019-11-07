@@ -27,13 +27,12 @@ namespace WarHub.ArmouryModel.Workspaces.Gitree
             var lists = ParseLists(gitreeNode.Lists);
             var node = gitreeNode.WrappedNode;
             var assigner = new ListsAssigner(lists);
-            var filledNode = assigner.Visit(node);
-            return filledNode;
+            return assigner.Visit(node);
         }
 
         private ImmutableDictionary<string, ImmutableArray<SourceNode>> ParseLists(ImmutableArray<GitreeListNode> lists)
         {
-            var dict = lists
+            return lists
                 .SelectMany(x =>
                 {
                     var nodes = ParseList(x);
@@ -41,9 +40,8 @@ namespace WarHub.ArmouryModel.Workspaces.Gitree
                     .Select(alias => (alias, nodes).ToKeyValuePair());
                 })
                 .ToImmutableDictionary();
-            return dict;
 
-            IEnumerable<string> GetAliases(string listName)
+            static IEnumerable<string> GetAliases(string listName)
             {
                 yield return listName;
                 if (InvertedChildListAliases.TryGetValue(listName, out var alias))

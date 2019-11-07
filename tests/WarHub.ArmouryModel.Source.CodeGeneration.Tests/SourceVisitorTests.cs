@@ -1,5 +1,4 @@
 ﻿using NSubstitute;
-using WarHub.ArmouryModel.Source.CodeGeneration.Tests.GeneratedCode;
 using Xunit;
 using static WarHub.ArmouryModel.Source.CodeGeneration.Tests.TestHelpers;
 

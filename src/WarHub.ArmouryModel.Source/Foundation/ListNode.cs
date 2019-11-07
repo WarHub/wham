@@ -1,11 +1,13 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using MoreLinq;
 
 namespace WarHub.ArmouryModel.Source
 {
+    [DebuggerDisplay("Count = {" + nameof(Count) + "}, ElementKind = {" + nameof(ElementKind) + "}")]
     public abstract class ListNode<TChild> : SourceNode, IListNode, IReadOnlyList<TChild>
         where TChild : SourceNode
     {
@@ -26,6 +28,7 @@ namespace WarHub.ArmouryModel.Source
         /// <summary>
         /// Gets <c>true</c> because this node is a list.
         /// </summary>
+        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         public sealed override bool IsList => true;
 
         /// <summary>
@@ -33,6 +36,7 @@ namespace WarHub.ArmouryModel.Source
         /// </summary>
         public abstract NodeList<TChild> NodeList { get; }
 
+        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         NodeList<SourceNode> IListNode.NodeList => NodeList;
 
         /// <summary>
@@ -52,11 +56,13 @@ namespace WarHub.ArmouryModel.Source
 
         public abstract ListNode<TChild> WithNodes(NodeList<TChild> nodes);
 
-        public IEnumerator<TChild> GetEnumerator() => NodeList.GetEnumerator();
+        public NodeList<TChild>.Enumerator GetEnumerator() => NodeList.GetEnumerator();
 
-        IEnumerator<TChild> IEnumerable<TChild>.GetEnumerator() => NodeList.GetEnumerator();
+        IEnumerator<TChild> IEnumerable<TChild>.GetEnumerator() =>
+            ((IEnumerable<TChild>)NodeList).GetEnumerator();
 
-        IEnumerator IEnumerable.GetEnumerator() => NodeList.GetEnumerator();
+        IEnumerator IEnumerable.GetEnumerator() =>
+            ((IEnumerable)NodeList).GetEnumerator();
 
         protected internal override int ChildrenCount => NodeList.Count;
 

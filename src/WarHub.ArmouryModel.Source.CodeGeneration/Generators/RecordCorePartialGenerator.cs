@@ -51,7 +51,8 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                                 entry => Argument(entry.IdentifierName)))))
                 .AddBodyStatements(
                     Descriptor.DeclaredEntries.Select(CreateCtorAssignment));
-            StatementSyntax CreateCtorAssignment(CoreDescriptor.Entry entry)
+
+            static StatementSyntax CreateCtorAssignment(CoreDescriptor.Entry entry)
             {
                 return
                     ExpressionStatement(

@@ -87,7 +87,8 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                         AccessorDeclaration(SyntaxKind.GetAccessorDeclaration)
                         .WithSemicolonTokenDefault());
             }
-            MemberDeclarationSyntax CreateCountProperty()
+
+            static MemberDeclarationSyntax CreateCountProperty()
             {
                 return
                     PropertyDeclaration(
@@ -105,7 +106,8 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                             .MemberAccess(
                                 IdentifierName(nameof(System.Collections.Immutable.ImmutableArray<int>.Length)))));
             }
-            MemberDeclarationSyntax CreateIndexer()
+
+            static MemberDeclarationSyntax CreateIndexer()
             {
                 const string IndexParamName = "index";
                 return
@@ -128,7 +130,8 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                             IdentifierName(Names.ToSerializationProxy))
                         .InvokeWithArguments());
             }
-            MemberDeclarationSyntax CreateAddMethod()
+
+            static MemberDeclarationSyntax CreateAddMethod()
             {
                 const string ParamName = "item";
                 return
@@ -151,7 +154,8 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                             ObjectCreationExpression(
                                 ParseName(Names.NotSupportedExceptionFull))
                             .AddArgumentListArguments()));
-                AttributeSyntax CreateObsoleteAttribute()
+
+                static AttributeSyntax CreateObsoleteAttribute()
                 {
                     return
                         Attribute(
@@ -163,7 +167,8 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                                     Literal("Implemented only to make XML serialization work. Throws System.NotSupportedException."))));
                 }
             }
-            MemberDeclarationSyntax CreateGetEnumeratorMethod()
+
+            static MemberDeclarationSyntax CreateGetEnumeratorMethod()
             {
                 const string ItemVarName = "item";
                 return
@@ -192,7 +197,8 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                                     IdentifierName(Names.ToSerializationProxy))
                                 .InvokeWithArguments())));
             }
-            MemberDeclarationSyntax CreateExplicitInterafceGetEnumeratorMethod()
+
+            static MemberDeclarationSyntax CreateExplicitInterafceGetEnumeratorMethod()
             {
                 return
                     MethodDeclaration(

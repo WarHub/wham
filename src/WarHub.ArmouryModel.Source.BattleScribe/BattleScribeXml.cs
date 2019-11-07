@@ -15,10 +15,8 @@ namespace WarHub.ArmouryModel.Source.BattleScribe
         /// <returns>Gamesystem data model.</returns>
         public static GamesystemNode LoadGamesystem(string path)
         {
-            using (var stream = File.OpenRead(path))
-            {
-                return stream.DeserializeGamesystem();
-            }
+            using var stream = File.OpenRead(path);
+            return stream.DeserializeGamesystem();
         }
 
         /// <summary>
@@ -38,10 +36,8 @@ namespace WarHub.ArmouryModel.Source.BattleScribe
         /// <returns>Catalogue data model.</returns>
         public static CatalogueNode LoadCatalogue(string path)
         {
-            using (var stream = File.OpenRead(path))
-            {
-                return stream.DeserializeCatalogue();
-            }
+            using var stream = File.OpenRead(path);
+            return stream.DeserializeCatalogue();
         }
 
         /// <summary>
@@ -61,10 +57,8 @@ namespace WarHub.ArmouryModel.Source.BattleScribe
         /// <returns>Roster data model.</returns>
         public static RosterNode LoadRoster(string path)
         {
-            using (var stream = File.OpenRead(path))
-            {
-                return stream.DeserializeRoster();
-            }
+            using var stream = File.OpenRead(path);
+            return stream.DeserializeRoster();
         }
 
         /// <summary>
@@ -84,10 +78,8 @@ namespace WarHub.ArmouryModel.Source.BattleScribe
         /// <returns>Data index data model.</returns>
         public static DataIndexNode LoadDataIndex(string path)
         {
-            using (var stream = File.OpenRead(path))
-            {
-                return stream.DeserializeDataIndex();
-            }
+            using var stream = File.OpenRead(path);
+            return stream.DeserializeDataIndex();
         }
 
         /// <summary>

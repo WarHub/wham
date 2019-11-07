@@ -70,7 +70,7 @@ namespace WarHub.ArmouryModel.Source.Tests.Foundation
             var rule2 = CreateRule("2");
             var sequence = new[] { rule1, rule2 }.ToList();
             var result1 = NodeList.Create<SourceNode>(sequence);
-            var result2 = NodeList.Create<SourceNode>(result1);
+            var result2 = NodeList.Create(result1);
             Assert.Equal(result1, result2);
             Assert.False(result1 != result2);
             Assert.True(result1 == result2);

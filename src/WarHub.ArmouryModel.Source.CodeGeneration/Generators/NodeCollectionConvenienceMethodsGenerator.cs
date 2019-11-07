@@ -46,7 +46,8 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                         .WithType(
                             entryNodeType.ToArrayType());
                 }
-                ExpressionSyntax CreateNodesExpression()
+
+                static ExpressionSyntax CreateNodesExpression()
                 {
                     return
                         IdentifierName(NodesParamName)

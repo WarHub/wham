@@ -6,7 +6,6 @@ using System.Linq;
 using WarHub.ArmouryModel.CliTool.Utilities;
 using WarHub.ArmouryModel.ProjectModel;
 using WarHub.ArmouryModel.Source;
-using WarHub.ArmouryModel.Source.BattleScribe;
 using WarHub.ArmouryModel.Source.XmlFormat;
 using WarHub.ArmouryModel.Workspaces.BattleScribe;
 using WarHub.ArmouryModel.Workspaces.Gitree;
@@ -69,7 +68,7 @@ namespace WarHub.ArmouryModel.CliTool.Commands
                 Log.Information("Nothing to do.");
                 return;
             }
-            output = output ?? new DirectoryInfo(configInfo.Configuration.OutputPath);
+            output ??= new DirectoryInfo(configInfo.Configuration.OutputPath);
             Log.Debug("Writing artifacts to: {Destination}", output);
             output.Create();
 
@@ -166,10 +165,8 @@ namespace WarHub.ArmouryModel.CliTool.Commands
                 () => Path.Combine(options.Output.FullName, options.Filename + XmlFileExtensions.RepoDistribution),
                 filepath =>
                 {
-                    using (var stream = File.OpenWrite(filepath))
-                    {
-                        distro.WriteTo(stream);
-                    }
+                    using var stream = File.OpenWrite(filepath);
+                    distro.WriteTo(stream);
                 });
         }
 
@@ -245,31 +242,27 @@ namespace WarHub.ArmouryModel.CliTool.Commands
 
         private static IWorkspace ReadWorkspaceFromConfig(ProjectConfigurationInfo info)
         {
-            switch (info.Configuration.FormatProvider)
+            return info.Configuration.FormatProvider switch
             {
-                case ProjectFormatProviderType.Gitree:
-                    return GitreeWorkspace.CreateFromConfigurationInfo(info);
-                case ProjectFormatProviderType.BattleScribeXml:
-                    return XmlWorkspace.CreateFromConfigurationInfo(info);
-                default:
-                    throw new InvalidOperationException(
+                ProjectFormatProviderType.Gitree => GitreeWorkspace.CreateFromConfigurationInfo(info),
+                ProjectFormatProviderType.BattleScribeXml => XmlWorkspace.CreateFromConfigurationInfo(info),
+                _ => throw new InvalidOperationException(
                         $"Unknown {nameof(ProjectConfiguration.FormatProvider)}:" +
-                        $" {info.Configuration.FormatProvider}");
-            }
+                        $" {info.Configuration.FormatProvider}"),
+            };
         }
 
         private static ArtifactType ParseArtifactType(string name)
         {
-            switch (name)
+            return name switch
             {
-                case "xml": return ArtifactType.XmlDatafiles;
-                case "zip": return ArtifactType.ZippedXmlDatafiles;
-                case "index": return ArtifactType.Index;
-                case "bsi": return ArtifactType.ZippedIndex;
-                case "bsr": return ArtifactType.RepoDistribution;
-                default:
-                    return ArtifactType.None;
-            }
+                "xml" => ArtifactType.XmlDatafiles,
+                "zip" => ArtifactType.ZippedXmlDatafiles,
+                "index" => ArtifactType.Index,
+                "bsi" => ArtifactType.ZippedIndex,
+                "bsr" => ArtifactType.RepoDistribution,
+                _ => ArtifactType.None,
+            };
         }
     }
 }

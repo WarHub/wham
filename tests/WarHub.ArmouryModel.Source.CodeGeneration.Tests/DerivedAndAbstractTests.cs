@@ -1,5 +1,4 @@
-﻿using WarHub.ArmouryModel.Source.CodeGeneration.Tests.GeneratedCode;
-using Xunit;
+﻿using Xunit;
 
 namespace WarHub.ArmouryModel.Source.CodeGeneration.Tests
 {

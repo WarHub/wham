@@ -29,19 +29,15 @@ namespace WarHub.ArmouryModel.ProjectModel
         private static ProjectConfiguration ReadText(TextReader reader)
         {
             var serializer = JsonUtilities.CreateSerializer();
-            using (var jsonReader = new JsonTextReader(reader))
-            {
-                return serializer.Deserialize<ProjectConfiguration>(jsonReader);
-            }
+            using var jsonReader = new JsonTextReader(reader);
+            return serializer.Deserialize<ProjectConfiguration>(jsonReader);
         }
 
         public static ProjectConfigurationInfo ReadFromFile(string filepath)
         {
-            using (var streamReader = File.OpenText(filepath))
-            {
-                var config = ReadText(streamReader);
-                return new ProjectConfigurationInfo(filepath, config);
-            }
+            using var streamReader = File.OpenText(filepath);
+            var config = ReadText(streamReader);
+            return new ProjectConfigurationInfo(filepath, config);
         }
 
         protected virtual ProjectConfigurationInfo CreateDefault(string directory)

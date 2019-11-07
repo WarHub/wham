@@ -4,7 +4,6 @@ using System.Globalization;
 using System.Linq;
 using FluentAssertions;
 using MoreLinq;
-using WarHub.ArmouryModel.Source.CodeGeneration.Tests.GeneratedCode;
 using Xunit;
 using static WarHub.ArmouryModel.Source.CodeGeneration.Tests.TestHelpers;
 
@@ -47,7 +46,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration.Tests
         [Fact]
         public void FactoryMethod_GivenNoItems_CreatesValidNode()
         {
-            var container = GeneratedCode.NodeFactory.Container(ContainerId, ContainerName);
+            var container = NodeFactory.Container(ContainerId, ContainerName);
 
             Assert.Empty(container.Items);
         }

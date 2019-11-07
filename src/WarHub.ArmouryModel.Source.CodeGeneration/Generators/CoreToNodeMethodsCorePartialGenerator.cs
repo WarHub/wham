@@ -70,7 +70,8 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                     .Mutate(AddToNodeParameters)
                     .Mutate(x => ForwardExpressionToNode(x, Names.ToNode));
             }
-            MethodDeclarationSyntax ToNodeCoreMethod()
+
+            static MethodDeclarationSyntax ToNodeCoreMethod()
             {
                 return
                     MethodDeclaration(
@@ -128,7 +129,8 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                             IdentifierName(Names.SourceNode)))
                     .Mutate(x => ForwardExpressionToNode(x, Names.ToNode));
             }
-            MethodDeclarationSyntax AddToNodeParameters(MethodDeclarationSyntax method)
+
+            static MethodDeclarationSyntax AddToNodeParameters(MethodDeclarationSyntax method)
             {
                 return method
                     .AddParameterListParameters(
@@ -140,7 +142,8 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                             EqualsValueClause(
                                 LiteralExpression(SyntaxKind.NullLiteralExpression))));
             }
-            MethodDeclarationSyntax ForwardExpressionToNode(MethodDeclarationSyntax method, string targetName)
+
+            static MethodDeclarationSyntax ForwardExpressionToNode(MethodDeclarationSyntax method, string targetName)
             {
                 return
                     method

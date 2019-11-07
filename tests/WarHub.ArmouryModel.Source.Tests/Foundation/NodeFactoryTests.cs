@@ -19,7 +19,8 @@ namespace WarHub.ArmouryModel.Source.Tests.Foundation
             {
                 yield return new[] { item };
             }
-            IEnumerable<SourceNode> NodeFactoryCallsCore()
+
+            static IEnumerable<SourceNode> NodeFactoryCallsCore()
             {
                 var gamesystem = NodeFactory.Gamesystem();
                 yield return NodeFactory.Catalogue(gamesystem: gamesystem);

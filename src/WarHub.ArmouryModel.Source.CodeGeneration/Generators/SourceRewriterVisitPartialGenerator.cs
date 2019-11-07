@@ -55,7 +55,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                                     .Append(
                                         CreateNodeVisitReturnStatement())));
 
-            MethodDeclarationSyntax CreateVisitMethodBase(string methodName, TypeSyntax type)
+            static MethodDeclarationSyntax CreateVisitMethodBase(string methodName, TypeSyntax type)
             {
                 return
                     MethodDeclaration(
@@ -70,7 +70,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                                 .WithType(type));
             }
 
-            StatementSyntax CreateChildVisitStatement(CoreDescriptor.Entry entry)
+            static StatementSyntax CreateChildVisitStatement(CoreDescriptor.Entry entry)
             {
                 var targetType = entry is CoreDescriptor.CollectionEntry collectionEntry
                     ? collectionEntry.GetListNodeTypeIdentifierName()
@@ -85,7 +85,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                             .Cast(targetType));
             }
 
-            StatementSyntax CreateLocalDeclaration(CoreDescriptor.Entry entry, ExpressionSyntax initializerExpression)
+            static StatementSyntax CreateLocalDeclaration(CoreDescriptor.Entry entry, ExpressionSyntax initializerExpression)
             {
                 return
                     LocalDeclarationStatement(
@@ -115,7 +115,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                                         Descriptor.Entries
                                             .Select(SimpleArgument, ComplexArgument, CollectionArgument))));
 
-                ExpressionSyntax SimpleArgument(CoreDescriptor.SimpleEntry entry)
+                static ExpressionSyntax SimpleArgument(CoreDescriptor.SimpleEntry entry)
                 {
                     return
                         IdentifierName(Node)
@@ -123,13 +123,15 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                                 IdentifierName(Names.Core))
                             .MemberAccess(entry.IdentifierName);
                 }
-                ExpressionSyntax ComplexArgument(CoreDescriptor.ComplexEntry entry)
+
+                static ExpressionSyntax ComplexArgument(CoreDescriptor.ComplexEntry entry)
                 {
                     return
                         entry.CamelCaseIdentifierName.MemberAccess(
                             IdentifierName(Names.Core));
                 }
-                ExpressionSyntax CollectionArgument(CoreDescriptor.CollectionEntry entry)
+
+                static ExpressionSyntax CollectionArgument(CoreDescriptor.CollectionEntry entry)
                 {
                     return
                         entry.CamelCaseIdentifierName

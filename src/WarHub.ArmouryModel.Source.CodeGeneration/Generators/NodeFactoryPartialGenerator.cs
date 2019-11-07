@@ -77,13 +77,15 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                             IdentifierName(Names.ToCoreArray))
                         .InvokeWithArguments(),
                     LiteralExpression(SyntaxKind.NullLiteralExpression)));
-            ParameterSyntax CreateListNodeParameter(CoreDescriptor.CollectionEntry entry)
+
+            static ParameterSyntax CreateListNodeParameter(CoreDescriptor.CollectionEntry entry)
             {
                 return
                     Parameter(entry.CamelCaseIdentifier)
                         .WithType(entry.GetListNodeTypeIdentifierName());
             }
-            ParameterSyntax CreateNodeListParameter(CoreDescriptor.CollectionEntry entry)
+
+            static ParameterSyntax CreateNodeListParameter(CoreDescriptor.CollectionEntry entry)
             {
                 var type = entry.GetNodeTypeIdentifierName().ToNodeListType();
                 return
@@ -106,7 +108,8 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                                     Descriptor.Entries
                                         .OfType<CoreDescriptor.CollectionEntry>()
                                         .Select(CreateCollectionArgument))));
-                ExpressionSyntax CreateCollectionArgument(CoreDescriptor.CollectionEntry entry)
+
+                static ExpressionSyntax CreateCollectionArgument(CoreDescriptor.CollectionEntry entry)
                 {
                     return
                         entry.CamelCaseIdentifierName
@@ -131,18 +134,21 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                                 CreateSimpleArgument,
                                 CreateComplexArgument,
                                 CreateCollectionArgument));
-                    ArgumentSyntax CreateSimpleArgument(CoreDescriptor.Entry entry)
+
+                    static ArgumentSyntax CreateSimpleArgument(CoreDescriptor.Entry entry)
                     {
                         return Argument(entry.CamelCaseIdentifierName);
                     }
-                    ArgumentSyntax CreateComplexArgument(CoreDescriptor.Entry entry)
+
+                    static ArgumentSyntax CreateComplexArgument(CoreDescriptor.Entry entry)
                     {
                         var argName = entry.CamelCaseIdentifierName;
                         return
                             Argument(
                                 argName.ConditionalMemberAccess(IdentifierName(Names.Core)));
                     }
-                    ArgumentSyntax CreateCollectionArgument(CoreDescriptor.CollectionEntry entry)
+
+                    static ArgumentSyntax CreateCollectionArgument(CoreDescriptor.CollectionEntry entry)
                     {
                         var argName = entry.CamelCaseIdentifierName;
                         return
@@ -179,13 +185,15 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                             .OfType<CoreDescriptor.CollectionEntry>()
                             .Select(createCollectionParameter));
                 }
-                ParameterSyntax CreateSimpleParameter(CoreDescriptor.SimpleEntry entry)
+
+                static ParameterSyntax CreateSimpleParameter(CoreDescriptor.SimpleEntry entry)
                 {
                     return
                         Parameter(entry.CamelCaseIdentifier)
                         .WithType(entry.Type);
                 }
-                ParameterSyntax CreateComplexParameter(CoreDescriptor.ComplexEntry entry)
+
+                static ParameterSyntax CreateComplexParameter(CoreDescriptor.ComplexEntry entry)
                 {
                     var type = entry.GetNodeTypeIdentifierName();
                     return

@@ -73,30 +73,22 @@ namespace WarHub.ArmouryModel.Source.BattleScribe.Tests
 
             SourceNode Deserialize()
             {
-                using (var stream = File.OpenRead(input))
-                {
-                    return deserialize(stream);
-                }
+                using var stream = File.OpenRead(input);
+                return deserialize(stream);
             }
             void Serialize(SourceNode node)
             {
                 Assert.True(Directory.Exists(XmlTestData.OutputDir));
-                using (var stream = File.Create(output))
-                {
-                    node.Serialize(stream);
-                }
+                using var stream = File.Create(output);
+                node.Serialize(stream);
             }
             bool AreXmlEqual()
             {
                 var differ = new XmlDiff(XmlDiffOptions.None);
                 //using (var diffStream = new MemoryStream())
-                using (var diffStream = File.Create(output + ".diff"))
-                {
-                    using (var diffWriter = XmlWriter.Create(diffStream))
-                    {
-                        return differ.Compare(input, output, false, diffWriter);
-                    }
-                }
+                using var diffStream = File.Create(output + ".diff");
+                using var diffWriter = XmlWriter.Create(diffStream);
+                return differ.Compare(input, output, false, diffWriter);
             }
         }
 

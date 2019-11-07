@@ -17,10 +17,8 @@ namespace WarHub.ArmouryModel.Source.BattleScribe
         public static VersionedElementInfo ReadRootElementInfo(Stream stream)
         {
             var settings = new XmlReaderSettings() { CloseInput = false };
-            using (var reader = XmlReader.Create(stream, settings))
-            {
-                return ReadRootElementInfo(reader);
-            }
+            using var reader = XmlReader.Create(stream, settings);
+            return ReadRootElementInfo(reader);
         }
 
         public static VersionedElementInfo ReadRootElementInfo(XmlReader reader)
@@ -65,14 +63,12 @@ namespace WarHub.ArmouryModel.Source.BattleScribe
         public static VersionedElementInfo WriteMigrated(Stream input, Stream output)
         {
             var settings = new XmlReaderSettings() { CloseInput = false };
-            using (var inputReader = XmlReader.Create(input, settings))
-            {
-                var (reader, info) = ReadMigrated(inputReader);
-                var sourceNode = BattleScribeXmlSerializer.Instance
-                    .Deserialize(x => x.Deserialize(reader), info.Element);
-                sourceNode.Serialize(output);
-                return info;
-            }
+            using var inputReader = XmlReader.Create(input, settings);
+            var (reader, info) = ReadMigrated(inputReader);
+            var sourceNode = BattleScribeXmlSerializer.Instance
+                .Deserialize(x => x.Deserialize(reader), info.Element);
+            sourceNode.Serialize(output);
+            return info;
         }
 
         public static void ApplyMigration(VersionedElementInfo migrationInfo, XmlReader input, Stream output)
@@ -131,11 +127,9 @@ namespace WarHub.ArmouryModel.Source.BattleScribe
             };
             SourceNode DeserializeSimple(Stream source)
             {
-                using (var reader = XmlReader.Create(source))
-                {
-                    var rootInfo = ReadRootElementInfo(reader);
-                    return Serializer.Deserialize(x => x.Deserialize(reader), rootInfo.Element);
-                }
+                using var reader = XmlReader.Create(source);
+                var rootInfo = ReadRootElementInfo(reader);
+                return Serializer.Deserialize(x => x.Deserialize(reader), rootInfo.Element);
             }
             SourceNode WithSeekable(Func<Stream, SourceNode> func)
             {
@@ -145,12 +139,10 @@ namespace WarHub.ArmouryModel.Source.BattleScribe
                 }
                 else
                 {
-                    using (var memory = new MemoryStream())
-                    {
-                        stream.CopyTo(memory);
-                        memory.Position = 0;
-                        return func(memory);
-                    }
+                    using var memory = new MemoryStream();
+                    stream.CopyTo(memory);
+                    memory.Position = 0;
+                    return func(memory);
                 }
             }
         }

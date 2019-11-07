@@ -23,7 +23,6 @@ namespace WarHub.ArmouryModel.Workspaces.Gitree
         /// <summary>
         /// Gets the root node of the document. May cause deserialization.
         /// </summary>
-        /// <returns></returns>
         public DatablobNode GetRoot()
         {
             return GetRootCore();
@@ -42,11 +41,9 @@ namespace WarHub.ArmouryModel.Workspaces.Gitree
 
         private DatablobNode LoadRoot()
         {
-            using (var fileStream = File.OpenText(Path))
-            using (var jsonReader = new JsonTextReader(fileStream))
-            {
-                return Workspace.Serializer.Deserialize<DatablobCore>(jsonReader).ToNode();
-            }
+            using var fileStream = File.OpenText(Path);
+            using var jsonReader = new JsonTextReader(fileStream);
+            return Workspace.Serializer.Deserialize<DatablobCore>(jsonReader).ToNode();
         }
     }
 }

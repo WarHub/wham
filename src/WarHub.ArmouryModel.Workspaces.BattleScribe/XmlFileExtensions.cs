@@ -137,7 +137,6 @@ namespace WarHub.ArmouryModel.Workspaces.BattleScribe
         /// Reads <see cref="XmlDocumentKind.RepoDistribution"/> <c>.bsr</c> zipped file stream into object model.
         /// </summary>
         /// <param name="stream">Stream of the <c>.bsr</c> file.</param>
-        /// <returns></returns>
         public static RepoDistribution ReadRepoDistribution(this Stream stream)
         {
             using (var zip = new ZipArchive(stream))
@@ -151,48 +150,38 @@ namespace WarHub.ArmouryModel.Workspaces.BattleScribe
                 return new RepoDistribution(index, datafiles);
             }
 
-            IDatafileInfo<SourceNode> LoadEntry(ZipArchiveEntry entry)
+            static IDatafileInfo<SourceNode> LoadEntry(ZipArchiveEntry entry)
             {
-                using (var entryStream = entry.Open())
-                {
-                    // TODO log invalid data type
-                    return entryStream.LoadSourceAuto(entry.Name);
-                }
+                using var entryStream = entry.Open();
+                // TODO log invalid data type
+                return entryStream.LoadSourceAuto(entry.Name);
             }
         }
 
         public static void WriteTo(this RepoDistribution repoDistribution, Stream stream)
         {
-            using (var zip = new ZipArchive(stream, ZipArchiveMode.Create, leaveOpen: true))
+            using var zip = new ZipArchive(stream, ZipArchiveMode.Create, leaveOpen: true);
+            var datafiles = repoDistribution.Datafiles.Prepend(repoDistribution.Index as IDatafileInfo);
+            foreach (var datafile in datafiles)
             {
-                var datafiles = repoDistribution.Datafiles.Prepend(repoDistribution.Index as IDatafileInfo);
-                foreach (var datafile in datafiles)
-                {
-                    var entry = zip.CreateEntry(datafile.Filepath);
-                    using (var entryStream = entry.Open())
-                    {
-                        datafile.GetData().Serialize(entryStream);
-                    }
-                }
+                var entry = zip.CreateEntry(datafile.Filepath);
+                using var entryStream = entry.Open();
+                datafile.GetData().Serialize(entryStream);
             }
         }
 
         public static void WriteXmlFile(this IDatafileInfo datafile, string filepath)
         {
-            using (var stream = File.Create(filepath))
-            {
-                datafile.GetData().Serialize(stream);
-            }
+            using var stream = File.Create(filepath);
+            datafile.GetData().Serialize(stream);
         }
 
         public static void WriteXmlZippedFile(this IDatafileInfo datafile, string filepath)
         {
-            using (var fileStream = File.Create(filepath))
-            using (var archive = new ZipArchive(fileStream, ZipArchiveMode.Create))
-            using (var entryStream = archive.CreateEntry(datafile.GetXmlFilename()).Open())
-            {
-                datafile.GetData().Serialize(entryStream);
-            }
+            using var fileStream = File.Create(filepath);
+            using var archive = new ZipArchive(fileStream, ZipArchiveMode.Create);
+            using var entryStream = archive.CreateEntry(datafile.GetXmlFilename()).Open();
+            datafile.GetData().Serialize(entryStream);
         }
 
         public static Func<Stream, SourceNode> GetLoadingMethod(this XmlDocumentKind kind)
@@ -221,10 +210,8 @@ namespace WarHub.ArmouryModel.Workspaces.BattleScribe
 
         public static IDatafileInfo<SourceNode> LoadSourceFileAuto(this string path)
         {
-            using (var stream = File.OpenRead(path))
-            {
-                return stream.LoadSourceAuto(path);
-            }
+            using var stream = File.OpenRead(path);
+            return stream.LoadSourceAuto(path);
         }
 
         public static SourceNode LoadSource(this Stream stream, XmlDocumentKind kind)
@@ -234,19 +221,15 @@ namespace WarHub.ArmouryModel.Workspaces.BattleScribe
 
         public static SourceNode LoadSourceZipped(this Stream stream, XmlDocumentKind kind)
         {
-            using (var archive = new ZipArchive(stream, ZipArchiveMode.Read, leaveOpen: true))
+            using var archive = new ZipArchive(stream, ZipArchiveMode.Read, leaveOpen: true);
+            if (archive.Entries.Count != 1)
             {
-                if (archive.Entries.Count != 1)
-                {
-                    throw new InvalidOperationException(
-                        $"File is not a correct BattleScribe ZIP archive," +
-                        $" contains {archive.Entries.Count} entries, expected 1.");
-                }
-                using (var entryStream = archive.Entries[0].Open())
-                {
-                    return entryStream.LoadSource(kind);
-                }
+                throw new InvalidOperationException(
+                    $"File is not a correct BattleScribe ZIP archive," +
+                    $" contains {archive.Entries.Count} entries, expected 1.");
             }
+            using var entryStream = archive.Entries[0].Open();
+            return entryStream.LoadSource(kind);
         }
 
         public static IEnumerable<XmlDocument> GetDocuments(this XmlWorkspace workspace, params SourceKind[] kinds)
