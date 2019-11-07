@@ -91,7 +91,8 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                         AccessorDeclaration(SyntaxKind.GetAccessorDeclaration)
                         .WithSemicolonTokenDefault());
             }
-            PropertyDeclarationSyntax CreateProperty(CoreDescriptor.Entry entry)
+
+            static PropertyDeclarationSyntax CreateProperty(CoreDescriptor.Entry entry)
             {
                 var propertyType = entry is CoreDescriptor.CollectionEntry collectionEntry
                     ? QualifiedName(collectionEntry.CollectionTypeParameter, IdentifierName(Names.FastSerializationEnumerable))
@@ -120,7 +121,8 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                                 .WithArgumentList(
                                     ArgumentList()))));
             }
-            PropertyDeclarationSyntax CreateSpecifiedProperty(CoreDescriptor.Entry entry)
+
+            static PropertyDeclarationSyntax CreateSpecifiedProperty(CoreDescriptor.Entry entry)
             {
                 return
                     PropertyDeclaration(

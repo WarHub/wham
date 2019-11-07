@@ -54,23 +54,21 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration.Tests
                 },
             }.ToImmutable();
             var serializer = new XmlSerializer(typeof(ContainerCore.FastSerializationProxy));
-            using (var stream = new MemoryStream())
-            {
-                serializer.Serialize(stream, profileType.ToSerializationProxy());
+            using var stream = new MemoryStream();
+            serializer.Serialize(stream, profileType.ToSerializationProxy());
 
-                stream.Position = 0;
+            stream.Position = 0;
 
-                using var reader = XmlReader.Create(stream);
-                var deserialized = (ContainerCore.Builder)new XmlSerializer(typeof(ContainerCore.Builder)).Deserialize(reader);
+            using var reader = XmlReader.Create(stream);
+            var deserialized = (ContainerCore.Builder)new XmlSerializer(typeof(ContainerCore.Builder)).Deserialize(reader);
 
-                Assert.NotNull(deserialized);
-                Assert.Equal(ContainerName, deserialized.Name);
-                Assert.Collection(
-                    deserialized.Items,
-                    x => Assert.Equal(Item1Name, x.Name),
-                    x => Assert.Equal(Item2Name, x.Name),
-                    x => Assert.Equal(Item3Name, x.Name));
-            }
+            Assert.NotNull(deserialized);
+            Assert.Equal(ContainerName, deserialized.Name);
+            Assert.Collection(
+                deserialized.Items,
+                x => Assert.Equal(Item1Name, x.Name),
+                x => Assert.Equal(Item2Name, x.Name),
+                x => Assert.Equal(Item3Name, x.Name));
         }
     }
 }

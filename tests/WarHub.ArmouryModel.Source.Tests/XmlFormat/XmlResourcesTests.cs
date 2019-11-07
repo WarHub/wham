@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Xml;
 using System.Xml.Schema;
@@ -15,20 +14,16 @@ namespace WarHub.ArmouryModel.Source.Tests.XmlFormat
         [MemberData(nameof(XslMigrationVersionData))]
         public void Per_element_xsl_migration_is_available(VersionedElementInfo elementInfo)
         {
-            using (var migrationXslStream = elementInfo.OpenMigrationXslStream())
-            {
-                migrationXslStream.Should().NotBeNull();
-            }
+            using var migrationXslStream = elementInfo.OpenMigrationXslStream();
+            migrationXslStream.Should().NotBeNull();
         }
 
         [Theory]
         [MemberData(nameof(ThreeRootElements))]
         public void Per_element_xsd_is_available(RootElement rootElement)
         {
-            using (var xsdStream = rootElement.OpenXsdStream())
-            {
-                xsdStream.Should().NotBeNull();
-            }
+            using var xsdStream = rootElement.OpenXsdStream();
+            xsdStream.Should().NotBeNull();
         }
 
         [Theory]
@@ -60,7 +55,7 @@ namespace WarHub.ArmouryModel.Source.Tests.XmlFormat
                 new XmlQualifiedName("roster", xmlns)
             });
 
-            void IgnoreEvent(object sender, ValidationEventArgs e) { }
+            static void IgnoreEvent(object sender, ValidationEventArgs e) { }
         }
 
         public static IEnumerable<object[]> XslMigrationVersionData()

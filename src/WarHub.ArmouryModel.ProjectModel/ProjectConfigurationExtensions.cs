@@ -69,19 +69,15 @@ namespace WarHub.ArmouryModel.ProjectModel
 
         public static void WriteFile(this ProjectConfigurationInfo configInfo)
         {
-            using (var stream = File.OpenWrite(configInfo.Filepath))
-            {
-                configInfo.Configuration.Serialize(stream);
-            }
+            using var stream = File.OpenWrite(configInfo.Filepath);
+            configInfo.Configuration.Serialize(stream);
         }
 
         public static void Serialize(this ProjectConfiguration configuration, Stream stream)
         {
             var serializer = JsonUtilities.CreateSerializer();
-            using (var textWriter = new StreamWriter(stream))
-            {
-                serializer.Serialize(textWriter, configuration);
-            }
+            using var textWriter = new StreamWriter(stream);
+            serializer.Serialize(textWriter, configuration);
         }
 
         public static string GetFullPath(this ProjectConfigurationInfo configInfo, SourceKind kind)

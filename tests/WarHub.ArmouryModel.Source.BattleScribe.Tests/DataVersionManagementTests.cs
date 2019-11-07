@@ -19,14 +19,12 @@ namespace WarHub.ArmouryModel.Source.BattleScribe.Tests
         [InlineData(MigrationMode.Always, "XmlTestDatafiles/v1_15/Warhammer40K.gst")]
         public void DeserializeAuto_works_with_any_mode(MigrationMode mode, string filepath)
         {
-            using (var stream = File.OpenRead(filepath))
-            {
-                var result = stream.DeserializeSourceNodeAuto(mode);
+            using var stream = File.OpenRead(filepath);
+            var result = stream.DeserializeSourceNodeAuto(mode);
 
-                result
-                    .Should().NotBeNull()
-                    .And.BeOfType<GamesystemNode>();
-            }
+            result
+                .Should().NotBeNull()
+                .And.BeOfType<GamesystemNode>();
         }
 
         [Theory]
@@ -34,13 +32,11 @@ namespace WarHub.ArmouryModel.Source.BattleScribe.Tests
         [InlineData("XmlTestDatafiles/v1_15/Space Marines - Codex (2015).cat")]
         public void ReadMigrated_on_old_files_succeeds(string filepath)
         {
-            using (var file = File.OpenRead(filepath))
+            using var file = File.OpenRead(filepath);
+            var (result, info) = DataVersionManagement.ReadMigrated(file);
+            using (result)
             {
-                var (result, info) = DataVersionManagement.ReadMigrated(file);
-                using (result)
-                {
-                    GetVersion(result).Should().Be(info.Version);
-                }
+                GetVersion(result).Should().Be(info.Version);
             }
         }
 
@@ -48,13 +44,11 @@ namespace WarHub.ArmouryModel.Source.BattleScribe.Tests
         [MemberData(nameof(HandledMigrationInputs))]
         public void ReadMigrated_on_handled_empty_elements_succeeds(VersionedElementInfo elementInfo)
         {
-            using (var emptyElementStream = CreateEmptyElementStream(elementInfo))
+            using var emptyElementStream = CreateEmptyElementStream(elementInfo);
+            var (reader, info) = DataVersionManagement.ReadMigrated(emptyElementStream);
+            using (reader)
             {
-                var (reader, info) = DataVersionManagement.ReadMigrated(emptyElementStream);
-                using (reader)
-                {
-                    GetVersion(reader).Should().Be(info.Version);
-                }
+                GetVersion(reader).Should().Be(info.Version);
             }
         }
 
@@ -66,32 +60,28 @@ namespace WarHub.ArmouryModel.Source.BattleScribe.Tests
                 new VersionedElementInfo(
                     rootElement,
                     BattleScribeVersion.Parse(versionText));
-            using (var stream = CreateEmptyElementStream(elementInfo))
-            {
-                var result = DataVersionManagement.ReadRootElementInfo(stream);
+            using var stream = CreateEmptyElementStream(elementInfo);
+            var result = DataVersionManagement.ReadRootElementInfo(stream);
 
-                result.Should().Be(elementInfo);
-            }
+            result.Should().Be(elementInfo);
         }
 
         [Fact]
         public void ReadRootElementInfo_doesnt_read_to_stream_end()
         {
-            using (var xmlStream = new MemoryStream())
-            using (var writer = CreateNotClosingStreamWriter(xmlStream))
-            {
-                writer.WriteLine("<roster battleScribeVersion='1.15'>");
-                for (var i = 0; i < 1000; i++)
-                    writer.WriteLine("  <el attrib='value'>content</el>");
-                writer.WriteLine("</roster>");
-                writer.Flush();
-                xmlStream.Position = 0;
+            using var xmlStream = new MemoryStream();
+            using var writer = CreateNotClosingStreamWriter(xmlStream);
+            writer.WriteLine("<roster battleScribeVersion='1.15'>");
+            for (var i = 0; i < 1000; i++)
+                writer.WriteLine("  <el attrib='value'>content</el>");
+            writer.WriteLine("</roster>");
+            writer.Flush();
+            xmlStream.Position = 0;
 
-                _ = DataVersionManagement.ReadRootElementInfo(xmlStream);
+            _ = DataVersionManagement.ReadRootElementInfo(xmlStream);
 
-                xmlStream.Position
-                    .Should().BeLessThan(xmlStream.Length, "because massive streams aren't read to the end.");
-            }
+            xmlStream.Position
+                .Should().BeLessThan(xmlStream.Length, "because massive streams aren't read to the end.");
         }
 
         private static Stream CreateEmptyElementStream(VersionedElementInfo elementInfo)

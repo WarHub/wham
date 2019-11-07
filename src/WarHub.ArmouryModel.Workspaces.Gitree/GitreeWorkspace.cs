@@ -55,15 +55,12 @@ namespace WarHub.ArmouryModel.Workspaces.Gitree
                 .EnumerateFiles("*" + ProjectConfiguration.FileExtension)
                 .ToList();
             var configProvider = new GitreeProjectConfigurationProvider();
-            switch (configFiles.Count)
+            return configFiles.Count switch
             {
-                case 0:
-                    return new GitreeWorkspace(configProvider.Create(path));
-                case 1:
-                    return new GitreeWorkspace(configProvider.Create(configFiles[0].FullName));
-                default:
-                    throw new InvalidOperationException("There's more than one project file in the directory");
-            }
+                0 => new GitreeWorkspace(configProvider.Create(path)),
+                1 => new GitreeWorkspace(configProvider.Create(configFiles[0].FullName)),
+                _ => throw new InvalidOperationException("There's more than one project file in the directory"),
+            };
         }
 
         private class GitreeRootFindingVisitor
@@ -93,8 +90,7 @@ namespace WarHub.ArmouryModel.Workspaces.Gitree
                     while (FoldersToVisit.Count > 0)
                     {
                         var folder = FoldersToVisit.Dequeue();
-                        var doc = VisitFolder(folder);
-                        yield return doc;
+                        yield return VisitFolder(folder);
                     }
                 }
             }

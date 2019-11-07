@@ -1,10 +1,5 @@
-﻿using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Xml;
-using System.Xml.Schema;
+﻿using System.Linq;
 using FluentAssertions;
-using WarHub.ArmouryModel.Source.BattleScribe;
 using Xunit;
 using static WarHub.ArmouryModel.Source.NodeFactory;
 

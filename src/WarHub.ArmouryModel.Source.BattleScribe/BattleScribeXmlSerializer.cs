@@ -50,21 +50,16 @@ namespace WarHub.ArmouryModel.Source.BattleScribe
             Func<XmlSerializer, object> deserialization,
             RootElement rootElement)
         {
-            switch (rootElement)
+            return rootElement switch
             {
-                case RootElement.Catalogue:
-                    return DeserializeCatalogue(deserialization);
-                case RootElement.GameSystem:
-                    return DeserializeGamesystem(deserialization);
-                case RootElement.Roster:
-                    return DeserializeRoster(deserialization);
-                case RootElement.DataIndex:
-                    return DeserializeDataIndex(deserialization);
-                default:
-                    throw new ArgumentException(
+                RootElement.Catalogue => DeserializeCatalogue(deserialization),
+                RootElement.GameSystem => DeserializeGamesystem(deserialization),
+                RootElement.Roster => DeserializeRoster(deserialization),
+                RootElement.DataIndex => DeserializeDataIndex(deserialization),
+                _ => throw new ArgumentException(
                         $"Deserialization is not supported for this {nameof(RootElement)}.",
-                        nameof(rootElement));
-            }
+                        nameof(rootElement)),
+            };
         }
 
         public void SerializeGamesystem(GamesystemNode node, TextWriter writer)
@@ -106,10 +101,8 @@ namespace WarHub.ArmouryModel.Source.BattleScribe
         {
             var serializer = GetSerializer(rootElement);
             var namespaces = GetNamespaces(rootElement);
-            using (var bsWriter = BattleScribeConformantXmlWriter.Create(writer))
-            {
-                serializer.Serialize(bsWriter, @object, namespaces);
-            }
+            using var bsWriter = BattleScribeConformantXmlWriter.Create(writer);
+            serializer.Serialize(bsWriter, @object, namespaces);
         }
 
         private T Deserialize<T>(Func<XmlSerializer, object> deserialization, RootElement rootElement)

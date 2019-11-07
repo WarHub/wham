@@ -25,14 +25,13 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration.Tests
             {
                 var leaf = EmptyItemNode;
                 var container = EmptyContainerNode;
-                var root = EmptyRootNode
+                return EmptyRootNode
                     .AddLeftContainers(
                         container.AddItems(leaf, leaf),
                         container.AddItems(leaf))
                     .AddRightContainers(
                         container.AddItems(leaf),
                         container.AddItems(leaf, leaf));
-                return root;
             }
 
             public static IEnumerable<Action<SourceNode>> ValidateElements(bool includeSelf)

@@ -168,7 +168,8 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                                 simpleEntry => Argument(simpleEntry.IdentifierName),
                                 CreateComplexArgument,
                                 CreateCollectionArgument))));
-            ArgumentSyntax CreateComplexArgument(CoreDescriptor.Entry entry)
+
+            static ArgumentSyntax CreateComplexArgument(CoreDescriptor.Entry entry)
             {
                 return
                     Argument(
@@ -177,7 +178,8 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                             IdentifierName(Names.ToImmutable))
                         .InvokeWithArguments());
             }
-            ArgumentSyntax CreateCollectionArgument(CoreDescriptor.Entry entry)
+
+            static ArgumentSyntax CreateCollectionArgument(CoreDescriptor.Entry entry)
             {
                 return
                     Argument(
@@ -208,7 +210,8 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                                     CreateComplexInitializer,
                                     CreateCollectionInitializer)
                                 .ToArray()))));
-            ExpressionSyntax CreateSimpleInitializer(CoreDescriptor.Entry entry)
+
+            static ExpressionSyntax CreateSimpleInitializer(CoreDescriptor.Entry entry)
             {
                 return
                     AssignmentExpression(
@@ -216,7 +219,8 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                         entry.IdentifierName,
                         entry.IdentifierName);
             }
-            ExpressionSyntax CreateComplexInitializer(CoreDescriptor.ComplexEntry entry)
+
+            static ExpressionSyntax CreateComplexInitializer(CoreDescriptor.ComplexEntry entry)
             {
                 return
                     AssignmentExpression(
@@ -227,7 +231,8 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                             IdentifierName(Names.ToBuilder))
                         .InvokeWithArguments());
             }
-            ExpressionSyntax CreateCollectionInitializer(CoreDescriptor.CollectionEntry entry)
+
+            static ExpressionSyntax CreateCollectionInitializer(CoreDescriptor.CollectionEntry entry)
             {
                 return
                     AssignmentExpression(

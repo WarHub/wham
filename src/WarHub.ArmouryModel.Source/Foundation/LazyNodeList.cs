@@ -82,13 +82,12 @@ namespace WarHub.ArmouryModel.Source
 
             public TNode GetNodeSlot(int index)
             {
-                switch (index)
+                return index switch
                 {
-                    case 0: return GetNode(ref node0, 0);
-                    case 1: return GetNode(ref node1, 1);
-                    default:
-                        throw new IndexOutOfRangeException("Index was outside the bounds of the array");
-                }
+                    0 => GetNode(ref node0, 0),
+                    1 => GetNode(ref node1, 1),
+                    _ => throw new IndexOutOfRangeException("Index was outside the bounds of the array"),
+                };
             }
 
             private TNode GetNode(ref TNode node, int index)
@@ -122,14 +121,13 @@ namespace WarHub.ArmouryModel.Source
 
             public TNode GetNodeSlot(int index)
             {
-                switch (index)
+                return index switch
                 {
-                    case 0: return GetNode(ref node0, 0);
-                    case 1: return GetNode(ref node1, 1);
-                    case 2: return GetNode(ref node2, 2);
-                    default:
-                        throw new IndexOutOfRangeException("Index was outside the bounds of the array");
-                }
+                    0 => GetNode(ref node0, 0),
+                    1 => GetNode(ref node1, 1),
+                    2 => GetNode(ref node2, 2),
+                    _ => throw new IndexOutOfRangeException("Index was outside the bounds of the array"),
+                };
             }
 
             private TNode GetNode(ref TNode node, int index)
@@ -145,14 +143,14 @@ namespace WarHub.ArmouryModel.Source
 
         internal static IContainer<TNode> CreateContainer(ImmutableArray<TCore> cores, SourceNode parent)
         {
-            switch (cores.Length)
+            return cores.Length switch
             {
-                case 0: return default;
-                case 1: return new OneElementList(cores, parent);
-                case 2: return new TwoElementList(cores, parent);
-                case 3: return new ThreeElementList(cores, parent);
-                default: return new LazyNodeList<TNode, TCore>(cores, parent);
-            }
+                0 => default,
+                1 => new OneElementList(cores, parent),
+                2 => new TwoElementList(cores, parent),
+                3 => new ThreeElementList(cores, parent),
+                _ => new LazyNodeList<TNode, TCore>(cores, parent),
+            };
         }
     }
 

@@ -38,7 +38,8 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                     Descriptor.Entries.Select(CreateParameter))
                 .AddBodyStatements(
                     Descriptor.Entries.Select(CreateAssignment));
-            ParameterSyntax CreateParameter(CoreDescriptor.Entry entry)
+
+            static ParameterSyntax CreateParameter(CoreDescriptor.Entry entry)
             {
                 var type = entry is CoreDescriptor.CollectionEntry collectionEntry
                     ? collectionEntry.GetListNodeTypeIdentifierName()
@@ -50,7 +51,8 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                     .WithType(type)
                     .AddModifiers(SyntaxKind.OutKeyword);
             }
-            StatementSyntax CreateAssignment(CoreDescriptor.Entry entry)
+
+            static StatementSyntax CreateAssignment(CoreDescriptor.Entry entry)
             {
                 return
                     ExpressionStatement(

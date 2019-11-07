@@ -54,7 +54,8 @@ namespace WarHub.ArmouryModel.Source.Tests.Foundation
         public static IEnumerable<object[]> Sources()
         {
             return from node in _() select new object[] { node };
-            IEnumerable<SourceNode> _()
+
+            static IEnumerable<SourceNode> _()
             {
                 var gst = Gamesystem();
                 yield return gst;
@@ -75,7 +76,6 @@ namespace WarHub.ArmouryModel.Source.Tests.Foundation
         {
             this.selector = selector;
         }
-
 
         public static TNode Visit<TNode>(TNode node, Func<SourceNode, SourceNode> selector)
             where TNode : SourceNode
