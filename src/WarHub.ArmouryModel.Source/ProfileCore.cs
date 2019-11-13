@@ -5,7 +5,7 @@ namespace WarHub.ArmouryModel.Source
 {
     [WhamNodeCore]
     [XmlType("profile")]
-    public partial class ProfileCore : EntryBaseCore
+    public sealed partial class ProfileCore : EntryBaseCore
     {
         [XmlAttribute("typeId")]
         public string TypeId { get; }

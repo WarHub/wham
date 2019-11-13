@@ -1,11 +1,10 @@
-﻿using System.Collections.Immutable;
-using System.Xml.Serialization;
+﻿using System.Xml.Serialization;
 
 namespace WarHub.ArmouryModel.Source
 {
     [WhamNodeCore]
     [XmlType("category")]
-    public partial class CategoryCore : RosterElementBaseCore
+    public sealed partial class CategoryCore : RosterElementBaseCore
     {
         [XmlAttribute("primary")]
         public bool IsPrimary { get; }

@@ -29,9 +29,9 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
         protected override SyntaxTokenList GenerateModifiers()
         {
             var modifiers = base.GenerateModifiers();
-            return IsAbstract
-                ? TokenList(Token(SyntaxKind.AbstractKeyword)).AddRange(modifiers)
-                : modifiers;
+            return
+                TokenList(Token(IsAbstract ? SyntaxKind.AbstractKeyword : SyntaxKind.SealedKeyword))
+                .AddRange(modifiers);
         }
 
         protected override IEnumerable<BaseTypeSyntax> GenerateBaseTypes()
@@ -64,7 +64,8 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
             return
                 ConstructorDeclaration(
                     Descriptor.GetNodeTypeName())
-                .AddModifiers(SyntaxKind.ProtectedKeyword, SyntaxKind.InternalKeyword)
+                .MutateIf(IsAbstract, x => x.AddModifiers(SyntaxKind.ProtectedKeyword))
+                .AddModifiers(SyntaxKind.InternalKeyword)
                 .AddParameterListParameters(
                     Parameter(
                         Identifier(CoreLocal))
@@ -145,7 +146,8 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                     PropertyDeclaration(
                         Descriptor.CoreType,
                         CorePropertyIdentifier)
-                    .AddModifiers(SyntaxKind.ProtectedKeyword, SyntaxKind.InternalKeyword)
+                    .MutateIf(IsAbstract, x => x.AddModifiers(SyntaxKind.ProtectedKeyword))
+                    .AddModifiers(SyntaxKind.InternalKeyword)
                     .MutateIf(IsDerived, x => x.AddModifiers(SyntaxKind.NewKeyword))
                     .AddAccessorListAccessors(
                         AccessorDeclaration(SyntaxKind.GetAccessorDeclaration)
@@ -170,37 +172,40 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                     .AddAttributeListAttribute(DebuggerBrowsableNeverAttribute);
             }
 
-            static PropertyDeclarationSyntax CreateSimpleProperty(CoreDescriptor.SimpleEntry entry)
+            PropertyDeclarationSyntax CreateSimpleProperty(CoreDescriptor.SimpleEntry entry)
             {
                 return
                     PropertyDeclaration(
                         entry.Type,
                         entry.Identifier)
-                    .AddModifiers(SyntaxKind.PublicKeyword, SyntaxKind.VirtualKeyword)
+                    .AddModifiers(SyntaxKind.PublicKeyword)
+                    .MutateIf(IsAbstract, x => x.AddModifiers(SyntaxKind.VirtualKeyword))
                     .WithExpressionBodyFull(
                         CorePropertyIdentifierName
                         .MemberAccess(entry.IdentifierName));
             }
 
-            static PropertyDeclarationSyntax CreateComplexProperty(CoreDescriptor.ComplexEntry entry)
+            PropertyDeclarationSyntax CreateComplexProperty(CoreDescriptor.ComplexEntry entry)
             {
                 return
                     PropertyDeclaration(
                         entry.GetNodeTypeIdentifierName(),
                         entry.Identifier)
-                    .AddModifiers(SyntaxKind.PublicKeyword, SyntaxKind.VirtualKeyword)
+                    .AddModifiers(SyntaxKind.PublicKeyword)
+                    .MutateIf(IsAbstract, x => x.AddModifiers(SyntaxKind.VirtualKeyword))
                     .AddAccessorListAccessors(
                         AccessorDeclaration(SyntaxKind.GetAccessorDeclaration)
                         .WithSemicolonTokenDefault());
             }
 
-            static PropertyDeclarationSyntax CreateCollectionProperty(CoreDescriptor.CollectionEntry entry)
+            PropertyDeclarationSyntax CreateCollectionProperty(CoreDescriptor.CollectionEntry entry)
             {
                 return
                     PropertyDeclaration(
                         entry.GetListNodeTypeIdentifierName(),
                         entry.Identifier)
-                    .AddModifiers(SyntaxKind.PublicKeyword, SyntaxKind.VirtualKeyword)
+                    .AddModifiers(SyntaxKind.PublicKeyword)
+                    .MutateIf(IsAbstract, x => x.AddModifiers(SyntaxKind.VirtualKeyword))
                     .AddAccessorListAccessors(
                         AccessorDeclaration(SyntaxKind.GetAccessorDeclaration)
                         .WithSemicolonTokenDefault());
@@ -227,7 +232,8 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                     MethodDeclaration(
                         Descriptor.GetNodeTypeIdentifierName(),
                         Names.UpdateWith)
-                    .AddModifiers(SyntaxKind.ProtectedKeyword, SyntaxKind.InternalKeyword)
+                    .MutateIf(IsAbstract, x => x.AddModifiers(SyntaxKind.ProtectedKeyword))
+                    .AddModifiers(SyntaxKind.InternalKeyword)
                     .AddParameterListParameters(
                         Parameter(
                             Identifier(CoreParameter))
@@ -239,7 +245,6 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                         .WithSemicolonTokenDefault();
                 }
                 return methodSignatureBase
-                    .AddModifiers(SyntaxKind.VirtualKeyword)
                     .AddBodyStatements(
                         ReturnStatement(
                             ConditionalExpression(

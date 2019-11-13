@@ -5,7 +5,7 @@ namespace WarHub.ArmouryModel.Source
 {
     [WhamNodeCore]
     [XmlType("modifier")]
-    public partial class ModifierCore
+    public sealed partial class ModifierCore
     {
         [XmlAttribute("type")]
         public ModifierKind Type { get; }

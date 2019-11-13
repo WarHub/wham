@@ -4,7 +4,7 @@ namespace WarHub.ArmouryModel.Source
 {
     [WhamNodeCore]
     [XmlType("repeat")]
-    public partial class RepeatCore : SelectorBaseCore
+    public sealed partial class RepeatCore : SelectorBaseCore
     {
         [XmlAttribute("childId")]
         public string ChildId { get; }

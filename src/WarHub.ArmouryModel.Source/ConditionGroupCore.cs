@@ -5,7 +5,7 @@ namespace WarHub.ArmouryModel.Source
 {
     [WhamNodeCore]
     [XmlType("conditionGroup")]
-    public partial class ConditionGroupCore
+    public sealed partial class ConditionGroupCore
     {
         [XmlAttribute("type")]
         public ConditionGroupKind Type { get; }

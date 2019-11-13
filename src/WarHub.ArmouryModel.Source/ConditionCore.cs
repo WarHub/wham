@@ -4,7 +4,7 @@ namespace WarHub.ArmouryModel.Source
 {
     [WhamNodeCore]
     [XmlType("condition")]
-    public partial class ConditionCore : SelectorBaseCore
+    public sealed partial class ConditionCore : SelectorBaseCore
     {
         [XmlAttribute("childId")]
         public string ChildId { get; }

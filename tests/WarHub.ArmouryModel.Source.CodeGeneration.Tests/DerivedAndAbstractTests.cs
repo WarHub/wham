@@ -1,9 +1,26 @@
-﻿using Xunit;
+﻿using FluentAssertions;
+using Xunit;
 
 namespace WarHub.ArmouryModel.Source.CodeGeneration.Tests
 {
     public class DerivedAndAbstractTests
     {
+        [Fact]
+        public void Node_of_abstract_core_is_abstract()
+        {
+            var type = typeof(AbstractBaseNode);
+
+            type.Should().BeAbstract();
+        }
+
+        [Fact]
+        public void Node_of_non_abstract_core_is_sealed()
+        {
+            var type = typeof(ItemNode);
+
+            type.Should().BeSealed();
+        }
+
         [Fact]
         public void With_OnAbstract_ReturnsSameActualType()
         {

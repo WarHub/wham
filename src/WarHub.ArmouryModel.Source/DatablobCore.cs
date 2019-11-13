@@ -8,7 +8,7 @@ namespace WarHub.ArmouryModel.Source
     /// allows specification of metadata.
     /// </summary>
     [WhamNodeCore]
-    public partial class DatablobCore
+    public sealed partial class DatablobCore
     {
         public MetadataCore Meta { get; }
 

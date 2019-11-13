@@ -5,7 +5,7 @@ namespace WarHub.ArmouryModel.Source
 {
     [WhamNodeCore]
     [XmlType("selectionEntry")]
-    public partial class SelectionEntryCore : SelectionEntryBaseCore
+    public sealed partial class SelectionEntryCore : SelectionEntryBaseCore
     {
         [XmlAttribute("type")]
         public SelectionEntryKind Type { get; }

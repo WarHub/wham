@@ -4,7 +4,7 @@ namespace WarHub.ArmouryModel.Source
 {
     [WhamNodeCore]
     [XmlType("publication")]
-    public partial class PublicationCore
+    public sealed partial class PublicationCore
     {
         [XmlAttribute("id")]
         public string Id { get; }

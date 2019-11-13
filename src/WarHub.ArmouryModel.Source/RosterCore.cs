@@ -6,7 +6,7 @@ namespace WarHub.ArmouryModel.Source
 {
     [WhamNodeCore]
     [XmlRoot(RootElementNames.Roster, Namespace = Namespaces.RosterXmlns, IsNullable = false)]
-    public partial class RosterCore
+    public sealed partial class RosterCore
     {
         [XmlAttribute("id")]
         public string Id { get; }

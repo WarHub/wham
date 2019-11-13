@@ -144,6 +144,18 @@
       <xs:element name="rule" type="tns:Rule" minOccurs="0" maxOccurs="unbounded" />
     </xs:sequence>
   </xs:complexType>
+  
+  <!--container entry base-->
+  <xs:complexType name="ContainerEntryBase">
+    <xs:complexContent>
+      <xs:extension base="tns:EntryBase">
+        <xs:sequence>
+          <xs:element name="constraints" type="tns:ConstraintList" minOccurs="0" />
+          <xs:group ref="tns:InfoNodeGroup" />
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
 
   <!--info group-->
   <xs:complexType name="InfoGroup">
@@ -165,12 +177,7 @@
   <!--category entry-->
   <xs:complexType name="CategoryEntry">
     <xs:complexContent>
-      <xs:extension base="tns:EntryBase">
-        <xs:sequence>
-          <xs:element name="constraints" type="tns:ConstraintList" minOccurs="0" />
-          <xs:group ref="tns:InfoNodeGroup" />
-        </xs:sequence>
-      </xs:extension>
+      <xs:extension base="tns:ContainerEntryBase" />
     </xs:complexContent>
   </xs:complexType>
 
@@ -183,10 +190,8 @@
   <!--force entry-->
   <xs:complexType name="ForceEntry">
     <xs:complexContent>
-      <xs:extension base="tns:EntryBase">
+      <xs:extension base="tns:ContainerEntryBase">
         <xs:sequence>
-          <xs:element name="constraints" type="tns:ConstraintList" minOccurs="0" />
-          <xs:group ref="tns:InfoNodeGroup" />
           <xs:element name="forceEntries" type="tns:ForceEntryList" minOccurs="0" />
           <xs:element name="categoryLinks" type="tns:CategoryLinkList" minOccurs="0" />
         </xs:sequence>
@@ -200,11 +205,18 @@
     </xs:sequence>
   </xs:complexType>
 
-  <!--costs-->
-  <xs:complexType name="Cost">
+  <!--cost base-->
+  <xs:complexType name="CostBase">
     <xs:attribute name="name" type="xs:string" use="required" />
     <xs:attribute name="typeId" type="tns:idtype" use="required" />
     <xs:attribute name="value" type="xs:decimal" use="required" />
+  </xs:complexType>
+
+  <!--cost-->
+  <xs:complexType name="Cost">
+    <xs:complexContent>
+      <xs:extension base="tns:CostBase" />
+    </xs:complexContent>
   </xs:complexType>
 
   <xs:complexType name="CostList">
@@ -213,10 +225,10 @@
     </xs:sequence>
   </xs:complexType>
 
-  <!--cost limits-->
+  <!--cost limit-->
   <xs:complexType name="CostLimit">
     <xs:complexContent>
-      <xs:extension base="tns:Cost" />
+      <xs:extension base="tns:CostBase" />
     </xs:complexContent>
   </xs:complexType>
 
@@ -230,10 +242,8 @@
   <!--selection entry base-->
   <xs:complexType name="SelectionEntryBase">
     <xs:complexContent>
-      <xs:extension base="tns:EntryBase">
+      <xs:extension base="tns:ContainerEntryBase">
         <xs:sequence>
-          <xs:element name="constraints" type="tns:ConstraintList" minOccurs="0" />
-          <xs:group ref="tns:InfoNodeGroup" />
           <xs:element name="categoryLinks" type="tns:CategoryLinkList" minOccurs="0" />
           <xs:element name="selectionEntries" type="tns:SelectionEntryList" minOccurs="0" />
           <xs:element name="selectionEntryGroups" type="tns:SelectionEntryGroupList" minOccurs="0" />
@@ -334,11 +344,7 @@
   <!--category link-->
   <xs:complexType name="CategoryLink">
     <xs:complexContent>
-      <xs:extension base="tns:EntryBase">
-        <xs:sequence>
-          <xs:element name="constraints" type="tns:ConstraintList" minOccurs="0" />
-          <xs:group ref="tns:InfoNodeGroup" />
-        </xs:sequence>
+      <xs:extension base="tns:ContainerEntryBase">
         <xs:attribute name="targetId" type="tns:idtype" use="required" />
         <xs:attribute name="primary" type="xs:boolean" default="false" />
       </xs:extension>

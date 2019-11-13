@@ -6,7 +6,7 @@ namespace WarHub.ArmouryModel.Source
     /// Describes metadata of an item, further along referred to as target item.
     /// </summary>
     [WhamNodeCore]
-    public partial class MetadataCore
+    public sealed partial class MetadataCore
     {
         /// <summary>
         /// Gets an identifier of the target item described by this meta within some collection.

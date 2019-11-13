@@ -6,7 +6,7 @@ namespace WarHub.ArmouryModel.Source
 {
     [WhamNodeCore]
     [XmlRoot(RootElementNames.Catalogue, Namespace = Namespaces.CatalogueXmlns, IsNullable = false)]
-    public partial class CatalogueCore : CatalogueBaseCore
+    public sealed partial class CatalogueCore : CatalogueBaseCore
     {
         [XmlAttribute("library")]
         public bool IsLibrary { get; }

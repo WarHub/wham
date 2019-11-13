@@ -5,7 +5,7 @@ namespace WarHub.ArmouryModel.Source
 {
     [WhamNodeCore]
     [XmlRoot(RootElementNames.GameSystem, Namespace = Namespaces.GamesystemXmlns, IsNullable = false)]
-    public partial class GamesystemCore : CatalogueBaseCore
+    public sealed partial class GamesystemCore : CatalogueBaseCore
     {
     }
 }

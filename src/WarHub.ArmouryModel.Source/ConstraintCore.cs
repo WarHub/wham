@@ -4,7 +4,7 @@ namespace WarHub.ArmouryModel.Source
 {
     [WhamNodeCore]
     [XmlType("constraint")]
-    public partial class ConstraintCore : SelectorBaseCore
+    public sealed partial class ConstraintCore : SelectorBaseCore
     {
         [XmlAttribute("id")]
         public string Id { get; }

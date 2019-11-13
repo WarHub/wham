@@ -5,7 +5,7 @@ namespace WarHub.ArmouryModel.Source
 {
     [WhamNodeCore]
     [XmlType("force")]
-    public partial class ForceCore : RosterElementBaseCore
+    public sealed partial class ForceCore : RosterElementBaseCore
     {
         [XmlAttribute("catalogueId")]
         public string CatalogueId { get; }

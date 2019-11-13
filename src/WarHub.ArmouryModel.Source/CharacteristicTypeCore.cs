@@ -4,7 +4,7 @@ namespace WarHub.ArmouryModel.Source
 {
     [WhamNodeCore]
     [XmlType("characteristicType")]
-    public partial class CharacteristicTypeCore
+    public sealed partial class CharacteristicTypeCore
     {
         [XmlAttribute("id")]
         public string Id { get; }

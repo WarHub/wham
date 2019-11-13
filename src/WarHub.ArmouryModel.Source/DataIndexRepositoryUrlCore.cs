@@ -4,7 +4,7 @@ namespace WarHub.ArmouryModel.Source
 {
     [WhamNodeCore]
     [XmlType("repositoryUrl")]
-    public partial class DataIndexRepositoryUrlCore
+    public sealed partial class DataIndexRepositoryUrlCore
     {
         [XmlText]
         public string Value { get; }

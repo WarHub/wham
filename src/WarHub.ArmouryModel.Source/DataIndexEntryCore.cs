@@ -4,7 +4,7 @@ namespace WarHub.ArmouryModel.Source
 {
     [WhamNodeCore]
     [XmlType("dataIndexEntry")]
-    public partial class DataIndexEntryCore
+    public sealed partial class DataIndexEntryCore
     {
         [XmlAttribute("filePath")]
         public string FilePath { get; }

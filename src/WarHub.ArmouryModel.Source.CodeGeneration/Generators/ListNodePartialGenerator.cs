@@ -63,7 +63,8 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
             return
                 ConstructorDeclaration(
                     Descriptor.GetListNodeTypeName())
-                .AddModifiers(SyntaxKind.ProtectedKeyword, SyntaxKind.InternalKeyword)
+                .MutateIf(IsAbstract, x => x.AddModifiers(SyntaxKind.ProtectedKeyword))
+                .AddModifiers(SyntaxKind.InternalKeyword)
                 .AddParameterListParameters(
                     Parameter(
                         Identifier(Cores))

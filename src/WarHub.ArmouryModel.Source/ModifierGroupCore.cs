@@ -5,7 +5,7 @@ namespace WarHub.ArmouryModel.Source
 {
     [WhamNodeCore]
     [XmlType("modifierGroup")]
-    public partial class ModifierGroupCore
+    public sealed partial class ModifierGroupCore
     {
         [XmlArray("repeats")]
         public ImmutableArray<RepeatCore> Repeats { get; }

@@ -4,7 +4,7 @@ namespace WarHub.ArmouryModel.Source
 {
     [WhamNodeCore]
     [XmlType("costLimit")]
-    public partial class CostLimitCore : CostBaseCore
+    public sealed partial class CostLimitCore : CostBaseCore
     {
     }
 }

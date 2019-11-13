@@ -6,7 +6,7 @@ namespace WarHub.ArmouryModel.Source
 {
     [WhamNodeCore]
     [XmlRoot(RootElementNames.DataIndex, Namespace = Namespaces.DataIndexXmlns, IsNullable = false)]
-    public partial class DataIndexCore
+    public sealed partial class DataIndexCore
     {
         [XmlAttribute("battleScribeVersion")]
         public string BattleScribeVersion { get; }

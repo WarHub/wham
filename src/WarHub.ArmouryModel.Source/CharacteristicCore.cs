@@ -4,7 +4,7 @@ namespace WarHub.ArmouryModel.Source
 {
     [WhamNodeCore]
     [XmlType("characteristic")]
-    public partial class CharacteristicCore
+    public sealed partial class CharacteristicCore
     {
         [XmlAttribute("name")]
         public string Name { get; }

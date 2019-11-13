@@ -5,7 +5,7 @@ namespace WarHub.ArmouryModel.Source
 {
     [WhamNodeCore]
     [XmlType("entryLink")]
-    public partial class EntryLinkCore : SelectionEntryBaseCore
+    public sealed partial class EntryLinkCore : SelectionEntryBaseCore
     {
         [XmlAttribute("targetId")]
         public string TargetId { get; }

@@ -4,9 +4,12 @@ using System.Xml.Serialization;
 namespace WarHub.ArmouryModel.Source
 {
     [WhamNodeCore]
-    [XmlType("infoGroup")]
-    public sealed partial class InfoGroupCore : EntryBaseCore
+    public abstract partial class ContainerEntryBaseCore : EntryBaseCore
     {
+
+        [XmlArray("constraints")]
+        public ImmutableArray<ConstraintCore> Constraints { get; }
+
         [XmlArray("profiles")]
         public ImmutableArray<ProfileCore> Profiles { get; }
 

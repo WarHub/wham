@@ -5,7 +5,7 @@ namespace WarHub.ArmouryModel.Source
 {
     [WhamNodeCore]
     [XmlType("selection")]
-    public partial class SelectionCore : RosterElementBaseCore
+    public sealed partial class SelectionCore : RosterElementBaseCore
     {
         [XmlAttribute("number")]
         public int Number { get; }
