@@ -221,8 +221,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                 yield return DerivedUpdateWithMethod();
             }
             foreach (var withMethod in Descriptor.Entries
-                .Select(WithForSimpleEntry, WithForComplexEntry, WithForCollectionEntry)
-                .SelectMany(x => x))
+                .Select(WithForSimpleEntry, WithForComplexEntry, WithForCollectionEntry))
             {
                 yield return withMethod;
             }
@@ -294,9 +293,9 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                         IsDerived && entry.Symbol.ContainingType != Descriptor.TypeSymbol,
                         x => x.AddModifiers(SyntaxKind.NewKeyword));
             }
-            IEnumerable<MethodDeclarationSyntax> WithForSimpleEntry(CoreDescriptor.SimpleEntry entry)
+            MethodDeclarationSyntax WithForSimpleEntry(CoreDescriptor.SimpleEntry entry)
             {
-                yield return
+                return
                     WithBasicPart(entry)
                     .AddParameterListParameters(
                         Parameter(entry.Identifier)
@@ -309,9 +308,9 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                                 IdentifierName(Names.WithPrefix + entry.Identifier))
                             .InvokeWithArguments(entry.IdentifierName)));
             }
-            IEnumerable<MethodDeclarationSyntax> WithForComplexEntry(CoreDescriptor.ComplexEntry entry)
+            MethodDeclarationSyntax WithForComplexEntry(CoreDescriptor.ComplexEntry entry)
             {
-                yield return
+                return
                     WithBasicPart(entry)
                     .AddParameterListParameters(
                         Parameter(entry.Identifier)
@@ -326,32 +325,14 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                                 entry.IdentifierName
                                 .ConditionalMemberAccess(CorePropertyIdentifierName))));
             }
-            IEnumerable<MethodDeclarationSyntax> WithForCollectionEntry(CoreDescriptor.CollectionEntry entry)
+            MethodDeclarationSyntax WithForCollectionEntry(CoreDescriptor.CollectionEntry entry)
             {
-                yield return
+                return
                     WithBasicPart(entry)
                     .AddParameterListParameters(
                         Parameter(entry.Identifier)
                         .WithType(
                             entry.GetListNodeTypeIdentifierName()))
-                    .AddBodyStatements(
-                        ReturnStatement(
-                            IdentifierName(Names.UpdateWith)
-                            .InvokeWithArguments(
-                                CorePropertyIdentifierName
-                                .MemberAccess(
-                                    IdentifierName(Names.WithPrefix + entry.Identifier))
-                                .InvokeWithArguments(
-                                    entry.IdentifierName
-                                    .MemberAccess(
-                                        IdentifierName(Names.ToCoreArray))
-                                    .InvokeWithArguments()))));
-                yield return
-                    WithBasicPart(entry)
-                    .AddParameterListParameters(
-                        Parameter(entry.Identifier)
-                        .WithType(
-                            entry.GetNodeTypeIdentifierName().ToNodeListType()))
                     .AddBodyStatements(
                         ReturnStatement(
                             IdentifierName(Names.UpdateWith)
