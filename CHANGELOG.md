@@ -21,11 +21,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * All Node `With` methods for collection properties are now extension methods,
   with the exception the ones where parameter name is the same as the property's
   that's being modified ([#90]).
+* Renamed a couple of Source Core/Node properties ([#91]):
+  - Category: IsPrimary -> Primary
+  - CategoryLink: IsPrimary -> Primary
+  - EntryBase: IsHidden -> Hidden
+  - Repeat:
+    - Repeats -> RepeatCount
+    - IsRoundUp -> RoundUp
+  - SelectorBase: PercentValue -> IsValuePercentage
+  - SelectionEntryBase: Import -> Exported
 
 
 [#86]: https://github.com/WarHub/wham/pull/86
 [#89]: https://github.com/WarHub/wham/pull/89
 [#90]: https://github.com/WarHub/wham/pull/90
+[#91]: https://github.com/WarHub/wham/pull/91
 
 ## [0.7.0] - 2019-11-05
 

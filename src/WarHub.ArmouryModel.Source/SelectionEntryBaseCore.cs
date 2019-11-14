@@ -10,7 +10,7 @@ namespace WarHub.ArmouryModel.Source
         public bool Collective { get; }
 
         [XmlAttribute("import")]
-        public bool Import { get; }
+        public bool Exported { get; }
 
         [XmlArray("categoryLinks")]
         public ImmutableArray<CategoryLinkCore> CategoryLinks { get; }

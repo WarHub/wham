@@ -10,6 +10,6 @@ namespace WarHub.ArmouryModel.Source
         public string TargetId { get; }
 
         [XmlAttribute("primary")]
-        public bool IsPrimary { get; }
+        public bool Primary { get; }
     }
 }

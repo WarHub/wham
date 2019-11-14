@@ -19,7 +19,7 @@ namespace WarHub.ArmouryModel.Source
         public string Page { get; }
 
         [XmlAttribute("hidden")]
-        public bool IsHidden { get; }
+        public bool Hidden { get; }
 
         [XmlArray("modifiers")]
         public ImmutableArray<ModifierCore> Modifiers { get; }
