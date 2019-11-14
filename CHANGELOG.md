@@ -16,9 +16,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * Changed `NodeList<T>.GetEnumerator()` and `ListNode<T>.GetEnumerator()`
   return type to custom enumerator `NodeList<T>.Enumerator` that's optimized
   for performance ([#89]).
+* Changed all parameter names across the board to be camelCased. Also changed
+  parameter names of `With` methods to `value` to mirror setters ([#90]).
+* All Node `With` methods for collection properties are now extension methods,
+  with the exception the ones where parameter name is the same as the property's
+  that's being modified ([#90]).
+
 
 [#86]: https://github.com/WarHub/wham/pull/86
 [#89]: https://github.com/WarHub/wham/pull/89
+[#90]: https://github.com/WarHub/wham/pull/90
 
 ## [0.7.0] - 2019-11-05
 
