@@ -12,6 +12,9 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
 {
     internal class RecordCorePartialGenerator : CorePartialGeneratorBase
     {
+        public static readonly SyntaxToken ValueParamToken = Identifier("value");
+        public static readonly IdentifierNameSyntax ValueParamSyntax = IdentifierName(ValueParamToken);
+
         protected RecordCorePartialGenerator(CoreDescriptor descriptor, CancellationToken cancellationToken)
             : base(descriptor, cancellationToken)
         {
@@ -40,15 +43,14 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                 ConstructorDeclaration(Descriptor.CoreTypeIdentifier)
                 .AddModifiers(SyntaxKind.PublicKeyword)
                 .AddParameterListParameters(
-                    Descriptor.Entries.Select(CreateParameter))
+                    Descriptor.Entries.Select(entry => entry.CamelCaseParameterSyntax))
                 .MutateIf(
                     IsDerived,
                     x => x
                     .WithInitializer(
                         ConstructorInitializer(SyntaxKind.BaseConstructorInitializer)
                         .AddArgumentListArguments(
-                            Descriptor.DerivedEntries.Select(
-                                entry => Argument(entry.IdentifierName)))))
+                            Descriptor.DerivedEntries.Select(entry => entry.CamelCaseArgumentSyntax))))
                 .AddBodyStatements(
                     Descriptor.DeclaredEntries.Select(CreateCtorAssignment));
 
@@ -60,23 +62,21 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                             SyntaxKind.SimpleAssignmentExpression,
                             ThisExpression()
                             .MemberAccess(entry.IdentifierName),
-                            entry.IdentifierName));
+                            entry.CamelCaseIdentifierName));
             }
         }
 
         private IEnumerable<MethodDeclarationSyntax> GenerateUpdateMethods()
         {
             var abstractBaseUpdateName = Names.Update + Descriptor.CoreTypeIdentifier.Text;
-            var parameters = Descriptor.Entries
-                .Select(CreateParameter)
-                .ToImmutableArray();
             yield return
                 MethodDeclaration(Descriptor.CoreType, Names.Update)
                 .AddModifiers(SyntaxKind.PublicKeyword)
                 .MutateIf(
                     IsDerived && Descriptor.Entries.Length == Descriptor.DerivedEntries.Length,
                     x => x.AddModifiers(SyntaxKind.NewKeyword))
-                .AddParameterListParameters(parameters)
+                .AddParameterListParameters(
+                    Descriptor.Entries.Select(entry => entry.CamelCaseParameterSyntax))
                 .AddBodyStatements(
                         UpdateStatements());
             if (IsAbstract)
@@ -84,7 +84,8 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                 yield return
                     MethodDeclaration(Descriptor.CoreType, abstractBaseUpdateName)
                     .AddModifiers(SyntaxKind.ProtectedKeyword, SyntaxKind.AbstractKeyword)
-                    .AddParameterListParameters(parameters)
+                    .AddParameterListParameters(
+                        Descriptor.Entries.Select(entry => entry.CamelCaseParameterSyntax))
                     .WithSemicolonTokenDefault();
             }
             if (IsDerived)
@@ -94,14 +95,21 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                     MethodDeclaration(
                         IdentifierName(baseTypeName),
                         Names.Update + baseTypeName)
-                    .AddModifiers(SyntaxKind.ProtectedKeyword, SyntaxKind.SealedKeyword, SyntaxKind.OverrideKeyword)
+                    .AddModifiers(
+                        SyntaxKind.ProtectedKeyword,
+                        SyntaxKind.SealedKeyword,
+                        SyntaxKind.OverrideKeyword)
                     .AddParameterListParameters(
-                        Descriptor.DerivedEntries.Select(CreateParameter))
+                        Descriptor.DerivedEntries.Select(entry => entry.CamelCaseParameterSyntax))
                     .AddBodyStatements(
                         ReturnStatement(
                             IdentifierName(Names.Update)
                             .InvokeWithArguments(
-                                Descriptor.Entries.Select(x => x.IdentifierName))));
+                                Descriptor.DerivedEntries
+                                .Select(entry => entry.CamelCaseIdentifierName)
+                                .Concat(
+                                    Descriptor.DeclaredEntries
+                                    .Select(entry => entry.IdentifierName)))));
             }
             IEnumerable<StatementSyntax> UpdateStatements()
             {
@@ -111,7 +119,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                         ReturnStatement(
                             IdentifierName(abstractBaseUpdateName)
                             .InvokeWithArguments(
-                                Descriptor.Entries.Select(x => x.IdentifierName)));
+                                Descriptor.Entries.Select(entry => entry.CamelCaseIdentifierName)));
                     yield break;
                 }
                 const string EqualVarName = "equal";
@@ -131,14 +139,15 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                             ThisExpression(),
                             ObjectCreationExpression(Descriptor.CoreType)
                             .WithArguments(
-                                Descriptor.Entries.Select(x => x.IdentifierName))));
+                                Descriptor.Entries.Select(x => x.CamelCaseIdentifierName))));
                 ExpressionSyntax EqualsInitializer() =>
                     (from entry in Descriptor.Entries
                      let idName = entry.IdentifierName
+                     let param = entry.CamelCaseIdentifierName
                      let thisAccess =
                         ThisExpression()
                         .MemberAccess(idName)
-                     select BinaryExpression(SyntaxKind.EqualsExpression, thisAccess, idName))
+                     select BinaryExpression(SyntaxKind.EqualsExpression, thisAccess, param))
                     .Aggregate((x, y) => BinaryExpression(SyntaxKind.LogicalAndExpression, x, y));
             }
         }
@@ -148,7 +157,9 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
             return Descriptor.Entries.Select(CreateRecordMutator);
             MethodDeclarationSyntax CreateRecordMutator(CoreDescriptor.Entry entry)
             {
-                var arguments = Descriptor.Entries.Select(x => x.IdentifierName);
+                var arguments =
+                    Descriptor.Entries
+                    .Select(x => x == entry ? ValueParamSyntax : x.IdentifierName);
                 return
                     MethodDeclaration(
                         Descriptor.CoreType,
@@ -158,7 +169,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                         IsDerived && entry.Symbol.ContainingType != Descriptor.TypeSymbol,
                         x => x.AddModifiers(SyntaxKind.NewKeyword))
                     .AddParameterListParameters(
-                        Parameter(entry.Identifier)
+                        Parameter(ValueParamToken)
                         .WithType(entry.Type))
                     .AddBodyStatements(
                         ReturnStatement(
@@ -167,7 +178,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                                     SyntaxKind.EqualsExpression,
                                     ThisExpression()
                                     .MemberAccess(entry.IdentifierName),
-                                    entry.IdentifierName),
+                                    ValueParamSyntax),
                                 ThisExpression(),
                                 IdentifierName(Names.Update)
                                 .InvokeWithArguments(arguments))));

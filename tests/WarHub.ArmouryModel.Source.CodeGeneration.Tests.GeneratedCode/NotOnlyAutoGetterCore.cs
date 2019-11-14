@@ -5,7 +5,7 @@
     {
         public static NotOnlyAutoGetterCore CtorForward()
         {
-            return new NotOnlyAutoGetterCore(Name: "", DefaultValue: "");
+            return new NotOnlyAutoGetterCore(name: "", defaultValue: "");
         }
 
         private string fullProperty;

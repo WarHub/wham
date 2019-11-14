@@ -38,6 +38,16 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration.Tests
             }
         }
 
+        [Theory]
+        [InlineData(typeof(ItemNode), nameof(ItemNode.WithName))]
+        [InlineData(typeof(ContainerNode), nameof(ContainerNode.WithItems))]
+        public void Node_With_parameter_name_is_value(Type type, string withMethodName)
+        {
+            var parameter = type.GetMethod(withMethodName).GetParameters()[0];
+
+            parameter.Name.Should().Be("value");
+        }
+
         [Fact]
         public void DefaultNodeList_IsEmpty()
         {
