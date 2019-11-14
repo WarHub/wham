@@ -5,24 +5,51 @@ namespace WarHub.ArmouryModel.Source
     [WhamNodeCore]
     public abstract partial class SelectorBaseCore
     {
+        /// <summary>
+        /// Defines what is actually being counted in the query.
+        /// </summary>
         [XmlAttribute("field")]
         public string Field { get; }
 
+        /// <summary>
+        /// Defines a scope in which the query runs.
+        /// </summary>
         [XmlAttribute("scope")]
         public string Scope { get; }
 
+        /// <summary>
+        /// The value that the query result is compared to.
+        /// </summary>
         [XmlAttribute("value")]
         public decimal Value { get; }
 
+        /// <summary>
+        /// If <see langword="true" /> query result is calculated as a percentage
+        /// of non-percentage query result to a result of query widened to "global"
+        /// scope that doesn't select only values of the selector's owner; otherwise
+        /// the normal query result is used.
+        /// </summary>
         [XmlAttribute("percentValue")]
-        public bool PercentValue { get; }
+        public bool IsValuePercentage { get; }
 
+        /// <summary>
+        /// If <see langword="true" /> the query calculates all selections of the parent
+        /// entry; otherwise the query runs only for this specific entry selection.
+        /// </summary>
         [XmlAttribute("shared")]
         public bool Shared { get; }
 
+        /// <summary>
+        /// If <see langword="true" /> the scope includes all descendant selections;
+        /// otherwise the it only includes the scope level.
+        /// </summary>
         [XmlAttribute("includeChildSelections")]
         public bool IncludeChildSelections { get; }
 
+        /// <summary>
+        /// If <see langword="true" /> the scope includes all descendant forces;
+        /// otherwise only the one where the query originates from.
+        /// </summary>
         [XmlAttribute("includeChildForces")]
         public bool IncludeChildForces { get; }
     }

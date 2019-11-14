@@ -65,7 +65,7 @@ namespace WarHub.ArmouryModel.Source
                 entryGroupId: null,
                 categoryEntry.PublicationId,
                 categoryEntry.Page,
-                isPrimary: false);
+                primary: false);
         }
 
         public static CategoryEntryNode CategoryEntry(string name = null, string id = null)
@@ -75,7 +75,7 @@ namespace WarHub.ArmouryModel.Source
                 name: name ?? NewName(),
                 publicationId: null,
                 page: null,
-                isHidden: false);
+                hidden: false);
         }
 
         public static CategoryLinkNode CategoryLink(CategoryEntryNode categoryEntry, string id = null)
@@ -85,9 +85,9 @@ namespace WarHub.ArmouryModel.Source
                 name: categoryEntry.Name,
                 publicationId: categoryEntry.PublicationId,
                 page: categoryEntry.Page,
-                isHidden: false,
+                hidden: false,
                 targetId: categoryEntry.Id,
-                isPrimary: false);
+                primary: false);
         }
 
         public static CharacteristicNode Characteristic(CharacteristicTypeNode characteristicType, string value = null)
@@ -116,7 +116,7 @@ namespace WarHub.ArmouryModel.Source
                 field: field,
                 scope: scope,
                 value: value,
-                percentValue: false,
+                isValuePercentage: false,
                 shared: true,
                 includeChildSelections: false,
                 includeChildForces: false,
@@ -135,7 +135,7 @@ namespace WarHub.ArmouryModel.Source
                 field: field,
                 scope: scope,
                 value: value,
-                percentValue: false,
+                isValuePercentage: false,
                 shared: true,
                 includeChildSelections: false,
                 includeChildForces: false,
@@ -225,9 +225,9 @@ namespace WarHub.ArmouryModel.Source
                 name: selectionEntryBase.Name,
                 publicationId: selectionEntryBase.PublicationId,
                 page: selectionEntryBase.Page,
-                isHidden: false,
+                hidden: false,
                 collective: false,
-                import: true,
+                exported: true,
                 targetId: selectionEntryBase.Id,
                 type: type);
         }
@@ -260,7 +260,7 @@ namespace WarHub.ArmouryModel.Source
                 name: name ?? NewName(),
                 publicationId: null,
                 page: null,
-                isHidden: false);
+                hidden: false);
         }
 
         public static GamesystemNode Gamesystem(string name = null, string id = null)
@@ -282,7 +282,7 @@ namespace WarHub.ArmouryModel.Source
                 name: name ?? NewName(),
                 publicationId: null,
                 page: null,
-                isHidden: false);
+                hidden: false);
         }
 
         public static InfoLinkNode InfoLink(InfoGroupNode infoGroup, string id = null)
@@ -307,7 +307,7 @@ namespace WarHub.ArmouryModel.Source
                 name: node.Name,
                 publicationId: node.PublicationId,
                 page: node.Page,
-                isHidden: false,
+                hidden: false,
                 targetId: node.Id,
                 type: type);
         }
@@ -355,7 +355,7 @@ namespace WarHub.ArmouryModel.Source
                 name: name ?? NewName(),
                 publicationId: null,
                 page: null,
-                isHidden: false,
+                hidden: false,
                 typeId: profileType.Id,
                 typeName: profileType.Name);
         }
@@ -384,13 +384,13 @@ namespace WarHub.ArmouryModel.Source
                 field: field,
                 scope: scope,
                 value: value,
-                percentValue: false,
+                isValuePercentage: false,
                 shared: true,
                 includeChildSelections: false,
                 includeChildForces: false,
                 childId: childId,
-                repeats: 1,
-                isRoundUp: false);
+                repeatCount: 1,
+                roundUp: false);
         }
 
         public static RosterNode Roster(GamesystemNode gamesystem, string name = null, string id = null)
@@ -411,7 +411,7 @@ namespace WarHub.ArmouryModel.Source
                 name: name ?? NewName(),
                 publicationId: null,
                 page: null,
-                isHidden: false,
+                hidden: false,
                 description: description);
         }
 
@@ -439,9 +439,9 @@ namespace WarHub.ArmouryModel.Source
                 name: name ?? NewName(),
                 publicationId: null,
                 page: null,
-                isHidden: false,
+                hidden: false,
                 collective: false,
-                import: true,
+                exported: true,
                 type: SelectionEntryKind.Upgrade);
         }
 
@@ -452,9 +452,9 @@ namespace WarHub.ArmouryModel.Source
                 name: name ?? NewName(),
                 publicationId: null,
                 page: null,
-                isHidden: false,
+                hidden: false,
                 collective: false,
-                import: true,
+                exported: true,
                 defaultSelectionEntryId: null);
         }
     }
