@@ -15,6 +15,8 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
         public const string CoreProperty = "Core";
         public static readonly SyntaxToken CorePropertyIdentifier = Identifier(CoreProperty);
         public static readonly IdentifierNameSyntax CorePropertyIdentifierName = IdentifierName(CoreProperty);
+        public static readonly SyntaxToken ValueParamToken = Identifier("value");
+        public static readonly IdentifierNameSyntax ValueParamSyntax = IdentifierName(ValueParamToken);
 
         protected NodeGenerator(CoreDescriptor descriptor, CancellationToken cancellationToken) : base(descriptor, cancellationToken)
         {
@@ -221,8 +223,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                 yield return DerivedUpdateWithMethod();
             }
             foreach (var withMethod in Descriptor.Entries
-                .Select(WithForSimpleEntry, WithForComplexEntry, WithForCollectionEntry)
-                .SelectMany(x => x))
+                .Select(WithForSimpleEntry, WithForComplexEntry, WithForCollectionEntry))
             {
                 yield return withMethod;
             }
@@ -294,27 +295,27 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                         IsDerived && entry.Symbol.ContainingType != Descriptor.TypeSymbol,
                         x => x.AddModifiers(SyntaxKind.NewKeyword));
             }
-            IEnumerable<MethodDeclarationSyntax> WithForSimpleEntry(CoreDescriptor.SimpleEntry entry)
+            MethodDeclarationSyntax WithForSimpleEntry(CoreDescriptor.SimpleEntry entry)
             {
-                yield return
+                return
                     WithBasicPart(entry)
                     .AddParameterListParameters(
-                        Parameter(entry.Identifier)
-                        .WithType(entry?.Type))
+                        Parameter(ValueParamToken)
+                        .WithType(entry.Type))
                     .WithExpressionBodyFull(
                         IdentifierName(Names.UpdateWith)
                         .InvokeWithArguments(
                             CorePropertyIdentifierName
                             .MemberAccess(
                                 IdentifierName(Names.WithPrefix + entry.Identifier))
-                            .InvokeWithArguments(entry.IdentifierName)));
+                            .InvokeWithArguments(ValueParamSyntax)));
             }
-            IEnumerable<MethodDeclarationSyntax> WithForComplexEntry(CoreDescriptor.ComplexEntry entry)
+            MethodDeclarationSyntax WithForComplexEntry(CoreDescriptor.ComplexEntry entry)
             {
-                yield return
+                return
                     WithBasicPart(entry)
                     .AddParameterListParameters(
-                        Parameter(entry.Identifier)
+                        Parameter(ValueParamToken)
                         .WithType(entry.GetNodeTypeIdentifierName()))
                     .WithExpressionBodyFull(
                         IdentifierName(Names.UpdateWith)
@@ -323,15 +324,14 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                             .MemberAccess(
                                 IdentifierName(Names.WithPrefix + entry.Identifier))
                             .InvokeWithArguments(
-                                entry.IdentifierName
-                                .ConditionalMemberAccess(CorePropertyIdentifierName))));
+                                ValueParamSyntax.ConditionalMemberAccess(CorePropertyIdentifierName))));
             }
-            IEnumerable<MethodDeclarationSyntax> WithForCollectionEntry(CoreDescriptor.CollectionEntry entry)
+            MethodDeclarationSyntax WithForCollectionEntry(CoreDescriptor.CollectionEntry entry)
             {
-                yield return
+                return
                     WithBasicPart(entry)
                     .AddParameterListParameters(
-                        Parameter(entry.Identifier)
+                        Parameter(ValueParamToken)
                         .WithType(
                             entry.GetListNodeTypeIdentifierName()))
                     .AddBodyStatements(
@@ -342,25 +342,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                                 .MemberAccess(
                                     IdentifierName(Names.WithPrefix + entry.Identifier))
                                 .InvokeWithArguments(
-                                    entry.IdentifierName
-                                    .MemberAccess(
-                                        IdentifierName(Names.ToCoreArray))
-                                    .InvokeWithArguments()))));
-                yield return
-                    WithBasicPart(entry)
-                    .AddParameterListParameters(
-                        Parameter(entry.Identifier)
-                        .WithType(
-                            entry.GetNodeTypeIdentifierName().ToNodeListType()))
-                    .AddBodyStatements(
-                        ReturnStatement(
-                            IdentifierName(Names.UpdateWith)
-                            .InvokeWithArguments(
-                                CorePropertyIdentifierName
-                                .MemberAccess(
-                                    IdentifierName(Names.WithPrefix + entry.Identifier))
-                                .InvokeWithArguments(
-                                    entry.IdentifierName
+                                    ValueParamSyntax
                                     .MemberAccess(
                                         IdentifierName(Names.ToCoreArray))
                                     .InvokeWithArguments()))));

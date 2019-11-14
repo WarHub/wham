@@ -69,7 +69,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                 yield return CoreToNodeMethodsCorePartialGenerator.Generate(descriptor, cancellationToken);
                 yield return BasicDeclarationNodeGenerator.Generate(descriptor, cancellationToken);
                 yield return NodeGenerator.Generate(descriptor, cancellationToken);
-                yield return NodeCollectionConvenienceMethodsGenerator.Generate(descriptor, cancellationToken);
+                yield return NodeExtensionsGenerator.Generate(descriptor, cancellationToken);
                 yield return CollectionConversionExtensionsPartialGenerator.Generate(descriptor, cancellationToken);
                 yield return NodeConvenienceMethodsGenerator.Generate(descriptor, cancellationToken);
                 yield return NodeAcceptSourceVisitorPartialGenerator.Generate(descriptor, cancellationToken);

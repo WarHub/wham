@@ -59,6 +59,9 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                 AttributeLists = attributeLists;
                 CamelCaseIdentifier = SyntaxFactory.Identifier(identifier.ValueText.ToLowerFirstLetter());
                 CamelCaseIdentifierName = SyntaxFactory.IdentifierName(CamelCaseIdentifier);
+                CamelCaseParameterSyntax = SyntaxFactory.Parameter(CamelCaseIdentifier).WithType(Type);
+                ArgumentSyntax = SyntaxFactory.Argument(IdentifierName);
+                CamelCaseArgumentSyntax = SyntaxFactory.Argument(CamelCaseIdentifierName);
             }
 
             public IPropertySymbol Symbol { get; }
@@ -80,6 +83,12 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
             public SyntaxToken CamelCaseIdentifier { get; }
 
             public IdentifierNameSyntax CamelCaseIdentifierName { get; }
+
+            public ParameterSyntax CamelCaseParameterSyntax { get; }
+
+            public ArgumentSyntax ArgumentSyntax { get; }
+
+            public ArgumentSyntax CamelCaseArgumentSyntax { get; }
 
             public abstract bool IsComplex { get; }
             public abstract bool IsCollection { get; }

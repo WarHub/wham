@@ -1,4 +1,5 @@
-﻿using System.Collections.Immutable;
+﻿using System;
+using System.Collections.Immutable;
 using FluentAssertions;
 using Xunit;
 
@@ -12,6 +13,34 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration.Tests
             var subject = new ContainerCore("id", "name", ImmutableArray<ItemCore>.Empty);
             var result = subject.Update("id", "name", ImmutableArray<ItemCore>.Empty);
             result.Should().BeSameAs(subject);
+        }
+
+        [Fact]
+        public void Update_on_abstract_and_derived_creates_changed_instance_of_the_same_type()
+        {
+            var original =
+                new DerivedTwiceCore(
+                    "name",
+                    new DateTime(2000, 1, 1),
+                    ImmutableArray.Create(new ItemCore("i1", "item")));
+            AbstractDerivedCore @abstract = original;
+
+            var result = @abstract.Update("x", original.BaseDateTime, original.BaseItems);
+
+            result.Should()
+                .BeOfType<DerivedTwiceCore>()
+                .Which
+                .BaseName.Should().Be("x");
+        }
+
+        [Theory]
+        [InlineData(typeof(ItemCore), nameof(ItemCore.WithName))]
+        [InlineData(typeof(ContainerCore), nameof(ContainerCore.WithItems))]
+        public void Core_With_parameter_name_is_value(Type type, string withMethodName)
+        {
+            var parameter = type.GetMethod(withMethodName).GetParameters()[0];
+
+            parameter.Name.Should().Be("value");
         }
 
         [Fact]

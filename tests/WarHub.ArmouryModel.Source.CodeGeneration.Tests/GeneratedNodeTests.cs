@@ -1,7 +1,9 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Globalization;
 using System.Linq;
+using System.Reflection;
 using FluentAssertions;
 using MoreLinq;
 using Xunit;
@@ -36,6 +38,16 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration.Tests
             }
         }
 
+        [Theory]
+        [InlineData(typeof(ItemNode), nameof(ItemNode.WithName))]
+        [InlineData(typeof(ContainerNode), nameof(ContainerNode.WithItems))]
+        public void Node_With_parameter_name_is_value(Type type, string withMethodName)
+        {
+            var parameter = type.GetMethod(withMethodName).GetParameters()[0];
+
+            parameter.Name.Should().Be("value");
+        }
+
         [Fact]
         public void DefaultNodeList_IsEmpty()
         {
@@ -66,6 +78,14 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration.Tests
                     Assert.Equal(ItemId, x.Id);
                     Assert.Equal(ItemName, x.Name);
                 });
+        }
+
+        [Fact]
+        public void With_collection_has_no_overloads()
+        {
+            Action act = () => typeof(ContainerNode).GetMethod(nameof(ContainerNode.WithItems));
+
+            act.Should().NotThrow<AmbiguousMatchException>();
         }
 
         [Fact]
