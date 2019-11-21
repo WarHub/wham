@@ -14,26 +14,35 @@ namespace WarHub.ArmouryModel.Source.BattleScribe.Tests
     public class DataVersionManagementTests
     {
         [Theory]
-        [InlineData(MigrationMode.None, "XmlTestDatafiles/Warhammer 40,000 8th Edition.gst")]
-        [InlineData(MigrationMode.OnFailure, "XmlTestDatafiles/v1_15/Warhammer40K.gst")]
-        [InlineData(MigrationMode.Always, "XmlTestDatafiles/v1_15/Warhammer40K.gst")]
-        public void DeserializeAuto_works_with_any_mode(MigrationMode mode, string filepath)
+        [MemberData(nameof(VariousModesAndVariousVersionsOfFiles))]
+        public void DeserializeSourceNodeAuto_with_Always_or_OnFailure_mode_opens_anything(
+            BattleScribeVersion version,
+            MigrationMode mode,
+            string datafile)
         {
-            using var stream = File.OpenRead(filepath);
+            using var stream = datafile.GetDatafileStream(version);
             var result = stream.DeserializeSourceNodeAuto(mode);
-
             result
                 .Should().NotBeNull()
-                .And.BeOfType<GamesystemNode>();
+                .And.BeAssignableTo<IRootNode>();
+        }
+
+        public static IEnumerable<object[]> VariousModesAndVariousVersionsOfFiles()
+        {
+            return
+                from version in BattleScribeVersion.WellKnownVersions.Where(x => x.IsStable)
+                from mode in new[] { MigrationMode.OnFailure, MigrationMode.Always }
+                from file in new[] { TestData.Gamesystem, TestData.Catalogue }
+                select new object[] { version, mode, file };
         }
 
         [Theory]
-        [InlineData("XmlTestDatafiles/v1_15/Warhammer40K.gst")]
-        [InlineData("XmlTestDatafiles/v1_15/Space Marines - Codex (2015).cat")]
-        public void ReadMigrated_on_old_files_succeeds(string filepath)
+        [InlineData(TestData.Gamesystem)]
+        [InlineData(TestData.Catalogue)]
+        public void ReadMigrated_on_old_files_succeeds(string datafile)
         {
-            using var file = File.OpenRead(filepath);
-            var (result, info) = DataVersionManagement.ReadMigrated(file);
+            using var stream = datafile.GetDatafileStream(BattleScribeVersion.V1x15);
+            var (result, info) = DataVersionManagement.ReadMigrated(stream);
             using (result)
             {
                 GetVersion(result).Should().Be(info.Version);
@@ -53,7 +62,11 @@ namespace WarHub.ArmouryModel.Source.BattleScribe.Tests
         }
 
         [Theory]
-        [InlineData(RootElement.Catalogue, "1.15")]
+        [InlineData(RootElement.GameSystem, "1.15")]
+        [InlineData(RootElement.GameSystem, "2.02b")]
+        [InlineData(RootElement.Catalogue, "1.15b")]
+        [InlineData(RootElement.Catalogue, "3.21a")]
+        [InlineData(RootElement.DataIndex, "0.12d")]
         public void ReadRootElementInfo_succeeds(RootElement rootElement, string versionText)
         {
             var elementInfo =

@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<roster id="987a-2c66-fb69-cc4b" battleScribeVersion="1.15" name="New Roster" points="625.0" pointsLimit="1000.0" gameSystemId="e1ebd931-a209-3ce4-87b4-d9918d25530b" gameSystemName="Grim and Dark Future" gameSystemRevision="64" xmlns="http://www.battlescribe.net/schema/rosterSchema">
+  <forces>
+    <force id="9298-01d1-ce9c-5c6a" catalogueId="173c-6106-3331-86f0" catalogueRevision="132" catalogueName="Warriors in Warsuits" forceTypeId="416c6c696564204465746163686d656e7423232344415441232323" forceTypeName="Small Battalion">
+      <categories>
+        <category id="50ab-6840-2ca4-44dd" categoryId="(No Category)" name="(No Category)">
+          <selections/>
+        </category>
+        <category id="9785-1dc8-1ed4-c351" categoryId="ff36a6f3-19bf-4f48-8956-adacfd28fe74" name="No Force Org Slot">
+          <selections>
+            <selection id="8cee-2872-e1df-b757" entryId="36f8-3d39-fd45-a3c9::2994-f49f-f534-c148" name="Prototype Access protocols" points="0.0" number="1" type="upgrade">
+              <rules/>
+              <profiles/>
+              <selections/>
+            </selection>
+          </selections>
+        </category>
+        <category id="6fa5-fda9-cabf-f163" categoryId="848a6ff2-0def-4c72-8433-ff7da70e6bc7" name="Command">
+          <selections>
+            <selection id="2b26-9b2f-f8d9-8b7f" entryId="79e1-38a6-c79a-fa3b::ead3-f72a-6d8f-4078" name="Herman d&apos;Avignon" points="150.0" number="1" type="upgrade">
+              <rules/>
+              <profiles/>
+              <selections/>
+            </selection>
+          </selections>
+        </category>
+        <category id="5f94-7b19-4099-7e3f" categoryId="638d74c6-bd97-4de5-b65a-6aaa24e9f4b2" name="Special Ops">
+          <selections/>
+        </category>
+        <category id="9715-39b5-de91-cb4c" categoryId="5d76b6f5-20ae-4d70-8f59-ade72a2add3a" name="Troops">
+          <selections>
+            <selection id="b496-839b-1600-0cf9" entryId="c623-416a-c090-e2dc::21a4-ead4-54c9-f5b0" name="Storm Squad" points="0.0" number="1" type="unit" book="">
+              <rules/>
+              <profiles/>
+              <selections>
+                <selection id="558a-4954-ce27-4867" entryId="c623-416a-c090-e2dc::9a91-581d-c1f9-af14" entryGroupId="c623-416a-c090-e2dc::9f0c-fdc7-4c00-36e1" name="Storm Trooper" points="70.0" number="5" type="model">
+                  <rules/>
+                  <profiles>
+                    <profile profileId="c623-416a-c090-e2dc::25c3-7ad1-c261-eb1a::6c25-db63-060e-fe0b" name="Storm Trooper" type="Unit" hidden="false">
+                      <characteristics>
+                        <characteristic name="Skill" value="4+" characteristicId="5ee4ff0b-b244-4670-9d05-91d10f80c32e"/>
+                        <characteristic name="Toughness" value="6" characteristicId="f6f92f00-8bb1-4afa-8ccb-46310b7dd5e5"/>
+                        <characteristic name="Attack" value="3.0" characteristicId="da036dbb-32c2-430a-9dd5-aa74e0c4f74b"/>
+                        <characteristic name="Armour" value="3+/5++" characteristicId="3f9ed75c-36cd-4169-9cef-48391bb55cfd"/>
+                      </characteristics>
+                    </profile>
+                  </profiles>
+                  <selections/>
+                </selection>
+                <selection id="8a36-1ab9-c6a6-6d0f" entryId="c623-416a-c090-e2dc::f36d-4ee2-f3a6-2a9b" entryGroupId="c623-416a-c090-e2dc::9f0c-fdc7-4c00-36e1" name="Storm Veteran Trooper" points="20.0" number="1" type="model">
+                  <rules/>
+                  <profiles>
+                    <profile profileId="c623-416a-c090-e2dc::c39f-7c35-cc27-f557::6c25-db63-060e-fe0b" name="Storm Trooper" type="Unit" hidden="false">
+                      <characteristics>
+                        <characteristic name="Skill" value="4+" characteristicId="5ee4ff0b-b244-4670-9d05-91d10f80c32e"/>
+                        <characteristic name="Toughness" value="6" characteristicId="f6f92f00-8bb1-4afa-8ccb-46310b7dd5e5"/>
+                        <characteristic name="Attack" value="3.0" characteristicId="da036dbb-32c2-430a-9dd5-aa74e0c4f74b"/>
+                        <characteristic name="Armour" value="3+/5++" characteristicId="3f9ed75c-36cd-4169-9cef-48391bb55cfd"/>
+                      </characteristics>
+                    </profile>
+                  </profiles>
+                  <selections>
+                    <selection id="fe38-45c1-6f63-da6c" entryId="c623-416a-c090-e2dc::2d9b-5857-7391-8e9d" entryGroupId="c623-416a-c090-e2dc::ccfe-9ea0-a3b3-9f60" name="Laser pistol" points="6.0" number="1" type="upgrade">
+                      <rules/>
+                      <profiles/>
+                      <selections/>
+                    </selection>
+                    <selection id="6367-527a-1355-d7b2" entryId="c623-416a-c090-e2dc::681a-b38e-41a0-13ef" entryGroupId="c623-416a-c090-e2dc::697c-878b-d5b2-a66a" name="Ionic war hammer" points="7.0" number="1" type="upgrade">
+                      <rules/>
+                      <profiles/>
+                      <selections/>
+                    </selection>
+                    <selection id="3d9b-25af-3fdc-b8e3" entryId="c623-416a-c090-e2dc::2351-1cb3-ee5d-7e5c::6a48-e2f5-8410-d763" entryGroupId="c623-416a-c090-e2dc::2351-1cb3-ee5d-7e5c::42bc-98c0-dd2b-4f58" name="Hyper-dimensional transponder" points="0.0" number="1" type="upgrade">
+                      <rules/>
+                      <profiles/>
+                      <selections/>
+                    </selection>
+                    <selection id="e920-2b0e-d975-6219" entryId="c623-416a-c090-e2dc::2351-1cb3-ee5d-7e5c::a3f7-4fee-72b0-ce6e" entryGroupId="c623-416a-c090-e2dc::2351-1cb3-ee5d-7e5c::42bc-98c0-dd2b-4f58" name="Blessed Papyrus" points="12.0" number="1" type="upgrade">
+                      <rules>
+                        <rule ruleId="c623-416a-c090-e2dc::2351-1cb3-ee5d-7e5c::a409-bb8a-52fb-6d87" name="Blessed Papyrus" hidden="false">
+                          <description>When a model with this prototype attacks, choose one of the following effects:
+- apply +1 modifier on Armour Piercing
+- apply +1 modifier on To Hit roll
+- apply -1 modifier on Armour roll of the enemy model</description>
+                        </rule>
+                      </rules>
+                      <profiles/>
+                      <selections/>
+                    </selection>
+                    <selection id="0f3c-54fd-2b07-df8f" entryId="c623-416a-c090-e2dc::2351-1cb3-ee5d-7e5c::67d1-ab57-6128-e023" entryGroupId="c623-416a-c090-e2dc::2351-1cb3-ee5d-7e5c::42bc-98c0-dd2b-4f58" name="Reliquiary" points="10.0" number="1" type="upgrade">
+                      <rules/>
+                      <profiles/>
+                      <selections/>
+                    </selection>
+                    <selection id="534d-6860-a232-3a88" entryId="c623-416a-c090-e2dc::2351-1cb3-ee5d-7e5c::9a19-8791-4de9-913b::3b14-2434-ff0d-3c06" entryGroupId="c623-416a-c090-e2dc::2351-1cb3-ee5d-7e5c::42bc-98c0-dd2b-4f58" name="Micro-compressed sun power core" points="50.0" number="1" type="upgrade">
+                      <rules/>
+                      <profiles/>
+                      <selections/>
+                    </selection>
+                    <selection id="8402-c024-ee00-279f" entryId="c623-416a-c090-e2dc::2351-1cb3-ee5d-7e5c::1113-e550-edf8-43d4::e973-ac47-905b-11d1" entryGroupId="c623-416a-c090-e2dc::2351-1cb3-ee5d-7e5c::42bc-98c0-dd2b-4f58" name="Black matter battery" points="100.0" number="1" type="upgrade">
+                      <rules/>
+                      <profiles/>
+                      <selections/>
+                    </selection>
+                  </selections>
+                </selection>
+                <selection id="8342-862e-54e4-f77b" entryId="c623-416a-c090-e2dc::9d8c-8f81-2d32-e1e1" name="Dropship" points="50.0" number="1" type="upgrade">
+                  <rules/>
+                  <profiles/>
+                  <selections/>
+                </selection>
+              </selections>
+            </selection>
+          </selections>
+        </category>
+        <category id="6ad3-924d-6f5a-8b1f" categoryId="c274d0b0-5866-44bc-9810-91c136ae7438" name="Quick Support">
+          <selections/>
+        </category>
+        <category id="cecd-485f-7490-3a63" categoryId="abf5fd55-9ac7-4263-8bc1-a9fb0a8fa6a6" name="Heavy Support">
+          <selections>
+            <selection id="e920-a7b7-9e24-5205" entryId="9b8b-cb79-26c6-2f1e" name="Artillery Attack" points="150.0" number="1" type="upgrade">
+              <rules/>
+              <profiles/>
+              <selections/>
+            </selection>
+          </selections>
+        </category>
+      </categories>
+      <forces/>
+    </force>
+  </forces>
+  <rules>
+    <rule ruleId="1202-9a24-3315-1c98" name="Warsuits" hidden="false">
+      <description>All infantry models in this army do not roll for Terrain but move maximum distance instead.</description>
+    </rule>
+    <rule ruleId="6327-7cea-56af-957f::dff2-0ccb-7bf5-79ba" name="Drop Specialists" hidden="false">
+      <description>All Storm Squads that deploy via Dropship or through Hyper-dimensional transponder gain +2 Attacks on the turn they deployed.</description>
+    </rule>
+  </rules>
+</roster>

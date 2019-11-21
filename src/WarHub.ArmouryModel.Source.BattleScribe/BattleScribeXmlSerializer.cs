@@ -1,6 +1,9 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.IO;
+using System.Threading;
 using System.Xml.Serialization;
 using WarHub.ArmouryModel.Source.BattleScribe.Utilities;
 using WarHub.ArmouryModel.Source.XmlFormat;
@@ -21,14 +24,21 @@ namespace WarHub.ArmouryModel.Source.BattleScribe
         /// </summary>
         public static BattleScribeXmlSerializer Instance => LazyInstance.Value;
 
-        private readonly Dictionary<RootElement, XmlSerializerNamespaces> namespaces
-            = new Dictionary<RootElement, XmlSerializerNamespaces>();
+        private class ElementCache
+        {
+            public XmlSerializer Serializer;
+            public XmlSerializer Deserializer;
+            public XmlSerializerNamespaces Namespaces;
+        }
 
-        private readonly Dictionary<RootElement, XmlSerializer> serializers
-            = new Dictionary<RootElement, XmlSerializer>();
-
-        private readonly Dictionary<RootElement, XmlSerializer> deserializers
-            = new Dictionary<RootElement, XmlSerializer>();
+        private readonly ImmutableDictionary<RootElement, ElementCache> elementCacheDictionary
+            = new Dictionary<RootElement, ElementCache>
+            {
+                [RootElement.Catalogue] = new ElementCache(),
+                [RootElement.DataIndex] = new ElementCache(),
+                [RootElement.GameSystem] = new ElementCache(),
+                [RootElement.Roster] = new ElementCache(),
+            }.ToImmutableDictionary();
 
         public CatalogueNode DeserializeCatalogue(Func<XmlSerializer, object> deserialization)
             => Deserialize<CatalogueCore.Builder>(deserialization, RootElement.Catalogue)
@@ -113,48 +123,51 @@ namespace WarHub.ArmouryModel.Source.BattleScribe
 
         private XmlSerializerNamespaces GetNamespaces(RootElement rootElement)
         {
-            if (namespaces.TryGetValue(rootElement, out var cached))
+            ref var cached = ref elementCacheDictionary[rootElement].Namespaces;
+            if (cached is { } existing)
             {
-                return cached;
+                return existing;
             }
             var created = CreateNamespaces(rootElement);
-            namespaces[rootElement] = created;
-            return created;
+            return Interlocked.CompareExchange(ref cached, created, null) is null
+                ? created : cached;
+
+            static XmlSerializerNamespaces CreateNamespaces(RootElement rootElement)
+            {
+                var namespaces = new XmlSerializerNamespaces();
+                namespaces.Add("", rootElement.Info().Namespace);
+                return namespaces;
+            }
         }
 
         private XmlSerializer GetSerializer(RootElement rootElement)
         {
-            if (serializers.TryGetValue(rootElement, out var cached))
+            ref var cached = ref elementCacheDictionary[rootElement].Serializer;
+            if (cached is { } existing)
             {
-                return cached;
+                return existing;
             }
             var created = CreateSerializer(rootElement);
-            serializers[rootElement] = created;
-            return created;
+            return Interlocked.CompareExchange(ref cached, created, null) is null
+                ? created : cached;
+
+            static XmlSerializer CreateSerializer(RootElement rootElement)
+                => new XmlSerializer(rootElement.Info().SerializationProxyType);
         }
 
         private XmlSerializer GetDeserializer(RootElement rootElement)
         {
-            if (deserializers.TryGetValue(rootElement, out var cached))
+            ref var cached = ref elementCacheDictionary[rootElement].Deserializer;
+            if (cached is { } existing)
             {
-                return cached;
+                return existing;
             }
             var created = CreateDeserializer(rootElement);
-            deserializers[rootElement] = created;
-            return created;
-        }
+            return Interlocked.CompareExchange(ref cached, created, null) is null
+                ? created : cached;
 
-        private static XmlSerializer CreateSerializer(RootElement rootElement)
-            => new XmlSerializer(rootElement.Info().SerializationProxyType);
-
-        private static XmlSerializer CreateDeserializer(RootElement rootElement)
-            => new XmlSerializer(rootElement.Info().BuilderType);
-
-        private static XmlSerializerNamespaces CreateNamespaces(RootElement rootElement)
-        {
-            var namespaces = new XmlSerializerNamespaces();
-            namespaces.Add("", rootElement.Info().Namespace);
-            return namespaces;
+            static XmlSerializer CreateDeserializer(RootElement rootElement)
+                => new XmlSerializer(rootElement.Info().BuilderType);
         }
     }
 }
