@@ -1,0 +1,400 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<gameSystem id="e1ebd931-a209-3ce4-87b4-d9918d25530b" name="Grim and Dark Future" revision="64" battleScribeVersion="2.01" authorName="Test Author" authorContact="@handle" authorUrl="http://example.com" xmlns="http://www.battlescribe.net/schema/gameSystemSchema">
+  <profiles/>
+  <rules/>
+  <infoLinks/>
+  <costTypes>
+    <costType id="points" name="pts" defaultCostLimit="0.0"/>
+  </costTypes>
+  <profileTypes>
+    <profileType id="2d6001b0-980e-46d2-bcc2-a9fc60109afd" name="Unit">
+      <characteristicTypes>
+        <characteristicType id="5ee4ff0b-b244-4670-9d05-91d10f80c32e" name="Skill"/>
+        <characteristicType id="f6f92f00-8bb1-4afa-8ccb-46310b7dd5e5" name="Toughness"/>
+        <characteristicType id="da036dbb-32c2-430a-9dd5-aa74e0c4f74b" name="Attack"/>
+        <characteristicType id="3f9ed75c-36cd-4169-9cef-48391bb55cfd" name="Armour"/>
+      </characteristicTypes>
+    </profileType>
+    <profileType id="d5f97c0b-9fc9-478d-aa34-a7c414d3ea48" name="Weapon">
+      <characteristicTypes>
+        <characteristicType id="6fa97fa8-ea74-4a27-a0fb-bc4e5f367464" name="Range"/>
+        <characteristicType id="a6383362-5aa8-4ff0-b1d0-00e059fc9d45" name="Strength"/>
+        <characteristicType id="6abee736-f8d3-498e-97ac-a5c68445609f" name="Piercing"/>
+        <characteristicType id="077c342f-d7b9-45c6-b8af-88e97cafd3a2" name="Type"/>
+      </characteristicTypes>
+    </profileType>
+    <profileType id="72c5eafc-75bf-4ed9-b425-78009f1efe82" name="Wargear">
+      <characteristicTypes>
+        <characteristicType id="21befb24-fc85-4f52-a745-64b2e48f8228" name="Description"/>
+      </characteristicTypes>
+    </profileType>
+  </profileTypes>
+  <categoryEntries>
+    <categoryEntry id="ff36a6f3-19bf-4f48-8956-adacfd28fe74" name="No Force Org Slot" hidden="false">
+      <profiles/>
+      <rules/>
+      <infoLinks/>
+      <modifiers/>
+      <constraints/>
+    </categoryEntry>
+    <categoryEntry id="848a6ff2-0def-4c72-8433-ff7da70e6bc7" name="Command" hidden="false">
+      <profiles/>
+      <rules/>
+      <infoLinks/>
+      <modifiers/>
+      <constraints/>
+    </categoryEntry>
+    <categoryEntry id="638d74c6-bd97-4de5-b65a-6aaa24e9f4b2" name="Special Ops" hidden="false">
+      <profiles/>
+      <rules/>
+      <infoLinks/>
+      <modifiers/>
+      <constraints/>
+    </categoryEntry>
+    <categoryEntry id="5d76b6f5-20ae-4d70-8f59-ade72a2add3a" name="Troops" hidden="false">
+      <profiles/>
+      <rules/>
+      <infoLinks/>
+      <modifiers/>
+      <constraints/>
+    </categoryEntry>
+    <categoryEntry id="c274d0b0-5866-44bc-9810-91c136ae7438" name="Quick Support" hidden="false">
+      <profiles/>
+      <rules/>
+      <infoLinks/>
+      <modifiers/>
+      <constraints/>
+    </categoryEntry>
+    <categoryEntry id="abf5fd55-9ac7-4263-8bc1-a9fb0a8fa6a6" name="Heavy Support" hidden="false">
+      <profiles/>
+      <rules/>
+      <infoLinks/>
+      <modifiers/>
+      <constraints/>
+    </categoryEntry>
+    <categoryEntry id="8dbf948c-125b-4886-b21e-3ccabc1e1188" name="Battle Formation" hidden="false">
+      <profiles/>
+      <rules/>
+      <infoLinks/>
+      <modifiers/>
+      <constraints/>
+    </categoryEntry>
+    <categoryEntry id="c888f08a-6cea-4a01-8126-d374a9231554" name="Warlords" hidden="false">
+      <profiles/>
+      <rules/>
+      <infoLinks/>
+      <modifiers/>
+      <constraints/>
+    </categoryEntry>
+    <categoryEntry id="3137a02e-72a5-4b5c-bcf3-54f567c8419c" name="Other" hidden="false">
+      <profiles/>
+      <rules/>
+      <infoLinks/>
+      <modifiers/>
+      <constraints/>
+    </categoryEntry>
+    <categoryEntry id="28b94f51-e66b-4096-aa59-0c9df620a77d" name="Formation" hidden="false">
+      <profiles/>
+      <rules/>
+      <infoLinks/>
+      <modifiers/>
+      <constraints/>
+    </categoryEntry>
+    <categoryEntry id="d713cda3-5d0f-40d8-b621-69233263ec2a" name="Fortification" hidden="false">
+      <profiles/>
+      <rules/>
+      <infoLinks/>
+      <modifiers/>
+      <constraints/>
+    </categoryEntry>
+    <categoryEntry id="7fc5b655-812e-45ed-98ff-db8847d356da" name="Primary Detachment" hidden="false">
+      <profiles/>
+      <rules/>
+      <infoLinks/>
+      <modifiers/>
+      <constraints/>
+    </categoryEntry>
+  </categoryEntries>
+  <forceEntries>
+    <forceEntry id="416c6c696564204465746163686d656e7423232344415441232323" name="Small Battalion" hidden="false">
+      <profiles/>
+      <rules/>
+      <infoLinks/>
+      <modifiers/>
+      <constraints/>
+      <forceEntries/>
+      <categoryLinks>
+        <categoryLink id="416c6c696564204465746163686d656e7423232344415441232323-ff36a6f3-19bf-4f48-8956-adacfd28fe74" name="No Force Org Slot" hidden="false" targetId="ff36a6f3-19bf-4f48-8956-adacfd28fe74" primary="false">
+          <profiles/>
+          <rules/>
+          <infoLinks/>
+          <modifiers/>
+          <constraints/>
+        </categoryLink>
+        <categoryLink id="416c6c696564204465746163686d656e7423232344415441232323-848a6ff2-0def-4c72-8433-ff7da70e6bc7" name="Command" hidden="false" targetId="848a6ff2-0def-4c72-8433-ff7da70e6bc7" primary="false">
+          <profiles/>
+          <rules/>
+          <infoLinks/>
+          <modifiers/>
+          <constraints>
+            <constraint field="selections" scope="parent" value="1.0" percentValue="false" shared="false" includeChildSelections="false" includeChildForces="false" id="minSelections" type="min"/>
+            <constraint field="selections" scope="parent" value="1.0" percentValue="false" shared="false" includeChildSelections="false" includeChildForces="true" id="maxSelections" type="max"/>
+          </constraints>
+        </categoryLink>
+        <categoryLink id="416c6c696564204465746163686d656e7423232344415441232323-638d74c6-bd97-4de5-b65a-6aaa24e9f4b2" name="Special Ops" hidden="false" targetId="638d74c6-bd97-4de5-b65a-6aaa24e9f4b2" primary="false">
+          <profiles/>
+          <rules/>
+          <infoLinks/>
+          <modifiers/>
+          <constraints>
+            <constraint field="selections" scope="parent" value="1.0" percentValue="false" shared="false" includeChildSelections="false" includeChildForces="true" id="maxSelections" type="max"/>
+          </constraints>
+        </categoryLink>
+        <categoryLink id="416c6c696564204465746163686d656e7423232344415441232323-5d76b6f5-20ae-4d70-8f59-ade72a2add3a" name="Troops" hidden="false" targetId="5d76b6f5-20ae-4d70-8f59-ade72a2add3a" primary="false">
+          <profiles/>
+          <rules/>
+          <infoLinks/>
+          <modifiers/>
+          <constraints>
+            <constraint field="selections" scope="parent" value="1.0" percentValue="false" shared="false" includeChildSelections="false" includeChildForces="false" id="minSelections" type="min"/>
+            <constraint field="selections" scope="parent" value="2.0" percentValue="false" shared="false" includeChildSelections="false" includeChildForces="true" id="maxSelections" type="max"/>
+          </constraints>
+        </categoryLink>
+        <categoryLink id="416c6c696564204465746163686d656e7423232344415441232323-c274d0b0-5866-44bc-9810-91c136ae7438" name="Quick Support" hidden="false" targetId="c274d0b0-5866-44bc-9810-91c136ae7438" primary="false">
+          <profiles/>
+          <rules/>
+          <infoLinks/>
+          <modifiers/>
+          <constraints>
+            <constraint field="selections" scope="parent" value="1.0" percentValue="false" shared="false" includeChildSelections="false" includeChildForces="true" id="maxSelections" type="max"/>
+          </constraints>
+        </categoryLink>
+        <categoryLink id="416c6c696564204465746163686d656e7423232344415441232323-abf5fd55-9ac7-4263-8bc1-a9fb0a8fa6a6" name="Heavy Support" hidden="false" targetId="abf5fd55-9ac7-4263-8bc1-a9fb0a8fa6a6" primary="false">
+          <profiles/>
+          <rules/>
+          <infoLinks/>
+          <modifiers/>
+          <constraints>
+            <constraint field="selections" scope="parent" value="1.0" percentValue="false" shared="false" includeChildSelections="false" includeChildForces="true" id="maxSelections" type="max"/>
+          </constraints>
+        </categoryLink>
+      </categoryLinks>
+    </forceEntry>
+    <forceEntry id="3bfe125e-5674-06d5-082f-f7f577ea26fc" name="Siege Army" hidden="false">
+      <profiles/>
+      <rules/>
+      <infoLinks/>
+      <modifiers/>
+      <constraints/>
+      <forceEntries>
+        <forceEntry id="0515-4245-8364-71c6" name="Allied Element" hidden="false">
+          <profiles/>
+          <rules/>
+          <infoLinks/>
+          <modifiers/>
+          <constraints/>
+          <forceEntries/>
+          <categoryLinks>
+            <categoryLink id="0515-4245-8364-71c6-ff36a6f3-19bf-4f48-8956-adacfd28fe74" name="No Force Org Slot" hidden="false" targetId="ff36a6f3-19bf-4f48-8956-adacfd28fe74" primary="false">
+              <profiles/>
+              <rules/>
+              <infoLinks/>
+              <modifiers/>
+              <constraints/>
+            </categoryLink>
+            <categoryLink id="0515-4245-8364-71c6-848a6ff2-0def-4c72-8433-ff7da70e6bc7" name="Command" hidden="false" targetId="848a6ff2-0def-4c72-8433-ff7da70e6bc7" primary="false">
+              <profiles/>
+              <rules/>
+              <infoLinks/>
+              <modifiers>
+                <modifier type="increment" field="minSelections" value="1">
+                  <repeats>
+                    <repeat field="limit::points" scope="roster" value="100.0" percentValue="false" shared="false" includeChildSelections="false" includeChildForces="false" childId="any" repeats="1" roundUp="false"/>
+                  </repeats>
+                  <conditions>
+                    <condition field="selections" scope="roster" value="2.0" percentValue="false" shared="false" includeChildSelections="false" includeChildForces="false" childId="any" type="equalTo"/>
+                  </conditions>
+                  <conditionGroups>
+                    <conditionGroup type="or">
+                      <conditions>
+                        <condition field="limit::points" scope="roster" value="1000.0" percentValue="false" shared="false" includeChildSelections="false" includeChildForces="false" childId="any" type="equalTo"/>
+                        <condition field="selections" scope="parent" value="1.0" percentValue="false" shared="false" includeChildSelections="false" includeChildForces="false" childId="848a6ff2-0def-4c72-8433-ff7da70e6bc7" type="equalTo"/>
+                      </conditions>
+                      <conditionGroups/>
+                    </conditionGroup>
+                  </conditionGroups>
+                </modifier>
+              </modifiers>
+              <constraints>
+                <constraint field="selections" scope="parent" value="0.0" percentValue="false" shared="false" includeChildSelections="false" includeChildForces="false" id="minSelections" type="min"/>
+                <constraint field="limit::points" scope="roster" value="30.0" percentValue="true" shared="false" includeChildSelections="true" includeChildForces="true" id="maxPercentage" type="max"/>
+              </constraints>
+            </categoryLink>
+            <categoryLink id="0515-4245-8364-71c6-638d74c6-bd97-4de5-b65a-6aaa24e9f4b2" name="Special Ops" hidden="false" targetId="638d74c6-bd97-4de5-b65a-6aaa24e9f4b2" primary="false">
+              <profiles/>
+              <rules/>
+              <infoLinks/>
+              <modifiers/>
+              <constraints/>
+            </categoryLink>
+            <categoryLink id="0515-4245-8364-71c6-5d76b6f5-20ae-4d70-8f59-ade72a2add3a" name="Troops" hidden="false" targetId="5d76b6f5-20ae-4d70-8f59-ade72a2add3a" primary="false">
+              <profiles/>
+              <rules/>
+              <infoLinks/>
+              <modifiers/>
+              <constraints/>
+            </categoryLink>
+            <categoryLink id="0515-4245-8364-71c6-c274d0b0-5866-44bc-9810-91c136ae7438" name="Quick Support" hidden="false" targetId="c274d0b0-5866-44bc-9810-91c136ae7438" primary="false">
+              <profiles/>
+              <rules/>
+              <infoLinks/>
+              <modifiers/>
+              <constraints/>
+            </categoryLink>
+            <categoryLink id="0515-4245-8364-71c6-abf5fd55-9ac7-4263-8bc1-a9fb0a8fa6a6" name="Heavy Support" hidden="false" targetId="abf5fd55-9ac7-4263-8bc1-a9fb0a8fa6a6" primary="false">
+              <profiles/>
+              <rules/>
+              <infoLinks/>
+              <modifiers/>
+              <constraints/>
+            </categoryLink>
+            <categoryLink id="0515-4245-8364-71c6-8dbf948c-125b-4886-b21e-3ccabc1e1188" name="Battle Formation" hidden="false" targetId="8dbf948c-125b-4886-b21e-3ccabc1e1188" primary="false">
+              <profiles/>
+              <rules/>
+              <infoLinks/>
+              <modifiers/>
+              <constraints/>
+            </categoryLink>
+            <categoryLink id="0515-4245-8364-71c6-c888f08a-6cea-4a01-8126-d374a9231554" name="Warlords" hidden="false" targetId="c888f08a-6cea-4a01-8126-d374a9231554" primary="false">
+              <profiles/>
+              <rules/>
+              <infoLinks/>
+              <modifiers/>
+              <constraints/>
+            </categoryLink>
+            <categoryLink id="0515-4245-8364-71c6-3137a02e-72a5-4b5c-bcf3-54f567c8419c" name="Other" hidden="false" targetId="3137a02e-72a5-4b5c-bcf3-54f567c8419c" primary="false">
+              <profiles/>
+              <rules/>
+              <infoLinks/>
+              <modifiers/>
+              <constraints/>
+            </categoryLink>
+            <categoryLink id="0515-4245-8364-71c6-28b94f51-e66b-4096-aa59-0c9df620a77d" name="Formation" hidden="false" targetId="28b94f51-e66b-4096-aa59-0c9df620a77d" primary="false">
+              <profiles/>
+              <rules/>
+              <infoLinks/>
+              <modifiers/>
+              <constraints/>
+            </categoryLink>
+            <categoryLink id="0515-4245-8364-71c6-d713cda3-5d0f-40d8-b621-69233263ec2a" name="Fortification" hidden="false" targetId="d713cda3-5d0f-40d8-b621-69233263ec2a" primary="false">
+              <profiles/>
+              <rules/>
+              <infoLinks/>
+              <modifiers/>
+              <constraints/>
+            </categoryLink>
+            <categoryLink id="0515-4245-8364-71c6-7fc5b655-812e-45ed-98ff-db8847d356da" name="Primary Detachment" hidden="false" targetId="7fc5b655-812e-45ed-98ff-db8847d356da" primary="false">
+              <profiles/>
+              <rules/>
+              <infoLinks/>
+              <modifiers/>
+              <constraints/>
+            </categoryLink>
+          </categoryLinks>
+        </forceEntry>
+      </forceEntries>
+      <categoryLinks>
+        <categoryLink id="3bfe125e-5674-06d5-082f-f7f577ea26fc-ff36a6f3-19bf-4f48-8956-adacfd28fe74" name="No Force Org Slot" hidden="false" targetId="ff36a6f3-19bf-4f48-8956-adacfd28fe74" primary="false">
+          <profiles/>
+          <rules/>
+          <infoLinks/>
+          <modifiers/>
+          <constraints/>
+        </categoryLink>
+        <categoryLink id="3bfe125e-5674-06d5-082f-f7f577ea26fc-848a6ff2-0def-4c72-8433-ff7da70e6bc7" name="Command" hidden="false" targetId="848a6ff2-0def-4c72-8433-ff7da70e6bc7" primary="false">
+          <profiles/>
+          <rules/>
+          <infoLinks/>
+          <modifiers/>
+          <constraints/>
+        </categoryLink>
+        <categoryLink id="3bfe125e-5674-06d5-082f-f7f577ea26fc-638d74c6-bd97-4de5-b65a-6aaa24e9f4b2" name="Special Ops" hidden="false" targetId="638d74c6-bd97-4de5-b65a-6aaa24e9f4b2" primary="false">
+          <profiles/>
+          <rules/>
+          <infoLinks/>
+          <modifiers/>
+          <constraints/>
+        </categoryLink>
+        <categoryLink id="3bfe125e-5674-06d5-082f-f7f577ea26fc-5d76b6f5-20ae-4d70-8f59-ade72a2add3a" name="Troops" hidden="false" targetId="5d76b6f5-20ae-4d70-8f59-ade72a2add3a" primary="false">
+          <profiles/>
+          <rules/>
+          <infoLinks/>
+          <modifiers/>
+          <constraints/>
+        </categoryLink>
+        <categoryLink id="3bfe125e-5674-06d5-082f-f7f577ea26fc-c274d0b0-5866-44bc-9810-91c136ae7438" name="Quick Support" hidden="false" targetId="c274d0b0-5866-44bc-9810-91c136ae7438" primary="false">
+          <profiles/>
+          <rules/>
+          <infoLinks/>
+          <modifiers/>
+          <constraints/>
+        </categoryLink>
+        <categoryLink id="3bfe125e-5674-06d5-082f-f7f577ea26fc-abf5fd55-9ac7-4263-8bc1-a9fb0a8fa6a6" name="Heavy Support" hidden="false" targetId="abf5fd55-9ac7-4263-8bc1-a9fb0a8fa6a6" primary="false">
+          <profiles/>
+          <rules/>
+          <infoLinks/>
+          <modifiers/>
+          <constraints/>
+        </categoryLink>
+        <categoryLink id="3bfe125e-5674-06d5-082f-f7f577ea26fc-8dbf948c-125b-4886-b21e-3ccabc1e1188" name="Battle Formation" hidden="false" targetId="8dbf948c-125b-4886-b21e-3ccabc1e1188" primary="false">
+          <profiles/>
+          <rules/>
+          <infoLinks/>
+          <modifiers/>
+          <constraints/>
+        </categoryLink>
+        <categoryLink id="3bfe125e-5674-06d5-082f-f7f577ea26fc-c888f08a-6cea-4a01-8126-d374a9231554" name="Warlords" hidden="false" targetId="c888f08a-6cea-4a01-8126-d374a9231554" primary="false">
+          <profiles/>
+          <rules/>
+          <infoLinks/>
+          <modifiers/>
+          <constraints/>
+        </categoryLink>
+        <categoryLink id="3bfe125e-5674-06d5-082f-f7f577ea26fc-3137a02e-72a5-4b5c-bcf3-54f567c8419c" name="Other" hidden="false" targetId="3137a02e-72a5-4b5c-bcf3-54f567c8419c" primary="false">
+          <profiles/>
+          <rules/>
+          <infoLinks/>
+          <modifiers/>
+          <constraints/>
+        </categoryLink>
+        <categoryLink id="3bfe125e-5674-06d5-082f-f7f577ea26fc-28b94f51-e66b-4096-aa59-0c9df620a77d" name="Formation" hidden="false" targetId="28b94f51-e66b-4096-aa59-0c9df620a77d" primary="false">
+          <profiles/>
+          <rules/>
+          <infoLinks/>
+          <modifiers/>
+          <constraints/>
+        </categoryLink>
+        <categoryLink id="3bfe125e-5674-06d5-082f-f7f577ea26fc-d713cda3-5d0f-40d8-b621-69233263ec2a" name="Fortification" hidden="false" targetId="d713cda3-5d0f-40d8-b621-69233263ec2a" primary="false">
+          <profiles/>
+          <rules/>
+          <infoLinks/>
+          <modifiers/>
+          <constraints/>
+        </categoryLink>
+        <categoryLink id="3bfe125e-5674-06d5-082f-f7f577ea26fc-7fc5b655-812e-45ed-98ff-db8847d356da" name="Primary Detachment" hidden="false" targetId="7fc5b655-812e-45ed-98ff-db8847d356da" primary="false">
+          <profiles/>
+          <rules/>
+          <infoLinks/>
+          <modifiers/>
+          <constraints/>
+        </categoryLink>
+      </categoryLinks>
+    </forceEntry>
+  </forceEntries>
+  <selectionEntries/>
+  <entryLinks/>
+  <sharedSelectionEntries/>
+  <sharedSelectionEntryGroups/>
+  <sharedRules/>
+  <sharedProfiles/>
+</gameSystem>

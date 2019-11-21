@@ -10,39 +10,35 @@ using Xunit;
 
 namespace WarHub.ArmouryModel.Source.BattleScribe.Tests
 {
-    public class BattleScribeFileTests : SerializationTestBase
+    public class BattleScribeFileTests
     {
         [Fact]
         [Trait("XmlSerialization", "ReadWriteTest")]
         public void ReadWriteGamesystem()
         {
-            ReadWriteXml(XmlTestData.GamesystemFilename, s => s.DeserializeGamesystem());
+            ReadWriteXml(TestData.Gamesystem, s => s.DeserializeGamesystem());
         }
 
-        [Theory]
+        [Fact]
         [Trait("XmlSerialization", "ReadWriteTest")]
-        [InlineData(XmlTestData.Catalogue1Filename)]
-        [InlineData(XmlTestData.Catalogue2Filename)]
-        public void ReadWriteCatalogue(string filename)
+        public void ReadWriteCatalogue()
         {
-            ReadWriteXml(filename, s => s.DeserializeCatalogue());
+            ReadWriteXml(TestData.Catalogue, s => s.DeserializeCatalogue());
         }
 
         [Fact]
         [Trait("XmlSerialization", "ReadWriteTest")]
         public void ReadWriteRoster()
         {
-            ReadWriteXml(XmlTestData.RosterFilename, s => s.DeserializeRoster());
+            ReadWriteXml(TestData.Roster, s => s.DeserializeRoster());
         }
 
         [Theory]
-        [InlineData(XmlTestData.GamesystemFilename, RootElement.GameSystem)]
-        [InlineData(XmlTestData.Catalogue1Filename, RootElement.Catalogue)]
-        [InlineData(XmlTestData.Catalogue2Filename, RootElement.Catalogue)]
-        [InlineData(XmlTestData.RosterFilename, RootElement.Roster)]
-        public void Validates_with_xsd(string filename, RootElement rootElement)
+        [InlineData(TestData.Gamesystem, RootElement.GameSystem)]
+        [InlineData(TestData.Catalogue, RootElement.Catalogue)]
+        [InlineData(TestData.Roster, RootElement.Roster)]
+        public void Validates_with_xsd(string datafile, RootElement rootElement)
         {
-            var path = Path.Combine(XmlTestData.InputDir, filename);
             var validation = new List<ValidationEventArgs>();
             var schemaSet = ReadSchemaSet(rootElement, HandleValidation);
             var xmlSettings = new XmlReaderSettings
@@ -52,7 +48,7 @@ namespace WarHub.ArmouryModel.Source.BattleScribe.Tests
             };
             xmlSettings.ValidationEventHandler += HandleValidation;
 
-            using (var reader = XmlReader.Create(File.OpenRead(path), xmlSettings))
+            using (var reader = XmlReader.Create(datafile.GetDatafileStream(), xmlSettings))
             {
                 while (reader.Read()) { }
             }
@@ -62,33 +58,36 @@ namespace WarHub.ArmouryModel.Source.BattleScribe.Tests
             void HandleValidation(object sender, ValidationEventArgs e) => validation.Add(e);
         }
 
-        private static void ReadWriteXml(string filename, Func<Stream, SourceNode> deserialize)
+        private static void ReadWriteXml(string datafile, Func<Stream, SourceNode> deserialize)
         {
-            var input = Path.Combine(XmlTestData.InputDir, filename);
-            var output = Path.Combine(XmlTestData.OutputDir, filename);
             var readNode = Deserialize();
-            Serialize(readNode);
-            var areXmlEqual = AreXmlEqual();
-            Assert.True(areXmlEqual);
+            using var outputStream = Serialize(readNode);
+            var xmlDiff = DiffXml(outputStream);
+            xmlDiff.Should().BeNull();
 
             SourceNode Deserialize()
             {
-                using var stream = File.OpenRead(input);
+                using var stream = datafile.GetDatafileStream();
                 return deserialize(stream);
             }
-            void Serialize(SourceNode node)
+
+            static Stream Serialize(SourceNode node)
             {
-                Assert.True(Directory.Exists(XmlTestData.OutputDir));
-                using var stream = File.Create(output);
+                var stream = new MemoryStream();
                 node.Serialize(stream);
+                stream.Position = 0;
+                return stream;
             }
-            bool AreXmlEqual()
+            string DiffXml(Stream changedXml)
             {
                 var differ = new XmlDiff(XmlDiffOptions.None);
-                //using (var diffStream = new MemoryStream())
-                using var diffStream = File.Create(output + ".diff");
+                using var diffStream = new MemoryStream();
                 using var diffWriter = XmlWriter.Create(diffStream);
-                return differ.Compare(input, output, false, diffWriter);
+                using var inputReader = XmlReader.Create(datafile.GetDatafileStream());
+                using var changedReader = XmlReader.Create(changedXml);
+                var result = differ.Compare(inputReader, changedReader, diffWriter);
+                diffStream.Position = 0;
+                return result ? null : new StreamReader(diffStream).ReadToEnd();
             }
         }
 
