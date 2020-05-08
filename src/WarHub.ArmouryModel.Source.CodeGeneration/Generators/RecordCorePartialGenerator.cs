@@ -41,7 +41,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
         {
             return
                 ConstructorDeclaration(Descriptor.CoreTypeIdentifier)
-                .AddModifiers(SyntaxKind.PublicKeyword)
+                .AddModifiers(IsAbstract ? SyntaxKind.ProtectedKeyword : SyntaxKind.PublicKeyword)
                 .AddParameterListParameters(
                     Descriptor.Entries.Select(entry => entry.CamelCaseParameterSyntax))
                 .MutateIf(
