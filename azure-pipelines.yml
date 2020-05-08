@@ -7,18 +7,13 @@ pool:
 
 variables:
   BuildConfiguration: 'Release'
-  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
+  DOTNET_NOLOGO: true
 
 steps:
 - task: UseDotNet@2
-  displayName: 'Install .NET Core SDK 3.0'
+  displayName: 'Install .NET Core SDK'
   inputs:
     useGlobalJson: true
-    performMultiLevelLookup: true
-- task: UseDotNet@2
-  displayName: 'Install .NET Core SDK 2.2'
-  inputs:
-    version: '2.2.x'
     performMultiLevelLookup: true
 
 - script: dotnet tool restore

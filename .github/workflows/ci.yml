@@ -1,29 +1,42 @@
 name: CI
 
-on: [push, pull_request]
+on: [ push, pull_request ]
+
+env:
+  DOTNET_NOLOGO: 1
 
 jobs:
   build:
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-latest]
-        BuildConfiguration: [Release]
+        os: [ ubuntu-latest, windows-latest ]
+        Configuration: [ Release ]
     runs-on: ${{ matrix.os }}
     steps:
-    - uses: actions/checkout@v1
-    - uses: actions/setup-dotnet@v1
-    - run: dotnet --info
-    - run: dotnet tool restore
-    - name: NuGet restore
-      run: dotnet restore -v m
-    - name: Build
-      shell: pwsh
-      run: dotnet build --no-restore -c ${{ matrix.BuildConfiguration }}
-    - name: Test
-      shell: pwsh
-      run: dotnet test --no-build -c ${{ matrix.BuildConfiguration }}
-    - name: Publish NuGet artifacts
-      uses: actions/upload-artifact@v1
-      with:
-        name: nugets-${{ runner.os }}
-        path: bin/Packages/${{ matrix.BuildConfiguration }}
+      - uses: actions/checkout@v2
+        with:
+            fetch-depth: 0 # all history
+
+      - name: Read .NET Core SDK version
+        id: globaljson
+        shell: pwsh
+        run: |
+          dotnet --version
+          if ($LASTEXITCODE -ne 0) { # if dotnet didn't find version required by globaljson, it exits with non-0 code
+            Write-Host "::set-output name=version::$((Get-Content global.json -Raw | ConvertFrom-Json).sdk.version)"
+          }
+
+      - uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: ${{ steps.globaljson.outputs.version }}
+      - run: dotnet --info
+      - run: dotnet tool restore
+      - run: dotnet nbgv get-version
+      - run: dotnet restore -v m
+      - run: dotnet build --no-restore
+      - run: dotnet test --no-build
+      - name: Publish NuGet artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: nugets-${{ runner.os }}
+          path: bin/Packages/${{ matrix.Configuration }}
