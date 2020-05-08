@@ -1,17 +1,15 @@
-name: CI
+name: Publish
 
-on: [push, pull_request]
+on:
+  release:
+    types: [published]
 
 jobs:
-  build:
-    strategy:
-      matrix:
-        os: [ubuntu-latest, windows-latest]
-        BuildConfiguration: [Release]
+  publish-nugets:
+    runs-on: ubuntu-latest
     env:
       DOTNET_NOLOGO: 1
-      Configuration: ${{ matrix.BuildConfiguration }}
-    runs-on: ${{ matrix.os }}
+      Configuration: Release
     steps:
       - uses: actions/checkout@v2
         with:
@@ -32,9 +30,8 @@ jobs:
       - run: dotnet nbgv get-version
       - run: dotnet restore -v m
       - run: dotnet build --no-restore
-      - run: dotnet test --no-build
-      - name: Publish NuGet artifacts
-        uses: actions/upload-artifact@v2
-        with:
-          name: nugets-${{ runner.os }}
-          path: bin/Packages/${{ env.Configuration }}
+      - name: Publish NuGet artifacts to gallery
+        shell: pwsh
+        run: |
+          dotnet nuget push bin/Packages/${{ env.Configuration }}/*.nupkg -s https://api.nuget.org/v3/index.json -k ${{ secrets.NUGET_APIKEY }}
+      # TODO Upload packages to release assets
