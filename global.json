@@ -3,6 +3,7 @@
     "version": "3.1.201"
   },
   "msbuild-sdks": {
+    "CodeGeneration.Roslyn.Plugin.Sdk": "0.7.63",
     "Microsoft.Build.CentralPackageVersions": "2.0.52"
   }
 }

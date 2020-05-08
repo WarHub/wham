@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using Amadevus.RecordGenerator;
+using Newtonsoft.Json;
 
 namespace WarHub.ArmouryModel.ProjectModel
 {
@@ -10,10 +11,5 @@ namespace WarHub.ArmouryModel.ProjectModel
 
         [JsonProperty("path")]
         public string Subpath { get; }
-
-        public override string ToString()
-        {
-            return $"{Kind}@{Subpath}";
-        }
     }
 }
