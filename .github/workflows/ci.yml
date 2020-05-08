@@ -10,7 +10,9 @@ jobs:
     strategy:
       matrix:
         os: [ ubuntu-latest, windows-latest ]
-        Configuration: [ Release ]
+        BuildConfiguration: [ Release ]
+    env:
+      Configuration: ${{ matrix.BuildConfiguration }}
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v2
@@ -39,4 +41,4 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: nugets-${{ runner.os }}
-          path: bin/Packages/${{ matrix.Configuration }}
+          path: bin/Packages/${{ env.Configuration }}
