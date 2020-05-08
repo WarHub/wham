@@ -1,23 +1,21 @@
 name: CI
 
-on: [ push, pull_request ]
-
-env:
-  DOTNET_NOLOGO: 1
+on: [push, pull_request]
 
 jobs:
   build:
     strategy:
       matrix:
-        os: [ ubuntu-latest, windows-latest ]
-        BuildConfiguration: [ Release ]
+        os: [ubuntu-latest, windows-latest]
+        BuildConfiguration: [Release]
     env:
+      DOTNET_NOLOGO: 1
       Configuration: ${{ matrix.BuildConfiguration }}
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v2
         with:
-            fetch-depth: 0 # all history
+          fetch-depth: 0 # all history
 
       - name: Read .NET Core SDK version
         id: globaljson
