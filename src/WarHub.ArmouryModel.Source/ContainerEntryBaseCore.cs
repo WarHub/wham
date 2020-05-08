@@ -6,7 +6,6 @@ namespace WarHub.ArmouryModel.Source
     [WhamNodeCore]
     public abstract partial class ContainerEntryBaseCore : EntryBaseCore
     {
-
         [XmlArray("constraints")]
         public ImmutableArray<ConstraintCore> Constraints { get; }
 
