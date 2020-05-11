@@ -3,6 +3,7 @@ using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using MoreLinq;
 
 namespace WarHub.ArmouryModel.Source.CodeGeneration
 {
@@ -21,12 +22,8 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
             RawModelName = coreTypeIdentifier.ValueText.StripSuffixes();
             Entries = entries;
             CoreTypeAttributeLists = coreTypeAttributeLists;
-            DeclaredEntries = entries
-                .Where(x => x.Symbol.ContainingType == typeSymbol)
-                .ToImmutableArray();
-            DerivedEntries = entries
-                .Where(x => x.Symbol.ContainingType != typeSymbol)
-                .ToImmutableArray();
+            var (declared, derived) = entries.Partition(x => typeSymbol.Equals(x.Symbol.ContainingType, SymbolEqualityComparer.Default));
+            (DeclaredEntries, DerivedEntries) = (declared.ToImmutableArray(), derived.ToImmutableArray());
         }
 
         public INamedTypeSymbol TypeSymbol { get; }

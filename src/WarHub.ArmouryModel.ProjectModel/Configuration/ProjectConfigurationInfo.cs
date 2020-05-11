@@ -1,4 +1,6 @@
-﻿namespace WarHub.ArmouryModel.ProjectModel
+﻿using Amadevus.RecordGenerator;
+
+namespace WarHub.ArmouryModel.ProjectModel
 {
     [Record]
     public partial class ProjectConfigurationInfo

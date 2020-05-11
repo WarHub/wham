@@ -7,18 +7,21 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="..\..\src\WarHub.ArmouryModel.Source\Foundation\*.cs"
-             Exclude="..\..\src\WarHub.ArmouryModel.Source\Foundation\SourceKind.cs;
-                      ..\..\src\WarHub.ArmouryModel.Source\Foundation\NodeFactory.cs"
-             Link="Foundation\%(Filename)%(Extension)" />
+    <Compile Include="..\..\src\WarHub.ArmouryModel.Source\Foundation\*.cs" Exclude="..\..\src\WarHub.ArmouryModel.Source\Foundation\SourceKind.cs;..\..\src\WarHub.ArmouryModel.Source\Foundation\NodeFactory.cs" Link="Foundation\%(Filename)%(Extension)" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\WarHub.ArmouryModel.Source.CodeGeneration\WarHub.ArmouryModel.Source.CodeGeneration.csproj" />
+    <Compile Include="..\..\src\WarHub.ArmouryModel.Source\WhamNodeCoreAttribute.cs" Link="WhamNodeCoreAttribute.cs" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="CodeGeneration.Roslyn.BuildTime" />
+    <PackageReference Include="CodeGeneration.Roslyn.Attributes" />
+    <PackageReference Include="CodeGeneration.Roslyn.Tool" />
+    <PackageReference Include="System.Collections.Immutable" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\WarHub.ArmouryModel.Source.CodeGeneration\WarHub.ArmouryModel.Source.CodeGeneration.csproj" ReferenceOutputAssembly="false" SkipGetTargetFrameworkProperties="true" OutputItemType="CodeGenerationRoslynPlugin" />
   </ItemGroup>
 
 </Project>

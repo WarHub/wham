@@ -82,12 +82,14 @@ namespace WarHub.ArmouryModel.Source.BattleScribe.Tests
             {
                 var differ = new XmlDiff(XmlDiffOptions.None);
                 using var diffStream = new MemoryStream();
-                using var diffWriter = XmlWriter.Create(diffStream);
+                using var diffWriter = XmlWriter.Create(diffStream, new XmlWriterSettings { CloseOutput = false });
                 using var inputReader = XmlReader.Create(datafile.GetDatafileStream());
                 using var changedReader = XmlReader.Create(changedXml);
                 var result = differ.Compare(inputReader, changedReader, diffWriter);
+                diffWriter.Flush();
                 diffStream.Position = 0;
-                return result ? null : new StreamReader(diffStream).ReadToEnd();
+                using var diffReader = new StreamReader(diffStream, leaveOpen: true);
+                return result ? null : diffReader.ReadToEnd();
             }
         }
 

@@ -1,4 +1,5 @@
 ﻿using System.Collections.Immutable;
+using Amadevus.RecordGenerator;
 using Newtonsoft.Json;
 
 namespace WarHub.ArmouryModel.ProjectModel

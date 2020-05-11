@@ -1,4 +1,5 @@
 ﻿using System.Collections.Immutable;
+using Amadevus.RecordGenerator;
 using System.Diagnostics;
 
 namespace WarHub.ArmouryModel.Workspaces.Gitree

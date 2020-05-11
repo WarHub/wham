@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
-using MoreLinq;
 
 namespace WarHub.ArmouryModel.Source
 {
@@ -50,8 +49,8 @@ namespace WarHub.ArmouryModel.Source
 
         public override IEnumerable<ChildInfo> ChildrenInfos()
         {
-            return NodeList.Index()
-                .Select(x => new ChildInfo(x.Key.ToString("D", CultureInfo.InvariantCulture), x.Value));
+            return NodeList
+                .Select((node, i) => new ChildInfo(i.ToString("D", CultureInfo.InvariantCulture), node));
         }
 
         public abstract ListNode<TChild> WithNodes(NodeList<TChild> nodes);

@@ -15,12 +15,16 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="CodeGeneration.Roslyn.Attributes" />
+    <PackageReference Include="CodeGeneration.Roslyn.Tool" />
     <PackageReference Include="System.Collections.Immutable" />
-    <PackageReference Include="CodeGeneration.Roslyn.BuildTime" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\WarHub.ArmouryModel.Source.CodeGeneration\WarHub.ArmouryModel.Source.CodeGeneration.csproj" PrivateAssets="all" />
+    <ProjectReference Include="..\WarHub.ArmouryModel.Source.CodeGeneration\WarHub.ArmouryModel.Source.CodeGeneration.csproj" 
+                      ReferenceOutputAssembly="false"
+                      SkipGetTargetFrameworkProperties="true"
+                      OutputItemType="CodeGenerationRoslynPlugin" />
   </ItemGroup>
 
   <!-- Custom resource embedding of 3 XSDs from one file -->

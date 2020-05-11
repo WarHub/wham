@@ -65,7 +65,7 @@ namespace WarHub.ArmouryModel.CliTool
                     .Runs(typeof(ConvertGitreeCommand).GetMethod(nameof(ConvertGitreeCommand.Run))))
                 .AddCommand(
                     new Command("publish", "Publishes given workspace in selected formats, by default a .bsr file.")
-    {
+                    {
                         new Option(
                             new[] { "-a", "--artifacts" },
                             "Kinds of artifacts to publish to output (multiple values allowed):" +

@@ -109,11 +109,11 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
             var attributes = GetPropertyAttributeLists(syntax).ToImmutableArray();
             if (symbol.Type is INamedTypeSymbol namedType && namedType.SpecialType == SpecialType.None)
             {
-                if (namedType.Arity == 1 && namedType.OriginalDefinition == ImmutableArraySymbol)
+                if (namedType.Arity == 1 && ImmutableArraySymbol.Equals(namedType.OriginalDefinition, SymbolEqualityComparer.IncludeNullability))
                 {
                     return new CoreDescriptor.CollectionEntry(symbol, typeIdentifier, (NameSyntax)typeSyntax, attributes);
                 }
-                if (namedType.GetAttributes().Any(a => a.AttributeClass == whamNodeCoreAttributeSymbolCache.Symbol))
+                if (namedType.GetAttributes().Any(a => a.AttributeClass.Equals(whamNodeCoreAttributeSymbolCache.Symbol, SymbolEqualityComparer.Default)))
                 {
                     return new CoreDescriptor.ComplexEntry(symbol, typeIdentifier, (NameSyntax)typeSyntax, attributes);
                 }

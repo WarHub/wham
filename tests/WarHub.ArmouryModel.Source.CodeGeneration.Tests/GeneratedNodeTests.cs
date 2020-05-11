@@ -5,7 +5,6 @@ using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using FluentAssertions;
-using MoreLinq;
 using Xunit;
 using static WarHub.ArmouryModel.Source.CodeGeneration.Tests.TestHelpers;
 
@@ -260,7 +259,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration.Tests
             var list = container.Items;
 
             Assert.Collection(
-                list.ChildrenInfos().Index(),
+                list.ChildrenInfos().Select((x, i) => KeyValuePair.Create(i, x)),
                 AssertChild,
                 AssertChild);
 

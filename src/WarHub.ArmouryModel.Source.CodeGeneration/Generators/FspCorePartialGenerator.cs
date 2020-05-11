@@ -34,7 +34,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                     GetFastSerializationProxyMembers());
         }
 
-        private MemberDeclarationSyntax GetToSerializationProxyMethod()
+        private static MemberDeclarationSyntax GetToSerializationProxyMethod()
         {
             return
                 MethodDeclaration(

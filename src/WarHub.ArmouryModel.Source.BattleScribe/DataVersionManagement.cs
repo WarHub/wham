@@ -74,15 +74,15 @@ namespace WarHub.ArmouryModel.Source.BattleScribe
         public static void ApplyMigration(VersionedElementInfo migrationInfo, XmlReader input, Stream output)
         {
             var xslt = CreateXslt();
-            var writer = Utilities.BattleScribeConformantXmlWriter.Create(output);
+            using var writer = Utilities.BattleScribeConformantXmlWriter.Create(output, new XmlWriterSettings { CloseOutput = false });
             xslt.Transform(input, writer);
 
             XslCompiledTransform CreateXslt()
             {
                 using var migrationXlsStream = migrationInfo.OpenMigrationXslStream();
-                var stylesheet = XmlReader.Create(migrationXlsStream);
+                using var stylesheetReader = XmlReader.Create(migrationXlsStream, new XmlReaderSettings { CloseInput = false });
                 var transform = new XslCompiledTransform();
-                transform.Load(stylesheet);
+                transform.Load(stylesheetReader);
                 return transform;
             }
         }

@@ -41,7 +41,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
         {
             return
                 ConstructorDeclaration(Descriptor.CoreTypeIdentifier)
-                .AddModifiers(SyntaxKind.PublicKeyword)
+                .AddModifiers(IsAbstract ? SyntaxKind.ProtectedKeyword : SyntaxKind.PublicKeyword)
                 .AddParameterListParameters(
                     Descriptor.Entries.Select(entry => entry.CamelCaseParameterSyntax))
                 .MutateIf(
@@ -166,7 +166,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                         GetMutatorIdentifier())
                     .AddModifiers(SyntaxKind.PublicKeyword)
                     .MutateIf(
-                        IsDerived && entry.Symbol.ContainingType != Descriptor.TypeSymbol,
+                        IsDerived && !entry.Symbol.ContainingType.Equals(Descriptor.TypeSymbol, SymbolEqualityComparer.Default),
                         x => x.AddModifiers(SyntaxKind.NewKeyword))
                     .AddParameterListParameters(
                         Parameter(ValueParamToken)
@@ -186,13 +186,6 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                 SyntaxToken GetMutatorIdentifier() =>
                     Identifier(Names.WithPrefix + entry.Identifier.ValueText);
             }
-        }
-
-        private ParameterSyntax CreateParameter(CoreDescriptor.Entry property)
-        {
-            return
-                Parameter(property.Identifier)
-                .WithType(property.Type);
         }
     }
 }
