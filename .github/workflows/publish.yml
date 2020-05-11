@@ -1,9 +1,7 @@
 name: Publish
-
 on:
   release:
     types: [published]
-
 jobs:
   publish-nugets:
     runs-on: ubuntu-latest
