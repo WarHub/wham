@@ -28,7 +28,13 @@ jobs:
       - run: dotnet nbgv get-version
       - run: dotnet restore -v m
       - run: dotnet build --no-restore
-      - name: Publish NuGet artifacts to gallery
+      - run: dotnet test --no-build
+      - name: Upload nugets to workflow artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: nugets
+          path: bin/Packages/${{ env.Configuration }}
+      - name: Publish to NuGet.org
         shell: pwsh
         run: |
           dotnet nuget push bin/Packages/${{ env.Configuration }}/*.nupkg -s https://api.nuget.org/v3/index.json -k ${{ secrets.NUGET_APIKEY }}
