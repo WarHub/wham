@@ -116,6 +116,7 @@ namespace WarHub.ArmouryModel.Source.BattleScribe.Utilities
             {
                 BaseWriter.Dispose();
             }
+            base.Dispose(disposing);
         }
     }
 }

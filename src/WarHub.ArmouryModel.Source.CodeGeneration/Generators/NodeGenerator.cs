@@ -292,7 +292,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                         Names.WithPrefix + entry.Identifier)
                     .AddModifiers(SyntaxKind.PublicKeyword)
                     .MutateIf(
-                        IsDerived && entry.Symbol.ContainingType != Descriptor.TypeSymbol,
+                        IsDerived && !entry.Symbol.ContainingType.Equals(Descriptor.TypeSymbol, SymbolEqualityComparer.Default),
                         x => x.AddModifiers(SyntaxKind.NewKeyword));
             }
             MethodDeclarationSyntax WithForSimpleEntry(CoreDescriptor.SimpleEntry entry)

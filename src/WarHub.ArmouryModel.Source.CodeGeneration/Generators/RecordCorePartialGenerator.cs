@@ -166,7 +166,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                         GetMutatorIdentifier())
                     .AddModifiers(SyntaxKind.PublicKeyword)
                     .MutateIf(
-                        IsDerived && entry.Symbol.ContainingType != Descriptor.TypeSymbol,
+                        IsDerived && !entry.Symbol.ContainingType.Equals(Descriptor.TypeSymbol, SymbolEqualityComparer.Default),
                         x => x.AddModifiers(SyntaxKind.NewKeyword))
                     .AddParameterListParameters(
                         Parameter(ValueParamToken)
@@ -186,13 +186,6 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                 SyntaxToken GetMutatorIdentifier() =>
                     Identifier(Names.WithPrefix + entry.Identifier.ValueText);
             }
-        }
-
-        private ParameterSyntax CreateParameter(CoreDescriptor.Entry property)
-        {
-            return
-                Parameter(property.Identifier)
-                .WithType(property.Type);
         }
     }
 }

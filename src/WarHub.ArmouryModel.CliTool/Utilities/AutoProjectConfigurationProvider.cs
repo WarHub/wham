@@ -19,7 +19,7 @@ namespace WarHub.ArmouryModel.CliTool.Utilities
             return ReadDirectory(path);
         }
 
-        private ProjectConfigurationInfo ReadFile(string path)
+        private static ProjectConfigurationInfo ReadFile(string path)
         {
             if (!IsProjectConfituration(path))
             {
@@ -29,7 +29,7 @@ namespace WarHub.ArmouryModel.CliTool.Utilities
             return ReadConfigurationFile(path);
         }
 
-        private ProjectConfigurationInfo ReadDirectory(string path)
+        private static ProjectConfigurationInfo ReadDirectory(string path)
         {
             var directory = string.IsNullOrEmpty(path) ? "." : path;
             // search for single project configuration file in current directory

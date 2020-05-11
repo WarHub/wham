@@ -87,7 +87,8 @@ namespace WarHub.ArmouryModel.Source.BattleScribe.Tests
                 using var changedReader = XmlReader.Create(changedXml);
                 var result = differ.Compare(inputReader, changedReader, diffWriter);
                 diffStream.Position = 0;
-                return result ? null : new StreamReader(diffStream).ReadToEnd();
+                using var diffReader = new StreamReader(diffStream);
+                return result ? null : diffReader.ReadToEnd();
             }
         }
 
