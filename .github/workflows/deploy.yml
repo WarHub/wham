@@ -1,0 +1,79 @@
+name: Deploy
+# trigger by chatops '/deploy ref=master env=all tag'
+# ref defaults to default repo branch
+# env defaults to github (possible: github, nuget, all)
+# tag if provided tags the ref with version from nbgv
+on:
+  repository_dispatch:
+    types: [deploy-command]
+jobs:
+  pack:
+    runs-on: ubuntu-latest
+    env:
+      DOTNET_NOLOGO: 1
+      Configuration: Release
+    steps:
+      - name: Add reaction to command comment
+        uses: peter-evans/create-or-update-comment@v1
+        with:
+          comment-id: ${{ github.event.client_payload.github.payload.comment.id }}
+          body: '[Deployment run](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})'
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0 # all history
+          ref: ${{ github.event.client_payload.slash_command.ref }}
+      - name: Read .NET Core SDK version
+        id: globaljson
+        shell: pwsh
+        run: |
+          dotnet --version
+          if ($LASTEXITCODE -ne 0) { # if dotnet didn't find version required by globaljson, it exits with non-0 code
+            Write-Host "::set-output name=version::$((Get-Content global.json -Raw | ConvertFrom-Json).sdk.version)"
+          }
+      - uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: ${{ steps.globaljson.outputs.version }}
+      - run: dotnet --info
+      - run: dotnet tool restore
+      - run: dotnet nbgv get-version
+      - run: dotnet restore -v m
+      - run: dotnet build --no-restore
+      - run: dotnet test --no-build
+      - name: Add and push version tag
+        if: github.event.client_payload.slash_command.arg1 == 'tag'
+        continue-on-error: true
+        shell: pwsh
+        run: |
+          dotnet nbgv tag
+          git push --tags
+      - name: Upload nugets to workflow artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: nugets
+          path: bin/Packages/${{ env.Configuration }}
+  push:
+    runs-on: ubuntu-latest
+    needs: pack
+    env:
+      DOTNET_NOLOGO: 1
+      PUSH_TO: ${{ github.event.client_payload.slash_command.env }}
+    steps:
+      - uses: actions/download-artifact@v2
+        with:
+          name: nugets
+
+      - name: Push to GitHub Packages
+        if: env.PUSH_TO == 'all' || env.PUSH_TO == 'github' || env.PUSH_TO == ''
+        shell: pwsh
+        run: dotnet nuget push *.nupkg -s https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json -k ${{ github.token }}
+
+      - name: Push to nuget.org
+        if: env.PUSH_TO == 'all' || env.PUSH_TO == 'nuget'
+        shell: pwsh
+        run: dotnet nuget push *.nupkg -s https://api.nuget.org/v3/index.json -k ${{ secrets.NUGET_APIKEY }}
+
+      - name: Add reaction to command comment
+        uses: peter-evans/create-or-update-comment@v1
+        with:
+          comment-id: ${{ github.event.client_payload.github.payload.comment.id }}
+          reactions: hooray
