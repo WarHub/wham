@@ -65,8 +65,9 @@ jobs:
       - name: Push to GitHub Packages
         if: env.PUSH_TO == 'all' || env.PUSH_TO == 'github' || env.PUSH_TO == ''
         shell: pwsh
-        run: dotnet nuget push *.nupkg -s https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json -k ${{ github.token }}
-
+        run: |
+          dotnet nuget add source https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json -n github -u ${{ github.actor }} -p ${{ github.token }} --store-password-in-clear-text
+          dotnet nuget push *.nupkg -s github
       - name: Push to nuget.org
         if: env.PUSH_TO == 'all' || env.PUSH_TO == 'nuget'
         shell: pwsh
