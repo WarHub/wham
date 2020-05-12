@@ -9,6 +9,8 @@
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
     <PackageProjectUrl>https://github.com/WarHub/wham</PackageProjectUrl>
     <PackageReleaseNotes>https://github.com/WarHub/wham/blob/master/CHANGELOG.md</PackageReleaseNotes>
+    <PackageIconPath>$(MSBuildThisFileDirectory)docs/images/WarHub-logo.png</PackageIconPath>
+    <PackageIcon>icon.png</PackageIcon>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
     <IncludeSymbols>true</IncludeSymbols>
@@ -38,6 +40,11 @@
 
   <ItemGroup>
     <DotNetCliToolReference Include="dotnet-xunit" Version="2.3.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="$(MSBuildThisFileDirectory)LICENSE.md" Pack="true" PackagePath="/" />
+    <None Include="$(PackageIconPath)" Pack="true" PackagePath="$(PackageIcon)" />
   </ItemGroup>
   
 </Project>
