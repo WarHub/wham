@@ -6,7 +6,8 @@
   },
   "publicReleaseRefSpec": [
     "^refs/heads/master$",
-    "^refs/heads/releases/v\\d+\\.\\d+"
+    "^refs/heads/releases/v\\d+",
+    "^refs/tags/v\\d+"
   ],
   "release": {
     "branchName": "releases/v{version}"
