@@ -6,6 +6,20 @@ namespace WarHub.ArmouryModel.ProjectModel
 {
     public abstract class ProjectConfigurationProviderBase : IProjectConfigurationProvider
     {
+        private ProjectConfigurationInfo empty;
+
+        public virtual ProjectConfigurationInfo Empty => empty ??= new ProjectConfigurationInfo.Builder
+        {
+            Filepath = ".",
+            Configuration = new ProjectConfiguration.Builder
+            {
+                FormatProvider = ProviderType,
+                OutputPath = ProjectConfiguration.DefaultOutputPath,
+                SourceDirectories = ImmutableArray<SourceFolder>.Empty,
+                ToolsetVersion = ProjectToolset.Version
+            }.ToImmutable()
+        }.ToImmutable();
+
         public ProjectConfigurationInfo Create(string path)
         {
             return CreateCore(path);

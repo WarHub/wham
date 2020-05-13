@@ -9,33 +9,28 @@ namespace WarHub.ArmouryModel.Workspaces.BattleScribe
     /// </summary>
     public sealed class XmlWorkspace : IWorkspace
     {
-        private XmlWorkspace(ProjectConfigurationInfo info)
+        private XmlWorkspace(ProjectConfigurationInfo info, ImmutableArray<XmlDocument> documents)
         {
-            var files = info.Configuration.SourceDirectories
-                .SelectMany(x => info.GetDirectoryInfoFor(x).EnumerateFiles());
-            Datafiles = files.Select(XmlFileExtensions.GetDatafileInfo).ToImmutableArray();
-            Documents =
-                Datafiles
-                .Select(file => new XmlDocument(file.Filepath.GetXmlDocumentKind(), file, this))
-                .ToImmutableArray();
-            DocumentsByKind =
-                Documents
-                .GroupBy(doc => doc.Kind)
-                .ToImmutableDictionary(
-                    group => group.Key,
-                    group => group.ToImmutableArray());
             Info = info;
+            Documents = documents.Select(x => x.WithWorkspace(this)).ToImmutableArray();
         }
+
+        private string rootPath;
+        private ImmutableArray<IDatafileInfo>? datafiles;
+        private ImmutableDictionary<XmlDocumentKind, ImmutableArray<XmlDocument>> documentsByKind;
+
+        public ProjectConfigurationInfo Info { get; }
 
         public ImmutableArray<XmlDocument> Documents { get; }
 
-        public ImmutableDictionary<XmlDocumentKind, ImmutableArray<XmlDocument>> DocumentsByKind { get; }
+        public ImmutableDictionary<XmlDocumentKind, ImmutableArray<XmlDocument>> DocumentsByKind =>
+            documentsByKind ??= Documents.GroupBy(doc => doc.Kind).ToImmutableDictionary(
+                    group => group.Key,
+                    group => group.ToImmutableArray());
 
-        public string RootPath => Info.GetDirectoryInfo().FullName;
+        public string RootPath => rootPath ??= Info.GetDirectoryInfo().FullName;
 
-        public ImmutableArray<IDatafileInfo> Datafiles { get; }
-
-        public ProjectConfigurationInfo Info { get; }
+        public ImmutableArray<IDatafileInfo> Datafiles => datafiles ??= Documents.Select(x => x.DatafileInfo).ToImmutableArray();
 
         /// <summary>
         /// Creates workspace from directory by indexing it's contents for files with well-known extensions.
@@ -45,12 +40,21 @@ namespace WarHub.ArmouryModel.Workspaces.BattleScribe
         public static XmlWorkspace CreateFromDirectory(string path)
         {
             var info = new BattleScribeProjectConfigurationProvider().Create(path);
-            return new XmlWorkspace(info);
+            return CreateFromConfigurationInfo(info);
+        }
+
+        public static XmlWorkspace CreateFromDocuments(ImmutableArray<XmlDocument> documents)
+        {
+            return new XmlWorkspace(new BattleScribeProjectConfigurationProvider().Empty, documents);
         }
 
         public static XmlWorkspace CreateFromConfigurationInfo(ProjectConfigurationInfo info)
         {
-            return new XmlWorkspace(info);
+            var files = info.Configuration.SourceDirectories
+                .SelectMany(x => info.GetDirectoryInfoFor(x).EnumerateFiles());
+            var datafiles = files.Select(XmlFileExtensions.GetDatafileInfo).ToImmutableArray();
+            var documents = datafiles.Select(file => new XmlDocument(file.Filepath.GetXmlDocumentKind(), file, null)).ToImmutableArray();
+            return new XmlWorkspace(info, documents);
         }
     }
 }

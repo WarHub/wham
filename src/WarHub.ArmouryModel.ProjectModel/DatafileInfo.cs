@@ -27,6 +27,10 @@ namespace WarHub.ArmouryModel.ProjectModel
     {
         public static IDatafileInfo<TData> Create<TData>(string filepath, TData node) where TData : SourceNode
         {
+            if (node is null)
+            {
+                return (IDatafileInfo<TData>)(IDatafileInfo<SourceNode>)new UnknownTypeDatafileInfo(filepath);
+            }
             var visitor = new Visitor(filepath);
             return (IDatafileInfo<TData>)visitor.Visit(node);
         }

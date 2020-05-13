@@ -150,7 +150,7 @@ namespace WarHub.ArmouryModel.Workspaces.BattleScribe
                 return new RepoDistribution(index, datafiles);
             }
 
-            static IDatafileInfo<SourceNode> LoadEntry(ZipArchiveEntry entry)
+            static IDatafileInfo LoadEntry(ZipArchiveEntry entry)
             {
                 using var entryStream = entry.Open();
                 // TODO log invalid data type
@@ -199,7 +199,7 @@ namespace WarHub.ArmouryModel.Workspaces.BattleScribe
             }
         }
 
-        public static IDatafileInfo<SourceNode> LoadSourceAuto(this Stream stream, string filename)
+        public static IDatafileInfo LoadSourceAuto(this Stream stream, string filename)
         {
             var kind = filename.GetXmlDocumentKind();
             var data = ZippedExtensions.Contains(Path.GetExtension(filename))
@@ -208,7 +208,7 @@ namespace WarHub.ArmouryModel.Workspaces.BattleScribe
             return DatafileInfo.Create(filename, data);
         }
 
-        public static IDatafileInfo<SourceNode> LoadSourceFileAuto(this string path)
+        public static IDatafileInfo LoadSourceFileAuto(this string path)
         {
             using var stream = File.OpenRead(path);
             return stream.LoadSourceAuto(path);

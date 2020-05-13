@@ -1,24 +1,17 @@
 ﻿using System.IO;
+using Amadevus.RecordGenerator;
 using WarHub.ArmouryModel.ProjectModel;
 using WarHub.ArmouryModel.Source;
 
 namespace WarHub.ArmouryModel.Workspaces.BattleScribe
 {
-    public class XmlDocument
+    [Record]
+    public partial class XmlDocument
     {
-        private readonly IDatafileInfo datafileInfo;
-
-        public XmlDocument(XmlDocumentKind kind, IDatafileInfo datafileInfo, XmlWorkspace workspace)
-        {
-            Kind = kind;
-            this.datafileInfo = datafileInfo;
-            Workspace = workspace;
-        }
-
         /// <summary>
         /// Gets the filepath of this document.
         /// </summary>
-        public string Filepath => datafileInfo.Filepath;
+        public string Filepath => DatafileInfo.Filepath;
 
         /// <summary>
         /// Gets the filename without file extension.
@@ -31,6 +24,11 @@ namespace WarHub.ArmouryModel.Workspaces.BattleScribe
         public XmlDocumentKind Kind { get; }
 
         /// <summary>
+        /// Gets the underlying datafile info.
+        /// </summary>
+        public IDatafileInfo DatafileInfo { get; }
+
+        /// <summary>
         /// Gets the parent workspace of this document.
         /// </summary>
         public XmlWorkspace Workspace { get; }
@@ -41,7 +39,12 @@ namespace WarHub.ArmouryModel.Workspaces.BattleScribe
         /// <returns></returns>
         public SourceNode GetRoot()
         {
-            return datafileInfo.GetData();
+            return DatafileInfo.GetData();
+        }
+
+        public static XmlDocument Create(IDatafileInfo datafileInfo, XmlWorkspace workspace = null)
+        {
+            return new XmlDocument(datafileInfo.Filepath.GetXmlDocumentKind(), datafileInfo, workspace);
         }
     }
 }
