@@ -17,5 +17,10 @@ jobs:
                 "command": "deploy",
                 "permission": "admin",
                 "named_args": true
+              },
+              {
+                "command": "tag",
+                "permission": "admin",
+                "named_args": true
               }
             ]

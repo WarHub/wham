@@ -1,0 +1,51 @@
+name: Tag
+# trigger by chatops '/tag ref=master'
+# ref defaults to default repo branch
+on:
+  repository_dispatch:
+    types: [tag-command]
+jobs:
+  tag:
+    runs-on: ubuntu-latest
+    env:
+      DOTNET_NOLOGO: 1
+      Configuration: Release
+    steps:
+      - name: Add run link to command comment
+        uses: peter-evans/create-or-update-comment@v1
+        with:
+          comment-id: ${{ github.event.client_payload.github.payload.comment.id }}
+          body: '[Deployment run](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})'
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0 # all history
+          ref: ${{ github.event.client_payload.slash_command.ref }}
+      - name: Read .NET Core SDK version
+        id: globaljson
+        shell: pwsh
+        run: |
+          dotnet --version
+          if ($LASTEXITCODE -ne 0) { # if dotnet didn't find version required by globaljson, it exits with non-0 code
+            Write-Host "::set-output name=version::$((Get-Content global.json -Raw | ConvertFrom-Json).sdk.version)"
+          }
+      - uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: ${{ steps.globaljson.outputs.version }}
+      - run: dotnet --info
+      - run: dotnet tool restore
+      - name: Add and push version tag
+        id: tagpush
+        shell: pwsh
+        run: |
+          $env:PublicRelease = $true
+          $v = "v$(dotnet nbgv get-version -v SemVer2)"
+          git tag $v
+          git push origin $v
+          Write-Host "::set-output name=tag::$v"
+      - name: Add tag info and reaction to command comment
+        if: env.PUSH_TAG == 'true'
+        uses: peter-evans/create-or-update-comment@v1
+        with:
+          comment-id: ${{ github.event.client_payload.github.payload.comment.id }}
+          body: 'Pushed tag `${{ steps.tagpush.outputs.tag }}`'
+          reactions: hooray
