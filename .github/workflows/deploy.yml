@@ -41,7 +41,7 @@ jobs:
       - run: dotnet build --no-restore
       - run: dotnet test --no-build
       - name: Add and push version tag
-        if: env.PUSH_TAG
+        if: env.PUSH_TAG == 'true'
         id: tagpush
         continue-on-error: true
         shell: pwsh
@@ -49,10 +49,10 @@ jobs:
           $env:PublicRelease = $true
           $v = "v$(dotnet nbgv get-version -v SemVer2)"
           git tag $v
-          git push $v
+          git push origin $v
           Write-Host "::set-output name=tag::$v"
       - name: Add tag info to command comment
-        if: env.PUSH_TAG
+        if: env.PUSH_TAG == 'true'
         uses: peter-evans/create-or-update-comment@v1
         with:
           comment-id: ${{ github.event.client_payload.github.payload.comment.id }}
