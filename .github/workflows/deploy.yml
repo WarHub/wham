@@ -66,12 +66,13 @@ jobs:
         if: env.PUSH_TO == 'all' || env.PUSH_TO == 'github' || env.PUSH_TO == ''
         shell: pwsh
         run: |
-          dotnet nuget add source https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json -n github -u ${{ github.actor }} -p ${{ github.token }} --store-password-in-clear-text
-          dotnet nuget push *.nupkg -s github
+          $ghp = "https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json".ToLower()
+          dotnet nuget add source $ghp -n github -u ${{ github.actor }} -p ${{ github.token }} --store-password-in-clear-text
+          dotnet nuget push *.nupkg -s github --skip-duplicate -k ${{ github.token }}
       - name: Push to nuget.org
         if: env.PUSH_TO == 'all' || env.PUSH_TO == 'nuget'
         shell: pwsh
-        run: dotnet nuget push *.nupkg -s https://api.nuget.org/v3/index.json -k ${{ secrets.NUGET_APIKEY }}
+        run: dotnet nuget push *.nupkg -s https://api.nuget.org/v3/index.json -k ${{ secrets.NUGET_APIKEY }} --skip-duplicate
 
       - name: Add reaction to command comment
         uses: peter-evans/create-or-update-comment@v1
