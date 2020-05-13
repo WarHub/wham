@@ -47,6 +47,7 @@ namespace WarHub.ArmouryModel.Source.Tests.DataFormat
             settings.ValidationFlags |= XmlSchemaValidationFlags.ReportValidationWarnings;
             settings.ValidationEventHandler += (s, e) => messages.Add(e);
             using var validatingReader = XmlReader.Create(migratedReader, settings);
+            while (validatingReader.Read()) ;
             return messages;
         }
     }

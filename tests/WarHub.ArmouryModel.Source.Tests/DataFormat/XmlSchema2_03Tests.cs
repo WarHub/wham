@@ -63,7 +63,7 @@ namespace WarHub.ArmouryModel.Source.Tests.DataFormat
   <entryLinks>
     <entryLink id='2' targetId='123' type='selectionEntry'>
       <costs>
-        <cost id='3' name='c1' value='123'/>
+        <cost typeId='3' name='c1' value='123'/>
       </costs>
     </entryLink>
   </entryLinks>

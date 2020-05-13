@@ -44,7 +44,7 @@ namespace WarHub.ArmouryModel.Source.Tests.DataFormat
         <selectionEntryGroup id='4' name='entry'/>
       </selectionEntryGroups>
       <entryLinks>
-        <entryLink id='5' targetId='123' type='selectionEntrya'/>
+        <entryLink id='5' targetId='123' type='selectionEntry'/>
       </entryLinks>
     </entryLink>
   </entryLinks>
