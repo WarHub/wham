@@ -1,12 +1,24 @@
 ﻿using System;
 using System.Collections.Immutable;
+using System.Globalization;
 using System.Linq;
+using FluentAssertions;
 using Xunit;
 
 namespace WarHub.ArmouryModel.Source.Tests.Foundation
 {
     public class NodeListTests
     {
+        [Fact]
+        public void Slice_supports_ranges()
+        {
+            var list = CreateList(3);
+
+            var range = list[^2..^1];
+
+            range.Should().BeOfType<NodeList<RuleNode>>();
+        }
+
         [Fact]
         public void CreateFromParams_WithNoArgs_ReturnsDefault()
         {
@@ -90,6 +102,8 @@ namespace WarHub.ArmouryModel.Source.Tests.Foundation
         }
 
         private static RuleNode CreateRule(string id) =>
-            NodeFactory.Rule(id, default, default, default, default, default);
+            NodeFactory.Rule(id: id);
+        private static NodeList<RuleNode> CreateList(int count) =>
+            NodeList.Create(Enumerable.Range(1, count).Select(x => CreateRule(x.ToString(CultureInfo.InvariantCulture))));
     }
 }

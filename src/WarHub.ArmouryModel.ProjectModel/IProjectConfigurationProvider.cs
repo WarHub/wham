@@ -3,5 +3,7 @@
     public interface IProjectConfigurationProvider
     {
         ProjectConfigurationInfo Create(string path);
+
+        ProjectConfigurationInfo Empty { get; }
     }
 }

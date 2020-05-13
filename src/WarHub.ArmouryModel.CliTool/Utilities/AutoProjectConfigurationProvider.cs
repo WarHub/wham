@@ -10,6 +10,8 @@ namespace WarHub.ArmouryModel.CliTool.Utilities
 {
     internal class AutoProjectConfigurationProvider : IProjectConfigurationProvider
     {
+        public ProjectConfigurationInfo Empty => new BattleScribeProjectConfigurationProvider().Empty;
+
         public ProjectConfigurationInfo Create(string path)
         {
             if (File.Exists(path))
