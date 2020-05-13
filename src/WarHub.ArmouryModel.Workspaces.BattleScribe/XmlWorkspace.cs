@@ -31,7 +31,7 @@ namespace WarHub.ArmouryModel.Workspaces.BattleScribe
 
         public ImmutableDictionary<XmlDocumentKind, ImmutableArray<XmlDocument>> DocumentsByKind { get; }
 
-        public string RootPath { get; }
+        public string RootPath => Info.GetDirectoryInfo().FullName;
 
         public ImmutableArray<IDatafileInfo> Datafiles { get; }
 
