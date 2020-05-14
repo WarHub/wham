@@ -43,7 +43,6 @@ jobs:
           git push origin $v
           Write-Host "::set-output name=tag::$v"
       - name: Add tag info and reaction to command comment
-        if: env.PUSH_TAG == 'true'
         uses: peter-evans/create-or-update-comment@v1
         with:
           comment-id: ${{ github.event.client_payload.github.payload.comment.id }}
