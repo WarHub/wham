@@ -10,6 +10,62 @@ namespace WarHub.ArmouryModel.Source.Tests.DataFormat
 {
     public class XmlSchema2_03Tests
     {
+        [Fact]
+        public void Comment_is_schema_validated()
+        {
+            var gst = Gamesystem();
+            var entryWithChildren = SelectionEntry()
+                .AddCategoryLinks(CategoryLink(CategoryEntry()))
+                .AddConstraints(Constraint())
+                .AddCosts(Cost(CostType()))
+                .AddModifierGroups(ModifierGroup())
+                .AddModifiers(
+                    Modifier()
+                    .AddConditionGroups(ConditionGroup())
+                    .AddConditions(Condition())
+                    .AddRepeats(Repeat()));
+            var cat = Catalogue(gst)
+                .AddCatalogueLinks(
+                    CatalogueLink(Catalogue(gst)))
+                .AddCategoryEntries(
+                    CategoryEntry())
+                .AddCostTypes(
+                    CostType())
+                .AddEntryLinks(
+                    EntryLink(entryWithChildren))
+                .AddForceEntries(
+                    ForceEntry())
+                .AddInfoLinks(
+                    InfoLink(Rule()))
+                .AddProfileTypes(
+                    ProfileType())
+                .AddPublications(
+                    Publication())
+                .AddRules(
+                    Rule())
+                .AddSelectionEntries(
+                    SelectionEntry(),
+                    entryWithChildren)
+                .AddSharedInfoGroups(
+                    InfoGroup())
+                .AddSharedProfiles(
+                    Profile(ProfileType()))
+                .AddSharedRules(
+                    Rule())
+                .AddSharedSelectionEntries(
+                    SelectionEntry())
+                .AddSharedSelectionEntryGroups(
+                    SelectionEntryGroup());
+            var catWithComs = (CatalogueNode)new CommentRewriter().Visit(cat);
+            using var writer = new StringWriter();
+            catWithComs.Serialize(writer);
+            var xmlText = writer.ToString();
+
+            var messages = SchemaUtils.Validate(xmlText);
+
+            messages.Should().BeEmpty();
+        }
+
         [Theory]
         [InlineData("add", ModifierKind.Add)]
         [InlineData("remove", ModifierKind.Remove)]
@@ -63,7 +119,7 @@ namespace WarHub.ArmouryModel.Source.Tests.DataFormat
   <entryLinks>
     <entryLink id='2' targetId='123' type='selectionEntry'>
       <costs>
-        <cost id='3' name='c1' value='123'/>
+        <cost typeId='3' name='c1' value='123'/>
       </costs>
     </entryLink>
   </entryLinks>
@@ -71,6 +127,12 @@ namespace WarHub.ArmouryModel.Source.Tests.DataFormat
             var messages = SchemaUtils.Validate(XmlText);
 
             messages.Should().BeEmpty();
+        }
+
+        private class CommentRewriter : SourceRewriter
+        {
+            public override SourceNode Visit(SourceNode node) =>
+                base.Visit(node is CommentableNode com ? com.WithComment("txt") : node);
         }
     }
 }

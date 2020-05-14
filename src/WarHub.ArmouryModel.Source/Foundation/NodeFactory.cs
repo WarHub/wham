@@ -13,6 +13,7 @@ namespace WarHub.ArmouryModel.Source
             public const string Scope = "parent";
             public const string ChildId = "model";
             public const string ModifierField = "name";
+            public const string ModifierValue = "0";
             public const int Revision = 1;
             public const decimal SelectorValue = 1m;
         }
@@ -34,6 +35,7 @@ namespace WarHub.ArmouryModel.Source
         public static CatalogueNode Catalogue(GamesystemNode gamesystem, string name = null, string id = null)
         {
             return Catalogue(
+                comment: null,
                 id: id ?? NewId(),
                 name: name ?? NewName(),
                 revision: Defaults.Revision,
@@ -49,6 +51,7 @@ namespace WarHub.ArmouryModel.Source
         public static CatalogueLinkNode CatalogueLink(CatalogueNode catalogue, string id = null)
         {
             return CatalogueLink(
+                comment: null,
                 id: id ?? NewId(),
                 name: catalogue.Name,
                 targetId: catalogue.Id,
@@ -71,6 +74,7 @@ namespace WarHub.ArmouryModel.Source
         public static CategoryEntryNode CategoryEntry(string name = null, string id = null)
         {
             return CategoryEntry(
+                comment: null,
                 id: id ?? NewId(),
                 name: name ?? NewName(),
                 publicationId: null,
@@ -81,6 +85,7 @@ namespace WarHub.ArmouryModel.Source
         public static CategoryLinkNode CategoryLink(CategoryEntryNode categoryEntry, string id = null)
         {
             return CategoryLink(
+                comment: null,
                 id: id ?? NewId(),
                 name: categoryEntry.Name,
                 publicationId: categoryEntry.PublicationId,
@@ -113,6 +118,7 @@ namespace WarHub.ArmouryModel.Source
             ConditionKind type = ConditionKind.EqualTo)
         {
             return Condition(
+                comment: null,
                 field: field,
                 scope: scope,
                 value: value,
@@ -124,6 +130,14 @@ namespace WarHub.ArmouryModel.Source
                 type: type);
         }
 
+        public static ConditionGroupNode ConditionGroup(
+            ConditionGroupKind type = ConditionGroupKind.And)
+        {
+            return ConditionGroup(
+                comment: null,
+                type: type);
+        }
+
         public static ConstraintNode Constraint(
             string field = Defaults.Field,
             string scope = Defaults.Scope,
@@ -132,6 +146,7 @@ namespace WarHub.ArmouryModel.Source
             ConstraintKind type = ConstraintKind.Minimum)
         {
             return Constraint(
+                comment: null,
                 field: field,
                 scope: scope,
                 value: value,
@@ -162,6 +177,7 @@ namespace WarHub.ArmouryModel.Source
         public static CostTypeNode CostType(string name = null, decimal defaultCostLimit = -1m)
         {
             return CostType(
+                comment: null,
                 id: NewId(),
                 name: name ?? NewName(),
                 defaultCostLimit: defaultCostLimit);
@@ -221,6 +237,7 @@ namespace WarHub.ArmouryModel.Source
         private static EntryLinkNode EntryLink(SelectionEntryBaseNode selectionEntryBase, EntryLinkKind type, string id = null)
         {
             return EntryLink(
+                comment: null,
                 id: id ?? NewId(),
                 name: selectionEntryBase.Name,
                 publicationId: selectionEntryBase.PublicationId,
@@ -256,6 +273,7 @@ namespace WarHub.ArmouryModel.Source
         public static ForceEntryNode ForceEntry(string name = null, string id = null)
         {
             return ForceEntry(
+                comment: null,
                 id: id ?? NewId(),
                 name: name ?? NewName(),
                 publicationId: null,
@@ -266,6 +284,7 @@ namespace WarHub.ArmouryModel.Source
         public static GamesystemNode Gamesystem(string name = null, string id = null)
         {
             return Gamesystem(
+                comment: null,
                 id: id ?? NewId(),
                 name: name ?? NewName(),
                 revision: Defaults.Revision,
@@ -278,6 +297,7 @@ namespace WarHub.ArmouryModel.Source
         public static InfoGroupNode InfoGroup(string name = null, string id = null)
         {
             return InfoGroup(
+                comment: null,
                 id: id ?? NewId(),
                 name: name ?? NewName(),
                 publicationId: null,
@@ -303,6 +323,7 @@ namespace WarHub.ArmouryModel.Source
         private static InfoLinkNode InfoLink(EntryBaseNode node, InfoLinkKind type, string id = null)
         {
             return InfoLink(
+                comment: null,
                 id: id ?? NewId(),
                 name: node.Name,
                 publicationId: node.PublicationId,
@@ -343,14 +364,22 @@ namespace WarHub.ArmouryModel.Source
             string field = Defaults.ModifierField)
         {
             return Modifier(
+                comment: null,
                 type: type,
                 field: field,
-                value: null);
+                value: Defaults.ModifierValue);
+        }
+
+        public static ModifierGroupNode ModifierGroup()
+        {
+            return ModifierGroup(
+                comment: null);
         }
 
         public static ProfileNode Profile(ProfileTypeNode profileType, string name = null, string id = null)
         {
             return Profile(
+                comment: null,
                 id: id ?? NewId(),
                 name: name ?? NewName(),
                 publicationId: null,
@@ -363,6 +392,7 @@ namespace WarHub.ArmouryModel.Source
         public static ProfileTypeNode ProfileType(string name = null)
         {
             return ProfileType(
+                comment: null,
                 id: NewId(),
                 name: name ?? NewName());
         }
@@ -370,6 +400,7 @@ namespace WarHub.ArmouryModel.Source
         public static PublicationNode Publication(string name = null)
         {
             return Publication(
+                comment: null,
                 id: NewId(),
                 name: name ?? NewName());
         }
@@ -381,6 +412,7 @@ namespace WarHub.ArmouryModel.Source
             string childId = Defaults.ChildId)
         {
             return Repeat(
+                comment: null,
                 field: field,
                 scope: scope,
                 value: value,
@@ -407,6 +439,7 @@ namespace WarHub.ArmouryModel.Source
         public static RuleNode Rule(string name = null, string id = null, string description = null)
         {
             return Rule(
+                comment: null,
                 id: id ?? NewId(),
                 name: name ?? NewName(),
                 publicationId: null,
@@ -435,6 +468,7 @@ namespace WarHub.ArmouryModel.Source
         public static SelectionEntryNode SelectionEntry(string name = null, string id = null)
         {
             return SelectionEntry(
+                comment: null,
                 id: id ?? NewId(),
                 name: name ?? NewName(),
                 publicationId: null,
@@ -448,6 +482,7 @@ namespace WarHub.ArmouryModel.Source
         public static SelectionEntryGroupNode SelectionEntryGroup(string name = null, string id = null)
         {
             return SelectionEntryGroup(
+                comment: null,
                 id: id ?? NewId(),
                 name: name ?? NewName(),
                 publicationId: null,

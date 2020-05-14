@@ -4,7 +4,7 @@ using System.Xml.Serialization;
 namespace WarHub.ArmouryModel.Source
 {
     [WhamNodeCore]
-    public abstract partial class CatalogueBaseCore
+    public abstract partial class CatalogueBaseCore : CommentableCore
     {
         [XmlAttribute("id")]
         public string Id { get; }

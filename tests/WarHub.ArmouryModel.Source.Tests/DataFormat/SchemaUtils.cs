@@ -32,21 +32,33 @@ namespace WarHub.ArmouryModel.Source.Tests.DataFormat
             }
         }
 
-        public static IEnumerable<ValidationEventArgs> Validate(string xml)
+        public static IEnumerable<object> Validate(string xml)
         {
             // first migrate
             using var xmlReader = XmlReader.Create(new StringReader(xml));
             var (migratedReader, _) = DataVersionManagement.ReadMigrated(xmlReader);
             // then read with validation
-            var messages = new List<ValidationEventArgs>();
+            var messages = new List<object>();
             var settings = new XmlReaderSettings
             {
                 Schemas = SchemaSet,
                 ValidationType = ValidationType.Schema
             };
             settings.ValidationFlags |= XmlSchemaValidationFlags.ReportValidationWarnings;
-            settings.ValidationEventHandler += (s, e) => messages.Add(e);
+            settings.ValidationEventHandler += (s, e) =>
+            {
+                var reader = (XmlReader)s;
+                var ex = e.Exception;
+                messages.Add(new
+                {
+                    ex.LineNumber,
+                    ex.LinePosition,
+                    e.Message,
+                    reader.LocalName,
+                });
+            };
             using var validatingReader = XmlReader.Create(migratedReader, settings);
+            while (validatingReader.Read()) ;
             return messages;
         }
     }

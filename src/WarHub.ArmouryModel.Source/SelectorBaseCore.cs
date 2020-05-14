@@ -3,7 +3,7 @@
 namespace WarHub.ArmouryModel.Source
 {
     [WhamNodeCore]
-    public abstract partial class SelectorBaseCore
+    public abstract partial class SelectorBaseCore : CommentableCore
     {
         /// <summary>
         /// Defines what is actually being counted in the query.

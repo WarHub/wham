@@ -14,10 +14,20 @@
     <xs:restriction base="xs:string" />
   </xs:simpleType>
 
+  <xs:complexType name="Commentable">
+    <xs:sequence>
+      <xs:element name="comment" type="xs:string" minOccurs="0" />
+    </xs:sequence>
+  </xs:complexType>
+
   <!--publication-->
   <xs:complexType name="Publication">
-    <xs:attribute name="id" type="tns:idtype" use="required" />
-    <xs:attribute name="name" type="xs:string" use="required" />
+    <xs:complexContent>
+      <xs:extension base="tns:Commentable">
+        <xs:attribute name="id" type="tns:idtype" use="required" />
+        <xs:attribute name="name" type="xs:string" use="required" />
+      </xs:extension>
+    </xs:complexContent>
   </xs:complexType>
 
   <xs:complexType name="PublicationList">
@@ -45,11 +55,15 @@
 
   <!--profile type-->
   <xs:complexType name="ProfileType">
-    <xs:sequence>
-      <xs:element name="characteristicTypes" type="tns:CharacteristicTypeList" minOccurs="0" />
-    </xs:sequence>
-    <xs:attribute name="id" type="tns:idtype" use="required" />
-    <xs:attribute name="name" type="xs:string" use="required" />
+    <xs:complexContent>
+      <xs:extension base="tns:Commentable">
+        <xs:sequence>
+          <xs:element name="characteristicTypes" type="tns:CharacteristicTypeList" minOccurs="0" />
+        </xs:sequence>
+        <xs:attribute name="id" type="tns:idtype" use="required" />
+        <xs:attribute name="name" type="xs:string" use="required" />
+      </xs:extension>
+    </xs:complexContent>
   </xs:complexType>
 
   <xs:complexType name="ProfileTypeList">
@@ -60,9 +74,13 @@
 
   <!--cost type-->
   <xs:complexType name="CostType">
-    <xs:attribute name="id" type="tns:idtype" use="required" />
-    <xs:attribute name="name" type="xs:string" use="required" />
-    <xs:attribute name="defaultCostLimit" type="xs:decimal" default="-1" />
+    <xs:complexContent>
+      <xs:extension base="tns:Commentable">
+        <xs:attribute name="id" type="tns:idtype" use="required" />
+        <xs:attribute name="name" type="xs:string" use="required" />
+        <xs:attribute name="defaultCostLimit" type="xs:decimal" default="-1" />
+      </xs:extension>
+    </xs:complexContent>
   </xs:complexType>
 
   <xs:complexType name="CostTypeList">
@@ -73,14 +91,18 @@
 
   <!--entry base-->
   <xs:complexType name="EntryBase">
-    <xs:sequence>
-      <xs:element name="modifiers" type="tns:ModifierList" minOccurs="0" />
-      <xs:element name="modifierGroups" type="tns:ModifierGroupList" minOccurs="0" />
-    </xs:sequence>
-    <xs:attribute name="id" type="tns:idtype" use="required" />
-    <xs:attribute name="name" type="xs:string" />
-    <xs:attributeGroup ref="tns:PublicationRefAttGroup" />
-    <xs:attribute name="hidden" type="xs:boolean" default="false" />
+    <xs:complexContent>
+      <xs:extension base="tns:Commentable">
+        <xs:sequence>
+          <xs:element name="modifiers" type="tns:ModifierList" minOccurs="0" />
+          <xs:element name="modifierGroups" type="tns:ModifierGroupList" minOccurs="0" />
+        </xs:sequence>
+        <xs:attribute name="id" type="tns:idtype" use="required" />
+        <xs:attribute name="name" type="xs:string" />
+        <xs:attributeGroup ref="tns:PublicationRefAttGroup" />
+        <xs:attribute name="hidden" type="xs:boolean" default="false" />
+      </xs:extension>
+    </xs:complexContent>
   </xs:complexType>
 
   <!--info node group-->
@@ -322,11 +344,15 @@
 
   <!--catalogue link-->
   <xs:complexType name="CatalogueLink">
-    <xs:attribute name="id" type="tns:idtype" use="required" />
-    <xs:attribute name="name" type="xs:string" use="required" />
-    <xs:attribute name="targetId" type="tns:idtype" use="required" />
-    <xs:attribute name="type" type="tns:CatalogueLinkKind" use="required" />
-    <xs:attribute name="importRootEntries" type="xs:boolean" default="false" />
+    <xs:complexContent>
+      <xs:extension base="tns:Commentable">
+        <xs:attribute name="id" type="tns:idtype" use="required" />
+        <xs:attribute name="name" type="xs:string" use="required" />
+        <xs:attribute name="targetId" type="tns:idtype" use="required" />
+        <xs:attribute name="type" type="tns:CatalogueLinkKind" use="required" />
+        <xs:attribute name="importRootEntries" type="xs:boolean" default="false" />
+      </xs:extension>
+    </xs:complexContent>
   </xs:complexType>
 
   <xs:complexType name="CatalogueLinkList">
@@ -385,13 +411,17 @@
 
   <!--selector base-->
   <xs:complexType name="SelectorBase">
-    <xs:attribute name="field" type="xs:string" />
-    <xs:attribute name="scope" type="xs:string" use="required" />
-    <xs:attribute name="value" type="xs:decimal" use="required" />
-    <xs:attribute name="percentValue" type="xs:boolean" default="false" />
-    <xs:attribute name="shared" type="xs:boolean" default="true" />
-    <xs:attribute name="includeChildSelections" type="xs:boolean" default="false" />
-    <xs:attribute name="includeChildForces" type="xs:boolean" default="false" />
+    <xs:complexContent>
+      <xs:extension base="tns:Commentable">
+        <xs:attribute name="field" type="xs:string" />
+        <xs:attribute name="scope" type="xs:string" use="required" />
+        <xs:attribute name="value" type="xs:decimal" use="required" />
+        <xs:attribute name="percentValue" type="xs:boolean" default="false" />
+        <xs:attribute name="shared" type="xs:boolean" default="true" />
+        <xs:attribute name="includeChildSelections" type="xs:boolean" default="false" />
+        <xs:attribute name="includeChildForces" type="xs:boolean" default="false" />
+      </xs:extension>
+    </xs:complexContent>
   </xs:complexType>
 
   <!--constraint-->
@@ -419,14 +449,18 @@
 
   <!--modifier-->
   <xs:complexType name="Modifier">
-    <xs:sequence>
-      <xs:element name="repeats" type="tns:RepeatList" minOccurs="0" />
-      <xs:element name="conditions" type="tns:ConditionList" minOccurs="0" />
-      <xs:element name="conditionGroups" type="tns:ConditionGroupList" minOccurs="0" />
-    </xs:sequence>
-    <xs:attribute name="type" type="tns:ModifierKind" use="required" />
-    <xs:attribute name="field" type="xs:string" use="required" />
-    <xs:attribute name="value" type="xs:string" use="required" />
+    <xs:complexContent>
+      <xs:extension base="tns:Commentable">
+        <xs:sequence>
+          <xs:element name="repeats" type="tns:RepeatList" minOccurs="0" />
+          <xs:element name="conditions" type="tns:ConditionList" minOccurs="0" />
+          <xs:element name="conditionGroups" type="tns:ConditionGroupList" minOccurs="0" />
+        </xs:sequence>
+        <xs:attribute name="type" type="tns:ModifierKind" use="required" />
+        <xs:attribute name="field" type="xs:string" use="required" />
+        <xs:attribute name="value" type="xs:string" use="required" />
+      </xs:extension>
+    </xs:complexContent>
   </xs:complexType>
 
   <xs:complexType name="ModifierList">
@@ -450,12 +484,16 @@
 
   <!--modifier group-->
   <xs:complexType name="ModifierGroup">
-    <xs:sequence>
-      <xs:element name="repeats" type="tns:RepeatList" minOccurs="0" />
-      <xs:element name="conditions" type="tns:ConditionList" minOccurs="0" />
-      <xs:element name="conditionGroups" type="tns:ConditionGroupList" minOccurs="0" />
-      <xs:element name="modifiers" type="tns:ModifierList" minOccurs="0" />
-    </xs:sequence>
+    <xs:complexContent>
+      <xs:extension base="tns:Commentable">
+        <xs:sequence>
+          <xs:element name="repeats" type="tns:RepeatList" minOccurs="0" />
+          <xs:element name="conditions" type="tns:ConditionList" minOccurs="0" />
+          <xs:element name="conditionGroups" type="tns:ConditionGroupList" minOccurs="0" />
+          <xs:element name="modifiers" type="tns:ModifierList" minOccurs="0" />
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
   </xs:complexType>
 
   <xs:complexType name="ModifierGroupList">
@@ -512,11 +550,15 @@
 
   <!--condition group-->
   <xs:complexType name="ConditionGroup">
-    <xs:sequence>
-      <xs:element name="conditions" type="tns:ConditionList" minOccurs="0" />
-      <xs:element name="conditionGroups" type="tns:ConditionGroupList" minOccurs="0" />
-    </xs:sequence>
-    <xs:attribute name="type" type="tns:ConditionGroupKind" use="required" />
+    <xs:complexContent>
+      <xs:extension base="tns:Commentable">
+        <xs:sequence>
+          <xs:element name="conditions" type="tns:ConditionList" minOccurs="0" />
+          <xs:element name="conditionGroups" type="tns:ConditionGroupList" minOccurs="0" />
+        </xs:sequence>
+        <xs:attribute name="type" type="tns:ConditionGroupKind" use="required" />
+      </xs:extension>
+    </xs:complexContent>
   </xs:complexType>
 
   <xs:complexType name="ConditionGroupList">
@@ -606,29 +648,33 @@
 
   <!--catalogue base-->
   <xs:complexType name="CatalogueBase">
-    <xs:sequence>
-      <xs:element name="publications" type="tns:PublicationList" minOccurs="0" />
-      <xs:element name="costTypes" type="tns:CostTypeList" minOccurs="0" />
-      <xs:element name="profileTypes" type="tns:ProfileTypeList" minOccurs="0" />
-      <xs:element name="categoryEntries" type="tns:CategoryEntryList" minOccurs="0" />
-      <xs:element name="forceEntries" type="tns:ForceEntryList" minOccurs="0" />
-      <xs:element name="selectionEntries" type="tns:SelectionEntryList" minOccurs="0" />
-      <xs:element name="entryLinks" type="tns:EntryLinkList" minOccurs="0" />
-      <xs:element name="rules" type="tns:RuleList" minOccurs="0" />
-      <xs:element name="infoLinks" type="tns:InfoLinkList" minOccurs="0" />
-      <xs:element name="sharedSelectionEntries" type="tns:SelectionEntryList" minOccurs="0" />
-      <xs:element name="sharedSelectionEntryGroups" type="tns:SelectionEntryGroupList" minOccurs="0" />
-      <xs:element name="sharedRules" type="tns:RuleList" minOccurs="0" />
-      <xs:element name="sharedProfiles" type="tns:ProfileList" minOccurs="0" />
-      <xs:element name="sharedInfoGroups" type="tns:InfoGroupList" minOccurs="0" />
-    </xs:sequence>
-    <xs:attribute name="id" type="tns:idtype" use="required" />
-    <xs:attribute name="name" type="xs:string" use="required" />
-    <xs:attribute name="revision" type="xs:nonNegativeInteger" />
-    <xs:attribute name="battleScribeVersion" type="xs:string" />
-    <xs:attribute name="authorName" type="xs:string" />
-    <xs:attribute name="authorContact" type="xs:string" />
-    <xs:attribute name="authorUrl" type="xs:string" />
+    <xs:complexContent>
+      <xs:extension base="tns:Commentable">
+        <xs:sequence>
+          <xs:element name="publications" type="tns:PublicationList" minOccurs="0" />
+          <xs:element name="costTypes" type="tns:CostTypeList" minOccurs="0" />
+          <xs:element name="profileTypes" type="tns:ProfileTypeList" minOccurs="0" />
+          <xs:element name="categoryEntries" type="tns:CategoryEntryList" minOccurs="0" />
+          <xs:element name="forceEntries" type="tns:ForceEntryList" minOccurs="0" />
+          <xs:element name="selectionEntries" type="tns:SelectionEntryList" minOccurs="0" />
+          <xs:element name="entryLinks" type="tns:EntryLinkList" minOccurs="0" />
+          <xs:element name="rules" type="tns:RuleList" minOccurs="0" />
+          <xs:element name="infoLinks" type="tns:InfoLinkList" minOccurs="0" />
+          <xs:element name="sharedSelectionEntries" type="tns:SelectionEntryList" minOccurs="0" />
+          <xs:element name="sharedSelectionEntryGroups" type="tns:SelectionEntryGroupList" minOccurs="0" />
+          <xs:element name="sharedRules" type="tns:RuleList" minOccurs="0" />
+          <xs:element name="sharedProfiles" type="tns:ProfileList" minOccurs="0" />
+          <xs:element name="sharedInfoGroups" type="tns:InfoGroupList" minOccurs="0" />
+        </xs:sequence>
+        <xs:attribute name="id" type="tns:idtype" use="required" />
+        <xs:attribute name="name" type="xs:string" use="required" />
+        <xs:attribute name="revision" type="xs:nonNegativeInteger" />
+        <xs:attribute name="battleScribeVersion" type="xs:string" />
+        <xs:attribute name="authorName" type="xs:string" />
+        <xs:attribute name="authorContact" type="xs:string" />
+        <xs:attribute name="authorUrl" type="xs:string" />
+      </xs:extension>
+    </xs:complexContent>
   </xs:complexType>
 
   <!--roster-->

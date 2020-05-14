@@ -186,17 +186,14 @@ namespace WarHub.ArmouryModel.Workspaces.BattleScribe
 
         public static Func<Stream, SourceNode> GetLoadingMethod(this XmlDocumentKind kind)
         {
-            switch (kind)
+            return kind switch
             {
-                case XmlDocumentKind.Gamesystem: return BattleScribeXml.LoadGamesystem;
-                case XmlDocumentKind.Catalogue: return BattleScribeXml.LoadCatalogue;
-                case XmlDocumentKind.Roster: return BattleScribeXml.LoadRoster;
-                case XmlDocumentKind.DataIndex: return BattleScribeXml.LoadDataIndex;
-                case XmlDocumentKind.Unknown:
-                case XmlDocumentKind.RepoDistribution:
-                default:
-                    return null;
-            }
+                XmlDocumentKind.Gamesystem => BattleScribeXml.LoadGamesystem,
+                XmlDocumentKind.Catalogue => BattleScribeXml.LoadCatalogue,
+                XmlDocumentKind.Roster => BattleScribeXml.LoadRoster,
+                XmlDocumentKind.DataIndex => BattleScribeXml.LoadDataIndex,
+                _ => null,
+            };
         }
 
         public static IDatafileInfo LoadSourceAuto(this Stream stream, string filename)
