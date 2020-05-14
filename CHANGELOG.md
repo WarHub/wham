@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 * `NodeList<T>.Slice(int, int)` method to support ranges in C#8 ([#89]).
-* `comment` field on data elements (and in 2.03 schema) ([PR]).
+* `comment` field on data elements (and in 2.03 schema) ([#108]).
 
 ### Changed
 * Renamed `BattleScribeVersion` static well-known values from `V0_00` to `V0x00` ([#86]).
@@ -37,6 +37,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 [#89]: https://github.com/WarHub/wham/pull/89
 [#90]: https://github.com/WarHub/wham/pull/90
 [#91]: https://github.com/WarHub/wham/pull/91
+[#108]: https://github.com/WarHub/wham/pull/108
 
 ## [0.7.0] - 2019-11-05
 
