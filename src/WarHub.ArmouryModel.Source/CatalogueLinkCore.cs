@@ -4,7 +4,7 @@ namespace WarHub.ArmouryModel.Source
 {
     [WhamNodeCore]
     [XmlType("catalogueLink")]
-    public sealed partial class CatalogueLinkCore
+    public sealed partial class CatalogueLinkCore : CommentableCore
     {
         [XmlAttribute("id")]
         public string Id { get; }

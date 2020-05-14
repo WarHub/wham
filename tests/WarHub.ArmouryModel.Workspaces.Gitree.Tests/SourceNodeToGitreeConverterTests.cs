@@ -23,7 +23,7 @@ namespace WarHub.ArmouryModel.Workspaces.Gitree.Tests
         public void FolderKindDroppingRewriter_ClearsCorrectList()
         {
             var characteristicType = NodeFactory.CharacteristicType("id", "name");
-            var profile = NodeFactory.ProfileType("id", "name", NodeList.Create(characteristicType));
+            var profile = NodeFactory.ProfileType("name").AddCharacteristicTypes(characteristicType);
             var rewriter = new SourceNodeToGitreeConverter.SeparatableChildrenRemover();
             var result = (DatablobNode)NodeFactory.Datablob(
                 NodeFactory.Metadata(null, null, null),
@@ -40,7 +40,7 @@ namespace WarHub.ArmouryModel.Workspaces.Gitree.Tests
             const string CostTypeId = "costType1";
             var catalogue =
                 NodeFactory.Catalogue(NodeFactory.Gamesystem())
-                .AddCostTypes(NodeFactory.CostType(CostTypeId, "pts", -1))
+                .AddCostTypes(NodeFactory.CostType(name: "pts").WithId(CostTypeId))
                 .AddRules(NodeFactory.Rule("rulename"));
             var rule = catalogue.Rules[0];
             var converter = new SourceNodeToGitreeConverter();
