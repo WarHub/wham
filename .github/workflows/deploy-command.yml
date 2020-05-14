@@ -79,7 +79,10 @@ jobs:
         run: |
           $ghp = "https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json".ToLower()
           dotnet nuget add source $ghp -n github -u ${{ github.actor }} -p ${{ github.token }} --store-password-in-clear-text
-          dotnet nuget push '*.nupkg' -s github --skip-duplicate -k ${{ github.token }}
+          do {
+            dotnet nuget push '*.nupkg' -s github --skip-duplicate -k ${{ github.token }}
+            # GitHub Packages are currently very unstable and produce errors a lot of time, let's retry 10 times
+          } while ($LASTEXITCODE -ne 0 -and ++$count -lt 10 -and (Start-Sleep 5 && $true))
       - name: Push to nuget.org
         if: env.PUSH_TO == 'all' || env.PUSH_TO == 'nuget'
         shell: pwsh
