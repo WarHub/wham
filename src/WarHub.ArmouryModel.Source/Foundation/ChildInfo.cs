@@ -28,6 +28,7 @@ namespace WarHub.ArmouryModel.Source
                    EqualityComparer<SourceNode>.Default.Equals(Node, other.Node);
         }
 
+#if NETSTANDARD2_0
         public override int GetHashCode()
         {
             var hashCode = 1418292515;
@@ -35,6 +36,9 @@ namespace WarHub.ArmouryModel.Source
             hashCode = (hashCode * -1521134295) + EqualityComparer<SourceNode>.Default.GetHashCode(Node);
             return hashCode;
         }
+#else
+        public override int GetHashCode() => HashCode.Combine(Name, Node);
+#endif
 
         public static bool operator ==(ChildInfo left, ChildInfo right)
         {

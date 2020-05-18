@@ -179,7 +179,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                     return
                         Descriptor.Entries
                         .Where(x => !x.IsCollection)
-                        .Select(CreateSimpleParameter, CreateComplexParameter, null)
+                        .Select(CreateSimpleParameter, CreateComplexParameter, null!)
                         .Concat(
                             Descriptor.Entries
                             .OfType<CoreDescriptor.CollectionEntry>()

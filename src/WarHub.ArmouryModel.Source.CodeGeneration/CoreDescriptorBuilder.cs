@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
 using CodeGeneration.Roslyn;
@@ -26,14 +27,14 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
             CancellationToken = cancellationToken;
             UpdateNamedTypeSymbolCache(ref immutableArraySymbolCache, Compilation);
             UpdateNamedTypeSymbolCache(ref whamNodeCoreAttributeSymbolCache, Compilation);
-            TypeSymbol = GetNamedTypeSymbol(TypeDeclaration);
+            TypeSymbol = GetNamedTypeSymbol(TypeDeclaration) ?? throw new ArgumentException("Type is not a named type.");
         }
 
         private SemanticModel SemanticModel { get; }
         private CSharpCompilation Compilation { get; }
         private ClassDeclarationSyntax TypeDeclaration { get; }
         private CancellationToken CancellationToken { get; }
-        public static INamedTypeSymbol ImmutableArraySymbol => immutableArraySymbolCache.Symbol;
+        public static INamedTypeSymbol ImmutableArraySymbol => immutableArraySymbolCache.Symbol!;
         public INamedTypeSymbol TypeSymbol { get; }
 
         public CoreDescriptor CreateDescriptor()
@@ -51,12 +52,12 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                 .Select(p =>
                 {
                     var x = p.DeclaringSyntaxReferences.FirstOrDefault();
-                    var syntax = (PropertyDeclarationSyntax)x?.GetSyntax();
+                    var syntax = (PropertyDeclarationSyntax?)x?.GetSyntax();
                     var auto = syntax?.AccessorList?.Accessors.All(accessor => accessor.Body == null && accessor.ExpressionBody == null) ?? false;
-                    return auto ? new { syntax, symbol = p } : null;
+                    return auto ? new { syntax = syntax!, symbol = p } : null;
                 })
                 .Where(x => x != null)
-                .Select(x => CreateRecordEntry(x.symbol, x.syntax))
+                .Select(x => CreateRecordEntry(x!.symbol, x.syntax))
                 .ToImmutableArray();
 
             return new CoreDescriptor(
@@ -70,7 +71,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
         private static IEnumerable<INamedTypeSymbol> GetCustomBaseTypesAndSelf(INamedTypeSymbol self)
         {
             yield return self;
-            while (self.BaseType.SpecialType == SpecialType.None)
+            while (self.BaseType?.SpecialType == SpecialType.None)
             {
                 self = self.BaseType;
                 yield return self;
@@ -128,7 +129,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
             return xmlAttributes.Select(att => SyntaxFactory.AttributeList().AddAttributes(att));
         }
 
-        private INamedTypeSymbol GetNamedTypeSymbol(SyntaxNode node)
+        private INamedTypeSymbol? GetNamedTypeSymbol(SyntaxNode node)
         {
             var namedTypeSymbol = SemanticModel.GetDeclaredSymbol(node, CancellationToken) as INamedTypeSymbol;
             return namedTypeSymbol is IErrorTypeSymbol ? null : namedTypeSymbol;
@@ -161,11 +162,12 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                 Compilation = compilation;
             }
 
+            [AllowNull, MaybeNull]
             public T Symbol { get; }
-            public CSharpCompilation Compilation { get; }
+            public CSharpCompilation? Compilation { get; }
             public string FullMetadataName { get; }
 
-            public void Deconstruct(out T symbol, out CSharpCompilation compilation)
+            public void Deconstruct([MaybeNull] out T symbol, out CSharpCompilation? compilation)
             {
                 symbol = Symbol;
                 compilation = Compilation;

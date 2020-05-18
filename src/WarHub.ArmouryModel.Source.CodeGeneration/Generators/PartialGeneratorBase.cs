@@ -15,7 +15,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
         {
             Descriptor = descriptor;
             CancellationToken = cancellationToken;
-            BaseType = Descriptor.TypeSymbol.BaseType;
+            BaseType = Descriptor.TypeSymbol.BaseType ?? throw new ArgumentException("Type must have any base type");
             IsDerived = BaseType.SpecialType != SpecialType.System_Object;
         }
 
