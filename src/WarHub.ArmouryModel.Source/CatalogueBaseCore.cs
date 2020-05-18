@@ -7,10 +7,10 @@ namespace WarHub.ArmouryModel.Source
     public abstract partial class CatalogueBaseCore : CommentableCore
     {
         [XmlAttribute("id")]
-        public string Id { get; }
+        public string? Id { get; }
 
         [XmlAttribute("name")]
-        public string Name { get; }
+        public string? Name { get; }
 
         [XmlAttribute("revision")]
         public int Revision { get; }

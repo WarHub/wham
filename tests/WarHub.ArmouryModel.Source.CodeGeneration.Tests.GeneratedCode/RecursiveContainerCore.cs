@@ -5,7 +5,7 @@ namespace WarHub.ArmouryModel.Source
     [WhamNodeCore]
     public partial class RecursiveContainerCore
     {
-        public string Name { get; }
+        public string? Name { get; }
 
         public ImmutableArray<ItemCore> Items { get; }
 

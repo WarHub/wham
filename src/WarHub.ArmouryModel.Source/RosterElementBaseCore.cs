@@ -7,13 +7,13 @@ namespace WarHub.ArmouryModel.Source
     public abstract partial class RosterElementBaseCore
     {
         [XmlAttribute("id")]
-        public string Id { get; }
+        public string? Id { get; }
 
         [XmlAttribute("name")]
-        public string Name { get; }
+        public string? Name { get; }
 
         [XmlAttribute("entryId")]
-        public string EntryId { get; }
+        public string? EntryId { get; }
 
         [XmlAttribute("entryGroupId")]
         public string? EntryGroupId { get; }

@@ -11,10 +11,10 @@ namespace WarHub.ArmouryModel.Source
         public ModifierKind Type { get; }
 
         [XmlAttribute("field")]
-        public string Field { get; }
+        public string? Field { get; }
 
         [XmlAttribute("value")]
-        public string Value { get; }
+        public string? Value { get; }
 
         [XmlArray("repeats")]
         public ImmutableArray<RepeatCore> Repeats { get; }

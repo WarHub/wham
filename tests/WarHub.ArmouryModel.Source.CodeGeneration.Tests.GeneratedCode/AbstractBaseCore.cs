@@ -6,7 +6,7 @@ namespace WarHub.ArmouryModel.Source
     [WhamNodeCore]
     public abstract partial class AbstractBaseCore
     {
-        public string BaseName { get; }
+        public string? BaseName { get; }
 
         public DateTime BaseDateTime { get; }
 

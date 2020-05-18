@@ -2,7 +2,7 @@
 {
     public interface IIdentifiableNode
     {
-        string Id { get; }
+        string? Id { get; }
     }
 
     public partial class CatalogueBaseNode : IIdentifiableNode { }

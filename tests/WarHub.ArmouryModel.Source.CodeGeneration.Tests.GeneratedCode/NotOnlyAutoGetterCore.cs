@@ -8,24 +8,24 @@
             return new NotOnlyAutoGetterCore(name: "", defaultValue: "");
         }
 
-        private string fullProperty;
-        private string fullBodiedProperty;
+        private string? fullProperty;
+        private string? fullBodiedProperty;
 
-        public string Name { get; }
+        public string? Name { get; }
 
         public string NameWithSuffix => Name + "Suffix";
 
-        public string SettableProperty { get; set; }
+        public string? SettableProperty { get; set; }
 
-        public string DefaultValue { get; } = "Default";
+        public string? DefaultValue { get; } = "Default";
 
-        public string FullProperty
+        public string? FullProperty
         {
             get => fullProperty;
             set => fullProperty = value;
         }
 
-        public string FullBodiedProperty
+        public string? FullBodiedProperty
         {
             get
             {

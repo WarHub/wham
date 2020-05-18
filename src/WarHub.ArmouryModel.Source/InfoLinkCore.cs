@@ -7,7 +7,7 @@ namespace WarHub.ArmouryModel.Source
     public sealed partial class InfoLinkCore : EntryBaseCore
     {
         [XmlAttribute("targetId")]
-        public string TargetId { get; }
+        public string? TargetId { get; }
 
         [XmlAttribute("type")]
         public InfoLinkKind Type { get; }

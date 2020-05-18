@@ -12,7 +12,7 @@ namespace WarHub.ArmouryModel.Source
         public string? BattleScribeVersion { get; }
 
         [XmlAttribute("name")]
-        public string Name { get; }
+        public string? Name { get; }
 
         [XmlAttribute("indexUrl")]
         public string? IndexUrl { get; }

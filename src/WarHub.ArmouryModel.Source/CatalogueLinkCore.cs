@@ -7,13 +7,13 @@ namespace WarHub.ArmouryModel.Source
     public sealed partial class CatalogueLinkCore : CommentableCore
     {
         [XmlAttribute("id")]
-        public string Id { get; }
+        public string? Id { get; }
 
         [XmlAttribute("name")]
-        public string Name { get; }
+        public string? Name { get; }
 
         [XmlAttribute("targetId")]
-        public string TargetId { get; }
+        public string? TargetId { get; }
 
         [XmlAttribute("type")]
         public CatalogueLinkKind Type { get; }

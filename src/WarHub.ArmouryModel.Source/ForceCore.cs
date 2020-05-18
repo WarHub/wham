@@ -8,7 +8,7 @@ namespace WarHub.ArmouryModel.Source
     public sealed partial class ForceCore : RosterElementBaseCore
     {
         [XmlAttribute("catalogueId")]
-        public string CatalogueId { get; }
+        public string? CatalogueId { get; }
 
         [XmlAttribute("catalogueRevision")]
         public int CatalogueRevision { get; }

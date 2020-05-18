@@ -7,7 +7,7 @@ namespace WarHub.ArmouryModel.Source
     public sealed partial class ConstraintCore : SelectorBaseCore
     {
         [XmlAttribute("id")]
-        public string Id { get; }
+        public string? Id { get; }
 
         [XmlAttribute("type")]
         public ConstraintKind Type { get; }

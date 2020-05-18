@@ -7,9 +7,9 @@ namespace WarHub.ArmouryModel.Source
     public sealed partial class PublicationCore : CommentableCore
     {
         [XmlAttribute("id")]
-        public string Id { get; }
+        public string? Id { get; }
 
         [XmlAttribute("name")]
-        public string Name { get; }
+        public string? Name { get; }
     }
 }

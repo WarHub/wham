@@ -18,7 +18,7 @@ namespace WarHub.ArmouryModel.Source
         /// Changes the query to filter by this value.
         /// </summary>
         [XmlAttribute("childId")]
-        public string ChildId { get; }
+        public string? ChildId { get; }
 
         /// <summary>
         /// Number of times the Modifier owner of this repeat should be applied

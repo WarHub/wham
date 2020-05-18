@@ -15,7 +15,7 @@ namespace WarHub.ArmouryModel.Source
         /// Defines a scope in which the query runs.
         /// </summary>
         [XmlAttribute("scope")]
-        public string Scope { get; }
+        public string? Scope { get; }
 
         /// <summary>
         /// The value that the query result is compared to.
