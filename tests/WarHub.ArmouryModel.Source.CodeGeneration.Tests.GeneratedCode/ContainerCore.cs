@@ -8,10 +8,10 @@ namespace WarHub.ArmouryModel.Source
     public partial class ContainerCore
     {
         [XmlAttribute("id")]
-        public string Id { get; }
+        public string? Id { get; }
 
         [XmlAttribute("name")]
-        public string Name { get; }
+        public string? Name { get; }
 
         [XmlArray("items", Order = 0)]
         public ImmutableArray<ItemCore> Items { get; }

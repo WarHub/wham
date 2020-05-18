@@ -15,9 +15,9 @@ namespace WarHub.ArmouryModel.Workspaces.BattleScribe
             Documents = documents.Select(x => x.WithWorkspace(this)).ToImmutableArray();
         }
 
-        private string rootPath;
+        private string? rootPath;
         private ImmutableArray<IDatafileInfo>? datafiles;
-        private ImmutableDictionary<XmlDocumentKind, ImmutableArray<XmlDocument>> documentsByKind;
+        private ImmutableDictionary<XmlDocumentKind, ImmutableArray<XmlDocument>>? documentsByKind;
 
         public ProjectConfigurationInfo Info { get; }
 

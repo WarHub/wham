@@ -2,8 +2,8 @@
 {
     public interface IPublicationReferencingNode
     {
-        string PublicationId { get; }
-        string Page { get; }
+        string? PublicationId { get; }
+        string? Page { get; }
     }
 
     public partial class EntryBaseNode : IPublicationReferencingNode { }

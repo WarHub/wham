@@ -7,12 +7,12 @@ namespace WarHub.ArmouryModel.Source
     public sealed partial class CharacteristicCore
     {
         [XmlAttribute("name")]
-        public string Name { get; }
+        public string? Name { get; }
 
         [XmlAttribute("typeId")]
-        public string TypeId { get; }
+        public string? TypeId { get; }
 
         [XmlText]
-        public string Value { get; }
+        public string? Value { get; }
     }
 }

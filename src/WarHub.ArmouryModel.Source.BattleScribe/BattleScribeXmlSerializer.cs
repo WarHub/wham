@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.IO;
@@ -26,9 +25,9 @@ namespace WarHub.ArmouryModel.Source.BattleScribe
 
         private class ElementCache
         {
-            public XmlSerializer Serializer;
-            public XmlSerializer Deserializer;
-            public XmlSerializerNamespaces Namespaces;
+            public XmlSerializer? Serializer;
+            public XmlSerializer? Deserializer;
+            public XmlSerializerNamespaces? Namespaces;
         }
 
         private readonly ImmutableDictionary<RootElement, ElementCache> elementCacheDictionary

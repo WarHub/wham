@@ -41,7 +41,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
             const string List = "list";
             return
                 MethodDeclaration(
-                    Descriptor.CoreType.ToImmutableArrayType(),
+                    Descriptor.ImmutableArrayOfCoreType,
                     Names.ToCoreArray)
                 .AddModifiers(SyntaxKind.PublicKeyword, SyntaxKind.StaticKeyword)
                 .AddParameterListParameters(
@@ -76,7 +76,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
             const string Nodes = "nodes";
             return
                 MethodDeclaration(
-                    Descriptor.CoreType.ToImmutableArrayType(),
+                    Descriptor.ImmutableArrayOfCoreType,
                     Names.ToCoreArray)
                 .AddModifiers(SyntaxKind.PublicKeyword, SyntaxKind.StaticKeyword)
                 .AddParameterListParameters(
@@ -128,12 +128,13 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                         Identifier(Cores))
                     .AddModifiers(SyntaxKind.ThisKeyword)
                     .WithType(
-                        Descriptor.CoreType.ToImmutableArrayType());
+                        Descriptor.ImmutableArrayOfCoreType);
                 yield return
                     Parameter(
                         Identifier(Parent))
                     .WithType(
-                        IdentifierName(Names.SourceNode));
+                        NullableType(
+                            IdentifierName(Names.SourceNode)));
             }
             ExpressionSyntax CreateListNodeCreationExpression()
             {
@@ -168,12 +169,13 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                         Identifier(Cores))
                     .AddModifiers(SyntaxKind.ThisKeyword)
                     .WithType(
-                        Descriptor.CoreType.ToImmutableArrayType());
+                        Descriptor.ImmutableArrayOfCoreType);
                 yield return
                     Parameter(
                         Identifier(Parent))
                     .WithType(
-                        IdentifierName(Names.SourceNode));
+                        NullableType(
+                            IdentifierName(Names.SourceNode)));
             }
             ExpressionSyntax CreateToNodeListExpression()
             {
@@ -216,7 +218,8 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                     Parameter(
                             Identifier(Parent))
                         .WithType(
-                            IdentifierName(Names.SourceNode))
+                            NullableType(
+                                IdentifierName(Names.SourceNode)))
                         .WithDefault(
                             EqualsValueClause(
                                 LiteralExpression(SyntaxKind.NullLiteralExpression)));
@@ -241,7 +244,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
             const string Builders = "builders";
             return
                 MethodDeclaration(
-                    Descriptor.CoreType.ToImmutableArrayType(),
+                    Descriptor.ImmutableArrayOfCoreType,
                     Names.ToImmutableRecursive)
                 .AddModifiers(SyntaxKind.PublicKeyword, SyntaxKind.StaticKeyword)
                 .AddParameterListParameters(
@@ -256,7 +259,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                         Identifier(Builders))
                     .AddModifiers(SyntaxKind.ThisKeyword)
                     .WithType(
-                        Descriptor.CoreType.ToListOfBuilderType());
+                        Descriptor.ListOfCoreBuilderType);
             }
             ExpressionSyntax CreateReturnExpression()
             {
@@ -266,7 +269,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                         GenericName(
                             Identifier(Names.ToImmutableRecursive))
                         .AddTypeArgumentListArguments(
-                            Descriptor.CoreType.ToNestedBuilderType(),
+                            Descriptor.CoreBuilderType,
                             Descriptor.CoreType))
                     .InvokeWithArguments();
             }
@@ -277,7 +280,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
             const string Cores = "cores";
             return
                 MethodDeclaration(
-                    Descriptor.CoreType.ToListOfBuilderType(),
+                    Descriptor.ListOfCoreBuilderType,
                     Names.ToBuildersList)
                 .AddModifiers(SyntaxKind.PublicKeyword, SyntaxKind.StaticKeyword)
                 .AddParameterListParameters(
@@ -292,7 +295,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                         Identifier(Cores))
                     .AddModifiers(SyntaxKind.ThisKeyword)
                     .WithType(
-                        Descriptor.CoreType.ToImmutableArrayType());
+                        Descriptor.ImmutableArrayOfCoreType);
             }
             ExpressionSyntax CreateReturnExpression()
             {
@@ -303,7 +306,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                             Identifier(Names.ToBuildersList))
                         .AddTypeArgumentListArguments(
                             Descriptor.CoreType,
-                            Descriptor.CoreType.ToNestedBuilderType()))
+                            Descriptor.CoreBuilderType))
                     .InvokeWithArguments();
             }
         }

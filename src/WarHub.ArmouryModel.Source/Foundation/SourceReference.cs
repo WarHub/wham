@@ -1,6 +1,6 @@
 ﻿namespace WarHub.ArmouryModel.Source.Foundation
 {
-    public abstract class SourceReference
+    internal abstract class SourceReference
     {
         public abstract SourceTree Tree { get; }
 

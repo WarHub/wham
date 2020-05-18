@@ -15,13 +15,13 @@ namespace WarHub.ArmouryModel.Workspaces.BattleScribe
 
         public string Filepath { get; }
 
-        public TData Data => GetData();
+        public TData? Data => GetData();
 
         public SourceKind DataKind { get; }
 
-        private WeakReference<TData> WeakData { get; } = new WeakReference<TData>(null);
+        private WeakReference<TData?> WeakData { get; } = new WeakReference<TData?>(null);
 
-        public TData GetData()
+        public TData? GetData()
         {
             if (WeakData.TryGetTarget(out var cached))
             {
@@ -34,15 +34,13 @@ namespace WarHub.ArmouryModel.Workspaces.BattleScribe
 
         public string GetStorageName() => Path.GetFileNameWithoutExtension(Filepath);
 
-        SourceNode IDatafileInfo.GetData() => GetData();
+        SourceNode? IDatafileInfo.GetData() => GetData();
 
-        private TData ReadFile()
+        private TData? ReadFile()
         {
-            using (var filestream = File.OpenRead(Filepath))
-            {
-                var datafile = filestream.LoadSourceAuto(Filepath);
-                return (TData)datafile?.GetData();
-            }
+            using var filestream = File.OpenRead(Filepath);
+            var datafile = filestream.LoadSourceAuto(Filepath);
+            return (TData?)datafile?.GetData();
         }
     }
 }

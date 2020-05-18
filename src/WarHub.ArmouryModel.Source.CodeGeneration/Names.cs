@@ -1,4 +1,6 @@
-﻿namespace WarHub.ArmouryModel.Source.CodeGeneration
+﻿using Microsoft.CodeAnalysis;
+
+namespace WarHub.ArmouryModel.Source.CodeGeneration
 {
     internal static class Names
     {
@@ -14,9 +16,12 @@
         public const string GetEnumerator = nameof(System.Collections.IEnumerable.GetEnumerator);
         public const string ObsoleteFull = "System.Obsolete";
 
+        public const string NamespaceSystem = "System";
         public const string NamespaceSystemCollectionsGeneric = "System.Collections.Generic";
         public const string NamespaceSystemCollectionsImmutable = "System.Collections.Immutable";
         public const string NamespaceSystemDiagnostics = "System.Diagnostics";
+        public const string NamespaceSystemDiagnosticsCodeAnalysis = "System.Diagnostics.CodeAnalysis";
+        public const string NamespaceSystemXmlSerialization = "System.Xml.Serialization";
 
         public const string IBuilder = "IBuilder";
         public const string IBuildable = "IBuildable";
@@ -33,6 +38,7 @@
         public const string SourceVisitorTypeParameter = "TResult";
         public const string ChildInfo = "ChildInfo";
         public const string ListNode = "ListNode";
+        public const string NodeFactory = "NodeFactory";
 
         public const string ArrayNonGenericFull = "System.Array";
         public const string ICollectionNonGenericFull = "System.Collections.ICollection";
@@ -73,6 +79,7 @@
         public const string XmlType = "XmlType";
         public const string XmlText = "XmlText";
         public const string NotSupportedExceptionFull = "System.NotSupportedException";
+        public const string NotSupportedException = "NotSupportedException";
         public const string WithNodes = "WithNodes";
         public const string Update = "Update";
         public const string UpdateWith = "UpdateWith";
@@ -97,10 +104,15 @@
         public const string Visit = "Visit";
         public const string VisitListNode = "VisitListNode";
         public const string ArgumentOutOfRangeExceptionFull = "System.ArgumentOutOfRangeException";
+        public const string ArgumentOutOfRangeException = "ArgumentOutOfRangeException";
         public const string SpecifiedSuffix = "Specified";
         public const string XmlIgnoreQualified = "System.Xml.Serialization.XmlIgnore";
+        public const string XmlIgnore = "XmlIgnore";
+        public const string DebuggerBrowsable = "DebuggerBrowsable";
         public const string DebuggerBrowsableFull = NamespaceSystemDiagnostics + ".DebuggerBrowsable";
+        public const string DebuggerBrowsableState = "DebuggerBrowsableState";
         public const string DebuggerBrowsableStateFull = NamespaceSystemDiagnostics + ".DebuggerBrowsableState";
         public const string DebuggerBrowsableStateNever = "Never";
+        public const string MaybeNull = "MaybeNull";
     }
 }

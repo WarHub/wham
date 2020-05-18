@@ -9,13 +9,13 @@ namespace WarHub.ArmouryModel.Source
         /// Defines what is actually being counted in the query.
         /// </summary>
         [XmlAttribute("field")]
-        public string Field { get; }
+        public string? Field { get; }
 
         /// <summary>
         /// Defines a scope in which the query runs.
         /// </summary>
         [XmlAttribute("scope")]
-        public string Scope { get; }
+        public string? Scope { get; }
 
         /// <summary>
         /// The value that the query result is compared to.

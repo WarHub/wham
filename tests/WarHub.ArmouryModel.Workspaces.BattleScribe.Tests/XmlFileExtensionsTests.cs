@@ -49,10 +49,10 @@ namespace WarHub.ArmouryModel.Workspaces.BattleScribe.Tests
             original.WriteTo(memory);
             memory.Position = 0;
             var read = memory.ReadRepoDistribution();
-            Assert.Equal(DataIndexName, read.Index.GetData().Name);
+            Assert.Equal(DataIndexName, read.Index.GetData()!.Name);
             Assert.True(
                 read.Datafiles
-                .Select(x => x.GetData().Id)
+                .Select(x => x.GetData()!.Id)
                 .ToHashSet()
                 .SetEquals(new[] { gstId, catId1, catId2 }));
         }

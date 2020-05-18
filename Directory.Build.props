@@ -2,6 +2,7 @@
 
   <PropertyGroup>
     <LangVersion>8</LangVersion>
+    <Nullable>enable</Nullable>
     <Authors>Amadeusz Sadowski</Authors>
     <Company>WarHub</Company>
     <Copyright>Copyright © Amadeusz Sadowski</Copyright>

@@ -2,7 +2,7 @@
 
 namespace WarHub.ArmouryModel.Source
 {
-    public abstract class SourceTree
+    internal abstract class SourceTree
     {
         public abstract string FilePath { get; }
 

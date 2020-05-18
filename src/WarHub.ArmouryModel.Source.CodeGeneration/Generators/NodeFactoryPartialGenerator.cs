@@ -23,7 +23,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
 
         protected override SyntaxToken GenerateTypeIdentifier()
         {
-            return Identifier("NodeFactory");
+            return Identifier(Names.NodeFactory);
         }
 
         protected override IEnumerable<MemberDeclarationSyntax> GenerateMembers()
@@ -145,7 +145,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                         var argName = entry.CamelCaseIdentifierName;
                         return
                             Argument(
-                                argName.ConditionalMemberAccess(IdentifierName(Names.Core)));
+                                argName.MemberAccess(IdentifierName(Names.Core)));
                     }
 
                     static ArgumentSyntax CreateCollectionArgument(CoreDescriptor.CollectionEntry entry)
@@ -179,7 +179,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                     return
                         Descriptor.Entries
                         .Where(x => !x.IsCollection)
-                        .Select(CreateSimpleParameter, CreateComplexParameter, null)
+                        .Select(CreateSimpleParameter, CreateComplexParameter, null!)
                         .Concat(
                             Descriptor.Entries
                             .OfType<CoreDescriptor.CollectionEntry>()

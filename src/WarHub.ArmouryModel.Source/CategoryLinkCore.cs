@@ -7,7 +7,7 @@ namespace WarHub.ArmouryModel.Source
     public sealed partial class CategoryLinkCore : ContainerEntryBaseCore
     {
         [XmlAttribute("targetId")]
-        public string TargetId { get; }
+        public string? TargetId { get; }
 
         [XmlAttribute("primary")]
         public bool Primary { get; }

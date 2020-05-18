@@ -75,7 +75,8 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                     Parameter(
                         Identifier(ParentLocal))
                     .WithType(
-                        IdentifierName(Names.SourceNode)))
+                        NullableType(
+                            IdentifierName(Names.SourceNode))))
                 .WithInitializer(
                     ConstructorInitializer(SyntaxKind.BaseConstructorInitializer)
                     .AddArgumentListArguments(
@@ -324,7 +325,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                             .MemberAccess(
                                 IdentifierName(Names.WithPrefix + entry.Identifier))
                             .InvokeWithArguments(
-                                ValueParamSyntax.ConditionalMemberAccess(CorePropertyIdentifierName))));
+                                ValueParamSyntax.MemberAccess(CorePropertyIdentifierName))));
             }
             MethodDeclarationSyntax WithForCollectionEntry(CoreDescriptor.CollectionEntry entry)
             {

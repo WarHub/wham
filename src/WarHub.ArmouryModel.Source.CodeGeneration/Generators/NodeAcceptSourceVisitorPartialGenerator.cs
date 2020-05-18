@@ -61,6 +61,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                     Names.Accept)
                 .AddTypeParameterListParameters(
                     TypeParameter(Names.SourceVisitorTypeParameter))
+                .AddAttributeLists(MaybeNullReturnAttributeList)
                 .AddModifiers(
                     SyntaxKind.PublicKeyword,
                     SyntaxKind.OverrideKeyword)

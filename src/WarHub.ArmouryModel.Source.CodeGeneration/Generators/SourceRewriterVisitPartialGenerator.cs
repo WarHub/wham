@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using System.Threading;
@@ -72,17 +73,39 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
 
             static StatementSyntax CreateChildVisitStatement(CoreDescriptor.Entry entry)
             {
-                var targetType = entry is CoreDescriptor.CollectionEntry collectionEntry
-                    ? collectionEntry.GetListNodeTypeIdentifierName()
-                    : ((CoreDescriptor.ComplexEntry)entry).GetNodeTypeIdentifierName();
-                return
-                    CreateLocalDeclaration(
-                        entry,
+                var initializerExpression = entry switch
+                {
+                    CoreDescriptor.CollectionEntry collectionEntry =>
                         IdentifierName(Names.Visit)
-                            .InvokeWithArguments(
-                                IdentifierName(Node)
-                                    .MemberAccess(entry.IdentifierName))
-                            .Cast(targetType));
+                        .InvokeWithArguments(
+                            IdentifierName(Node)
+                            .MemberAccess(entry.IdentifierName))
+                        .Cast(
+                            NullableType(
+                                collectionEntry.GetListNodeTypeIdentifierName()))
+                        .WrapInParentheses()
+                        .ConditionalMemberAccess(
+                            IdentifierName(Names.NodeList))
+                        .Coalesce(
+                            LiteralExpression(SyntaxKind.DefaultLiteralExpression)),
+                    CoreDescriptor.ComplexEntry complex =>
+                        IdentifierName(Names.Visit)
+                        .InvokeWithArguments(
+                            IdentifierName(Node)
+                            .MemberAccess(entry.IdentifierName))
+                        .Cast(
+                            NullableType(
+                                complex.GetNodeTypeIdentifierName()))
+                        .WrapInParentheses()
+                        .Coalesce(
+                            IdentifierName(Names.NodeFactory)
+                            .MemberAccess(
+                                IdentifierName(
+                                    complex.NameSyntax.ToString().StripSuffixes()))
+                            .InvokeWithArguments()),
+                    _ => throw new NotSupportedException("Cannot visit child of simple type")
+                };
+                return CreateLocalDeclaration(entry, initializerExpression);
             }
 
             static StatementSyntax CreateLocalDeclaration(CoreDescriptor.Entry entry, ExpressionSyntax initializerExpression)

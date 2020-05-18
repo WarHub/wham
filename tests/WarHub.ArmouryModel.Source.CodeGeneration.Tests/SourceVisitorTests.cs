@@ -14,7 +14,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration.Tests
 
             visitor.Visit(node);
 
-            visitor.DidNotReceiveWithAnyArgs().DefaultVisit(node);
+            visitor.DidNotReceiveWithAnyArgs().DefaultVisit(node!);
         }
 
         [Fact]

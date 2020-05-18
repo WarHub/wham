@@ -7,7 +7,7 @@ namespace WarHub.ArmouryModel.Source
     /// Represents a <see cref="SourceVisitor{TResult}"/> which descends and entire <see cref="SourceNode"/> graph and
     /// may replace or remove visited SyntaxNodes in depth-first order.
     /// </summary>
-    public abstract partial class SourceRewriter : SourceVisitor<SourceNode>
+    public abstract partial class SourceRewriter : SourceVisitor<SourceNode?>
     {
         public virtual ListNode<TNode> VisitListNode<TNode>(ListNode<TNode> list)
             where TNode : SourceNode
@@ -18,23 +18,25 @@ namespace WarHub.ArmouryModel.Source
         public virtual NodeList<TNode> VisitNodeList<TNode>(NodeList<TNode> list)
             where TNode : SourceNode
         {
-            ImmutableArray<TNode>.Builder builder = null;
+            ImmutableArray<TNode>.Builder? builder = null;
             for (int i = 0, n = list.Count; i < n; i++)
             {
                 var original = list[i];
                 var returned = VisitListElement(original);
                 var itemChanged = original != returned;
-                var builderExists = builder is { };
-                if (itemChanged || builderExists)
+                if (itemChanged && builder is null)
                 {
-                    if (itemChanged && !builderExists)
-                    {
-                        builder = ImmutableArray.CreateBuilder<TNode>(n);
-                        builder.AddRange(list.Take(i));
-                    }
+                    builder = ImmutableArray.CreateBuilder<TNode>(n);
+                    builder.AddRange(list.Take(i));
+                }
+                if (itemChanged || builder is { })
+                {
+                    // in this 'if' builder is not null:
+                    // if itemChanged, builder was created in the above 'if' for sure
+                    // else, builder is { }
                     if (returned is { })
                     {
-                        builder.Add(returned);
+                        builder!.Add(returned);
                     }
                 }
             }
@@ -46,9 +48,9 @@ namespace WarHub.ArmouryModel.Source
                         : builder.ToImmutable().ToNodeList();
         }
 
-        public virtual TNode VisitListElement<TNode>(TNode node) where TNode : SourceNode
+        public virtual TNode? VisitListElement<TNode>(TNode? node) where TNode : SourceNode
         {
-            return (TNode)Visit(node);
+            return (TNode?)Visit(node);
         }
     }
 }

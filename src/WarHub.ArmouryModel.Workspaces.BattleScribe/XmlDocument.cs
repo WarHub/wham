@@ -31,18 +31,15 @@ namespace WarHub.ArmouryModel.Workspaces.BattleScribe
         /// <summary>
         /// Gets the parent workspace of this document.
         /// </summary>
-        public XmlWorkspace Workspace { get; }
+        public XmlWorkspace? Workspace { get; }
 
         /// <summary>
         /// Gets the root node of the document. May cause deserialization.
         /// </summary>
         /// <returns></returns>
-        public SourceNode GetRoot()
-        {
-            return DatafileInfo.GetData();
-        }
+        public SourceNode? GetRoot() => DatafileInfo.GetData();
 
-        public static XmlDocument Create(IDatafileInfo datafileInfo, XmlWorkspace workspace = null)
+        public static XmlDocument Create(IDatafileInfo datafileInfo, XmlWorkspace? workspace = null)
         {
             return new XmlDocument(datafileInfo.Filepath.GetXmlDocumentKind(), datafileInfo, workspace);
         }

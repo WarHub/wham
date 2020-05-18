@@ -65,6 +65,11 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
             return syntax.AddAttributeLists(AttributeList(SingletonSeparatedList(attribute)));
         }
 
+        public static MethodDeclarationSyntax AddAttributeListAttributes(this MethodDeclarationSyntax syntax, params AttributeSyntax[] attributes)
+        {
+            return syntax.AddAttributeLists(AttributeList(SeparatedList(attributes.ToArray())));
+        }
+
         public static PropertyDeclarationSyntax AddAttributeLists(this PropertyDeclarationSyntax syntax, IEnumerable<AttributeListSyntax> lists)
         {
             return syntax.AddAttributeLists(lists.ToArray());
@@ -175,6 +180,11 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
             return MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression, expr, name);
         }
 
+        public static ExpressionSyntax AsCast(this ExpressionSyntax expr, TypeSyntax type)
+        {
+            return BinaryExpression(SyntaxKind.AsExpression, expr, type);
+        }
+
         public static ExpressionSyntax Cast(this ExpressionSyntax expr, TypeSyntax type)
         {
             return CastExpression(type, expr);
@@ -208,6 +218,11 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
         public static ObjectCreationExpressionSyntax WithArguments(this ObjectCreationExpressionSyntax expr, IEnumerable<ExpressionSyntax> args)
         {
             return expr.AddArgumentListArguments(args.Select(Argument));
+        }
+
+        public static ParenthesizedExpressionSyntax WrapInParentheses(this ExpressionSyntax expr)
+        {
+            return ParenthesizedExpression(expr);
         }
 
         public static ExpressionStatementSyntax AsStatement(this ExpressionSyntax expr)

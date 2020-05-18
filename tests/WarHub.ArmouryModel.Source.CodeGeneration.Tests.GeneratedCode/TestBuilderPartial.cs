@@ -4,7 +4,7 @@
     [WhamNodeCore]
     public partial class TestBuilderPartial
     {
-        public string Name { get; }
+        public string? Name { get; }
 
 #pragma warning disable CA1034 // Nested types should not be visible
         public partial class Builder

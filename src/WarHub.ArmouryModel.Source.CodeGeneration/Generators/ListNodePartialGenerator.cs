@@ -68,11 +68,12 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                 .AddParameterListParameters(
                     Parameter(
                         Identifier(Cores))
-                    .WithType(Descriptor.CoreType.ToImmutableArrayType()),
+                    .WithType(Descriptor.ImmutableArrayOfCoreType),
                     Parameter(
                         Identifier(Parent))
                     .WithType(
-                        IdentifierName(Names.SourceNode)))
+                        NullableType(
+                            IdentifierName(Names.SourceNode))))
                 .WithInitializer(
                     ConstructorInitializer(SyntaxKind.BaseConstructorInitializer)
                     .AddArgumentListArguments(
@@ -164,6 +165,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                     Names.Accept)
                 .AddTypeParameterListParameters(
                     TypeParameter(Names.SourceVisitorTypeParameter))
+                .AddAttributeLists(MaybeNullReturnAttributeList)
                 .AddModifiers(
                     SyntaxKind.PublicKeyword,
                     SyntaxKind.OverrideKeyword)

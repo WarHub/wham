@@ -24,7 +24,7 @@ namespace WarHub.ArmouryModel.Source.Tests.XmlFormat
         [InlineData("01.05", 1, 5)]
         [InlineData("10.50", 10, 50)]
         [InlineData("1.15abba", 1, 15, "abba")]
-        public void Parse_succeeds_on_valid_strings(string text, int major, int minor, string suffix = null)
+        public void Parse_succeeds_on_valid_strings(string text, int major, int minor, string? suffix = null)
         {
             var result = BattleScribeVersion.Parse(text);
 

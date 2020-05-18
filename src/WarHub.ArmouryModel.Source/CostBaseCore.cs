@@ -6,10 +6,10 @@ namespace WarHub.ArmouryModel.Source
     public abstract partial class CostBaseCore
     {
         [XmlAttribute("name")]
-        public string Name { get; }
+        public string? Name { get; }
 
         [XmlAttribute("typeId")]
-        public string TypeId { get; }
+        public string? TypeId { get; }
 
         [XmlAttribute("value")]
         public decimal Value { get; }

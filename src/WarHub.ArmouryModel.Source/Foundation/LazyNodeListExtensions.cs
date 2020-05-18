@@ -4,7 +4,7 @@ namespace WarHub.ArmouryModel.Source
 {
     internal static class LazyNodeListExtensions
     {
-        public static NodeList<TNode> ToNodeList<TNode, TCore>(this ImmutableArray<TCore> cores, SourceNode parent = null)
+        public static NodeList<TNode> ToNodeList<TNode, TCore>(this ImmutableArray<TCore> cores, SourceNode? parent = null)
             where TNode : SourceNode, INodeWithCore<TCore>
             where TCore : ICore<TNode>
         {

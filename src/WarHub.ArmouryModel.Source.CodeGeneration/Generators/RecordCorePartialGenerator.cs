@@ -90,11 +90,10 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
             }
             if (IsDerived)
             {
-                var baseTypeName = Descriptor.TypeSymbol.BaseType.Name;
                 yield return
                     MethodDeclaration(
-                        IdentifierName(baseTypeName),
-                        Names.Update + baseTypeName)
+                        IdentifierName(BaseType.Name),
+                        Names.Update + BaseType.Name)
                     .AddModifiers(
                         SyntaxKind.ProtectedKeyword,
                         SyntaxKind.SealedKeyword,

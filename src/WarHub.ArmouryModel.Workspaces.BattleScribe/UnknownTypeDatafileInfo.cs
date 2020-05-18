@@ -15,7 +15,7 @@ namespace WarHub.ArmouryModel.Workspaces.BattleScribe
 
         public SourceKind DataKind => SourceKind.Unknown;
 
-        public SourceNode GetData() => null;
+        public SourceNode? GetData() => null;
 
         public string GetStorageName() => Path.GetFileNameWithoutExtension(Filepath);
     }

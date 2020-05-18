@@ -7,7 +7,7 @@ namespace WarHub.ArmouryModel.Source.XmlFormat
 {
     public sealed class BattleScribeVersion : IComparable<BattleScribeVersion>, IEquatable<BattleScribeVersion>
     {
-        private BattleScribeVersion(int major, int minor, string suffix)
+        private BattleScribeVersion(int major, int minor, string? suffix)
         {
             Major = major;
             Minor = minor;
@@ -39,7 +39,7 @@ namespace WarHub.ArmouryModel.Source.XmlFormat
 
         public int Minor { get; }
 
-        public string Suffix { get; }
+        public string? Suffix { get; }
 
         public bool IsStable => string.IsNullOrEmpty(Suffix);
 
@@ -68,7 +68,7 @@ namespace WarHub.ArmouryModel.Source.XmlFormat
             return Create(major, minor, suffix);
         }
 
-        public static BattleScribeVersion Create(int major, int minor, string suffix = null)
+        public static BattleScribeVersion Create(int major, int minor, string? suffix = null)
         {
             if (major < 0)
                 throw new ArgumentOutOfRangeException(nameof(major), "Must be >= 0.");
@@ -78,7 +78,7 @@ namespace WarHub.ArmouryModel.Source.XmlFormat
             return new BattleScribeVersion(major, minor, suffixNormalized);
         }
 
-        public int CompareTo(BattleScribeVersion other)
+        public int CompareTo(BattleScribeVersion? other)
         {
             return
                 other is null ? 1
@@ -88,9 +88,9 @@ namespace WarHub.ArmouryModel.Source.XmlFormat
                 : string.CompareOrdinal(Suffix, other.Suffix);
         }
 
-        public override bool Equals(object obj) => Equals(obj as BattleScribeVersion);
+        public override bool Equals(object? obj) => Equals(obj as BattleScribeVersion);
 
-        public bool Equals(BattleScribeVersion other) => CompareTo(other) == 0;
+        public bool Equals(BattleScribeVersion? other) => CompareTo(other) == 0;
 
         public override string ToString() => BattleScribeString;
 
@@ -99,32 +99,35 @@ namespace WarHub.ArmouryModel.Source.XmlFormat
             var hashCode = -1092680650;
             hashCode = (hashCode * -1521134295) + Major.GetHashCode();
             hashCode = (hashCode * -1521134295) + Minor.GetHashCode();
+            // reason: this is analyzer bug, string.GetHashCode is invariant by default
+#pragma warning disable CA1307 // Specify StringComparison
             hashCode = (hashCode * -1521134295) + Suffix?.GetHashCode() ?? 0;
+#pragma warning restore CA1307 // Specify StringComparison
             return hashCode;
         }
 
-        public static int Compare(BattleScribeVersion left, BattleScribeVersion right)
+        public static int Compare(BattleScribeVersion? left, BattleScribeVersion? right)
             => left is null ? (right is null ? 0 : -1) : left.CompareTo(right);
 
-        public static bool Equals(BattleScribeVersion left, BattleScribeVersion right)
+        public static bool Equals(BattleScribeVersion? left, BattleScribeVersion? right)
             => left is null ? right is null : left.Equals(right);
 
-        public static bool operator <(BattleScribeVersion left, BattleScribeVersion right)
+        public static bool operator <(BattleScribeVersion? left, BattleScribeVersion? right)
             => Compare(left, right) < 0;
 
-        public static bool operator <=(BattleScribeVersion left, BattleScribeVersion right)
+        public static bool operator <=(BattleScribeVersion? left, BattleScribeVersion? right)
             => Compare(left, right) <= 0;
 
-        public static bool operator >(BattleScribeVersion left, BattleScribeVersion right)
+        public static bool operator >(BattleScribeVersion? left, BattleScribeVersion? right)
             => Compare(left, right) > 0;
 
-        public static bool operator >=(BattleScribeVersion left, BattleScribeVersion right)
+        public static bool operator >=(BattleScribeVersion? left, BattleScribeVersion? right)
             => Compare(left, right) >= 0;
 
-        public static bool operator ==(BattleScribeVersion left, BattleScribeVersion right)
+        public static bool operator ==(BattleScribeVersion? left, BattleScribeVersion? right)
             => left?.Equals(right) ?? right is null;
 
-        public static bool operator !=(BattleScribeVersion left, BattleScribeVersion right)
+        public static bool operator !=(BattleScribeVersion? left, BattleScribeVersion? right)
             => !(left == right);
     }
 }

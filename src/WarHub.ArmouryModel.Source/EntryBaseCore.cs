@@ -7,16 +7,16 @@ namespace WarHub.ArmouryModel.Source
     public abstract partial class EntryBaseCore : CommentableCore
     {
         [XmlAttribute("id")]
-        public string Id { get; }
+        public string? Id { get; }
 
         [XmlAttribute("name")]
-        public string Name { get; }
+        public string? Name { get; }
 
         [XmlAttribute("publicationId")]
-        public string PublicationId { get; }
+        public string? PublicationId { get; }
 
         [XmlAttribute("page")]
-        public string Page { get; }
+        public string? Page { get; }
 
         [XmlAttribute("hidden")]
         public bool Hidden { get; }

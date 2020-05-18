@@ -97,7 +97,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                 var propertyType = entry is CoreDescriptor.CollectionEntry collectionEntry
                     ? QualifiedName(collectionEntry.CollectionTypeParameter, IdentifierName(Names.FastSerializationEnumerable))
                     : entry is CoreDescriptor.ComplexEntry complexEntry
-                    ? QualifiedName(complexEntry.Type, IdentifierName(Names.FastSerializationProxy))
+                    ? QualifiedName(complexEntry.NameSyntax, IdentifierName(Names.FastSerializationProxy))
                     : entry.Type;
                 return
                     PropertyDeclaration(propertyType, entry.Identifier)
@@ -117,7 +117,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                         .WithExpressionBodyFull(
                             ThrowExpression(
                                 ObjectCreationExpression(
-                                    ParseTypeName(Names.NotSupportedExceptionFull))
+                                    IdentifierName(Names.NotSupportedException))
                                 .WithArgumentList(
                                     ArgumentList()))));
             }
@@ -133,7 +133,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                         AttributeList(
                             SingletonSeparatedList(
                                 Attribute(
-                                    ParseName(Names.XmlIgnoreQualified)))))
+                                    IdentifierName(Names.XmlIgnore)))))
                     .AddModifiers(SyntaxKind.PublicKeyword)
                     .WithExpressionBodyFull(
                         BinaryExpression(

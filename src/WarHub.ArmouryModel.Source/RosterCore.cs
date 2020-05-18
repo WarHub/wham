@@ -9,19 +9,19 @@ namespace WarHub.ArmouryModel.Source
     public sealed partial class RosterCore
     {
         [XmlAttribute("id")]
-        public string Id { get; }
+        public string? Id { get; }
 
         [XmlAttribute("name")]
-        public string Name { get; }
+        public string? Name { get; }
 
         [XmlAttribute("battleScribeVersion")]
-        public string BattleScribeVersion { get; }
+        public string? BattleScribeVersion { get; }
 
         [XmlAttribute("gameSystemId")]
-        public string GameSystemId { get; }
+        public string? GameSystemId { get; }
 
         [XmlAttribute("gameSystemName")]
-        public string GameSystemName { get; }
+        public string? GameSystemName { get; }
 
         [XmlAttribute("gameSystemRevision")]
         public int GameSystemRevision { get; }

@@ -72,9 +72,9 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
         private IEnumerable<MemberDeclarationSyntax> GetPropertyMembers(CoreDescriptor.Entry entry)
         {
             return entry is CoreDescriptor.CollectionEntry collectionEntry
-                ? CreateArrayProperty()
+                ? CreateLazyProperty(collectionEntry.Identifier, collectionEntry.ToListOfBuilderType())
                 : entry is CoreDescriptor.ComplexEntry complexEntry
-                ? CreateComplexProperty()
+                ? CreateLazyProperty(complexEntry.Identifier, complexEntry.BuilderType)
                 : CreateSimpleProperty();
 
             IEnumerable<PropertyDeclarationSyntax> CreateSimpleProperty()
@@ -89,36 +89,20 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                         AccessorDeclaration(SyntaxKind.SetAccessorDeclaration)
                         .WithSemicolonTokenDefault());
             }
-            IEnumerable<PropertyDeclarationSyntax> CreateComplexProperty()
+            IEnumerable<MemberDeclarationSyntax> CreateLazyProperty(SyntaxToken identifier, TypeSyntax type)
             {
-                yield return
-                    PropertyDeclaration(
-                        complexEntry.Type.ToNestedBuilderType(),
-                        entry.Identifier)
-                    .AddAttributeLists(entry.AttributeLists)
-                    .AddModifiers(SyntaxKind.PublicKeyword)
-                    .AddAccessorListAccessors(
-                        AccessorDeclaration(SyntaxKind.GetAccessorDeclaration)
-                        .WithSemicolonTokenDefault(),
-                        AccessorDeclaration(SyntaxKind.SetAccessorDeclaration)
-                        .WithSemicolonTokenDefault());
-            }
-            IEnumerable<MemberDeclarationSyntax> CreateArrayProperty()
-            {
-                var propertyName = collectionEntry.Identifier.ValueText;
+                var propertyName = identifier.ValueText;
                 var fieldName = $"_{char.ToLowerInvariant(propertyName[0])}{propertyName.Substring(1)}";
                 yield return
                     FieldDeclaration(
                         VariableDeclaration(
-                            collectionEntry.ToListOfBuilderType())
+                            NullableType(type))
                         .AddVariables(
                             VariableDeclarator(fieldName)))
                     .AddModifiers(SyntaxKind.PrivateKeyword);
 
                 yield return
-                    PropertyDeclaration(
-                        collectionEntry.ToListOfBuilderType(),
-                        collectionEntry.Identifier)
+                    PropertyDeclaration(type, identifier)
                     .AddAttributeLists(entry.AttributeLists)
                     .AddModifiers(SyntaxKind.PublicKeyword)
                     .AddAccessorListAccessors(
@@ -129,16 +113,11 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                     return
                         AccessorDeclaration(SyntaxKind.GetAccessorDeclaration)
                         .WithExpressionBodyFull(
-                            BinaryExpression(
-                                SyntaxKind.CoalesceExpression,
+                            AssignmentExpression(
+                                SyntaxKind.CoalesceAssignmentExpression,
                                 IdentifierName(fieldName),
-                                ParenthesizedExpression(
-                                    AssignmentExpression(
-                                        SyntaxKind.SimpleAssignmentExpression,
-                                        IdentifierName(fieldName),
-                                        ObjectCreationExpression(
-                                            collectionEntry.ToListOfBuilderType())
-                                        .AddArgumentListArguments()))));
+                                ObjectCreationExpression(type)
+                                .AddArgumentListArguments()));
                 }
                 AccessorDeclarationSyntax CreateSetter()
                 {
@@ -174,7 +153,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                 return
                     Argument(
                         entry.IdentifierName
-                        .ConditionalMemberAccess(
+                        .MemberAccess(
                             IdentifierName(Names.ToImmutable))
                         .InvokeWithArguments());
             }
@@ -227,7 +206,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                         SyntaxKind.SimpleAssignmentExpression,
                         entry.IdentifierName,
                         entry.IdentifierName
-                        .ConditionalMemberAccess(
+                        .MemberAccess(
                             IdentifierName(Names.ToBuilder))
                         .InvokeWithArguments());
             }

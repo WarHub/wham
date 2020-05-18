@@ -3,6 +3,6 @@
     [WhamNodeCore]
     public abstract partial class AbstractDerivedWithNewPropCore : AbstractBaseCore
     {
-        public string DerivedNewProp { get; }
+        public string? DerivedNewProp { get; }
     }
 }

@@ -11,9 +11,9 @@ namespace WarHub.ArmouryModel.Source
         /// </summary>
         /// <param name="node"></param>
         /// <returns></returns>
-        public static ChildInfo GetChildInfoFromParent(this SourceNode node)
+        public static ChildInfo? GetChildInfoFromParent(this SourceNode node)
         {
-            return node.Parent.ChildrenInfos().ElementAt(node.IndexInParent);
+            return node.Parent?.ChildrenInfos().ElementAt(node.IndexInParent);
         }
     }
 }

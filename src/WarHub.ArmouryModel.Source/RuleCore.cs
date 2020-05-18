@@ -7,6 +7,6 @@ namespace WarHub.ArmouryModel.Source
     public sealed partial class RuleCore : EntryBaseCore
     {
         [XmlElement("description")]
-        public string Description { get; }
+        public string? Description { get; }
     }
 }

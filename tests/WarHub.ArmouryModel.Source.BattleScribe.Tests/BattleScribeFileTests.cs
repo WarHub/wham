@@ -78,7 +78,7 @@ namespace WarHub.ArmouryModel.Source.BattleScribe.Tests
                 stream.Position = 0;
                 return stream;
             }
-            string DiffXml(Stream changedXml)
+            string? DiffXml(Stream changedXml)
             {
                 var differ = new XmlDiff(XmlDiffOptions.None);
                 using var diffStream = new MemoryStream();

@@ -6,7 +6,7 @@ namespace WarHub.ArmouryModel.ProjectModel
 {
     public abstract class ProjectConfigurationProviderBase : IProjectConfigurationProvider
     {
-        private ProjectConfigurationInfo empty;
+        private ProjectConfigurationInfo? empty;
 
         public virtual ProjectConfigurationInfo Empty => empty ??= new ProjectConfigurationInfo.Builder
         {

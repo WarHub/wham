@@ -11,12 +11,12 @@ namespace WarHub.ArmouryModel.Source
         /// <summary>
         /// Gets an identifier of the target item described by this meta within some collection.
         /// </summary>
-        public string Identifier { get; }
+        public string? Identifier { get; }
 
         /// <summary>
         /// Gets an identifier of an item preceding the target item.
         /// </summary>
-        public string PrevIdentifier { get; }
+        public string? PrevIdentifier { get; }
 
         /// <summary>
         /// Gets sequence number of the target item within some collection, or null if not specified.

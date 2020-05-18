@@ -12,7 +12,7 @@ namespace WarHub.ArmouryModel.Source
         public bool IsLibrary { get; }
 
         [XmlAttribute("gameSystemId")]
-        public string GamesystemId { get; }
+        public string? GamesystemId { get; }
 
         [XmlAttribute("gameSystemRevision")]
         public int GamesystemRevision { get; }

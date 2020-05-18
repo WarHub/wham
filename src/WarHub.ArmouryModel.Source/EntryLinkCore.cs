@@ -8,7 +8,7 @@ namespace WarHub.ArmouryModel.Source
     public sealed partial class EntryLinkCore : SelectionEntryBaseCore
     {
         [XmlAttribute("targetId")]
-        public string TargetId { get; }
+        public string? TargetId { get; }
 
         [XmlAttribute("type")]
         public EntryLinkKind Type { get; }

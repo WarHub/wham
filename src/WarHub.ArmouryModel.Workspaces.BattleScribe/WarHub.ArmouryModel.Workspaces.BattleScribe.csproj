@@ -2,8 +2,17 @@
   <Sdk Name="Microsoft.Build.CentralPackageVersions" />
 
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFrameworks>netstandard2.0;netstandard2.1</TargetFrameworks>
     <Description>Implementations of wham ProjectModel for BattleScribe format files: .cat(z), .gst(z), .bsi, .bsr.</Description>
+    <NoWarn>
+      <!--
+      CS8669:
+      The annotation for nullable reference types should only be used in code within a '#nullable'
+      annotations context. Auto-generated code requires an explicit '#nullable' directive in source.
+      // Amadevus.RecordGenerator doesn't support nullability
+      -->
+      8669;$(NoWarn)
+    </NoWarn>
   </PropertyGroup>
 
   <ItemGroup>

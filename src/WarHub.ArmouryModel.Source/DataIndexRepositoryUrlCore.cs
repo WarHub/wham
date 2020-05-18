@@ -7,6 +7,6 @@ namespace WarHub.ArmouryModel.Source
     public sealed partial class DataIndexRepositoryUrlCore
     {
         [XmlText]
-        public string Value { get; }
+        public string? Value { get; }
     }
 }

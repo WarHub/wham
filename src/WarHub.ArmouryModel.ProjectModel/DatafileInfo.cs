@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using Amadevus.RecordGenerator;
 using WarHub.ArmouryModel.Source;
 
@@ -18,21 +19,21 @@ namespace WarHub.ArmouryModel.ProjectModel
 
         public string GetStorageName() => Path.GetFileNameWithoutExtension(Filepath);
 
-        TData IDatafileInfo<TData>.GetData() => Data;
+        TData? IDatafileInfo<TData>.GetData() => Data;
 
-        SourceNode IDatafileInfo.GetData() => Data;
+        SourceNode? IDatafileInfo.GetData() => Data;
     }
 
     public static class DatafileInfo
     {
-        public static IDatafileInfo<TData> Create<TData>(string filepath, TData node) where TData : SourceNode
+        public static IDatafileInfo<TData> Create<TData>(string filepath, TData? node) where TData : SourceNode
         {
             if (node is null)
             {
                 return (IDatafileInfo<TData>)(IDatafileInfo<SourceNode>)new UnknownTypeDatafileInfo(filepath);
             }
             var visitor = new Visitor(filepath);
-            return (IDatafileInfo<TData>)visitor.Visit(node);
+            return visitor.Visit(node) as IDatafileInfo<TData> ?? throw new NotSupportedException("Unsupported root node.");
         }
 
         private class Visitor : SourceVisitor<IDatafileInfo<SourceNode>>
