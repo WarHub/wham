@@ -17,7 +17,7 @@ namespace WarHub.ArmouryModel.Source
 
         public SourceNode Node { get; }
 
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             return obj is ChildInfo info && Equals(info);
         }

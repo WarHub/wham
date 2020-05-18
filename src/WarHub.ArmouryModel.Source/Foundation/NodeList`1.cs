@@ -12,19 +12,20 @@ namespace WarHub.ArmouryModel.Source
     {
         // TODO a lot of optimizations here
 
-        internal NodeList(IContainer<TNode> container)
+        internal NodeList(IContainer<TNode>? container)
         {
             Container = container;
         }
 
-        internal IContainer<TNode> Container { get; }
+        internal IContainer<TNode>? Container { get; }
 
-        public TNode this[int index] => Container.GetNodeSlot(index);
+        // We accept NullReferenceException here for perf. We'd get IndexOutOfRangeException instead.
+        public TNode this[int index] => Container!.GetNodeSlot(index);
 
         public int Count => Container?.SlotCount ?? 0;
 
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-        IContainer<TNode> IContainerProvider<TNode>.Container => Container;
+        IContainer<TNode>? IContainerProvider<TNode>.Container => Container;
 
         public Enumerator GetEnumerator() => new Enumerator(this);
 
@@ -75,7 +76,7 @@ namespace WarHub.ArmouryModel.Source
             return Equals(Container, other.Container);
         }
 
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             if (obj is null) return false;
             return obj is NodeList<TNode> list && Equals(list);

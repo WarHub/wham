@@ -12,7 +12,7 @@ namespace WarHub.ArmouryModel.Source
     [DebuggerDisplay("{" + nameof(Kind) + "}, Children = {" + nameof(ChildrenCount) + "}")]
     public abstract partial class SourceNode
     {
-        protected SourceNode(SourceNode parent)
+        protected SourceNode(SourceNode? parent)
         {
             Parent = parent;
             Tree = parent?.Tree;
@@ -26,9 +26,9 @@ namespace WarHub.ArmouryModel.Source
         /// <summary>
         /// Gets the parent of this node, if any.
         /// </summary>
-        public SourceNode Parent { get; }
+        public SourceNode? Parent { get; }
 
-        internal SourceTree Tree { get; set; }
+        internal SourceTree? Tree { get; set; }
 
         /// <summary>
         /// Gets the kind of this node.
@@ -79,7 +79,7 @@ namespace WarHub.ArmouryModel.Source
         /// </summary>
         /// <param name="node">Node to be checked of being a descendant.</param>
         /// <returns>True if this node is an ancestor of given <paramref name="node"/>.</returns>
-        public bool Contains(SourceNode node)
+        public bool Contains(SourceNode? node)
         {
             while ((node = node?.Parent) != null)
             {
@@ -97,7 +97,7 @@ namespace WarHub.ArmouryModel.Source
         /// </summary>
         /// <param name="descendIntoChildren">Predicate to decide if node's children should be visited.</param>
         /// <returns>Enumeration of traversal.</returns>
-        public IEnumerable<SourceNode> Descendants(Func<SourceNode, bool> descendIntoChildren = null)
+        public IEnumerable<SourceNode> Descendants(Func<SourceNode, bool>? descendIntoChildren = null)
         {
             return DescendantsCore(descendIntoChildren, includeSelf: false);
         }
@@ -108,7 +108,7 @@ namespace WarHub.ArmouryModel.Source
         /// </summary>
         /// <param name="descendIntoChildren">Predicate to decide if node's children should be visited.</param>
         /// <returns>Enumeration of traversal.</returns>
-        public IEnumerable<SourceNode> DescendantsAndSelf(Func<SourceNode, bool> descendIntoChildren = null)
+        public IEnumerable<SourceNode> DescendantsAndSelf(Func<SourceNode, bool>? descendIntoChildren = null)
         {
             return DescendantsCore(descendIntoChildren, includeSelf: true);
         }
@@ -121,9 +121,9 @@ namespace WarHub.ArmouryModel.Source
         /// <typeparam name="TNode">Type of node to return.</typeparam>
         /// <param name="predicate">Determines if the node should be returned. If null, predicate check is skipped.</param>
         /// <returns>First ancestor (or self) that satisfies both conditions.</returns>
-        public TNode FirstAncestorOrSelf<TNode>(Func<TNode, bool> predicate = null) where TNode : class
+        public TNode? FirstAncestorOrSelf<TNode>(Func<TNode, bool>? predicate = null) where TNode : class
         {
-            var node = this;
+            SourceNode? node = this;
             if (predicate is null)
             {
                 while (node != null)
@@ -193,14 +193,14 @@ namespace WarHub.ArmouryModel.Source
             {
                 yield return this;
             }
-            var node = this;
+            SourceNode? node = this;
             while ((node = node.Parent) != null)
             {
                 yield return node;
             }
         }
 
-        private IEnumerable<SourceNode> DescendantsCore(Func<SourceNode, bool> descendIntoChildren, bool includeSelf)
+        private IEnumerable<SourceNode> DescendantsCore(Func<SourceNode, bool>? descendIntoChildren, bool includeSelf)
         {
             if (includeSelf)
             {

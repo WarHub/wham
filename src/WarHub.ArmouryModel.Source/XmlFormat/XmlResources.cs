@@ -31,22 +31,22 @@ namespace WarHub.ArmouryModel.Source.XmlFormat
                 CultureInfo.InvariantCulture,
                 XslTransformResourceFormat,
                 elementInfo.Element,
-                elementInfo.Version.FilepathString);
+                elementInfo.Version?.FilepathString);
 
         private static string GetXsdResourcePath(this RootElement rootElement) =>
             string.Format(CultureInfo.InvariantCulture, XsdResourceFormat, rootElement);
 
-        public static Stream OpenXsdStream(this RootElement rootElement)
+        public static Stream? OpenXsdStream(this RootElement rootElement)
         {
             return OpenResource(rootElement.GetXsdResourcePath());
         }
 
-        public static Stream OpenMigrationXslStream(this VersionedElementInfo elementInfo)
+        public static Stream? OpenMigrationXslStream(this VersionedElementInfo elementInfo)
         {
             return OpenResource(elementInfo.GetMigrationResourcePath());
         }
 
-        private static Stream OpenResource(string name)
+        private static Stream? OpenResource(string name)
             => typeof(XmlResources).Assembly.GetManifestResourceStream(name);
     }
 }

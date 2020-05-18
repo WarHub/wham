@@ -29,10 +29,10 @@ namespace WarHub.ArmouryModel.Source
         /// <summary>
         /// Generates new name via prepending caller name with "New ".
         /// </summary>
-        private static string NewName([CallerMemberName]string callerMember = null)
+        private static string NewName([CallerMemberName]string? callerMember = null)
             => "New " + callerMember;
 
-        public static CatalogueNode Catalogue(GamesystemNode gamesystem, string name = null, string id = null)
+        public static CatalogueNode Catalogue(GamesystemNode gamesystem, string? name = null, string? id = null)
         {
             return Catalogue(
                 comment: null,
@@ -48,7 +48,7 @@ namespace WarHub.ArmouryModel.Source
                 gamesystemRevision: gamesystem.Revision);
         }
 
-        public static CatalogueLinkNode CatalogueLink(CatalogueNode catalogue, string id = null)
+        public static CatalogueLinkNode CatalogueLink(CatalogueNode catalogue, string? id = null)
         {
             return CatalogueLink(
                 comment: null,
@@ -59,7 +59,7 @@ namespace WarHub.ArmouryModel.Source
                 importRootEntries: true);
         }
 
-        public static CategoryNode Category(CategoryEntryNode categoryEntry, string id = null)
+        public static CategoryNode Category(CategoryEntryNode categoryEntry, string? id = null)
         {
             return Category(
                 id: id ?? NewId(),
@@ -71,7 +71,7 @@ namespace WarHub.ArmouryModel.Source
                 primary: false);
         }
 
-        public static CategoryEntryNode CategoryEntry(string name = null, string id = null)
+        public static CategoryEntryNode CategoryEntry(string? name = null, string? id = null)
         {
             return CategoryEntry(
                 comment: null,
@@ -82,7 +82,7 @@ namespace WarHub.ArmouryModel.Source
                 hidden: false);
         }
 
-        public static CategoryLinkNode CategoryLink(CategoryEntryNode categoryEntry, string id = null)
+        public static CategoryLinkNode CategoryLink(CategoryEntryNode categoryEntry, string? id = null)
         {
             return CategoryLink(
                 comment: null,
@@ -95,7 +95,7 @@ namespace WarHub.ArmouryModel.Source
                 primary: false);
         }
 
-        public static CharacteristicNode Characteristic(CharacteristicTypeNode characteristicType, string value = null)
+        public static CharacteristicNode Characteristic(CharacteristicTypeNode characteristicType, string? value = null)
         {
             return Characteristic(
                 name: characteristicType.Name,
@@ -103,7 +103,7 @@ namespace WarHub.ArmouryModel.Source
                 value: value);
         }
 
-        public static CharacteristicTypeNode CharacteristicType(string name = null)
+        public static CharacteristicTypeNode CharacteristicType(string? name = null)
         {
             return CharacteristicType(
                 id: NewId(),
@@ -142,7 +142,7 @@ namespace WarHub.ArmouryModel.Source
             string field = Defaults.Field,
             string scope = Defaults.Scope,
             decimal value = Defaults.SelectorValue,
-            string id = null,
+            string? id = null,
             ConstraintKind type = ConstraintKind.Minimum)
         {
             return Constraint(
@@ -174,7 +174,7 @@ namespace WarHub.ArmouryModel.Source
                 value: value ?? costType.DefaultCostLimit);
         }
 
-        public static CostTypeNode CostType(string name = null, decimal defaultCostLimit = -1m)
+        public static CostTypeNode CostType(string? name = null, decimal defaultCostLimit = -1m)
         {
             return CostType(
                 comment: null,
@@ -189,7 +189,7 @@ namespace WarHub.ArmouryModel.Source
                 meta: Metadata());
         }
 
-        public static DataIndexNode DataIndex(string name = null, string indexUrl = null)
+        public static DataIndexNode DataIndex(string? name = null, string? indexUrl = null)
         {
             return DataIndex(
                 battleScribeVersion: RootElement.DataIndex.Info().CurrentVersion.BattleScribeString,
@@ -218,7 +218,7 @@ namespace WarHub.ArmouryModel.Source
                 dataRevision: node.Revision);
         }
 
-        public static EntryLinkNode EntryLink(SelectionEntryNode selectionEntry, string id = null)
+        public static EntryLinkNode EntryLink(SelectionEntryNode selectionEntry, string? id = null)
         {
             return EntryLink(
                 selectionEntryBase: selectionEntry,
@@ -226,7 +226,7 @@ namespace WarHub.ArmouryModel.Source
                 id: id);
         }
 
-        public static EntryLinkNode EntryLink(SelectionEntryGroupNode selectionEntryGroup, string id = null)
+        public static EntryLinkNode EntryLink(SelectionEntryGroupNode selectionEntryGroup, string? id = null)
         {
             return EntryLink(
                 selectionEntryBase: selectionEntryGroup,
@@ -234,7 +234,7 @@ namespace WarHub.ArmouryModel.Source
                 id: id);
         }
 
-        private static EntryLinkNode EntryLink(SelectionEntryBaseNode selectionEntryBase, EntryLinkKind type, string id = null)
+        private static EntryLinkNode EntryLink(SelectionEntryBaseNode selectionEntryBase, EntryLinkKind type, string? id = null)
         {
             return EntryLink(
                 comment: null,
@@ -249,7 +249,7 @@ namespace WarHub.ArmouryModel.Source
                 type: type);
         }
 
-        public static ForceNode Force(ForceEntryNode forceEntry, string id = null)
+        public static ForceNode Force(ForceEntryNode forceEntry, string? id = null)
         {
             var catalogue = forceEntry.FirstAncestorOrSelf<CatalogueBaseNode>();
             if (catalogue is null)
@@ -270,7 +270,7 @@ namespace WarHub.ArmouryModel.Source
                 catalogueName: catalogue.Name);
         }
 
-        public static ForceEntryNode ForceEntry(string name = null, string id = null)
+        public static ForceEntryNode ForceEntry(string? name = null, string? id = null)
         {
             return ForceEntry(
                 comment: null,
@@ -281,7 +281,7 @@ namespace WarHub.ArmouryModel.Source
                 hidden: false);
         }
 
-        public static GamesystemNode Gamesystem(string name = null, string id = null)
+        public static GamesystemNode Gamesystem(string? name = null, string? id = null)
         {
             return Gamesystem(
                 comment: null,
@@ -294,7 +294,7 @@ namespace WarHub.ArmouryModel.Source
                 authorUrl: null);
         }
 
-        public static InfoGroupNode InfoGroup(string name = null, string id = null)
+        public static InfoGroupNode InfoGroup(string? name = null, string? id = null)
         {
             return InfoGroup(
                 comment: null,
@@ -305,22 +305,22 @@ namespace WarHub.ArmouryModel.Source
                 hidden: false);
         }
 
-        public static InfoLinkNode InfoLink(InfoGroupNode infoGroup, string id = null)
+        public static InfoLinkNode InfoLink(InfoGroupNode infoGroup, string? id = null)
         {
             return InfoLink(infoGroup, InfoLinkKind.InfoGroup, id);
         }
 
-        public static InfoLinkNode InfoLink(ProfileNode profile, string id = null)
+        public static InfoLinkNode InfoLink(ProfileNode profile, string? id = null)
         {
             return InfoLink(profile, InfoLinkKind.Profile, id);
         }
 
-        public static InfoLinkNode InfoLink(RuleNode rule, string id = null)
+        public static InfoLinkNode InfoLink(RuleNode rule, string? id = null)
         {
             return InfoLink(rule, InfoLinkKind.Rule, id);
         }
 
-        private static InfoLinkNode InfoLink(EntryBaseNode node, InfoLinkKind type, string id = null)
+        private static InfoLinkNode InfoLink(EntryBaseNode node, InfoLinkKind type, string? id = null)
         {
             return InfoLink(
                 comment: null,
@@ -376,7 +376,7 @@ namespace WarHub.ArmouryModel.Source
                 comment: null);
         }
 
-        public static ProfileNode Profile(ProfileTypeNode profileType, string name = null, string id = null)
+        public static ProfileNode Profile(ProfileTypeNode profileType, string? name = null, string? id = null)
         {
             return Profile(
                 comment: null,
@@ -389,7 +389,7 @@ namespace WarHub.ArmouryModel.Source
                 typeName: profileType.Name);
         }
 
-        public static ProfileTypeNode ProfileType(string name = null)
+        public static ProfileTypeNode ProfileType(string? name = null)
         {
             return ProfileType(
                 comment: null,
@@ -397,7 +397,7 @@ namespace WarHub.ArmouryModel.Source
                 name: name ?? NewName());
         }
 
-        public static PublicationNode Publication(string name = null)
+        public static PublicationNode Publication(string? name = null)
         {
             return Publication(
                 comment: null,
@@ -425,7 +425,7 @@ namespace WarHub.ArmouryModel.Source
                 roundUp: false);
         }
 
-        public static RosterNode Roster(GamesystemNode gamesystem, string name = null, string id = null)
+        public static RosterNode Roster(GamesystemNode gamesystem, string? name = null, string? id = null)
         {
             return Roster(
                 id: id ?? NewId(),
@@ -436,7 +436,7 @@ namespace WarHub.ArmouryModel.Source
                 gameSystemRevision: gamesystem.Revision);
         }
 
-        public static RuleNode Rule(string name = null, string id = null, string description = null)
+        public static RuleNode Rule(string? name = null, string? id = null, string? description = null)
         {
             return Rule(
                 comment: null,
@@ -451,8 +451,8 @@ namespace WarHub.ArmouryModel.Source
         public static SelectionNode Selection(
             SelectionEntryNode selectionEntry,
             string entryId,
-            string entryGroupId = null,
-            string id = null)
+            string? entryGroupId = null,
+            string? id = null)
         {
             return Selection(
                 id: id ?? NewId(),
@@ -465,7 +465,7 @@ namespace WarHub.ArmouryModel.Source
                 type: selectionEntry.Type);
         }
 
-        public static SelectionEntryNode SelectionEntry(string name = null, string id = null)
+        public static SelectionEntryNode SelectionEntry(string? name = null, string? id = null)
         {
             return SelectionEntry(
                 comment: null,
@@ -479,7 +479,7 @@ namespace WarHub.ArmouryModel.Source
                 type: SelectionEntryKind.Upgrade);
         }
 
-        public static SelectionEntryGroupNode SelectionEntryGroup(string name = null, string id = null)
+        public static SelectionEntryGroupNode SelectionEntryGroup(string? name = null, string? id = null)
         {
             return SelectionEntryGroup(
                 comment: null,

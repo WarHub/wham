@@ -6,6 +6,6 @@ namespace WarHub.ArmouryModel.Source
     public abstract partial class CommentableCore
     {
         [XmlElement("comment")]
-        public string Comment { get; }
+        public string? Comment { get; }
     }
 }

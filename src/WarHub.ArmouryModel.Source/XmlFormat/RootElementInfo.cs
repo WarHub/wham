@@ -35,7 +35,7 @@ namespace WarHub.ArmouryModel.Source.XmlFormat
                     case RootElement.DataIndex:
                         return BattleScribeVersion.V2x03;
                     default:
-                        return null;
+                        throw new NotSupportedException($"This {nameof(RootElement)} value is not known.");
                 }
             }
         }
@@ -49,7 +49,7 @@ namespace WarHub.ArmouryModel.Source.XmlFormat
 
         public override string ToString() => Element.ToString();
 
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             return obj is RootElementInfo info && Equals(info);
         }

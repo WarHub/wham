@@ -103,8 +103,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
 
         private static CoreDescriptor.Entry CreateRecordEntry(IPropertySymbol symbol, PropertyDeclarationSyntax syntax)
         {
-            var typeString = symbol.Type.ToDisplayString();
-            var typeSyntax = SyntaxFactory.ParseTypeName(typeString);
+            var typeSyntax = syntax.Type;
             var typeIdentifier = syntax.Identifier.WithoutTrivia();
             var attributes = GetPropertyAttributeLists(syntax).ToImmutableArray();
             if (symbol.Type is INamedTypeSymbol namedType && namedType.SpecialType == SpecialType.None)

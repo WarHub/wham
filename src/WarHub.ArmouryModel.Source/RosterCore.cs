@@ -15,13 +15,13 @@ namespace WarHub.ArmouryModel.Source
         public string Name { get; }
 
         [XmlAttribute("battleScribeVersion")]
-        public string BattleScribeVersion { get; }
+        public string? BattleScribeVersion { get; }
 
         [XmlAttribute("gameSystemId")]
         public string GameSystemId { get; }
 
         [XmlAttribute("gameSystemName")]
-        public string GameSystemName { get; }
+        public string? GameSystemName { get; }
 
         [XmlAttribute("gameSystemRevision")]
         public int GameSystemRevision { get; }

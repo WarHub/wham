@@ -11,7 +11,7 @@ namespace WarHub.ArmouryModel.Source
         public string TypeId { get; }
 
         [XmlAttribute("typeName")]
-        public string TypeName { get; }
+        public string? TypeName { get; }
 
         [XmlArray("characteristics")]
         public ImmutableArray<CharacteristicCore> Characteristics { get; }

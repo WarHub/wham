@@ -1,8 +1,10 @@
-﻿namespace WarHub.ArmouryModel.Source
+﻿using System.Diagnostics.CodeAnalysis;
+
+namespace WarHub.ArmouryModel.Source
 {
     public abstract partial class SourceVisitor
     {
-        public virtual void Visit(SourceNode node)
+        public virtual void Visit(SourceNode? node)
         {
             node?.Accept(this);
         }
@@ -14,7 +16,8 @@
 
     public abstract partial class SourceVisitor<TResult>
     {
-        public virtual TResult Visit(SourceNode node)
+        [return: MaybeNull]
+        public virtual TResult Visit(SourceNode? node)
         {
             if (node != null)
             {
@@ -23,6 +26,7 @@
             return default;
         }
 
+        [return: MaybeNull]
         public virtual TResult DefaultVisit(SourceNode node)
         {
             return default;

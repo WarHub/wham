@@ -104,7 +104,7 @@ namespace WarHub.ArmouryModel.Source
             return builder.MoveToImmutable();
         }
 
-        internal static NodeList<TNode> ToNodeList<TNode>(this IContainer<TNode> container)
+        internal static NodeList<TNode> ToNodeList<TNode>(this IContainer<TNode>? container)
             where TNode : SourceNode
             => new NodeList<TNode>(container);
 

@@ -9,16 +9,16 @@ namespace WarHub.ArmouryModel.Source
         where TNode : SourceNode, INodeWithCore<TCore>
         where TCore : ICore<TNode>
     {
-        private LazyNodeList(ImmutableArray<TCore> cores, SourceNode parent)
+        private LazyNodeList(ImmutableArray<TCore> cores, SourceNode? parent)
         {
             Parent = parent;
             Cores = cores;
-            Nodes = new ArrayElement<TNode>[Cores.Length];
+            Nodes = new ArrayElement<TNode?>[Cores.Length];
         }
 
-        private SourceNode Parent { get; }
+        private SourceNode? Parent { get; }
 
-        private ArrayElement<TNode>[] Nodes { get; }
+        private ArrayElement<TNode?>[] Nodes { get; }
 
         public ImmutableArray<TCore> Cores { get; }
 
@@ -38,22 +38,24 @@ namespace WarHub.ArmouryModel.Source
 
         private class OneElementList : IContainer<TNode>, INodeListWithCoreArray<TNode, TCore>
         {
-            public OneElementList(ImmutableArray<TCore> cores, SourceNode parent)
+            public OneElementList(ImmutableArray<TCore> cores, SourceNode? parent)
             {
                 Cores = cores;
                 Parent = parent;
             }
 
-            private TNode node;
+            private TNode? node;
 
             public int SlotCount => 1;
 
-            public SourceNode Parent { get; }
+            public SourceNode? Parent { get; }
 
             public ImmutableArray<TCore> Cores { get; }
 
             public TNode GetNodeSlot(int index)
             {
+                if (index != 0)
+                    throw new IndexOutOfRangeException("Index was outside the bounds of the array");
                 if (node == null)
                 {
                     Interlocked.CompareExchange(ref node, Cores[0].ToNode(Parent), null);
@@ -65,18 +67,18 @@ namespace WarHub.ArmouryModel.Source
 
         private class TwoElementList : IContainer<TNode>, INodeListWithCoreArray<TNode, TCore>
         {
-            public TwoElementList(ImmutableArray<TCore> cores, SourceNode parent)
+            public TwoElementList(ImmutableArray<TCore> cores, SourceNode? parent)
             {
                 Cores = cores;
                 Parent = parent;
             }
 
-            private TNode node0;
-            private TNode node1;
+            private TNode? node0;
+            private TNode? node1;
 
             public int SlotCount => 2;
 
-            public SourceNode Parent { get; }
+            public SourceNode? Parent { get; }
 
             public ImmutableArray<TCore> Cores { get; }
 
@@ -90,7 +92,7 @@ namespace WarHub.ArmouryModel.Source
                 };
             }
 
-            private TNode GetNode(ref TNode node, int index)
+            private TNode GetNode(ref TNode? node, int index)
             {
                 if (node == null)
                 {
@@ -103,19 +105,19 @@ namespace WarHub.ArmouryModel.Source
 
         private class ThreeElementList : IContainer<TNode>, INodeListWithCoreArray<TNode, TCore>
         {
-            public ThreeElementList(ImmutableArray<TCore> cores, SourceNode parent)
+            public ThreeElementList(ImmutableArray<TCore> cores, SourceNode? parent)
             {
                 Cores = cores;
                 Parent = parent;
             }
 
-            private TNode node0;
-            private TNode node1;
-            private TNode node2;
+            private TNode? node0;
+            private TNode? node1;
+            private TNode? node2;
 
             public int SlotCount => 3;
 
-            public SourceNode Parent { get; }
+            public SourceNode? Parent { get; }
 
             public ImmutableArray<TCore> Cores { get; }
 
@@ -130,7 +132,7 @@ namespace WarHub.ArmouryModel.Source
                 };
             }
 
-            private TNode GetNode(ref TNode node, int index)
+            private TNode GetNode(ref TNode? node, int index)
             {
                 if (node == null)
                 {
@@ -141,7 +143,7 @@ namespace WarHub.ArmouryModel.Source
             }
         }
 
-        internal static IContainer<TNode> CreateContainer(ImmutableArray<TCore> cores, SourceNode parent)
+        internal static IContainer<TNode>? CreateContainer(ImmutableArray<TCore> cores, SourceNode? parent)
         {
             return cores.Length switch
             {

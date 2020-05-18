@@ -2,6 +2,7 @@
   <Sdk Name="Microsoft.Build.CentralPackageVersions" />
 
   <PropertyGroup>
+    <Nullable>enable</Nullable>
     <TargetFramework>netstandard2.0</TargetFramework>
     <RootNamespace>WarHub.ArmouryModel.Source</RootNamespace>
   </PropertyGroup>
@@ -21,7 +22,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\WarHub.ArmouryModel.Source.CodeGeneration\WarHub.ArmouryModel.Source.CodeGeneration.csproj" ReferenceOutputAssembly="false" SkipGetTargetFrameworkProperties="true" OutputItemType="CodeGenerationRoslynPlugin" />
+    <ProjectReference Include="..\..\src\WarHub.ArmouryModel.Source.CodeGeneration\WarHub.ArmouryModel.Source.CodeGeneration.csproj" ReferenceOutputAssembly="false" SkipGetTargetFrameworkProperties="true" SetTargetFramework="TargetFramework=netcoreapp2.1" OutputItemType="CodeGenerationRoslynPlugin" />
   </ItemGroup>
 
 </Project>

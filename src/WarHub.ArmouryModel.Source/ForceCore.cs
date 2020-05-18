@@ -11,10 +11,10 @@ namespace WarHub.ArmouryModel.Source
         public string CatalogueId { get; }
 
         [XmlAttribute("catalogueRevision")]
-        public int CatalogueRevision { get; }
+        public int? CatalogueRevision { get; }
 
         [XmlAttribute("catalogueName")]
-        public string CatalogueName { get; }
+        public string? CatalogueName { get; }
 
         [XmlArray("selections")]
         public ImmutableArray<SelectionCore> Selections { get; }

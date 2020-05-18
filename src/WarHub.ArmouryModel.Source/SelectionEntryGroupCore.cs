@@ -7,6 +7,6 @@ namespace WarHub.ArmouryModel.Source
     public sealed partial class SelectionEntryGroupCore : SelectionEntryBaseCore
     {
         [XmlAttribute("defaultSelectionEntryId")]
-        public string DefaultSelectionEntryId { get; }
+        public string? DefaultSelectionEntryId { get; }
     }
 }

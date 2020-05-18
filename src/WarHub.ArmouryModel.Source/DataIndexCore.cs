@@ -9,13 +9,13 @@ namespace WarHub.ArmouryModel.Source
     public sealed partial class DataIndexCore
     {
         [XmlAttribute("battleScribeVersion")]
-        public string BattleScribeVersion { get; }
+        public string? BattleScribeVersion { get; }
 
         [XmlAttribute("name")]
         public string Name { get; }
 
         [XmlAttribute("indexUrl")]
-        public string IndexUrl { get; }
+        public string? IndexUrl { get; }
 
         [XmlArray("repositoryUrls")]
         public ImmutableArray<DataIndexRepositoryUrlCore> RepositoryUrls { get; }

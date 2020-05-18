@@ -2,6 +2,6 @@
 {
     public interface ICore<out TNode> where TNode : SourceNode
     {
-        TNode ToNode(SourceNode parent = null);
+        TNode ToNode(SourceNode? parent = null);
     }
 }

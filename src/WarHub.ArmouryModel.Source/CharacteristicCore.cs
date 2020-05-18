@@ -13,6 +13,6 @@ namespace WarHub.ArmouryModel.Source
         public string TypeId { get; }
 
         [XmlText]
-        public string Value { get; }
+        public string? Value { get; }
     }
 }

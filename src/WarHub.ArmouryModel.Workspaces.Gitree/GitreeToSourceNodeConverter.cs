@@ -88,7 +88,7 @@ namespace WarHub.ArmouryModel.Workspaces.Gitree
                     return listNode;
                 }
                 // this is a separatable list
-                var childName = listNode.GetChildInfoFromParent().Name;
+                var childName = listNode.GetChildInfoFromParent()?.Name;
                 var nodes = Lists.TryGetValue(childName, out var value)
                     ? value : ImmutableArray<SourceNode>.Empty;
                 return listNode.WithNodes(nodes.Cast<TNode>().ToNodeList());

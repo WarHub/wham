@@ -6,7 +6,7 @@ namespace WarHub.ArmouryModel.Source.XmlFormat
 {
     public readonly struct VersionedElementInfo : IComparable<VersionedElementInfo>, IEquatable<VersionedElementInfo>
     {
-        public VersionedElementInfo(RootElement element, BattleScribeVersion version)
+        public VersionedElementInfo(RootElement element, BattleScribeVersion? version)
         {
             Element = element;
             Version = version;
@@ -14,7 +14,7 @@ namespace WarHub.ArmouryModel.Source.XmlFormat
 
         public RootElement Element { get; }
 
-        public BattleScribeVersion Version { get; }
+        public BattleScribeVersion? Version { get; }
 
         public ImmutableList<VersionedElementInfo> AvailableMigrations()
         {
@@ -41,7 +41,7 @@ namespace WarHub.ArmouryModel.Source.XmlFormat
 
         public override string ToString() => $"{Element}, Version={Version}";
 
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             return obj is VersionedElementInfo info && Equals(info);
         }

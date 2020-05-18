@@ -2,7 +2,7 @@
 {
     public interface IRootNode : INameableNode
     {
-        string BattleScribeVersion { get; }
+        string? BattleScribeVersion { get; }
     }
 
     public partial class CatalogueBaseNode : IRootNode { }

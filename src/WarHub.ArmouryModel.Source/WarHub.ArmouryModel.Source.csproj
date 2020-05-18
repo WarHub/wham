@@ -2,7 +2,8 @@
   <Sdk Name="Microsoft.Build.CentralPackageVersions" />
 
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <TargetFrameworks>netstandard2.0;netcoreapp3.1</TargetFrameworks>
     <Description>Provides data model for wargaming datafiles, such as BattleScribe. wham core library.</Description>
     <PackageTags>warhub armoury armourymodel wham battlescribe roster catalogue gamesystem cat catz gst gstz ros rosz datafile wh40k 40k bsdata battle scribe</PackageTags>
     <CatalogueXsdPath>../dataformat/xml/schema/latest/Catalogue.xsd</CatalogueXsdPath>
@@ -21,18 +22,15 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\WarHub.ArmouryModel.Source.CodeGeneration\WarHub.ArmouryModel.Source.CodeGeneration.csproj" 
-                      ReferenceOutputAssembly="false"
-                      SkipGetTargetFrameworkProperties="true"
-                      OutputItemType="CodeGenerationRoslynPlugin" />
+    <ProjectReference Include="..\WarHub.ArmouryModel.Source.CodeGeneration\WarHub.ArmouryModel.Source.CodeGeneration.csproj" ReferenceOutputAssembly="false" SkipGetTargetFrameworkProperties="true" SetTargetFramework="TargetFramework=netcoreapp2.1" OutputItemType="CodeGenerationRoslynPlugin" />
   </ItemGroup>
 
   <!-- Custom resource embedding of 3 XSDs from one file -->
 
   <ItemGroup>
     <EmbeddedXsdSchema Include="Catalogue.xsd" TargetXmlns="$(CatXmlns)" />
-    <EmbeddedXsdSchema Include="Roster.xsd" TargetXmlns='"http://www.battlescribe.net/schema/rosterSchema"' />
-    <EmbeddedXsdSchema Include="GameSystem.xsd" TargetXmlns='"http://www.battlescribe.net/schema/gameSystemSchema"' />
+    <EmbeddedXsdSchema Include="Roster.xsd" TargetXmlns="&quot;http://www.battlescribe.net/schema/rosterSchema&quot;" />
+    <EmbeddedXsdSchema Include="GameSystem.xsd" TargetXmlns="&quot;http://www.battlescribe.net/schema/gameSystemSchema&quot;" />
   </ItemGroup>
 
   <Target Name="TransformXsdSchemas" BeforeTargets="BeforeBuild" Inputs="$(CatalogueXsdPath)" Outputs="@(EmbeddedXsdSchema->'$(IntermediateOutputPath)%(Identity)')">
