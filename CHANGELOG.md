@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+* C# 8.0 Nullable Reference Types support (NRTs) ([#111]).
+
+[#111]: https://github.com/WarHub/wham/pull/111
+
 ## [0.8.0] - 2020-05-14
 
 ### Added
