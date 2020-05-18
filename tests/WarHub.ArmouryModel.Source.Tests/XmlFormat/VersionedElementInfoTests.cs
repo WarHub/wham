@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using FluentAssertions;
 using WarHub.ArmouryModel.Source.XmlFormat;
@@ -30,6 +31,16 @@ namespace WarHub.ArmouryModel.Source.Tests.XmlFormat
             var migrations = element.AvailableMigrations();
 
             migrations.Should().HaveCountGreaterOrEqualTo(1, "because we're migrating from some previous version.");
+        }
+
+        [Fact]
+        public void AvailableMigrations_throws_for_invalid_elements()
+        {
+            var versionedElement = new VersionedElementInfo((RootElement) (-1), BattleScribeVersion.V1x15);
+
+            Action act = () => versionedElement.AvailableMigrations();
+
+            act.Should().Throw<NotSupportedException>();
         }
 
         [Theory]
@@ -64,7 +75,6 @@ namespace WarHub.ArmouryModel.Source.Tests.XmlFormat
                  from version in new[] { null, root.Info().CurrentVersion }
                  select new VersionedElementInfo(root, version))
                 .Append(new VersionedElementInfo(RootElement.Roster, BattleScribeVersion.V1x15b))
-                .Append(new VersionedElementInfo((RootElement)1000, BattleScribeVersion.V1x15))
                 .Select(x => new object[] { x });
         }
 
