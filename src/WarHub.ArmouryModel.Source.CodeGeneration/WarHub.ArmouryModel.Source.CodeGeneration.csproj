@@ -3,7 +3,6 @@
   <Sdk Name="CodeGeneration.Roslyn.Plugin.Sdk" />
 
   <PropertyGroup>
-    <Nullable>enable</Nullable>
     <TargetFrameworks>netcoreapp2.1;netcoreapp3.1</TargetFrameworks>
     <IsPackable>false</IsPackable>
   </PropertyGroup>
