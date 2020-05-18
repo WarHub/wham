@@ -25,7 +25,7 @@ namespace WarHub.ArmouryModel.Source.BattleScribe.Tests
             };
         }
 
-        public static string GetDatafilePath(this string datafileName, BattleScribeVersion version = null)
+        public static string GetDatafilePath(this string datafileName, BattleScribeVersion? version = null)
         {
             // null version is latest:
             var versionResolved = version ?? BattleScribeVersion.WellKnownVersions.Last();
@@ -33,7 +33,7 @@ namespace WarHub.ArmouryModel.Source.BattleScribe.Tests
             return Path.Combine(InputDir, "v" + versionText, datafileName + ".xml");
         }
 
-        public static Stream GetDatafileStream(this string datafileName, BattleScribeVersion version = null)
+        public static Stream GetDatafileStream(this string datafileName, BattleScribeVersion? version = null)
         {
             var path = GetDatafilePath(datafileName, version);
             return File.OpenRead(path);

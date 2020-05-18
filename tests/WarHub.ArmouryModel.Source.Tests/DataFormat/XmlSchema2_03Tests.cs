@@ -56,7 +56,7 @@ namespace WarHub.ArmouryModel.Source.Tests.DataFormat
                     SelectionEntry())
                 .AddSharedSelectionEntryGroups(
                     SelectionEntryGroup());
-            var catWithComs = (CatalogueNode)new CommentRewriter().Visit(cat);
+            var catWithComs = (CatalogueNode)new CommentRewriter().Visit(cat)!;
             using var writer = new StringWriter();
             catWithComs.Serialize(writer);
             var xmlText = writer.ToString();
@@ -131,7 +131,7 @@ namespace WarHub.ArmouryModel.Source.Tests.DataFormat
 
         private class CommentRewriter : SourceRewriter
         {
-            public override SourceNode Visit(SourceNode node) =>
+            public override SourceNode? Visit(SourceNode? node) =>
                 base.Visit(node is CommentableNode com ? com.WithComment("txt") : node);
         }
     }

@@ -7,7 +7,7 @@ namespace WarHub.ArmouryModel.Source
     /// Represents a <see cref="SourceVisitor{TResult}"/> which descends and entire <see cref="SourceNode"/> graph and
     /// may replace or remove visited SyntaxNodes in depth-first order.
     /// </summary>
-    public abstract partial class SourceRewriter : SourceVisitor<SourceNode>
+    public abstract partial class SourceRewriter : SourceVisitor<SourceNode?>
     {
         public virtual ListNode<TNode> VisitListNode<TNode>(ListNode<TNode> list)
             where TNode : SourceNode

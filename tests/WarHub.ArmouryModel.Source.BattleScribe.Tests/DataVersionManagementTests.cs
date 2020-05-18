@@ -45,7 +45,7 @@ namespace WarHub.ArmouryModel.Source.BattleScribe.Tests
             var (result, info) = DataVersionManagement.ReadMigrated(stream);
             using (result)
             {
-                GetVersion(result).Should().Be(info.Version);
+                GetVersion(result).Should().Be(info.Version!);
             }
         }
 
@@ -57,7 +57,7 @@ namespace WarHub.ArmouryModel.Source.BattleScribe.Tests
             var (reader, info) = DataVersionManagement.ReadMigrated(emptyElementStream);
             using (reader)
             {
-                GetVersion(reader).Should().Be(info.Version);
+                GetVersion(reader).Should().Be(info.Version!);
             }
         }
 
@@ -104,7 +104,7 @@ namespace WarHub.ArmouryModel.Source.BattleScribe.Tests
                 "<{0} {1}='{2}' xmlns='{3}' />",
                 elementInfo.Element.Info().XmlElementName,
                 DataVersionManagement.BattleScribeVersionAttributeName,
-                elementInfo.Version.BattleScribeString,
+                elementInfo.Version!.BattleScribeString,
                 elementInfo.Element.Info().Namespace);
             var xmlStream = new MemoryStream();
             using (var writer = CreateNotClosingStreamWriter(xmlStream))

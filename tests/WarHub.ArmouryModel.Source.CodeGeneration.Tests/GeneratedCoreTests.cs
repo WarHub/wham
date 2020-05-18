@@ -38,7 +38,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration.Tests
         [InlineData(typeof(ContainerCore), nameof(ContainerCore.WithItems))]
         public void Core_With_parameter_name_is_value(Type type, string withMethodName)
         {
-            var parameter = type.GetMethod(withMethodName).GetParameters()[0];
+            var parameter = type.GetMethod(withMethodName)!.GetParameters()[0];
 
             parameter.Name.Should().Be("value");
         }

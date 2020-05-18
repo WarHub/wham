@@ -29,7 +29,7 @@ namespace WarHub.ArmouryModel.Source.Tests.Foundation
                     RuleNode r => r.WithName(r.Name + r.Name),
                     _ => node
                 });
-            result.Rules.Should()
+            result!.Rules.Should()
                 .SatisfyRespectively(
                     first => first.Name.Should().Be("rule1rule1"),
                     first => first.Name.Should().Be("rule2rule2"));
@@ -45,7 +45,7 @@ namespace WarHub.ArmouryModel.Source.Tests.Foundation
                 LambdaRewriter.Visit(
                     subject,
                     node => node is RuleNode && node.IndexInParent == removedRuleIndex ? null : node);
-            result.Rules.Should()
+            result!.Rules.Should()
                 .HaveCount(1)
                 .And
                 .SatisfyRespectively(first => first.Name.Should().NotBe(subject.Rules[removedRuleIndex].Name));
@@ -70,23 +70,23 @@ namespace WarHub.ArmouryModel.Source.Tests.Foundation
 
     internal class LambdaRewriter : SourceRewriter
     {
-        private readonly Func<SourceNode, SourceNode> selector;
+        private readonly Func<SourceNode?, SourceNode?> selector;
 
-        public LambdaRewriter(Func<SourceNode, SourceNode> selector)
+        public LambdaRewriter(Func<SourceNode?, SourceNode?> selector)
         {
             this.selector = selector;
         }
 
-        public static TNode Visit<TNode>(TNode node, Func<SourceNode, SourceNode> selector)
+        public static TNode? Visit<TNode>(TNode? node, Func<SourceNode?, SourceNode?> selector)
             where TNode : SourceNode
         {
             var visitor = new LambdaRewriter(selector);
-            return (TNode)visitor.Visit(node);
+            return (TNode?)visitor.Visit(node);
         }
 
-        public override SourceNode Visit(SourceNode node)
+        public override SourceNode? Visit(SourceNode? node)
         {
-            return base.Visit(selector(node));
+            return base.Visit(selector(node))!;
         }
     }
 }
