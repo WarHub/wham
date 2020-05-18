@@ -158,6 +158,9 @@ namespace WarHub.ArmouryModel.Workspaces.BattleScribe
             }
         }
 
+        public static SourceNode GetDataOrThrow(this IDatafileInfo datafile) =>
+            datafile.GetData() ?? throw new InvalidOperationException("Datafile has no data.");
+
         public static void WriteTo(this RepoDistribution repoDistribution, Stream stream)
         {
             using var zip = new ZipArchive(stream, ZipArchiveMode.Create, leaveOpen: true);
@@ -166,14 +169,14 @@ namespace WarHub.ArmouryModel.Workspaces.BattleScribe
             {
                 var entry = zip.CreateEntry(datafile.Filepath);
                 using var entryStream = entry.Open();
-                datafile.GetData().Serialize(entryStream);
+                datafile.GetDataOrThrow().Serialize(entryStream);
             }
         }
 
         public static void WriteXmlFile(this IDatafileInfo datafile, string filepath)
         {
             using var stream = File.Create(filepath);
-            datafile.GetData().Serialize(stream);
+            datafile.GetDataOrThrow().Serialize(stream);
         }
 
         public static void WriteXmlZippedFile(this IDatafileInfo datafile, string filepath)
@@ -181,10 +184,10 @@ namespace WarHub.ArmouryModel.Workspaces.BattleScribe
             using var fileStream = File.Create(filepath);
             using var archive = new ZipArchive(fileStream, ZipArchiveMode.Create);
             using var entryStream = archive.CreateEntry(datafile.GetXmlFilename()).Open();
-            datafile.GetData().Serialize(entryStream);
+            datafile.GetDataOrThrow().Serialize(entryStream);
         }
 
-        public static Func<Stream, SourceNode> GetLoadingMethod(this XmlDocumentKind kind)
+        public static Func<Stream, SourceNode>? GetLoadingMethod(this XmlDocumentKind kind)
         {
             return kind switch
             {
@@ -211,12 +214,12 @@ namespace WarHub.ArmouryModel.Workspaces.BattleScribe
             return stream.LoadSourceAuto(path);
         }
 
-        public static SourceNode LoadSource(this Stream stream, XmlDocumentKind kind)
+        public static SourceNode? LoadSource(this Stream stream, XmlDocumentKind kind)
         {
             return kind.GetLoadingMethod()?.Invoke(stream);
         }
 
-        public static SourceNode LoadSourceZipped(this Stream stream, XmlDocumentKind kind)
+        public static SourceNode? LoadSourceZipped(this Stream stream, XmlDocumentKind kind)
         {
             using var archive = new ZipArchive(stream, ZipArchiveMode.Read, leaveOpen: true);
             if (archive.Entries.Count != 1)
@@ -255,7 +258,7 @@ namespace WarHub.ArmouryModel.Workspaces.BattleScribe
                     repoName, repoUrl, repositoryUrls: default, dataIndexEntries: entries);
             DataIndexEntryNode CreateEntry(IDatafileInfo datafile)
             {
-                var node = (CatalogueBaseNode)datafile.GetData();
+                var node = datafile.GetData() as CatalogueBaseNode ?? throw new ArgumentException("Data must be a CatalogueBase type.", nameof(datafile));
                 var path = indexDataPathProvider(datafile);
                 var entryKind = datafile.DataKind.GetIndexEntryKindOrUnknown();
                 return NodeFactory.DataIndexEntry(path, entryKind, node.Id, node.Name, node.BattleScribeVersion, node.Revision);
@@ -264,11 +267,11 @@ namespace WarHub.ArmouryModel.Workspaces.BattleScribe
 
         public static RepoDistribution CreateRepoDistribution(this IWorkspace workspace, string repoName, string repoUrl)
         {
-            var indexNode = workspace.CreateDataIndex(repoName, repoUrl, x => x.GetXmlFilename());
+            var indexNode = workspace.CreateDataIndex(repoName, repoUrl, GetXmlFilename);
             var indexDatafile = DatafileInfo.Create(DataIndexFileName, indexNode);
             var datafiles = workspace.Datafiles
                 .Where(x => x.DataKind.IsDataCatalogueKind())
-                .Select(x => DatafileInfo.Create(x.GetXmlFilename(), x.GetData()))
+                .Select(x => DatafileInfo.Create(x.GetXmlFilename(), x.GetDataOrThrow()))
                 .OfType<IDatafileInfo<CatalogueBaseNode>>()
                 .ToImmutableArray();
             var repo = new RepoDistribution(indexDatafile, datafiles);

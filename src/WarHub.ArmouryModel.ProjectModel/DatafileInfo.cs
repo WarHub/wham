@@ -26,7 +26,7 @@ namespace WarHub.ArmouryModel.ProjectModel
 
     public static class DatafileInfo
     {
-        public static IDatafileInfo<TData> Create<TData>(string filepath, TData node) where TData : SourceNode
+        public static IDatafileInfo<TData> Create<TData>(string filepath, TData? node) where TData : SourceNode
         {
             if (node is null)
             {
