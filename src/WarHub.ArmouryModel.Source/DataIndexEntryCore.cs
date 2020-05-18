@@ -19,7 +19,7 @@ namespace WarHub.ArmouryModel.Source
         public string DataName { get; }
 
         [XmlAttribute("dataBattleScribeVersion")]
-        public string DataBattleScribeVersion { get; }
+        public string? DataBattleScribeVersion { get; }
 
         [XmlAttribute("dataRevision")]
         public int DataRevision { get; }

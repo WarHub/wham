@@ -77,7 +77,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
 
         public static string StripSuffixes(this string typeName)
         {
-            return typeName.StripSuffix(Names.CoreSuffix).StripSuffix(Names.NodeSuffix);
+            return typeName.StripSuffix("?").StripSuffix(Names.CoreSuffix).StripSuffix(Names.NodeSuffix);
         }
 
         private static string StripSuffix(this string text, string suffix)
@@ -85,39 +85,21 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
             return text.EndsWith(suffix, StringComparison.Ordinal) ? text.Substring(0, text.Length - suffix.Length) : text;
         }
 
-        public static QualifiedNameSyntax ToNestedBuilderType(this NameSyntax type)
-        {
-            return QualifiedName(type, IdentifierName(Names.Builder));
-        }
-
         public static TypeSyntax ToListOfBuilderType(this CoreDescriptor.CollectionEntry entry)
-        {
-            return entry.CollectionTypeParameter.ToListOfBuilderType();
-        }
-
-        public static TypeSyntax ToListOfBuilderType(this NameSyntax nameSyntax)
         {
             return
                 GenericName(Names.ListGeneric)
                 .AddTypeArgumentListArguments(
-                    nameSyntax.ToNestedBuilderType())
-                .WithNamespace(Names.ListGenericNamespace);
+                    QualifiedName(
+                        entry.CollectionTypeParameter,
+                        IdentifierName(Names.Builder)));
         }
 
         public static TypeSyntax ToIEnumerableType(this TypeSyntax typeArgument)
         {
             return
                 GenericName(Names.IEnumerableGeneric)
-                .AddTypeArgumentListArguments(typeArgument)
-                .WithNamespace(Names.IEnumerableGenericNamespace);
-        }
-
-        public static TypeSyntax ToImmutableArrayType(this TypeSyntax typeArgument)
-        {
-            return
-                GenericName(Names.ImmutableArray)
-                .AddTypeArgumentListArguments(typeArgument)
-                .WithNamespace(Names.ImmutableArrayNamespace);
+                .AddTypeArgumentListArguments(typeArgument);
         }
 
         public static TypeSyntax ToNodeListType(this TypeSyntax typeArgument)

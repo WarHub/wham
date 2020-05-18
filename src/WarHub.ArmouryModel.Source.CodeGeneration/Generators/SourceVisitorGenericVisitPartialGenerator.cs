@@ -42,6 +42,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                     MethodDeclaration(
                         IdentifierName(Names.SourceVisitorTypeParameter),
                         methodName)
+                    .AddAttributeLists(MaybeNullReturnAttributeList)
                     .AddModifiers(
                         SyntaxKind.PublicKeyword,
                         SyntaxKind.VirtualKeyword)

@@ -93,17 +93,18 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
             {
                 Usings = List(new[]
                 {
-                    UsingDirective(ParseName("System")),
+                    UsingDirective(ParseName(Names.NamespaceSystem)),
                     UsingDirective(ParseName(Names.NamespaceSystemCollectionsGeneric)),
                     UsingDirective(ParseName(Names.NamespaceSystemCollectionsImmutable)),
-                    UsingDirective(ParseName(Names.NamespaceSystemDiagnostics))
-                }),
+                    UsingDirective(ParseName(Names.NamespaceSystemDiagnostics)),
+                    UsingDirective(ParseName(Names.NamespaceSystemDiagnosticsCodeAnalysis)),
+                    UsingDirective(ParseName(Names.NamespaceSystemXmlSerialization))
+                }.Where(x => !context.CompilationUnitUsings.Any(other => x.Name.ToString() == other.Name.ToString()))),
                 Members =
                     SingletonList<MemberDeclarationSyntax>(
                         context.ProcessingNode.FirstAncestorOrSelf<NamespaceDeclarationSyntax>()
                         .WithMembers(GenerateMembers()))
             });
-
 
             SyntaxList<MemberDeclarationSyntax> GenerateMembers()
             {

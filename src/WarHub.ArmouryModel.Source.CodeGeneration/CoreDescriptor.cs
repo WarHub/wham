@@ -4,6 +4,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using MoreLinq;
+using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
 namespace WarHub.ArmouryModel.Source.CodeGeneration
 {
@@ -19,6 +20,9 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
             TypeSymbol = typeSymbol;
             CoreType = coreType;
             CoreTypeIdentifier = coreTypeIdentifier;
+            CoreBuilderType = QualifiedName(coreType, IdentifierName(Names.Builder));
+            ListOfCoreBuilderType = GenericName(Names.ListGeneric).AddTypeArgumentListArguments(CoreBuilderType);
+            ImmutableArrayOfCoreType = GenericName(Names.ImmutableArray).AddTypeArgumentListArguments(CoreType);
             RawModelName = coreTypeIdentifier.ValueText.StripSuffixes();
             Entries = entries;
             CoreTypeAttributeLists = coreTypeAttributeLists;
@@ -29,6 +33,12 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
         public INamedTypeSymbol TypeSymbol { get; }
 
         public NameSyntax CoreType { get; }
+
+        public QualifiedNameSyntax CoreBuilderType { get; }
+
+        public GenericNameSyntax ListOfCoreBuilderType { get; }
+
+        public GenericNameSyntax ImmutableArrayOfCoreType { get; }
 
         public SyntaxToken CoreTypeIdentifier { get; }
 
@@ -126,13 +136,16 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
 
         internal class ComplexEntry : Entry
         {
-            public ComplexEntry(IPropertySymbol symbol, SyntaxToken identifier, NameSyntax type, ImmutableArray<AttributeListSyntax> attributeLists)
+            public ComplexEntry(IPropertySymbol symbol, SyntaxToken identifier, TypeSyntax type, ImmutableArray<AttributeListSyntax> attributeLists)
                 : base(symbol, identifier, type, attributeLists)
             {
-                Type = type;
+                NameSyntax = (NameSyntax) (type is NullableTypeSyntax nullable ? nullable.ElementType : type);
+                BuilderType = QualifiedName(NameSyntax, IdentifierName(Names.Builder));
             }
 
-            public new NameSyntax Type { get; }
+            public NameSyntax NameSyntax { get; }
+
+            public QualifiedNameSyntax BuilderType { get; }
 
             public override bool IsSimple => false;
             public override bool IsComplex => true;

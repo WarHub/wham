@@ -49,7 +49,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
         private IEnumerable<MemberDeclarationSyntax> GenerateFseMembers()
         {
             const string EnumerablePropName = "Enumerable";
-            var collectionType = Descriptor.CoreType.ToImmutableArrayType();
+            var collectionType = Descriptor.ImmutableArrayOfCoreType;
             yield return CreateConstructor();
             yield return CreateBackingProperty();
             yield return CreateCountProperty();

@@ -82,7 +82,8 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                         Parameter(
                             Identifier(ParentLocal))
                         .WithType(
-                            IdentifierName(Names.SourceNode)))
+                            NullableType(
+                                IdentifierName(Names.SourceNode))))
                     .Mutate(x => ForwardExpressionToNode(x, Names.ToNode));
             }
             MethodDeclarationSyntax AbstractToNodeMethod()
@@ -126,7 +127,8 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                         Parameter(
                             Identifier(ParentLocal))
                         .WithType(
-                            IdentifierName(Names.SourceNode)))
+                            NullableType(
+                                IdentifierName(Names.SourceNode))))
                     .Mutate(x => ForwardExpressionToNode(x, Names.ToNode));
             }
 
@@ -137,7 +139,8 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                         Parameter(
                             Identifier(ParentLocal))
                         .WithType(
-                            IdentifierName(Names.SourceNode))
+                            NullableType(
+                                IdentifierName(Names.SourceNode)))
                         .WithDefault(
                             EqualsValueClause(
                                 LiteralExpression(SyntaxKind.NullLiteralExpression))));

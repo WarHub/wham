@@ -63,7 +63,7 @@ namespace WarHub.ArmouryModel.Source
         {
             return Category(
                 id: id ?? NewId(),
-                categoryEntry.Name,
+                categoryEntry.Name ?? NewName(),
                 categoryEntry.Id,
                 entryGroupId: null,
                 categoryEntry.PublicationId,
@@ -260,7 +260,7 @@ namespace WarHub.ArmouryModel.Source
             }
             return Force(
                 id: id ?? NewId(),
-                name: forceEntry.Name,
+                name: forceEntry.Name ?? NewName(),
                 entryId: forceEntry.Id,
                 entryGroupId: null,
                 publicationId: forceEntry.PublicationId,
@@ -456,7 +456,7 @@ namespace WarHub.ArmouryModel.Source
         {
             return Selection(
                 id: id ?? NewId(),
-                name: selectionEntry.Name,
+                name: selectionEntry.Name ?? NewName(),
                 entryId: entryId,
                 entryGroupId: entryGroupId,
                 publicationId: selectionEntry.PublicationId,

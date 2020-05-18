@@ -114,7 +114,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                 }
                 if (namedType.GetAttributes().Any(a => a.AttributeClass.Equals(whamNodeCoreAttributeSymbolCache.Symbol, SymbolEqualityComparer.Default)))
                 {
-                    return new CoreDescriptor.ComplexEntry(symbol, typeIdentifier, (NameSyntax)typeSyntax, attributes);
+                    return new CoreDescriptor.ComplexEntry(symbol, typeIdentifier, typeSyntax, attributes);
                 }
             }
             return new CoreDescriptor.SimpleEntry(symbol, typeIdentifier, typeSyntax, attributes);

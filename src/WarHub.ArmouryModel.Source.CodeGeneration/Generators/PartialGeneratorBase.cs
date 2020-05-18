@@ -92,14 +92,27 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
         {
             return
                 Attribute(
-                    ParseName(Names.DebuggerBrowsableFull))
+                    IdentifierName(Names.DebuggerBrowsable))
                 .AddArgumentListArguments(
                     AttributeArgument(
-                        ParseName(Names.DebuggerBrowsableStateFull)
+                        IdentifierName(Names.DebuggerBrowsableState)
                         .MemberAccess(
                             IdentifierName(Names.DebuggerBrowsableStateNever))));
         });
 
+        private static Lazy<AttributeListSyntax> MaybeNullReturnAttributeListLazy { get; } = new Lazy<AttributeListSyntax>(() =>
+        {
+            return
+                AttributeList()
+                .WithTarget(
+                    AttributeTargetSpecifier(
+                        Token(SyntaxKind.ReturnKeyword)))
+                .AddAttributes(
+                    Attribute(
+                        IdentifierName(Names.MaybeNull)));
+        });
+
         protected static AttributeSyntax DebuggerBrowsableNeverAttribute => DebuggerBrowsableNeverAttributeLazy.Value;
+        protected static AttributeListSyntax MaybeNullReturnAttributeList => MaybeNullReturnAttributeListLazy.Value;
     }
 }
