@@ -17,7 +17,7 @@ namespace WarHub.ArmouryModel.ProjectModel
             return objectType == typeof(string);
         }
 
-        public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
+        public override object? ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
         {
             if (reader.TokenType == JsonToken.Null || (reader.TokenType != JsonToken.StartArray && reader.TokenType != JsonToken.String))
             {
@@ -60,7 +60,10 @@ namespace WarHub.ArmouryModel.ProjectModel
         public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
         {
             var text = value.ToString();
+            // CA1307 here is invalid - IndexOf is by default doing Ordinary comparison
+#pragma warning disable CA1307 // Specify StringComparison
             if (text.IndexOf(LF) < 0)
+#pragma warning restore CA1307 // Specify StringComparison
             {
                 writer.WriteValue(text);
                 return;

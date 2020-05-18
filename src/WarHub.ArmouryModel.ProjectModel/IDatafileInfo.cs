@@ -18,7 +18,7 @@ namespace WarHub.ArmouryModel.ProjectModel
         /// Retrieves root <see cref="SourceNode"/> of the data file. May cause parsing.
         /// </summary>
         /// <returns>Retrieved root node.</returns>
-        SourceNode GetData();
+        SourceNode? GetData();
 
         /// <summary>
         /// Gets a name usable in file storage, with no extensions.
@@ -33,6 +33,6 @@ namespace WarHub.ArmouryModel.ProjectModel
         /// Type-parametrized version of <see cref="IDatafileInfo.GetData"/>.
         /// </summary>
         /// <returns>Retrieved root node.</returns>
-        new TData GetData();
+        new TData? GetData();
     }
 }
