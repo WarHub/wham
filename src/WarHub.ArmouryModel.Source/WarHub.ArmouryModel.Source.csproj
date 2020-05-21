@@ -15,12 +15,12 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="CodeGeneration.Roslyn.Attributes" />
     <PackageReference Include="CodeGeneration.Roslyn.Tool" />
     <PackageReference Include="System.Collections.Immutable" />
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\WarHub.ArmouryModel.Source.CodeGeneration.Attributes\WarHub.ArmouryModel.Source.CodeGeneration.Attributes.csproj" PrivateAssets="all" Private="false" />
     <ProjectReference Include="..\WarHub.ArmouryModel.Source.CodeGeneration\WarHub.ArmouryModel.Source.CodeGeneration.csproj" ReferenceOutputAssembly="false" SkipGetTargetFrameworkProperties="true" SetTargetFramework="TargetFramework=netcoreapp2.1" OutputItemType="CodeGenerationRoslynPlugin" />
   </ItemGroup>
 
