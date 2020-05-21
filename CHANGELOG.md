@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 * C# 8.0 Nullable Reference Types support (NRTs) ([#111]).
+* `netstandard2.1` targets in libraries to support NRT-enabled TFMs.
+
+### Removed
+* `WhamNodeCoreAttribute` class from `.Source` library (added by accident in v0.8).
 
 [#111]: https://github.com/WarHub/wham/pull/111
 
