@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.9.0] - 2020-05-21
+
 ### Added
 * C# 8.0 Nullable Reference Types support (NRTs) ([#111]).
 * `netstandard2.1` targets in libraries to support NRT-enabled TFMs.
@@ -111,6 +113,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 [Unreleased]: https://github.com/WarHub/wham/compare/v0.8.0...HEAD
+[0.9.0]: https://github.com/WarHub/wham/compare/v0.8.0...v0.9.0
 [0.8.0]: https://github.com/WarHub/wham/compare/v0.7.0...v0.8.0
 [0.7.0]: https://github.com/WarHub/wham/compare/v0.6.17...v0.7.0
 [0.6.17]: https://github.com/WarHub/wham/compare/v0.3.0...v0.6.17
