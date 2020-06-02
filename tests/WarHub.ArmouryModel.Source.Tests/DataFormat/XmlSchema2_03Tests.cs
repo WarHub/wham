@@ -3,6 +3,7 @@ using System.Xml;
 using System.Xml.Serialization;
 using FluentAssertions;
 using WarHub.ArmouryModel.Source.BattleScribe;
+using WarHub.ArmouryModel.Source.XmlFormat;
 using Xunit;
 using static WarHub.ArmouryModel.Source.NodeFactory;
 
@@ -10,6 +11,57 @@ namespace WarHub.ArmouryModel.Source.Tests.DataFormat
 {
     public class XmlSchema2_03Tests
     {
+        private const string GamesystemWithReadmeAndComment = @"
+<gameSystem id='1' name='test' revision='1' battleScribeVersion='2.03' xmlns='http://www.battlescribe.net/schema/gameSystemSchema'>
+  <comment>This is comment</comment>
+  <readme>This is readme content
+spanning multiple lines</readme>
+  <publications />
+</gameSystem>";
+        private const string CatalogueWithReadmeAndComment = @"
+<catalogue id='1' name='test' revision='1' gameSystemId='123' battleScribeVersion='2.03' xmlns='http://www.battlescribe.net/schema/catalogueSchema'>
+  <comment>This is comment</comment>
+  <readme>This is readme content
+spanning multiple lines</readme>
+  <publications />
+</catalogue>";
+
+        [Fact]
+        public void Readme_in_gamesystem_is_readable()
+        {
+            using var xmlReader = XmlReader.Create(new StringReader(GamesystemWithReadmeAndComment));
+
+            var root = BattleScribeXmlSerializer.Instance.DeserializeGamesystem(x => x.Deserialize(xmlReader));
+
+            root.Readme.Should().MatchRegex(@"content\nspanning");
+        }
+
+        [Fact]
+        public void Readme_in_gamesystem_is_schema_validated()
+        {
+            var messages = SchemaUtils.Validate(GamesystemWithReadmeAndComment);
+
+            messages.Should().BeEmpty();
+        }
+
+        [Fact]
+        public void Readme_in_catalogue_is_readable()
+        {
+            using var xmlReader = XmlReader.Create(new StringReader(CatalogueWithReadmeAndComment));
+
+            var root = BattleScribeXmlSerializer.Instance.DeserializeCatalogue(x => x.Deserialize(xmlReader));
+
+            root.Readme.Should().MatchRegex(@"content\nspanning");
+        }
+
+        [Fact]
+        public void Readme_in_catalogue_is_schema_validated()
+        {
+            var messages = SchemaUtils.Validate(CatalogueWithReadmeAndComment);
+
+            messages.Should().BeEmpty();
+        }
+
         [Fact]
         public void Comment_is_schema_validated()
         {

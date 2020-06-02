@@ -43,6 +43,7 @@ namespace WarHub.ArmouryModel.Source
                 authorName: null,
                 authorContact: null,
                 authorUrl: null,
+                readme: null,
                 isLibrary: false,
                 gamesystemId: gamesystem.Id,
                 gamesystemRevision: gamesystem.Revision);
@@ -291,7 +292,8 @@ namespace WarHub.ArmouryModel.Source
                 battleScribeVersion: RootElement.GameSystem.Info().CurrentVersion.BattleScribeString,
                 authorName: null,
                 authorContact: null,
-                authorUrl: null);
+                authorUrl: null,
+                readme: null);
         }
 
         public static InfoGroupNode InfoGroup(string? name = null, string? id = null)

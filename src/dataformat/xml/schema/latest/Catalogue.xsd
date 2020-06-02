@@ -651,6 +651,7 @@
     <xs:complexContent>
       <xs:extension base="tns:Commentable">
         <xs:sequence>
+          <xs:element name="readme" type="xs:string" minOccurs="0" />
           <xs:element name="publications" type="tns:PublicationList" minOccurs="0" />
           <xs:element name="costTypes" type="tns:CostTypeList" minOccurs="0" />
           <xs:element name="profileTypes" type="tns:ProfileTypeList" minOccurs="0" />
