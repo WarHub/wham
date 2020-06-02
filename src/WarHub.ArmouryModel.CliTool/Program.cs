@@ -2,6 +2,7 @@
 using System.CommandLine;
 using System.CommandLine.Builder;
 using System.CommandLine.Invocation;
+using System.CommandLine.Parsing;
 using System.IO;
 using System.Threading.Tasks;
 using Serilog.Events;
@@ -21,7 +22,7 @@ namespace WarHub.ArmouryModel.CliTool
             var infoOption = new Option("--info", "Display product information: name, configuration, various versions");
             return new CommandLineBuilder()
                 .AddOption(infoOption)
-                .UseMiddlewareOrdered(MiddlewareOrder.Preprocessing, async (ctx, next) =>
+                .UseMiddleware(async (ctx, next) =>
                 {
                     if (ctx.ParseResult.HasOption(infoOption))
                     {
@@ -31,7 +32,7 @@ namespace WarHub.ArmouryModel.CliTool
                     {
                         await next(ctx);
                     }
-                })
+                }, MiddlewareOrder.Configuration)
                 .UseDefaults()
                 .AddCommand(
                     new Command("convertxml", "[WIP] Converts BattleScribe XML files into Gitree directory structure.")

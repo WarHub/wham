@@ -12,7 +12,7 @@
     <PackageReference Update="Serilog"                         Version="2.8.0" />
     <PackageReference Update="Serilog.Sinks.Console"           Version="3.1.1" />
     <PackageReference Update="System.Collections.Immutable"    Version="1.5.0" />
-    <PackageReference Update="System.CommandLine.Experimental" Version="0.3.0-alpha.19405.1" />
+    <PackageReference Update="System.CommandLine"              Version="2.0.0-beta1.20253.1" />
   </ItemGroup>
   
   <ItemGroup Label="Tests">

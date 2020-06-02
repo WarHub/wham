@@ -1,7 +1,7 @@
 ﻿using System;
 using System.CommandLine;
-using System.CommandLine.Builder;
 using System.CommandLine.Invocation;
+using System.CommandLine.Parsing;
 using System.Linq;
 using System.Reflection;
 
@@ -39,45 +39,21 @@ namespace WarHub.ArmouryModel.CliTool
             return argument;
         }
 
-        public static Argument WithValidator(this Argument argument, ValidateSymbol validator)
+        public static Argument WithValidator(this Argument argument, ValidateSymbol<ArgumentResult> validator)
         {
             argument.AddValidator(validator);
             return argument;
         }
-
-        public static CommandLineBuilder UseMiddlewareOrdered(this CommandLineBuilder builder, int order, InvocationMiddleware middleware)
-        {
-            addMiddlewareLazy.Value(builder, middleware, order);
-            return builder;
-        }
-
-        // hack: surfacing internal method as an action. Lazy-initialized.
-        private static readonly Lazy<Action<CommandLineBuilder, InvocationMiddleware, int>> addMiddlewareLazy = new Lazy<Action<CommandLineBuilder, InvocationMiddleware, int>>(() =>
-        {
-            var methodInfo = typeof(CommandLineBuilder).GetMethod("AddMiddleware", BindingFlags.Instance | BindingFlags.NonPublic);
-            return (CommandLineBuilder builder, InvocationMiddleware middleware, int order) => methodInfo.Invoke(builder, new object[] { middleware, order });
-        });
 
         public static Argument RequireAbsoluteUrl(this Argument argument)
         {
             return argument
                 .WithValidator(symbol =>
                     (from token in symbol.Tokens
-                    let value = token.Value
-                    where !Uri.TryCreate(value, UriKind.Absolute, out var _)
-                    select $"Invalid URI '{value}'.")
+                     let value = token.Value
+                     where !Uri.TryCreate(value, UriKind.Absolute, out var _)
+                     select $"Invalid URI '{value}'.")
                     .FirstOrDefault());
         }
-    }
-
-    // from https://github.com/dotnet/command-line-api/blob/0427856988a6b2e92db70f941e885bb87020488f/src/System.CommandLine/Builder/CommandLineBuilder.cs
-    internal static class MiddlewareOrder
-    {
-        public const int ProcessExit = int.MinValue;
-        public const int ExceptionHandler = ProcessExit + 100;
-        public const int Configuration = ExceptionHandler + 100;
-        public const int Preprocessing = Configuration + 100;
-        public const int AfterPreprocessing = Preprocessing + 100;
-        public const int Middle = 0;
     }
 }

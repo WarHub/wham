@@ -17,7 +17,7 @@
     <PackageReference Include="Optional" />
     <PackageReference Include="Serilog" />
     <PackageReference Include="Serilog.Sinks.Console" />
-    <PackageReference Include="System.CommandLine.Experimental" />
+    <PackageReference Include="System.CommandLine" />
   </ItemGroup>
 
   <ItemGroup>
