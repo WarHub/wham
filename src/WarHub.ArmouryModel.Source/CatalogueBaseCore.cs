@@ -27,6 +27,9 @@ namespace WarHub.ArmouryModel.Source
         [XmlAttribute("authorUrl")]
         public string? AuthorUrl { get; }
 
+        [XmlElement("readme")]
+        public string? Readme { get; }
+
         [XmlArray("publications")]
         public ImmutableArray<PublicationCore> Publications { get; }
 
