@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.10.0] - 2020-06-03
+
 ### Added
 * `readme` field on datafile root elements (gamesystem and catalogue) in code
   and in 2.03 schema ([#115]).
@@ -125,7 +127,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 [#39]: https://github.com/WarHub/wham/pull/39
 
 
-[Unreleased]: https://github.com/WarHub/wham/compare/v0.8.0...HEAD
+[Unreleased]: https://github.com/WarHub/wham/compare/v0.10.0...HEAD
+[0.10.0]: https://github.com/WarHub/wham/compare/v0.9.0...v0.10.0
 [0.9.0]: https://github.com/WarHub/wham/compare/v0.8.0...v0.9.0
 [0.8.0]: https://github.com/WarHub/wham/compare/v0.7.0...v0.8.0
 [0.7.0]: https://github.com/WarHub/wham/compare/v0.6.17...v0.7.0
