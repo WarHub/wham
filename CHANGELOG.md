@@ -11,7 +11,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * `readme` field on datafile root elements (gamesystem and catalogue) in code
   and in 2.03 schema ([#115]).
 
+### Changed
+* In `WarHub.ArmouryModel.ProjectModel.IDatafileInfo` interface
+  `SourceNode? GetData()` changed to `async Task<SourceNode?> GetDataAsync()`;
+  this also results in some APIs changing to be `async` as well, especially in
+  `Workspaces.BattleScribe` namespace ([#117]).
+
 [#115]: https://github.com/WarHub/wham/pull/115
+[#117]: https://github.com/WarHub/wham/pull/117
 
 ## [0.9.0] - 2020-05-21
 
