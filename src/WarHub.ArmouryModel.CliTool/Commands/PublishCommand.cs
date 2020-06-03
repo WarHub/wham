@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using Amadevus.RecordGenerator;
 using WarHub.ArmouryModel.CliTool.Utilities;
 using WarHub.ArmouryModel.ProjectModel;
@@ -40,7 +41,7 @@ namespace WarHub.ArmouryModel.CliTool.Commands
             RepoDistribution
         }
 
-        public void Run(
+        public async Task RunAsync(
             IEnumerable<string> artifacts,
             DirectoryInfo source,
             DirectoryInfo output,
@@ -79,9 +80,9 @@ namespace WarHub.ArmouryModel.CliTool.Commands
                 "Workspace loaded. {DatafileCount} datafiles discovered.",
                 workspace.Datafiles.Count(x => x.DataKind.IsDataCatalogueKind()));
 
-            CheckBattleScribeVersionCompatibility(workspace);
+            await CheckBattleScribeVersionCompatibilityAsync(workspace);
 
-            var resolvedRepoName = string.IsNullOrWhiteSpace(repoName) ? GetRepoNameFallback(workspace) : repoName;
+            var resolvedRepoName = string.IsNullOrWhiteSpace(repoName) ? await GetRepoNameFallbackAsync(workspace) : repoName;
             Log.Debug("Repository name used is: {RepoName}", resolvedRepoName);
 
             var resolvedFilename = string.IsNullOrWhiteSpace(filename) ? source.Name : filename;
@@ -100,16 +101,16 @@ namespace WarHub.ArmouryModel.CliTool.Commands
 
             foreach (var artifactType in options.Artifacts)
             {
-                CreateArtifact(workspace, options, artifactType);
+                await CreateArtifactAsync(workspace, options, artifactType);
             }
             Log.Verbose("All done.");
         }
 
-        private void CheckBattleScribeVersionCompatibility(IWorkspace workspace)
+        private async Task CheckBattleScribeVersionCompatibilityAsync(IWorkspace workspace)
         {
             foreach (var file in workspace.Datafiles)
             {
-                var node = file.GetData();
+                var node = await file.GetDataAsync();
                 if (node is IRootNode rootNode && !string.IsNullOrWhiteSpace(rootNode.BattleScribeVersion))
                 {
                     var version = BattleScribeVersion.Parse(rootNode.BattleScribeVersion);
@@ -125,75 +126,75 @@ namespace WarHub.ArmouryModel.CliTool.Commands
             }
         }
 
-        private void CreateArtifact(IWorkspace workspace, Options options, ArtifactType artifactType)
+        private async Task CreateArtifactAsync(IWorkspace workspace, Options options, ArtifactType artifactType)
         {
             Log.Information("Creating artifact: {Artifact}", artifactType);
             switch (artifactType)
             {
                 case ArtifactType.XmlDatafiles:
-                    PublishXml(workspace, options);
+                    await PublishXmlAsync(workspace, options);
                     break;
                 case ArtifactType.ZippedXmlDatafiles:
-                    PublishXmlZipped(workspace, options);
+                    await PublishXmlZippedAsync(workspace, options);
                     break;
                 case ArtifactType.Index:
-                    PublishIndex(workspace, options);
+                    await PublishIndexAsync(workspace, options);
                     break;
                 case ArtifactType.ZippedIndex:
-                    PublishIndexZipped(workspace, options);
+                    await PublishIndexZippedAsync(workspace, options);
                     break;
                 case ArtifactType.RepoDistribution:
-                    PublishArtifactRepoDistribution(workspace, options);
+                    await PublishArtifactRepoDistributionAsync(workspace, options);
                     break;
                 default:
                     break;
             }
         }
 
-        private static string GetRepoNameFallback(IWorkspace workspace)
+        private static async Task<string> GetRepoNameFallbackAsync(IWorkspace workspace)
         {
-            var gst = (GamesystemNode)workspace.Datafiles
+            var gst = (GamesystemNode)await workspace.Datafiles
                 .FirstOrDefault(x => x.DataKind == SourceKind.Gamesystem)
-                ?.GetData();
+                ?.GetDataAsync();
             return gst?.Name ?? workspace.Info.GetDirectoryInfo().Name;
         }
 
-        private void PublishArtifactRepoDistribution(IWorkspace workspace, Options options)
+        private async Task PublishArtifactRepoDistributionAsync(IWorkspace workspace, Options options)
         {
-            var distro = workspace.CreateRepoDistribution(options.RepoName, options.Url?.AbsoluteUri);
-            TryCatchLogError(
+            var distro = await workspace.CreateRepoDistributionAsync(options.RepoName, options.Url?.AbsoluteUri);
+            await TryCatchLogError(
                 "bsr",
                 () => Path.Combine(options.Output.FullName, options.Filename + XmlFileExtensions.RepoDistribution),
-                filepath =>
+                async filepath =>
                 {
                     using var stream = File.OpenWrite(filepath);
-                    distro.WriteTo(stream);
+                    await distro.WriteToAsync(stream);
                 });
         }
 
-        private void PublishIndexZipped(IWorkspace workspace, Options options)
+        private async Task PublishIndexZippedAsync(IWorkspace workspace, Options options)
         {
-            var dataIndex = CreateIndex(workspace, options);
+            var dataIndex = await CreateIndexAsync(workspace, options);
             var datafile = DatafileInfo.Create(options.Filename + XmlFileExtensions.DataIndexZipped, dataIndex);
-            TryCatchLogError(
+            await TryCatchLogError(
                 datafile.Filepath,
                 () => Path.Combine(options.Output.FullName, datafile.Filepath),
-                datafile.WriteXmlZippedFile);
+                datafile.WriteXmlZippedFileAsync);
         }
 
-        private void PublishIndex(IWorkspace workspace, Options options)
+        private async Task PublishIndexAsync(IWorkspace workspace, Options options)
         {
-            var dataIndex = CreateIndex(workspace, options);
+            var dataIndex = await CreateIndexAsync(workspace, options);
             var datafile = DatafileInfo.Create(options.Filename + XmlFileExtensions.DataIndex, dataIndex);
-            TryCatchLogError(
+            await TryCatchLogError(
                 datafile.Filepath,
                 () => Path.Combine(options.Output.FullName, datafile.Filepath),
-                datafile.WriteXmlFile);
+                datafile.WriteXmlFileAsync);
         }
 
-        private static DataIndexNode CreateIndex(IWorkspace workspace, Options options)
+        private static async Task<DataIndexNode> CreateIndexAsync(IWorkspace workspace, Options options)
         {
-            var dataIndex = workspace.CreateDataIndex(options.RepoName, options.Url?.AbsoluteUri, x => x.GetXmlZippedFilename());
+            var dataIndex = await workspace.CreateDataIndexAsync(options.RepoName, options.Url?.AbsoluteUri, x => x.GetXmlZippedFilename());
             dataIndex = options.UrlOnlyIndex ? dataIndex.WithDataIndexEntries() : dataIndex;
             dataIndex = options.AdditionalUrls.Length > 0
                 ? dataIndex.AddRepositoryUrls(options.AdditionalUrls.Select(x => NodeFactory.DataIndexRepositoryUrl(x.AbsoluteUri)))
@@ -201,38 +202,38 @@ namespace WarHub.ArmouryModel.CliTool.Commands
             return dataIndex;
         }
 
-        private void PublishXmlZipped(IWorkspace workspace, Options options)
+        private async Task PublishXmlZippedAsync(IWorkspace workspace, Options options)
         {
             foreach (var datafile in workspace.Datafiles.Where(x => x.DataKind.IsDataCatalogueKind()))
             {
-                TryCatchLogError(
+                await TryCatchLogError(
                     datafile.Filepath,
                     () => Path.Combine(options.Output.FullName, datafile.GetXmlZippedFilename()),
-                    datafile.WriteXmlZippedFile);
+                    datafile.WriteXmlZippedFileAsync);
             }
         }
 
-        private void PublishXml(IWorkspace workspace, Options options)
+        private async Task PublishXmlAsync(IWorkspace workspace, Options options)
         {
             foreach (var datafile in workspace.Datafiles.Where(x => x.DataKind.IsDataCatalogueKind()))
             {
-                TryCatchLogError(
+                await TryCatchLogError(
                     datafile.Filepath,
                     () => Path.Combine(options.Output.FullName, datafile.GetXmlFilename()),
-                    datafile.WriteXmlFile);
+                    datafile.WriteXmlFileAsync);
             }
         }
 
-        private void TryCatchLogError(
+        private async Task TryCatchLogError(
             string originalItemPath,
             Func<string> publishItemPathGetter,
-            Action<string> publish)
+            Func<string, Task> publish)
         {
             try
             {
                 var publishItemPath = publishItemPathGetter();
                 Log.Debug("Creating {Filepath}", publishItemPath);
-                publish(publishItemPath);
+                await publish(publishItemPath);
                 Log.Information("Created {Filepath}", publishItemPath);
             }
             catch (Exception ex)

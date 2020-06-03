@@ -1,7 +1,12 @@
-﻿using WarHub.ArmouryModel.Source;
+﻿using System.Threading.Tasks;
+using WarHub.ArmouryModel.Source;
 
 namespace WarHub.ArmouryModel.ProjectModel
 {
+    /// <summary>
+    /// Contains information about a datafile and enables retrieval of
+    /// deserialized content via <see cref="GetDataAsync"/>
+    /// </summary>
     public interface IDatafileInfo
     {
         /// <summary>
@@ -18,21 +23,12 @@ namespace WarHub.ArmouryModel.ProjectModel
         /// Retrieves root <see cref="SourceNode"/> of the data file. May cause parsing.
         /// </summary>
         /// <returns>Retrieved root node.</returns>
-        SourceNode? GetData();
+        Task<SourceNode?> GetDataAsync();
 
         /// <summary>
         /// Gets a name usable in file storage, with no extensions.
         /// </summary>
         /// <returns></returns>
         string GetStorageName();
-    }
-
-    public interface IDatafileInfo<out TData> : IDatafileInfo where TData : SourceNode
-    {
-        /// <summary>
-        /// Type-parametrized version of <see cref="IDatafileInfo.GetData"/>.
-        /// </summary>
-        /// <returns>Retrieved root node.</returns>
-        new TData? GetData();
     }
 }

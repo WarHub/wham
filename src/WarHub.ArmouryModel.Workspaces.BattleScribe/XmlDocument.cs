@@ -1,4 +1,5 @@
 ﻿using System.IO;
+using System.Threading.Tasks;
 using Amadevus.RecordGenerator;
 using WarHub.ArmouryModel.ProjectModel;
 using WarHub.ArmouryModel.Source;
@@ -37,7 +38,7 @@ namespace WarHub.ArmouryModel.Workspaces.BattleScribe
         /// Gets the root node of the document. May cause deserialization.
         /// </summary>
         /// <returns></returns>
-        public SourceNode? GetRoot() => DatafileInfo.GetData();
+        public Task<SourceNode?> GetRootAsync() => DatafileInfo.GetDataAsync();
 
         public static XmlDocument Create(IDatafileInfo datafileInfo, XmlWorkspace? workspace = null)
         {

@@ -2,6 +2,7 @@
 using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using WarHub.ArmouryModel.ProjectModel;
 using WarHub.ArmouryModel.Source;
 using Xunit;
@@ -26,7 +27,7 @@ namespace WarHub.ArmouryModel.Workspaces.BattleScribe.Tests
         }
 
         [Fact]
-        public void WriteRepoDistribution()
+        public async Task WriteRepoDistributionAsync()
         {
             const string DataIndexName = "Test dataindex";
             var gstId = Guid.NewGuid().ToString();
@@ -46,13 +47,13 @@ namespace WarHub.ArmouryModel.Workspaces.BattleScribe.Tests
                     })
                     .ToImmutableArray());
             using var memory = new MemoryStream();
-            original.WriteTo(memory);
+            await original.WriteToAsync(memory);
             memory.Position = 0;
             var read = memory.ReadRepoDistribution();
-            Assert.Equal(DataIndexName, read.Index.GetData()!.Name);
+            Assert.Equal(DataIndexName, read.Index.Data!.Name);
             Assert.True(
                 read.Datafiles
-                .Select(x => x.GetData()!.Id)
+                .Select(x => x.Data!.Id)
                 .ToHashSet()
                 .SetEquals(new[] { gstId, catId1, catId2 }));
         }

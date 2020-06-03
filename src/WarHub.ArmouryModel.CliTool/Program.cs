@@ -48,7 +48,7 @@ namespace WarHub.ArmouryModel.CliTool
                         CreateVerbosityOption()
                     }
                     .Hidden()
-                    .Runs(typeof(ConvertXmlCommand).GetMethod(nameof(ConvertXmlCommand.Run))))
+                    .Runs(typeof(ConvertXmlCommand).GetMethod(nameof(ConvertXmlCommand.RunAsync))))
                 .AddCommand(
                     new Command("convertgitree", "[WIP] Converts Gitree directory structure into BattleScribe XML files.")
                     {
@@ -63,7 +63,7 @@ namespace WarHub.ArmouryModel.CliTool
                         CreateVerbosityOption()
                     }
                     .Hidden()
-                    .Runs(typeof(ConvertGitreeCommand).GetMethod(nameof(ConvertGitreeCommand.Run))))
+                    .Runs(typeof(ConvertGitreeCommand).GetMethod(nameof(ConvertGitreeCommand.RunAsync))))
                 .AddCommand(
                     new Command("publish", "Publishes given workspace in selected formats, by default a .bsr file.")
                     {
@@ -118,7 +118,7 @@ namespace WarHub.ArmouryModel.CliTool
                         },
                         CreateVerbosityOption()
                     }
-                    .Runs(typeof(PublishCommand).GetMethod(nameof(PublishCommand.Run))))
+                    .Runs(typeof(PublishCommand).GetMethod(nameof(PublishCommand.RunAsync))))
                 .Build();
         }
 

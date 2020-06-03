@@ -4,6 +4,7 @@ using System.CommandLine.Invocation;
 using System.CommandLine.Parsing;
 using System.Linq;
 using System.Reflection;
+using System.Threading.Tasks;
 
 namespace WarHub.ArmouryModel.CliTool
 {
@@ -22,6 +23,12 @@ namespace WarHub.ArmouryModel.CliTool
         }
 
         public static Command Runs<T>(this Command command, Action<T> action)
+        {
+            command.Handler = CommandHandler.Create(action);
+            return command;
+        }
+
+        public static Command Runs<T>(this Command command, Func<T, Task> action)
         {
             command.Handler = CommandHandler.Create(action);
             return command;
