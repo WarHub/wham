@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Threading.Tasks;
 using WarHub.ArmouryModel.ProjectModel;
 using WarHub.ArmouryModel.Source;
 
@@ -17,28 +18,29 @@ namespace WarHub.ArmouryModel.Workspaces.Gitree
         public GitreeStorageFileNode RootDocument { get; }
 
         // TODO should be optimized to read data type from single "root" file
-        public SourceKind DataKind => GetData().Kind;
+        // TODO shouldn't block
+        public SourceKind DataKind => GetDataAsync().Result.Kind;
 
         private WeakReference<SourceNode> WeakData { get; } = new WeakReference<SourceNode>(null);
 
-        public SourceNode GetData()
+        public async Task<SourceNode> GetDataAsync()
         {
             if (WeakData.TryGetTarget(out var cached))
             {
                 return cached;
             }
-            var data = ReadData();
+            var data = await ReadDataAsync();
             WeakData.SetTarget(data);
             return data;
         }
 
         public string GetStorageName() => new FileInfo(Filepath).Directory.Name;
 
-        private SourceNode ReadData()
+        private Task<SourceNode> ReadDataAsync()
         {
             var rootItem = new GitreeReader().ReadItemFolder(RootDocument.Parent);
             var node = new GitreeToSourceNodeConverter().ParseNode(rootItem);
-            return node;
+            return Task.FromResult(node);
         }
     }
 }

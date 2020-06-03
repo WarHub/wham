@@ -1,29 +1,8 @@
 ﻿using System;
-using System.IO;
-using Amadevus.RecordGenerator;
 using WarHub.ArmouryModel.Source;
 
 namespace WarHub.ArmouryModel.ProjectModel
 {
-    [Record]
-    public sealed partial class DatafileInfo<TData> : IDatafileInfo<TData>
-        where TData : SourceNode
-    {
-        // TODO internal ctor
-
-        public string Filepath { get; }
-
-        public TData Data { get; }
-
-        public SourceKind DataKind => Data.Kind;
-
-        public string GetStorageName() => Path.GetFileNameWithoutExtension(Filepath);
-
-        TData? IDatafileInfo<TData>.GetData() => Data;
-
-        SourceNode? IDatafileInfo.GetData() => Data;
-    }
-
     public static class DatafileInfo
     {
         public static IDatafileInfo<TData> Create<TData>(string filepath, TData? node) where TData : SourceNode

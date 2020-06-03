@@ -4,6 +4,7 @@ using System.Collections.Immutable;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
+using System.Threading.Tasks;
 using WarHub.ArmouryModel.ProjectModel;
 using WarHub.ArmouryModel.Source;
 using WarHub.ArmouryModel.Source.BattleScribe;
@@ -125,10 +126,10 @@ namespace WarHub.ArmouryModel.Workspaces.BattleScribe
         {
             return (file.GetXmlDocumentKind()) switch
             {
-                XmlDocumentKind.Gamesystem => new LazyWeakXmlDatafileInfo<GamesystemNode>(file.FullName, SourceKind.Gamesystem),
-                XmlDocumentKind.Catalogue => new LazyWeakXmlDatafileInfo<CatalogueNode>(file.FullName, SourceKind.Catalogue),
-                XmlDocumentKind.Roster => new LazyWeakXmlDatafileInfo<RosterNode>(file.FullName, SourceKind.Roster),
-                XmlDocumentKind.DataIndex => new LazyWeakXmlDatafileInfo<DataIndexNode>(file.FullName, SourceKind.DataIndex),
+                XmlDocumentKind.Gamesystem => new LazyWeakXmlDatafileInfo(file.FullName, SourceKind.Gamesystem),
+                XmlDocumentKind.Catalogue => new LazyWeakXmlDatafileInfo(file.FullName, SourceKind.Catalogue),
+                XmlDocumentKind.Roster => new LazyWeakXmlDatafileInfo(file.FullName, SourceKind.Roster),
+                XmlDocumentKind.DataIndex => new LazyWeakXmlDatafileInfo(file.FullName, SourceKind.DataIndex),
                 _ => new UnknownTypeDatafileInfo(file.FullName),
             };
         }
@@ -158,10 +159,16 @@ namespace WarHub.ArmouryModel.Workspaces.BattleScribe
             }
         }
 
-        public static SourceNode GetDataOrThrow(this IDatafileInfo datafile) =>
-            datafile.GetData() ?? throw new InvalidOperationException("Datafile has no data.");
+        public static async Task<T> GetDataOrThrowAsync<T>(this IDatafileInfo datafile)
+            where T : SourceNode
+        {
+            return (T)await datafile.GetDataOrThrowAsync();
+        }
 
-        public static void WriteTo(this RepoDistribution repoDistribution, Stream stream)
+        public static async Task<SourceNode> GetDataOrThrowAsync(this IDatafileInfo datafile) =>
+            (await datafile.GetDataAsync()) ?? throw new InvalidOperationException("Datafile has no data.");
+
+        public static async Task WriteToAsync(this RepoDistribution repoDistribution, Stream stream)
         {
             using var zip = new ZipArchive(stream, ZipArchiveMode.Create, leaveOpen: true);
             var datafiles = repoDistribution.Datafiles.Prepend(repoDistribution.Index as IDatafileInfo);
@@ -169,22 +176,25 @@ namespace WarHub.ArmouryModel.Workspaces.BattleScribe
             {
                 var entry = zip.CreateEntry(datafile.Filepath);
                 using var entryStream = entry.Open();
-                datafile.GetDataOrThrow().Serialize(entryStream);
+                var data = await datafile.GetDataOrThrowAsync();
+                data.Serialize(entryStream);
             }
         }
 
-        public static void WriteXmlFile(this IDatafileInfo datafile, string filepath)
+        public static async Task WriteXmlFileAsync(this IDatafileInfo datafile, string filepath)
         {
             using var stream = File.Create(filepath);
-            datafile.GetDataOrThrow().Serialize(stream);
+            var data = await datafile.GetDataOrThrowAsync();
+            data.Serialize(stream);
         }
 
-        public static void WriteXmlZippedFile(this IDatafileInfo datafile, string filepath)
+        public static async Task WriteXmlZippedFileAsync(this IDatafileInfo datafile, string filepath)
         {
             using var fileStream = File.Create(filepath);
             using var archive = new ZipArchive(fileStream, ZipArchiveMode.Create);
             using var entryStream = archive.CreateEntry(datafile.GetXmlFilename()).Open();
-            datafile.GetDataOrThrow().Serialize(entryStream);
+            var data = await datafile.GetDataOrThrowAsync();
+            data.Serialize(entryStream);
         }
 
         public static Func<Stream, SourceNode>? GetLoadingMethod(this XmlDocumentKind kind)
@@ -243,38 +253,50 @@ namespace WarHub.ArmouryModel.Workspaces.BattleScribe
             return workspace.Documents.Where(x => kindSet.Contains(x.Kind));
         }
 
-        public static DataIndexNode CreateDataIndex(this IWorkspace workspace,
-            string repoName, string repoUrl,
+        private static async Task<List<T>> ToListAsync<T>(this IEnumerable<Task<T>> collection)
+        {
+            var list = new List<T>();
+            foreach (var task in collection)
+            {
+                var result = await task;
+                list.Add(result);
+            }
+            return list;
+        }
+
+        public static async Task<DataIndexNode> CreateDataIndexAsync(this IWorkspace workspace,
+            string repoName, string? repoUrl,
             Func<IDatafileInfo, string> indexDataPathProvider)
         {
-            var entries =
+            var bsVersion = RootElement.DataIndex.Info().CurrentVersion.BattleScribeString;
+            var entries = await
                 workspace.Datafiles
                 .Where(x => x.DataKind.IsDataCatalogueKind())
-                .Select(CreateEntry)
-                .ToNodeList();
+                .Select(CreateEntryAsync)
+                .ToListAsync();
             return
                 NodeFactory.DataIndex(
-                    RootElement.DataIndex.Info().CurrentVersion.BattleScribeString,
-                    repoName, repoUrl, repositoryUrls: default, dataIndexEntries: entries);
-            DataIndexEntryNode CreateEntry(IDatafileInfo datafile)
+                    bsVersion,
+                    repoName, repoUrl, repositoryUrls: default, dataIndexEntries: entries.ToNodeList());
+            async Task<DataIndexEntryNode> CreateEntryAsync(IDatafileInfo datafile)
             {
-                var node = datafile.GetData() as CatalogueBaseNode ?? throw new ArgumentException("Data must be a CatalogueBase type.", nameof(datafile));
+                var root = await datafile.GetDataAsync();
+                var node = root as CatalogueBaseNode ?? throw new ArgumentException("Data must be a CatalogueBase type.", nameof(datafile));
                 var path = indexDataPathProvider(datafile);
                 var entryKind = datafile.DataKind.GetIndexEntryKindOrUnknown();
                 return NodeFactory.DataIndexEntry(path, entryKind, node.Id, node.Name, node.BattleScribeVersion, node.Revision);
             }
         }
 
-        public static RepoDistribution CreateRepoDistribution(this IWorkspace workspace, string repoName, string repoUrl)
+        public static async Task<RepoDistribution> CreateRepoDistributionAsync(this IWorkspace workspace, string repoName, string? repoUrl)
         {
-            var indexNode = workspace.CreateDataIndex(repoName, repoUrl, GetXmlFilename);
+            var indexNode = await workspace.CreateDataIndexAsync(repoName, repoUrl, GetXmlFilename);
             var indexDatafile = DatafileInfo.Create(DataIndexFileName, indexNode);
-            var datafiles = workspace.Datafiles
+            var datafiles = await workspace.Datafiles
                 .Where(x => x.DataKind.IsDataCatalogueKind())
-                .Select(x => DatafileInfo.Create(x.GetXmlFilename(), x.GetDataOrThrow()))
-                .OfType<IDatafileInfo<CatalogueBaseNode>>()
-                .ToImmutableArray();
-            var repo = new RepoDistribution(indexDatafile, datafiles);
+                .Select(async x => DatafileInfo.Create(x.GetXmlFilename(), await x.GetDataOrThrowAsync<CatalogueBaseNode>()))
+                .ToListAsync();
+            var repo = new RepoDistribution(indexDatafile, datafiles.ToImmutableArray());
             return repo;
         }
     }

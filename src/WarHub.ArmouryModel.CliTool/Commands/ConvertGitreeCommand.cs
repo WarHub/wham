@@ -1,4 +1,5 @@
 ﻿using System.IO;
+using System.Threading.Tasks;
 using WarHub.ArmouryModel.Source.BattleScribe;
 using WarHub.ArmouryModel.Workspaces.BattleScribe;
 using WarHub.ArmouryModel.Workspaces.Gitree;
@@ -7,7 +8,7 @@ namespace WarHub.ArmouryModel.CliTool.Commands
 {
     public class ConvertGitreeCommand : CommandBase
     {
-        public void Run(DirectoryInfo source, DirectoryInfo output, string verbosity)
+        public async Task RunAsync(DirectoryInfo source, DirectoryInfo output, string verbosity)
         {
             SetupLogger(verbosity);
             var workspace = GitreeWorkspace.CreateFromPath(source.FullName);
@@ -21,7 +22,7 @@ namespace WarHub.ArmouryModel.CliTool.Commands
                 var fileDir = new FileInfo(datafile.Filepath).Directory;
                 Log.Debug("Converting Gitree '{SubfolderName}' from {DirRef}", fileDir.Name, fileDir.Parent.FullName);
                 Log.Verbose("- Loading Gitree...");
-                var node = datafile.GetData();
+                var node = await datafile.GetDataAsync();
                 Log.Verbose("- Loading finished. Saving XML file...");
                 var extension = node.GetXmlDocumentKindOrUnknown().GetXmlFileExtension();
                 var filename = Path.Combine(output.FullName, fileDir.Name + extension);

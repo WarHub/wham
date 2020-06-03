@@ -1,5 +1,6 @@
 ﻿using System.Collections.Immutable;
 using System.IO;
+using System.Threading.Tasks;
 using WarHub.ArmouryModel.ProjectModel;
 using WarHub.ArmouryModel.Source;
 using WarHub.ArmouryModel.Workspaces.BattleScribe;
@@ -9,7 +10,7 @@ namespace WarHub.ArmouryModel.CliTool.Commands
 {
     public class ConvertXmlCommand : CommandBase
     {
-        public void Run(DirectoryInfo source, DirectoryInfo output, string verbosity)
+        public async Task RunAsync(DirectoryInfo source, DirectoryInfo output, string verbosity)
         {
             SetupLogger(verbosity);
             Log.Warning("This command is a Work In Progress. It may not work correctly.");
@@ -21,10 +22,10 @@ namespace WarHub.ArmouryModel.CliTool.Commands
             configInfo.WriteFile();
             Log.Information("Project configuration saved as {ConfigFile}", configInfo.Filepath);
 
-            ConvertFiles(configInfo, workspace);
+            await ConvertFilesAsync(configInfo, workspace);
         }
 
-        private void ConvertFiles(ProjectConfigurationInfo configInfo, XmlWorkspace workspace)
+        private async Task ConvertFilesAsync(ProjectConfigurationInfo configInfo, XmlWorkspace workspace)
         {
             var treeWriter = new GitreeWriter();
             foreach (var document in workspace.GetDocuments(SourceKind.Gamesystem, SourceKind.Catalogue))
@@ -35,7 +36,7 @@ namespace WarHub.ArmouryModel.CliTool.Commands
                 var folder = Directory.CreateDirectory(folderPath);
                 Log.Information("Converting file {Name} into {Folder}", filenameNoExt, folder);
                 Log.Verbose("- Reading...");
-                var sourceNode = document.GetRoot();
+                var sourceNode = await document.GetRootAsync();
                 Log.Verbose("- Reading finished. Converting...");
                 var gitree = sourceNode.ConvertToGitree();
                 Log.Verbose("- Converting finished. Saving to Gitree directory structure...");
