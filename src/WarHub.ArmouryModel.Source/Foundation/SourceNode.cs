@@ -123,7 +123,7 @@ namespace WarHub.ArmouryModel.Source
         /// <returns>First ancestor (or self) that satisfies both conditions.</returns>
         public TNode? FirstAncestorOrSelf<TNode>(Func<TNode, bool>? predicate = null) where TNode : class
         {
-            SourceNode? node = this;
+            var node = this;
             if (predicate is null)
             {
                 while (node != null)
@@ -193,7 +193,7 @@ namespace WarHub.ArmouryModel.Source
             {
                 yield return this;
             }
-            SourceNode? node = this;
+            var node = this;
             while ((node = node.Parent) != null)
             {
                 yield return node;
