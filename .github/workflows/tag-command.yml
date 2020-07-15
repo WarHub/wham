@@ -20,17 +20,7 @@ jobs:
         with:
           fetch-depth: 0 # all history
           ref: ${{ github.event.client_payload.slash_command.ref }}
-      - name: Read .NET Core SDK version
-        id: globaljson
-        shell: pwsh
-        run: |
-          dotnet --version
-          if ($LASTEXITCODE -ne 0) { # if dotnet didn't find version required by globaljson, it exits with non-0 code
-            Write-Host "::set-output name=version::$((Get-Content global.json -Raw | ConvertFrom-Json).sdk.version)"
-          }
       - uses: actions/setup-dotnet@v1
-        with:
-          dotnet-version: ${{ steps.globaljson.outputs.version }}
       - run: dotnet --info
       - run: dotnet tool restore
       - name: Add and push version tag

@@ -3,8 +3,8 @@
 namespace WarHub.ArmouryModel.Source
 {
     [WhamNodeCore]
-    [XmlType("characteristicType")]
-    public sealed partial class CharacteristicTypeCore : CommentableCore
+    [XmlType("tag")]
+    public sealed partial class RosterTagCore
     {
         [XmlAttribute("id")]
         public string? Id { get; }

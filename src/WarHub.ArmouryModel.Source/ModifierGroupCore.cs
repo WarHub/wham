@@ -5,18 +5,12 @@ namespace WarHub.ArmouryModel.Source
 {
     [WhamNodeCore]
     [XmlType("modifierGroup")]
-    public sealed partial class ModifierGroupCore : CommentableCore
+    public sealed partial class ModifierGroupCore : ModifierBaseCore
     {
-        [XmlArray("repeats")]
-        public ImmutableArray<RepeatCore> Repeats { get; }
-
-        [XmlArray("conditions")]
-        public ImmutableArray<ConditionCore> Conditions { get; }
-
-        [XmlArray("conditionGroups")]
-        public ImmutableArray<ConditionGroupCore> ConditionGroups { get; }
-
         [XmlArray("modifiers")]
         public ImmutableArray<ModifierCore> Modifiers { get; }
+
+        [XmlArray("modifierGroups")]
+        public ImmutableArray<ModifierGroupCore> ModifierGroups { get; }
     }
 }

@@ -5,7 +5,7 @@ namespace WarHub.ArmouryModel.Source
 {
     [WhamNodeCore]
     [XmlType("force")]
-    public sealed partial class ForceCore : RosterElementBaseCore
+    public sealed partial class ForceCore : SelectionParentBaseCore
     {
         [XmlAttribute("catalogueId")]
         public string? CatalogueId { get; }
@@ -15,9 +15,6 @@ namespace WarHub.ArmouryModel.Source
 
         [XmlAttribute("catalogueName")]
         public string? CatalogueName { get; }
-
-        [XmlArray("selections")]
-        public ImmutableArray<SelectionCore> Selections { get; }
 
         [XmlArray("publications")]
         public ImmutableArray<PublicationCore> Publications { get; }

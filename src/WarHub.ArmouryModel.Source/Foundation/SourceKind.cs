@@ -70,6 +70,8 @@
 
         Selection, SelectionList,
 
+        RosterTag, RosterTagList,
+
         // top elements
         Catalogue, CatalogueList,
 

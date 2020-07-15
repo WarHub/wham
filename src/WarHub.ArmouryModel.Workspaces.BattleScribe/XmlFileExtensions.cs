@@ -235,7 +235,7 @@ namespace WarHub.ArmouryModel.Workspaces.BattleScribe
             if (archive.Entries.Count != 1)
             {
                 throw new InvalidOperationException(
-                    $"File is not a correct BattleScribe ZIP archive," +
+                    "File is not a correct BattleScribe ZIP archive," +
                     $" contains {archive.Entries.Count} entries, expected 1.");
             }
             using var entryStream = archive.Entries[0].Open();

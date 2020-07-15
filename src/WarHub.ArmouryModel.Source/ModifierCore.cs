@@ -1,11 +1,10 @@
-﻿using System.Collections.Immutable;
-using System.Xml.Serialization;
+﻿using System.Xml.Serialization;
 
 namespace WarHub.ArmouryModel.Source
 {
     [WhamNodeCore]
     [XmlType("modifier")]
-    public sealed partial class ModifierCore : CommentableCore
+    public sealed partial class ModifierCore : ModifierBaseCore
     {
         [XmlAttribute("type")]
         public ModifierKind Type { get; }
@@ -15,14 +14,5 @@ namespace WarHub.ArmouryModel.Source
 
         [XmlAttribute("value")]
         public string? Value { get; }
-
-        [XmlArray("repeats")]
-        public ImmutableArray<RepeatCore> Repeats { get; }
-
-        [XmlArray("conditions")]
-        public ImmutableArray<ConditionCore> Conditions { get; }
-
-        [XmlArray("conditionGroups")]
-        public ImmutableArray<ConditionGroupCore> ConditionGroups { get; }
     }
 }

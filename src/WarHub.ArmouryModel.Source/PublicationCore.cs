@@ -11,5 +11,17 @@ namespace WarHub.ArmouryModel.Source
 
         [XmlAttribute("name")]
         public string? Name { get; }
+
+        [XmlAttribute("shortName")]
+        public string? ShortName { get; }
+
+        [XmlAttribute("publisher")]
+        public string? Publisher { get; }
+
+        [XmlAttribute("publicationDate")]
+        public string? PublicationDate { get; }
+
+        [XmlAttribute("publisherUrl")]
+        public string? PublisherUrl { get; }
     }
 }
