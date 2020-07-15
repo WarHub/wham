@@ -3,7 +3,6 @@ using System.Xml;
 using System.Xml.Serialization;
 using FluentAssertions;
 using WarHub.ArmouryModel.Source.BattleScribe;
-using WarHub.ArmouryModel.Source.XmlFormat;
 using Xunit;
 using static WarHub.ArmouryModel.Source.NodeFactory;
 
@@ -90,7 +89,9 @@ spanning multiple lines</readme>
                 .AddInfoLinks(
                     InfoLink(Rule()))
                 .AddProfileTypes(
-                    ProfileType())
+                    ProfileType()
+                    .AddCharacteristicTypes(
+                        CharacteristicType()))
                 .AddPublications(
                     Publication())
                 .AddRules(

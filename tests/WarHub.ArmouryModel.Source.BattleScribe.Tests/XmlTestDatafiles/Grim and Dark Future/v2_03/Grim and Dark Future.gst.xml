@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <gameSystem id="e1ebd931-a209-3ce4-87b4-d9918d25530b" name="Grim and Dark Future" revision="64" battleScribeVersion="2.03" authorName="Test Author" authorContact="@handle" authorUrl="http://example.com" xmlns="http://www.battlescribe.net/schema/gameSystemSchema">
   <costTypes>
-    <costType id="points" name="pts" defaultCostLimit="0.0"/>
+    <costType id="points" name="pts" defaultCostLimit="0.0" hidden="false"/>
   </costTypes>
   <profileTypes>
     <profileType id="2d6001b0-980e-46d2-bcc2-a9fc60109afd" name="Unit">

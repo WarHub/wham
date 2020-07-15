@@ -18,6 +18,12 @@ namespace WarHub.ArmouryModel.Source
         [XmlAttribute("entryGroupId")]
         public string? EntryGroupId { get; }
 
+        [XmlAttribute("customName")]
+        public string? CustomName { get; }
+
+        [XmlElement("customNotes")]
+        public string? CustomNotes { get; }
+
         [XmlAttribute("publicationId")]
         public string? PublicationId { get; }
 

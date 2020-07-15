@@ -22,7 +22,7 @@ namespace WarHub.ArmouryModel.Workspaces.Gitree.Tests
         [Fact]
         public void FolderKindDroppingRewriter_ClearsCorrectList()
         {
-            var characteristicType = NodeFactory.CharacteristicType("id", "name");
+            var characteristicType = NodeFactory.CharacteristicType("name");
             var profile = NodeFactory.ProfileType("name").AddCharacteristicTypes(characteristicType);
             var rewriter = new SourceNodeToGitreeConverter.SeparatableChildrenRemover();
             var result = (DatablobNode)NodeFactory.Datablob(

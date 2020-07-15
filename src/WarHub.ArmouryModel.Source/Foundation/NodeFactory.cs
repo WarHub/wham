@@ -29,7 +29,7 @@ namespace WarHub.ArmouryModel.Source
         /// <summary>
         /// Generates new name via prepending caller name with "New ".
         /// </summary>
-        private static string NewName([CallerMemberName]string? callerMember = null)
+        private static string NewName([CallerMemberName] string? callerMember = null)
             => "New " + callerMember;
 
         public static CatalogueNode Catalogue(GamesystemNode gamesystem, string? name = null, string? id = null)
@@ -64,11 +64,13 @@ namespace WarHub.ArmouryModel.Source
         {
             return Category(
                 id: id ?? NewId(),
-                categoryEntry.Name ?? NewName(),
-                categoryEntry.Id,
+                name: categoryEntry.Name ?? NewName(),
+                entryId: categoryEntry.Id,
                 entryGroupId: null,
-                categoryEntry.PublicationId,
-                categoryEntry.Page,
+                customName: null,
+                customNotes: null,
+                publicationId: categoryEntry.PublicationId,
+                page: categoryEntry.Page,
                 primary: false);
         }
 
@@ -107,6 +109,7 @@ namespace WarHub.ArmouryModel.Source
         public static CharacteristicTypeNode CharacteristicType(string? name = null)
         {
             return CharacteristicType(
+                comment: null,
                 id: NewId(),
                 name: name ?? NewName());
         }
@@ -181,7 +184,8 @@ namespace WarHub.ArmouryModel.Source
                 comment: null,
                 id: NewId(),
                 name: name ?? NewName(),
-                defaultCostLimit: defaultCostLimit);
+                defaultCostLimit: defaultCostLimit,
+                hidden: false);
         }
 
         public static DatablobNode Datablob()
@@ -264,6 +268,8 @@ namespace WarHub.ArmouryModel.Source
                 name: forceEntry.Name ?? NewName(),
                 entryId: forceEntry.Id,
                 entryGroupId: null,
+                customName: null,
+                customNotes: null,
                 publicationId: forceEntry.PublicationId,
                 page: forceEntry.Page,
                 catalogueId: catalogue.Id,
@@ -404,7 +410,11 @@ namespace WarHub.ArmouryModel.Source
             return Publication(
                 comment: null,
                 id: NewId(),
-                name: name ?? NewName());
+                name: name ?? NewName(),
+                shortName: null,
+                publisher: null,
+                publicationDate: null,
+                publisherUrl: null);
         }
 
         public static RepeatNode Repeat(
@@ -435,7 +445,8 @@ namespace WarHub.ArmouryModel.Source
                 battleScribeVersion: RootElement.Roster.Info().CurrentVersion.BattleScribeString,
                 gameSystemId: gamesystem.Id,
                 gameSystemName: gamesystem.Name,
-                gameSystemRevision: gamesystem.Revision);
+                gameSystemRevision: gamesystem.Revision,
+                customNotes: null);
         }
 
         public static RuleNode Rule(string? name = null, string? id = null, string? description = null)
@@ -461,6 +472,8 @@ namespace WarHub.ArmouryModel.Source
                 name: selectionEntry.Name ?? NewName(),
                 entryId: entryId,
                 entryGroupId: entryGroupId,
+                customName: null,
+                customNotes: null,
                 publicationId: selectionEntry.PublicationId,
                 page: selectionEntry.Page,
                 number: 1,

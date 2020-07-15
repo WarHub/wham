@@ -34,5 +34,11 @@ namespace WarHub.ArmouryModel.Source
 
         [XmlArray("forces")]
         public ImmutableArray<ForceCore> Forces { get; }
+
+        [XmlElement("customNotes")]
+        public string? CustomNotes { get; }
+
+        [XmlArray("tags")]
+        public ImmutableArray<RosterTagCore> Tags { get; }
     }
 }

@@ -14,5 +14,8 @@ namespace WarHub.ArmouryModel.Source
 
         [XmlAttribute("defaultCostLimit")]
         public decimal DefaultCostLimit { get; }
+
+        [XmlAttribute("hidden")]
+        public bool Hidden { get; }
     }
 }

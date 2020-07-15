@@ -7,6 +7,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Added some base classes:
+    - added QueryFilteredBase (QueryBase with ChildId), inherits from QueryBase
+    - added SelectionParentBase, base of Force and Selection
+    - added ModifierBase, base of Modifier and ModifierGroup
+- Added descriptive comments to ModifierKind
+- Added RosterTag type
+- Added missing fields to be fully 2.03 schema compliant:
+    - added CostType.Hidden
+    - added ModifierGroup.ModifierGroups
+    - added many fields to Publication:
+      - ShortName
+      - Publisher
+      - PublicationDate
+      - PublisherUrl
+    - added CustomNotes and Tags to Roster
+    - added CustomName and CustomNotes to RosterElementBase
+
+### Changed
+- CharacteristicType now inherits Commentable
+- renamed SelectorBase to QueryBase
+- BSv2.03 schema with the above changes
+
+
 ## [0.10.0] - 2020-06-03
 
 ### Added
