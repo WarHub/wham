@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <Sdk Name="Microsoft.Build.CentralPackageVersions" />
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.1</TargetFramework>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <Description>Analysis framework for datafiles.</Description>
+    <PackageTags>warhub armoury armourymodel wham battlescribe roster catalogue gamesystem analysis</PackageTags>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\WarHub.ArmouryModel.ProjectModel\WarHub.ArmouryModel.ProjectModel.csproj" />
+    <ProjectReference Include="..\WarHub.ArmouryModel.Source\WarHub.ArmouryModel.Source.csproj" />
+  </ItemGroup>
+
+</Project>

@@ -56,6 +56,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WarHub.ArmouryModel.CliTool
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WarHub.ArmouryModel.Source.CodeGeneration.Attributes", "src\WarHub.ArmouryModel.Source.CodeGeneration.Attributes\WarHub.ArmouryModel.Source.CodeGeneration.Attributes.csproj", "{2283E14A-F7AC-4E3B-B379-61E17C1AA4AB}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WarHub.ArmouryModel.SourceAnalysis", "src\WarHub.ArmouryModel.SourceAnalysis\WarHub.ArmouryModel.SourceAnalysis.csproj", "{F37C725B-E413-48EE-B3F6-70325031171C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -122,6 +124,10 @@ Global
 		{2283E14A-F7AC-4E3B-B379-61E17C1AA4AB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2283E14A-F7AC-4E3B-B379-61E17C1AA4AB}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2283E14A-F7AC-4E3B-B379-61E17C1AA4AB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F37C725B-E413-48EE-B3F6-70325031171C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F37C725B-E413-48EE-B3F6-70325031171C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F37C725B-E413-48EE-B3F6-70325031171C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F37C725B-E413-48EE-B3F6-70325031171C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -142,6 +148,7 @@ Global
 		{B8B445FE-6EA4-4378-9420-8E051C909D76} = {8C4E7D04-65AF-421E-9432-7741ADAF4714}
 		{9570B242-401D-4875-BB21-53A67231B5E4} = {8C4E7D04-65AF-421E-9432-7741ADAF4714}
 		{2283E14A-F7AC-4E3B-B379-61E17C1AA4AB} = {6055CEFB-2A8B-45E3-B6D7-B9DB2A4FE612}
+		{F37C725B-E413-48EE-B3F6-70325031171C} = {6055CEFB-2A8B-45E3-B6D7-B9DB2A4FE612}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {DAF2775E-5311-44A8-B7CB-F4A55225705A}
