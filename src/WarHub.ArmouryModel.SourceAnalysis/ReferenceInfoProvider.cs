@@ -9,30 +9,36 @@ namespace WarHub.ArmouryModel.SourceAnalysis
 {
     internal class ReferenceInfoProvider : IReferenceInfoProvider
     {
-        private readonly Dictionary<SourceNode, IReferenceableInfo> referenceInfos
-            = new Dictionary<SourceNode, IReferenceableInfo>();
+        private ImmutableDictionary<SourceNode, IReferenceSourceIndex>? indexes;
 
-        public IRootNodeClosureResolver ClosureResolver { get; }
-
-        public ReferenceInfoProvider(IRootNodeClosureResolver closureResolver)
+        public ReferenceInfoProvider(GamesystemContext context)
         {
-            ClosureResolver = closureResolver;
+            Context = context;
         }
 
-        public IReferenceableInfo GetReferences(SourceNode node)
+        private ImmutableDictionary<SourceNode, IReferenceSourceIndex> Indexes
+            => indexes ??= BuildIndexes();
+
+        public GamesystemContext Context { get; }
+
+        private ImmutableDictionary<SourceNode, IReferenceSourceIndex> BuildIndexes()
         {
-            if (referenceInfos.TryGetValue(node, out var refInfo))
+            var visitor = new RefSourceVisitor(Context);
+            foreach (var root in Context.Roots)
+            {
+                visitor.Visit(root);
+            }
+            return visitor.CreateReferenceableInfos()
+                .ToImmutableDictionary(x => x.TargetNode, x => x.ReferenceIndex);
+        }
+
+        public IReferenceSourceIndex GetReferences(SourceNode node)
+        {
+            if (Indexes.TryGetValue(node, out var refInfo))
             {
                 return refInfo;
             }
-            var root = node.FirstAncestorOrSelf<CatalogueBaseNode>();
-            var visitor = new RefSourceVisitor(ClosureResolver);
-            visitor.Visit(root);
-            foreach (var info in visitor.CreateReferenceableInfos())
-            {
-                referenceInfos.Add(info.TargetNode, info);
-            }
-            return referenceInfos[node];
+            return ReferenceSourceIndex.Empty;
         }
 
         private class RefCounter

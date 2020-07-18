@@ -21,6 +21,15 @@ namespace WarHub.ArmouryModel.SourceAnalysis
             InPublicationId = inPublicationId;
         }
 
+        public static ReferenceSourceIndex Empty { get; }
+            = new ReferenceSourceIndex(
+                inQueryScope: ImmutableArray<QueryBaseNode>.Empty,
+                inQueryField: ImmutableArray<QueryBaseNode>.Empty,
+                inQueryChildId: ImmutableArray<QueryFilteredBaseNode>.Empty,
+                inLinkTargetId: ImmutableArray<SourceNode>.Empty,
+                inValueTypeId: ImmutableArray<SourceNode>.Empty,
+                inPublicationId: ImmutableArray<SourceNode>.Empty);
+
         public ImmutableArray<QueryBaseNode> InQueryScope { get; }
         public ImmutableArray<QueryBaseNode> InQueryField { get; }
         public ImmutableArray<QueryFilteredBaseNode> InQueryChildId { get; }

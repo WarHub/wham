@@ -10,6 +10,8 @@ namespace WarHub.ArmouryModel.SourceAnalysis
 {
     public sealed class GamesystemContext : IRootNodeClosureResolver, IReferenceInfoProvider
     {
+        private ImmutableArray<CatalogueBaseNode>? roots;
+
         private GamesystemContext(
             GamesystemNode gamesystem,
             ImmutableArray<CatalogueNode> catalogues,
@@ -24,6 +26,9 @@ namespace WarHub.ArmouryModel.SourceAnalysis
         }
 
         public GamesystemNode Gamesystem { get; }
+
+        public ImmutableArray<CatalogueBaseNode> Roots
+            => roots ??= Catalogues.Prepend<CatalogueBaseNode>(Gamesystem).ToImmutableArray();
 
         public ImmutableArray<CatalogueNode> Catalogues { get; }
 
@@ -45,7 +50,7 @@ namespace WarHub.ArmouryModel.SourceAnalysis
             return null;
         }
 
-        public IReferenceableInfo GetReferences(SourceNode node)
+        public IReferenceSourceIndex GetReferences(SourceNode node)
             => ReferenceInfoProvider.GetReferences(node);
 
         public static async Task<ImmutableArray<GamesystemContext>> CreateAsync(IWorkspace workspace)
@@ -72,6 +77,9 @@ namespace WarHub.ArmouryModel.SourceAnalysis
                 return roots;
             }
         }
+
+        public static GamesystemContext CreateSingle(params CatalogueBaseNode[] rootNodes)
+            => CreateSingle(rootNodes.ToImmutableArray());
 
         public static GamesystemContext CreateSingle(ImmutableArray<CatalogueBaseNode> rootNodes)
         {
