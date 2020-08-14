@@ -3,6 +3,7 @@ using System.Xml;
 using System.Xml.Serialization;
 using FluentAssertions;
 using WarHub.ArmouryModel.Source.BattleScribe;
+using WarHub.ArmouryModel.Source.XmlFormat;
 using Xunit;
 using static WarHub.ArmouryModel.Source.NodeFactory;
 
@@ -10,6 +11,8 @@ namespace WarHub.ArmouryModel.Source.Tests.DataFormat
 {
     public class XmlSchema2_03Tests
     {
+        private static string BsVersion_2_03 { get; } = BattleScribeVersion.V2x03.BattleScribeString;
+
         private const string GamesystemWithReadmeAndComment = @"
 <gameSystem id='1' name='test' revision='1' battleScribeVersion='2.03' xmlns='http://www.battlescribe.net/schema/gameSystemSchema'>
   <comment>This is comment</comment>
@@ -57,6 +60,20 @@ spanning multiple lines</readme>
         public void Readme_in_catalogue_is_schema_validated()
         {
             var messages = SchemaUtils.Validate(CatalogueWithReadmeAndComment);
+
+            messages.Should().BeEmpty();
+        }
+
+        [Fact]
+        public void RosterTags_in_roster_are_schema_validated()
+        {
+            var roster = Roster(Gamesystem())
+                .WithBattleScribeVersion(BsVersion_2_03)
+                .AddTags(
+                    RosterTag("tag1"),
+                    RosterTag("tag2"));
+
+            var messages = SchemaUtils.Validate(roster);
 
             messages.Should().BeEmpty();
         }
@@ -110,11 +127,8 @@ spanning multiple lines</readme>
                 .AddSharedSelectionEntryGroups(
                     SelectionEntryGroup());
             var catWithComs = (CatalogueNode)new CommentRewriter().Visit(cat)!;
-            using var writer = new StringWriter();
-            catWithComs.Serialize(writer);
-            var xmlText = writer.ToString();
 
-            var messages = SchemaUtils.Validate(xmlText);
+            var messages = SchemaUtils.Validate(catWithComs);
 
             messages.Should().BeEmpty();
         }
