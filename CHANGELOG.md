@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+ - fixed RosterTag name in v2.03 XSD schema (was `tags`, is `tag`) ([#121]).
+ - 
+[#121]: https://github.com/WarHub/wham/pull/121
+
 ## [0.11.0] - 2020-07-15
 
 ### Added

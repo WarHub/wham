@@ -687,7 +687,7 @@
 
   <xs:complexType name="RosterTagList">
     <xs:sequence>
-      <xs:element name="tags" type="tns:RosterTag" minOccurs="0" maxOccurs="unbounded" />
+      <xs:element name="tag" type="tns:RosterTag" minOccurs="0" maxOccurs="unbounded" />
     </xs:sequence>
   </xs:complexType>
 

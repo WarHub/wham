@@ -449,6 +449,13 @@ namespace WarHub.ArmouryModel.Source
                 customNotes: null);
         }
 
+        public static RosterTagNode RosterTag(string? name)
+        {
+            return RosterTag(
+                id: NewId(),
+                name: name);
+        }
+
         public static RuleNode Rule(string? name = null, string? id = null, string? description = null)
         {
             return Rule(

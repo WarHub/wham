@@ -32,6 +32,19 @@ namespace WarHub.ArmouryModel.Source.Tests.DataFormat
             }
         }
 
+        public static IEnumerable<object> Validate<T>(T rootNode) where T : SourceNode, IRootNode
+        {
+            var xml = GetXmlText();
+            return Validate(xml);
+
+            string GetXmlText()
+            {
+                using var writer = new StringWriter();
+                rootNode.Serialize(writer);
+                return writer.ToString();
+            }
+        }
+
         public static IEnumerable<object> Validate(string xml)
         {
             // first migrate
