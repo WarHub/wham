@@ -3,9 +3,6 @@
   
   <ItemGroup>
     <PackageReference Update="Amadevus.RecordGenerator"        Version="[0.6.0]" PrivateAssets="all" />
-    <PackageReference Update="CodeGeneration.Roslyn"           Version="[0.7.63]" />
-    <PackageReference Update="CodeGeneration.Roslyn.Attributes" Version="[0.7.63]" PrivateAssets="all" ExcludeAssets="runtime" />
-    <PackageReference Update="CodeGeneration.Roslyn.Tool"      Version="[0.7.63]" PrivateAssets="all" />
     <PackageReference Update="Microsoft.CodeAnalysis.CSharp" Version="3.8.0-3.final" PrivateAssets="all" />
     <PackageReference Update="Microsoft.CodeAnalysis.Analyzers" Version="3.0.0" PrivateAssets="all" />
     <PackageReference Update="morelinq"                        Version="3.2.0" />

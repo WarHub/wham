@@ -16,7 +16,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <!--<PackageReference Include="CodeGeneration.Roslyn.Tool" />-->
     <PackageReference Include="System.Collections.Immutable" />
   </ItemGroup>
 
