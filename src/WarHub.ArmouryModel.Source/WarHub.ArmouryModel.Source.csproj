@@ -7,6 +7,7 @@
     <PackageTags>warhub armoury armourymodel wham battlescribe roster catalogue gamesystem cat catz gst gstz ros rosz datafile wh40k 40k bsdata battle scribe</PackageTags>
     <CatalogueXsdPath>../dataformat/xml/schema/latest/Catalogue.xsd</CatalogueXsdPath>
     <CatXmlns>"http://www.battlescribe.net/schema/catalogueSchema"</CatXmlns>
+    <LangVersion>preview</LangVersion>
   </PropertyGroup>
 
   <ItemGroup>
@@ -15,13 +16,13 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="CodeGeneration.Roslyn.Tool" />
+    <!--<PackageReference Include="CodeGeneration.Roslyn.Tool" />-->
     <PackageReference Include="System.Collections.Immutable" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\WarHub.ArmouryModel.Source.CodeGeneration.Attributes\WarHub.ArmouryModel.Source.CodeGeneration.Attributes.csproj" PrivateAssets="all" Private="false" />
-    <ProjectReference Include="..\WarHub.ArmouryModel.Source.CodeGeneration\WarHub.ArmouryModel.Source.CodeGeneration.csproj" ReferenceOutputAssembly="false" SkipGetTargetFrameworkProperties="true" SetTargetFramework="TargetFramework=netcoreapp2.1" OutputItemType="CodeGenerationRoslynPlugin" />
+    <ProjectReference Include="..\WarHub.ArmouryModel.Source.CodeGeneration\WarHub.ArmouryModel.Source.CodeGeneration.csproj" ReferenceOutputAssembly="false" OutputItemType="Analyzer" />
   </ItemGroup>
 
   <!-- Custom resource embedding of 3 XSDs from one file -->
