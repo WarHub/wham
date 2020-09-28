@@ -14,7 +14,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration.Tests
             const string ContainerXml = "<container/>";
             var serializer = new XmlSerializer(typeof(ContainerCore.Builder));
             using var reader = XmlReader.Create(new StringReader(ContainerXml));
-            var container = (ContainerCore.Builder)serializer.Deserialize(reader);
+            var container = (ContainerCore.Builder)serializer.Deserialize(reader)!;
             Assert.Null(container.Id);
             Assert.Null(container.Name);
             Assert.Empty(container.Items);
@@ -59,7 +59,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration.Tests
             stream.Position = 0;
 
             using var reader = XmlReader.Create(stream);
-            var deserialized = (ContainerCore.Builder)new XmlSerializer(typeof(ContainerCore.Builder)).Deserialize(reader);
+            var deserialized = (ContainerCore.Builder)new XmlSerializer(typeof(ContainerCore.Builder)).Deserialize(reader)!;
 
             Assert.NotNull(deserialized);
             Assert.Equal(ContainerName, deserialized.Name);

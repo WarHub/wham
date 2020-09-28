@@ -37,7 +37,7 @@ namespace WarHub.ArmouryModel.Source.Tests.XmlFormat
             xsd.Should().NotBeNull();
             validationMessages.Should().BeEmpty();
 
-            void AddEventToList(object sender, ValidationEventArgs e) => validationMessages.Add(e);
+            void AddEventToList(object? sender, ValidationEventArgs e) => validationMessages.Add(e);
         }
 
         [Theory]
@@ -55,7 +55,7 @@ namespace WarHub.ArmouryModel.Source.Tests.XmlFormat
                 new XmlQualifiedName("roster", xmlns)
             });
 
-            static void IgnoreEvent(object sender, ValidationEventArgs e) { }
+            static void IgnoreEvent(object? sender, ValidationEventArgs e) { }
         }
 
         public static IEnumerable<object[]> XslMigrationVersionData()
@@ -78,13 +78,13 @@ namespace WarHub.ArmouryModel.Source.Tests.XmlFormat
             ValidationEventHandler validationEventHandler)
         {
             using var xsdStream = rootElement.OpenXsdStream();
-            using var reader = XmlReader.Create(xsdStream);
+            using var reader = XmlReader.Create(xsdStream!);
             var schema = XmlSchema.Read(reader, validationEventHandler);
             var set = new XmlSchemaSet();
             set.ValidationEventHandler += validationEventHandler;
-            set.Add(schema);
+            set.Add(schema!);
             set.Compile();
-            return set.Schemas().Cast<XmlSchema>().Single();
+            return set.Schemas().Cast<XmlSchema>().Single()!;
         }
     }
 }

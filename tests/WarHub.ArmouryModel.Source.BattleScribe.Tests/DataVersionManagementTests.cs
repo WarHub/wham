@@ -120,8 +120,8 @@ namespace WarHub.ArmouryModel.Source.BattleScribe.Tests
         {
             var versionText =
                 XDocument.Load(reader)
-                .Root.Attribute(DataVersionManagement.BattleScribeVersionAttributeName)
-                .Value;
+                !.Root!.Attribute(DataVersionManagement.BattleScribeVersionAttributeName!)
+                !.Value;
             return BattleScribeVersion.Parse(versionText);
         }
 
