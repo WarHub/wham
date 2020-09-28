@@ -55,7 +55,7 @@ namespace WarHub.ArmouryModel.Source.BattleScribe.Tests
 
             validation.Should().BeEmpty();
 
-            void HandleValidation(object sender, ValidationEventArgs e) => validation.Add(e);
+            void HandleValidation(object? sender, ValidationEventArgs e) => validation.Add(e);
         }
 
         private static void ReadWriteXml(string datafile, Func<Stream, SourceNode> deserialize)
@@ -98,11 +98,11 @@ namespace WarHub.ArmouryModel.Source.BattleScribe.Tests
             ValidationEventHandler validationEventHandler)
         {
             using var xsdStream = rootElement.OpenXsdStream();
-            using var reader = XmlReader.Create(xsdStream);
+            using var reader = XmlReader.Create(xsdStream!);
             var schema = XmlSchema.Read(reader, validationEventHandler);
             var set = new XmlSchemaSet();
             set.ValidationEventHandler += validationEventHandler;
-            set.Add(schema);
+            set.Add(schema!);
             set.Compile();
             return set;
         }

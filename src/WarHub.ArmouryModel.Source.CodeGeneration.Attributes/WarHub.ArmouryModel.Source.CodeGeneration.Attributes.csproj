@@ -7,8 +7,4 @@
     <RootNamespace>WarHub.ArmouryModel.Source</RootNamespace>
   </PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Include="CodeGeneration.Roslyn.Attributes" />
-  </ItemGroup>
-
 </Project>

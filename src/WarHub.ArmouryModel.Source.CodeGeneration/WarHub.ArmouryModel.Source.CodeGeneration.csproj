@@ -1,14 +1,33 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <Sdk Name="Microsoft.Build.CentralPackageVersions" />
-  <Sdk Name="CodeGeneration.Roslyn.Plugin.Sdk" />
 
   <PropertyGroup>
-    <TargetFrameworks>netcoreapp2.1;netcoreapp3.1</TargetFrameworks>
+    <TargetFramework>netstandard2.0</TargetFramework>
     <IsPackable>false</IsPackable>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="morelinq" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" />
+    <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" />
   </ItemGroup>
+  
+  <PropertyGroup>
+    <RestoreAdditionalProjectSources>https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet5/nuget/v3/index.json ;$(RestoreAdditionalProjectSources)</RestoreAdditionalProjectSources>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!--Generator dependencies-->
+    <PackageReference Include="morelinq" GeneratePathProperty="true" PrivateAssets="all" />
+  </ItemGroup>
+  
+  <PropertyGroup>
+    <GetTargetPathDependsOn>$(GetTargetPathDependsOn);GetDependencyTargetPaths</GetTargetPathDependsOn>
+  </PropertyGroup>
+  
+  <Target Name="GetDependencyTargetPaths">
+    <ItemGroup>
+      <TargetPathWithTargetPlatformMoniker Include="$(PKGMoreLinq)\lib\netstandard2.0\MoreLinq.dll" IncludeRuntimeDependency="false" />
+    </ItemGroup>
+  </Target>
 
 </Project>

@@ -26,9 +26,9 @@ namespace WarHub.ArmouryModel.Source.Tests.DataFormat
 
             static XmlSchema GetSchemaForRoot(RootElement root)
             {
-                using var xsdStream = root.OpenXsdStream();
+                using var xsdStream = root.OpenXsdStream()!;
                 using var reader = XmlReader.Create(xsdStream);
-                return XmlSchema.Read(reader, (s, e) => e.Should().BeNull());
+                return XmlSchema.Read(reader, (s, e) => e.Should().BeNull())!;
             }
         }
 
@@ -60,7 +60,7 @@ namespace WarHub.ArmouryModel.Source.Tests.DataFormat
             settings.ValidationFlags |= XmlSchemaValidationFlags.ReportValidationWarnings;
             settings.ValidationEventHandler += (s, e) =>
             {
-                var reader = (XmlReader)s;
+                var reader = (XmlReader)s!;
                 var ex = e.Exception;
                 messages.Add(new
                 {
