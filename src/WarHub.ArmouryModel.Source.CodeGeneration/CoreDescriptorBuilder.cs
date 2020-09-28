@@ -19,7 +19,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
         private static SymbolCache<INamedTypeSymbol> immutableArraySymbolCache = new SymbolCache<INamedTypeSymbol>(ImmutableArrayMetadataName);
         private static SymbolCache<INamedTypeSymbol> whamNodeCoreAttributeSymbolCache = new SymbolCache<INamedTypeSymbol>(WhamNodeCoreAttributeMetadataName);
 
-        public CoreDescriptorBuilder(TransformationContext context, CancellationToken cancellationToken)
+        public CoreDescriptorBuilder(TransformationContext context, CancellationToken cancellationToken = default)
         {
             SemanticModel = context.SemanticModel;
             Compilation = context.Compilation;
@@ -102,7 +102,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
             return xmlAttributes.Select(att => SyntaxFactory.AttributeList().AddAttributes(att));
         }
 
-        private static CoreDescriptor.Entry CreateRecordEntry(IPropertySymbol symbol, PropertyDeclarationSyntax syntax)
+        public static CoreDescriptor.Entry CreateRecordEntry(IPropertySymbol symbol, PropertyDeclarationSyntax syntax)
         {
             var typeSyntax = syntax.Type;
             var typeIdentifier = syntax.Identifier.WithoutTrivia();

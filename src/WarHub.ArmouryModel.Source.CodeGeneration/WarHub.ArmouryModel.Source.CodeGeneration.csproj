@@ -9,6 +9,8 @@
 
   <ItemGroup>
     <PackageReference Include="morelinq" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" />
+    <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" />
   </ItemGroup>
 
 </Project>
