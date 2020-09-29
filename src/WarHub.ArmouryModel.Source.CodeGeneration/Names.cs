@@ -69,6 +69,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
         public const string ToNode = "ToNode";
         public const string ToNodeCore = "ToNodeCore";
         public const string ToImmutable = "ToImmutable";
+        public const string ToImmutableArray = "ToImmutableArray";
         public const string ToImmutableRecursive = "ToImmutableRecursive";
         public const string ToSerializationProxy = "ToSerializationProxy";
 
