@@ -4,7 +4,7 @@
   <PropertyGroup>
     <Nullable>disable</Nullable>
     <OutputType>Exe</OutputType>
-    <TargetFramework>netcoreapp2.1</TargetFramework>
+    <TargetFramework>net5</TargetFramework>
     <PackAsTool>true</PackAsTool>
     <AssemblyName>wham</AssemblyName>
     <!-- Run on future runtimes - as a CLI tool, let's be user friendly. -->
