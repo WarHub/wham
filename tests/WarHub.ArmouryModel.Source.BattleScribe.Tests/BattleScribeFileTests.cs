@@ -16,21 +16,21 @@ namespace WarHub.ArmouryModel.Source.BattleScribe.Tests
         [Trait("XmlSerialization", "ReadWriteTest")]
         public void ReadWriteGamesystem()
         {
-            ReadWriteXml(TestData.Gamesystem, s => s.DeserializeGamesystem());
+            ReadWriteXml(TestData.Gamesystem, s => s.DeserializeGamesystem()!);
         }
 
         [Fact]
         [Trait("XmlSerialization", "ReadWriteTest")]
         public void ReadWriteCatalogue()
         {
-            ReadWriteXml(TestData.Catalogue, s => s.DeserializeCatalogue());
+            ReadWriteXml(TestData.Catalogue, s => s.DeserializeCatalogue()!);
         }
 
         [Fact]
         [Trait("XmlSerialization", "ReadWriteTest")]
         public void ReadWriteRoster()
         {
-            ReadWriteXml(TestData.Roster, s => s.DeserializeRoster());
+            ReadWriteXml(TestData.Roster, s => s.DeserializeRoster()!);
         }
 
         [Theory]

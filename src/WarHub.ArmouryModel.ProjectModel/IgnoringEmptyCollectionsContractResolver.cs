@@ -18,7 +18,7 @@ namespace WarHub.ArmouryModel.ProjectModel
             {
                 return prop;
             }
-            prop.DefaultValue = prop.PropertyType.GetField(nameof(ImmutableArray<int>.Empty)).GetValue(null);
+            prop.DefaultValue = prop.PropertyType.GetField(nameof(ImmutableArray<int>.Empty))!.GetValue(null);
             prop.ShouldSerialize = IsNotEmptyImmutableArray;
             return prop;
             bool IsNotEmptyImmutableArray(object instance)

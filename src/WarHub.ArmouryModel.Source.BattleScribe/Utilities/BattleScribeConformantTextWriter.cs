@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Text;
 
@@ -24,6 +25,8 @@ namespace WarHub.ArmouryModel.Source.BattleScribe.Utilities
 
         public override Encoding Encoding => BaseWriter.Encoding;
         public override IFormatProvider FormatProvider => BaseWriter.FormatProvider;
+
+        [AllowNull]
         public override string NewLine { get => BaseWriter.NewLine; set => BaseWriter.NewLine = value; }
 
         private TextWriter BaseWriter { get; }
@@ -67,9 +70,10 @@ namespace WarHub.ArmouryModel.Source.BattleScribe.Utilities
             BaseWriter.Write(value);
         }
 
-        public override void Write(char[] buffer)
+        public override void Write(char[]? buffer)
         {
-            Write(buffer, 0, buffer.Length);
+            if (buffer is { })
+                Write(buffer, 0, buffer.Length);
         }
 
         public override void Write(char[] buffer, int index, int count)

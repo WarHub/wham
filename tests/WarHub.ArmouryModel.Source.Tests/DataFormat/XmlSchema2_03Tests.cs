@@ -33,7 +33,7 @@ spanning multiple lines</readme>
         {
             using var xmlReader = XmlReader.Create(new StringReader(GamesystemWithReadmeAndComment));
 
-            var root = BattleScribeXmlSerializer.Instance.DeserializeGamesystem(x => x.Deserialize(xmlReader)!);
+            var root = BattleScribeXmlSerializer.Instance.DeserializeGamesystem(x => x.Deserialize(xmlReader)!)!;
 
             root.Readme.Should().MatchRegex(@"content\nspanning");
         }
@@ -51,7 +51,7 @@ spanning multiple lines</readme>
         {
             using var xmlReader = XmlReader.Create(new StringReader(CatalogueWithReadmeAndComment));
 
-            var root = BattleScribeXmlSerializer.Instance.DeserializeCatalogue(x => x.Deserialize(xmlReader)!);
+            var root = BattleScribeXmlSerializer.Instance.DeserializeCatalogue(x => x.Deserialize(xmlReader)!)!;
 
             root.Readme.Should().MatchRegex(@"content\nspanning");
         }
@@ -163,7 +163,7 @@ spanning multiple lines</readme>
             using var memStream = new MemoryStream();
             data.Serialize(memStream);
             memStream.Position = 0;
-            var gst = memStream.DeserializeGamesystem();
+            var gst = memStream.DeserializeGamesystem()!;
 
             var modifier = gst.SelectionEntries[0].Modifiers[0];
 

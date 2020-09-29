@@ -40,11 +40,11 @@ namespace WarHub.ArmouryModel.ProjectModel
             }
             var lines = new List<string>
                 {
-                    firstLine
+                    firstLine! // string token is always non-null
                 };
             do
             {
-                lines.Add(reader.Value.ToString());
+                lines.Add(reader.Value.ToString()!); // string token is always non-null
                 ReadUntilStringOrEndArray();
             }
             while (reader.TokenType == JsonToken.String);
@@ -59,7 +59,7 @@ namespace WarHub.ArmouryModel.ProjectModel
 
         public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
         {
-            var text = value.ToString();
+            var text = value.ToString()!; // null is handled by a different method
             // CA1307 here is invalid - IndexOf is by default doing Ordinary comparison
 #pragma warning disable CA1307 // Specify StringComparison
             if (text.IndexOf(LF) < 0)

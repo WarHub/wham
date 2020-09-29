@@ -13,30 +13,30 @@ namespace WarHub.ArmouryModel.Source.BattleScribe
         private static BattleScribeXmlSerializer Serializer
             => BattleScribeXmlSerializer.Instance;
 
-        public static GamesystemNode DeserializeGamesystem(this Stream stream)
+        public static GamesystemNode? DeserializeGamesystem(this Stream stream)
         {
             return Serializer.DeserializeGamesystem(DeserializeStreamFunc(stream));
         }
 
-        public static CatalogueNode DeserializeCatalogue(this Stream stream)
+        public static CatalogueNode? DeserializeCatalogue(this Stream stream)
         {
             return Serializer.DeserializeCatalogue(DeserializeStreamFunc(stream));
         }
 
-        public static RosterNode DeserializeRoster(this Stream stream)
+        public static RosterNode? DeserializeRoster(this Stream stream)
         {
             return Serializer.DeserializeRoster(DeserializeStreamFunc(stream));
         }
 
-        public static DataIndexNode DeserializeDataIndex(this Stream stream)
+        public static DataIndexNode? DeserializeDataIndex(this Stream stream)
         {
             return Serializer.DeserializeDataIndex(DeserializeStreamFunc(stream));
         }
 
-        private static Func<XmlSerializer, object> DeserializeStreamFunc(Stream stream)
+        private static Func<XmlSerializer, object?> DeserializeStreamFunc(Stream stream)
             => x => x.Deserialize(XmlReader.Create(stream));
 
-        public static SourceNode DeserializeSourceNodeAuto(
+        public static SourceNode? DeserializeSourceNodeAuto(
             this Stream stream,
             MigrationMode mode = MigrationMode.None)
         {
