@@ -48,6 +48,14 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration.Tests
         }
 
         [Fact]
+        public void ItemNode_HasPublicCoreProperty()
+        {
+            var core = new ItemCore(null, null).ToNode().Core;
+
+            core.Should().NotBeNull();
+        }
+
+        [Fact]
         public void DefaultNodeList_IsEmpty()
         {
             var list = default(NodeList<SourceNode>);

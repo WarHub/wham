@@ -63,6 +63,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
         {
             const string CoreLocal = "core";
             const string ParentLocal = "parent";
+            var coreLocalIdentifierName = IdentifierName(CoreLocal);
             return
                 ConstructorDeclaration(
                     Descriptor.GetNodeTypeName())
@@ -87,7 +88,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
             {
                 if (IsDerived)
                 {
-                    yield return Argument(IdentifierName(CoreLocal));
+                    yield return Argument(coreLocalIdentifierName);
                 }
                 yield return Argument(IdentifierName(ParentLocal));
             }
@@ -95,8 +96,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
             {
                 yield return
                     CorePropertyIdentifierName
-                    .Assign(
-                        IdentifierName(CoreLocal))
+                    .Assign(coreLocalIdentifierName)
                     .AsStatement();
                 foreach (var entry in Descriptor.DeclaredEntries.Where(x => !x.IsSimple))
                 {
@@ -104,10 +104,10 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                 }
             }
 
-            static StatementSyntax CreateNotSimpleInitialization(CoreDescriptor.Entry entry)
+            StatementSyntax CreateNotSimpleInitialization(CoreDescriptor.Entry entry)
             {
                 return
-                    CorePropertyIdentifierName
+                    coreLocalIdentifierName
                     .MemberAccess(entry.IdentifierName)
                     .MemberAccess(
                         IdentifierName(entry.IsCollection ? Names.ToListNode : Names.ToNode))
@@ -149,9 +149,9 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                     PropertyDeclaration(
                         Descriptor.CoreType,
                         CorePropertyIdentifier)
-                    .MutateIf(IsAbstract, x => x.AddModifiers(SyntaxKind.ProtectedKeyword))
-                    .AddModifiers(SyntaxKind.InternalKeyword)
-                    .MutateIf(IsDerived, x => x.AddModifiers(SyntaxKind.NewKeyword))
+                    .AddModifiers(SyntaxKind.PublicKeyword)
+                    .MutateIf(IsAbstract && !IsDerived, x => x.AddModifiers(SyntaxKind.VirtualKeyword))
+                    .MutateIf(IsDerived, x => x.AddModifiers(SyntaxKind.OverrideKeyword))
                     .AddAccessorListAccessors(
                         AccessorDeclaration(SyntaxKind.GetAccessorDeclaration)
                         .WithSemicolonTokenDefault())
