@@ -87,6 +87,17 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration.Tests
                 });
         }
 
+        [Theory]
+        [InlineData(typeof(AbstractBaseNode))]
+        [InlineData(typeof(AbstractDerivedNode))]
+        [InlineData(typeof(AbstractDerivedWithNewPropNode))]
+        public void Abstract_node_has_abstract_readonly_properties(Type type)
+        {
+            var declared = type.GetProperties().Where(x => x.DeclaringType == type);
+
+            declared.Should().OnlyContain(x => x.GetGetMethod()!.IsAbstract && x.GetSetMethod() == null);
+        }
+
         [Fact]
         public void With_collection_has_no_overloads()
         {

@@ -81,7 +81,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                     .ToImmutableArray();
                 var descriptor = new CoreDescriptor(
                     coreSymbol,
-                    ParseName(coreSymbol.ToDisplayString()),
+                    IdentifierName(declarationSyntax.Identifier),
                     declarationSyntax.Identifier.WithoutTrivia(),
                     entries,
                     attributes);

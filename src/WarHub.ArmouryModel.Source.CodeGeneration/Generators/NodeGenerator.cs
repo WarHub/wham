@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using System.Threading;
@@ -64,33 +65,47 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
             const string CoreLocal = "core";
             const string ParentLocal = "parent";
             var coreLocalIdentifierName = IdentifierName(CoreLocal);
-            return
-                ConstructorDeclaration(
-                    Descriptor.GetNodeTypeName())
-                .MutateIf(IsAbstract, x => x.AddModifiers(SyntaxKind.ProtectedKeyword))
-                .AddModifiers(SyntaxKind.InternalKeyword)
-                .AddParameterListParameters(
-                    Parameter(
-                        Identifier(CoreLocal))
-                    .WithType(Descriptor.CoreType),
-                    Parameter(
-                        Identifier(ParentLocal))
-                    .WithType(
-                        NullableType(
-                            IdentifierName(Names.SourceNode))))
-                .WithInitializer(
-                    ConstructorInitializer(SyntaxKind.BaseConstructorInitializer)
-                    .AddArgumentListArguments(
-                        GetBaseArguments()))
-                .AddBodyStatements(
-                    GetBodyStatements());
-            IEnumerable<ArgumentSyntax> GetBaseArguments()
+            if (IsAbstract)
             {
-                if (IsDerived)
-                {
-                    yield return Argument(coreLocalIdentifierName);
-                }
-                yield return Argument(IdentifierName(ParentLocal));
+                return
+                    ConstructorDeclaration(
+                        Descriptor.GetNodeTypeName())
+                    .AddModifiers(SyntaxKind.ProtectedKeyword, SyntaxKind.InternalKeyword)
+                    .AddParameterListParameters(
+                        Parameter(
+                            Identifier(ParentLocal))
+                        .WithType(
+                            NullableType(
+                                IdentifierName(Names.SourceNode))))
+                    .WithInitializer(
+                        ConstructorInitializer(SyntaxKind.BaseConstructorInitializer)
+                        .AddArgumentListArguments(
+                            Argument(
+                                IdentifierName(ParentLocal))))
+                    .AddBodyStatements();
+            }
+            else
+            {
+                return
+                    ConstructorDeclaration(
+                        Descriptor.GetNodeTypeName())
+                    .AddModifiers(SyntaxKind.InternalKeyword)
+                    .AddParameterListParameters(
+                        Parameter(
+                                Identifier(CoreLocal))
+                            .WithType(Descriptor.CoreType),
+                        Parameter(
+                            Identifier(ParentLocal))
+                        .WithType(
+                            NullableType(
+                                IdentifierName(Names.SourceNode))))
+                    .WithInitializer(
+                        ConstructorInitializer(SyntaxKind.BaseConstructorInitializer)
+                        .AddArgumentListArguments(
+                            Argument(
+                                IdentifierName(ParentLocal))))
+                    .AddBodyStatements(
+                        GetBodyStatements());
             }
             IEnumerable<StatementSyntax> GetBodyStatements()
             {
@@ -98,7 +113,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                     CorePropertyIdentifierName
                     .Assign(coreLocalIdentifierName)
                     .AsStatement();
-                foreach (var entry in Descriptor.DeclaredEntries.Where(x => !x.IsSimple))
+                foreach (var entry in Descriptor.Entries.Where(x => !x.IsSimple))
                 {
                     yield return CreateNotSimpleInitialization(entry);
                 }
@@ -126,10 +141,46 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
             }
             yield return CreateCoreProperty();
             yield return CreateExplicitInterfaceCoreProperty();
-            foreach (var property in Descriptor.DeclaredEntries.Select(CreateSimpleProperty, CreateComplexProperty, CreateCollectionProperty))
+            if (!IsAbstract)
             {
-                yield return property;
+                foreach (var entry in Descriptor.Entries)
+                {
+                    yield return
+                        PropertyDeclaration(
+                            GetNodePropertyType(entry),
+                            entry.Identifier)
+                        .AddModifiers(SyntaxKind.PublicKeyword)
+                        .MutateIf(entry.IsDerived, x => x.AddModifiers(SyntaxKind.OverrideKeyword))
+                        .Mutate(x => entry is CoreDescriptor.SimpleEntry
+                        ? x.WithExpressionBodyFull(
+                            CorePropertyIdentifierName
+                            .MemberAccess(entry.IdentifierName))
+                        : x.AddAccessorListAccessors(
+                            AccessorDeclaration(SyntaxKind.GetAccessorDeclaration)
+                            .WithSemicolonTokenDefault()));
+                }
             }
+            else
+            {
+                foreach (var entry in Descriptor.DeclaredEntries)
+                {
+                    yield return
+                        PropertyDeclaration(
+                            GetNodePropertyType(entry),
+                            entry.Identifier)
+                        .AddModifiers(SyntaxKind.PublicKeyword, SyntaxKind.AbstractKeyword)
+                        .AddAccessorListAccessors(
+                            AccessorDeclaration(SyntaxKind.GetAccessorDeclaration)
+                            .WithSemicolonTokenDefault());
+                }
+            }
+            static TypeSyntax GetNodePropertyType(CoreDescriptor.Entry entry) => entry switch
+            {
+                CoreDescriptor.SimpleEntry simple => entry.Type,
+                CoreDescriptor.ComplexEntry complex => complex.GetNodeTypeIdentifierName(),
+                CoreDescriptor.CollectionEntry collection => collection.GetListNodeTypeIdentifierName(),
+                _ => throw new InvalidOperationException("Unknown descriptor entry type.")
+            };
             PropertyDeclarationSyntax CreateKindProperty()
             {
                 var kindString = Descriptor.RawModelName;
@@ -150,7 +201,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                         Descriptor.CoreType,
                         CorePropertyIdentifier)
                     .AddModifiers(SyntaxKind.PublicKeyword)
-                    .MutateIf(IsAbstract && !IsDerived, x => x.AddModifiers(SyntaxKind.VirtualKeyword))
+                    .MutateIf(IsAbstract, x => x.AddModifiers(SyntaxKind.AbstractKeyword))
                     .MutateIf(IsDerived, x => x.AddModifiers(SyntaxKind.OverrideKeyword))
                     .AddAccessorListAccessors(
                         AccessorDeclaration(SyntaxKind.GetAccessorDeclaration)
@@ -173,45 +224,6 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                     .WithExpressionBodyFull(
                         CorePropertyIdentifierName)
                     .AddAttributeListAttribute(DebuggerBrowsableNeverAttribute);
-            }
-
-            PropertyDeclarationSyntax CreateSimpleProperty(CoreDescriptor.SimpleEntry entry)
-            {
-                return
-                    PropertyDeclaration(
-                        entry.Type,
-                        entry.Identifier)
-                    .AddModifiers(SyntaxKind.PublicKeyword)
-                    .MutateIf(IsAbstract, x => x.AddModifiers(SyntaxKind.VirtualKeyword))
-                    .WithExpressionBodyFull(
-                        CorePropertyIdentifierName
-                        .MemberAccess(entry.IdentifierName));
-            }
-
-            PropertyDeclarationSyntax CreateComplexProperty(CoreDescriptor.ComplexEntry entry)
-            {
-                return
-                    PropertyDeclaration(
-                        entry.GetNodeTypeIdentifierName(),
-                        entry.Identifier)
-                    .AddModifiers(SyntaxKind.PublicKeyword)
-                    .MutateIf(IsAbstract, x => x.AddModifiers(SyntaxKind.VirtualKeyword))
-                    .AddAccessorListAccessors(
-                        AccessorDeclaration(SyntaxKind.GetAccessorDeclaration)
-                        .WithSemicolonTokenDefault());
-            }
-
-            PropertyDeclarationSyntax CreateCollectionProperty(CoreDescriptor.CollectionEntry entry)
-            {
-                return
-                    PropertyDeclaration(
-                        entry.GetListNodeTypeIdentifierName(),
-                        entry.Identifier)
-                    .AddModifiers(SyntaxKind.PublicKeyword)
-                    .MutateIf(IsAbstract, x => x.AddModifiers(SyntaxKind.VirtualKeyword))
-                    .AddAccessorListAccessors(
-                        AccessorDeclaration(SyntaxKind.GetAccessorDeclaration)
-                        .WithSemicolonTokenDefault());
             }
         }
 
