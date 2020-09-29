@@ -26,7 +26,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
             RawModelName = coreTypeIdentifier.ValueText.StripSuffixes();
             Entries = entries;
             CoreTypeAttributeLists = coreTypeAttributeLists;
-            var (declared, derived) = entries.Partition(x => typeSymbol.Equals(x.Symbol.ContainingType, SymbolEqualityComparer.Default));
+            var (derived, declared) = entries.Partition(x => x.IsDerived);
             (DeclaredEntries, DerivedEntries) = (declared.ToImmutableArray(), derived.ToImmutableArray());
         }
 
@@ -57,9 +57,10 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
 
         internal abstract class Entry
         {
-            protected Entry(IPropertySymbol symbol, SyntaxToken identifier, TypeSyntax type, ImmutableArray<AttributeListSyntax> attributeLists)
+            protected Entry(IPropertySymbol symbol, bool isDerived, SyntaxToken identifier, TypeSyntax type, ImmutableArray<AttributeListSyntax> attributeLists)
             {
                 Symbol = symbol;
+                IsDerived = isDerived;
                 Identifier = identifier;
                 IdentifierName = SyntaxFactory.IdentifierName(identifier);
                 Type = type;
@@ -72,6 +73,8 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
             }
 
             public IPropertySymbol Symbol { get; }
+
+            public bool IsDerived { get; }
 
             /// <summary>
             /// PascalCase (original) identifier
@@ -104,8 +107,8 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
 
         internal class SimpleEntry : Entry
         {
-            public SimpleEntry(IPropertySymbol symbol, SyntaxToken identifier, TypeSyntax type, ImmutableArray<AttributeListSyntax> attributeLists)
-                : base(symbol, identifier, type, attributeLists)
+            public SimpleEntry(IPropertySymbol symbol, bool isDerived, SyntaxToken identifier, TypeSyntax type, ImmutableArray<AttributeListSyntax> attributeLists)
+                : base(symbol, isDerived, identifier, type, attributeLists)
             {
             }
 
@@ -116,8 +119,8 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
 
         internal class CollectionEntry : Entry
         {
-            public CollectionEntry(IPropertySymbol symbol, SyntaxToken identifier, NameSyntax type, ImmutableArray<AttributeListSyntax> attributeLists)
-                : base(symbol, identifier, type, attributeLists)
+            public CollectionEntry(IPropertySymbol symbol, bool isDerived, SyntaxToken identifier, NameSyntax type, ImmutableArray<AttributeListSyntax> attributeLists)
+                : base(symbol, isDerived, identifier, type, attributeLists)
             {
                 CollectionTypeParameter = (NameSyntax)type
                     .DescendantNodesAndSelf()
@@ -136,8 +139,8 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
 
         internal class ComplexEntry : Entry
         {
-            public ComplexEntry(IPropertySymbol symbol, SyntaxToken identifier, TypeSyntax type, ImmutableArray<AttributeListSyntax> attributeLists)
-                : base(symbol, identifier, type, attributeLists)
+            public ComplexEntry(IPropertySymbol symbol, bool isDerived, SyntaxToken identifier, TypeSyntax type, ImmutableArray<AttributeListSyntax> attributeLists)
+                : base(symbol, isDerived, identifier, type, attributeLists)
             {
                 NameSyntax = (NameSyntax) (type is NullableTypeSyntax nullable ? nullable.ElementType : type);
                 BuilderType = QualifiedName(NameSyntax, IdentifierName(Names.Builder));

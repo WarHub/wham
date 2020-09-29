@@ -77,7 +77,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                         return auto ? new { syntax = syntax!, symbol = p } : null;
                     })
                     .Where(x => x != null)
-                    .Select(x => CoreDescriptorBuilder.CreateRecordEntry(x!.symbol, x.syntax, immutableArraySymbol, attributeSymbol))
+                    .Select(x => CoreDescriptorBuilder.CreateRecordEntry(x!.symbol, x.syntax, coreSymbol, immutableArraySymbol, attributeSymbol))
                     .ToImmutableArray();
                 var descriptor = new CoreDescriptor(
                     coreSymbol,
