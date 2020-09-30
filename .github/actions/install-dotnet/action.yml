@@ -1,0 +1,42 @@
+name: Install .NET SDK
+description: .NET SDK installer.
+inputs:
+    version:
+      required: false
+      description: Exact version to install, defaults to global.json value.
+runs:
+    using: composite
+    steps:
+        - name: Resolve version
+          env:
+            VERSION_INPUT: ${{ inputs.version }}
+          run: |
+            $resolved = if ($env:VERSION_INPUT) {
+              $env:VERSION_INPUT
+            }
+            else {
+              (Get-Content global.json -Raw | ConvertFrom-Json).sdk.version
+            }
+            Write-Host "::set-env name=RESOLVED_VERSION::$resolved"
+          shell: pwsh
+        - name: Run install script
+          run: |
+            # inspired partially by https://github.com/xamarin/xamarin-android/blob/ac4039d309a36467bf982df0a8f30941b5fb9642/build-tools/automation/yaml-templates/use-dot-net.yaml
+            $ErrorActionPreference = 'Stop'
+            $ProgressPreference = 'SilentlyContinue'
+            if ($env:OS -eq 'Windows_NT') {
+              $installDir = (Get-Command dotnet | Get-Item).Directory.ToString()
+              Invoke-WebRequest -Uri "https://dot.net/v1/dotnet-install.ps1" -OutFile dotnet-install.ps1
+              & .\dotnet-install.ps1 -Version $env:RESOLVED_VERSION -InstallDir $installDir -Verbose
+            }
+            else {
+              $env:DOTNET_ROOT = $env:DOTNET_ROOT ?? "$(New-Item ~/.dotnet -Force -ItemType Directory)"
+              $env:PATH= $env:DOTNET_ROOT + [System.IO.Path]::PathSeparator + $env:PATH
+              Invoke-WebRequest -Uri "https://dot.net/v1/dotnet-install.sh" -OutFile dotnet-install.sh
+              bash dotnet-install.sh --version $env:RESOLVED_VERSION --install-dir $env:DOTNET_ROOT --verbose
+              if (!$?) { exit $lastexitcode; }
+              Write-Host "::set-env name=DOTNET_ROOT::$env:DOTNET_ROOT"
+              Write-Host "::set-env name=PATH::$env:PATH"
+            }
+            dotnet --list-sdks
+          shell: pwsh
