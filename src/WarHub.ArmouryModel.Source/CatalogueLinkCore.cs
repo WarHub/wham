@@ -4,21 +4,21 @@ namespace WarHub.ArmouryModel.Source
 {
     [WhamNodeCore]
     [XmlType("catalogueLink")]
-    public sealed partial class CatalogueLinkCore : CommentableCore
+    public sealed partial record CatalogueLinkCore : CommentableCore
     {
         [XmlAttribute("id")]
-        public string? Id { get; }
+        public string? Id { get; init; }
 
         [XmlAttribute("name")]
-        public string? Name { get; }
+        public string? Name { get; init; }
 
         [XmlAttribute("targetId")]
-        public string? TargetId { get; }
+        public string? TargetId { get; init; }
 
         [XmlAttribute("type")]
-        public CatalogueLinkKind Type { get; }
+        public CatalogueLinkKind Type { get; init; }
 
         [XmlAttribute("importRootEntries")]
-        public bool ImportRootEntries { get; }
+        public bool ImportRootEntries { get; init; }
     }
 }

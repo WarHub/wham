@@ -121,43 +121,27 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
             {
                 return
                     ReturnStatement(
-                        CreateObjectCreation()
+                        Descriptor.CoreType.ObjectCreationWithInitializer(
+                            Descriptor.Entries.Select(CreateInitializer)
+                            .ToArray())
                         .MemberAccess(
                             IdentifierName(Names.ToNode))
                         .InvokeWithArguments());
-                ExpressionSyntax CreateObjectCreation()
+
+                static ExpressionSyntax CreateInitializer(CoreDescriptor.Entry entry) => (entry switch
                 {
-                    return
-                        ObjectCreationExpression(Descriptor.CoreType)
-                        .AddArgumentListArguments(
-                            Descriptor.Entries.Select(
-                                CreateSimpleArgument,
-                                CreateComplexArgument,
-                                CreateCollectionArgument));
-
-                    static ArgumentSyntax CreateSimpleArgument(CoreDescriptor.Entry entry)
-                    {
-                        return Argument(entry.CamelCaseIdentifierName);
-                    }
-
-                    static ArgumentSyntax CreateComplexArgument(CoreDescriptor.Entry entry)
-                    {
-                        var argName = entry.CamelCaseIdentifierName;
-                        return
-                            Argument(
-                                argName.MemberAccess(IdentifierName(Names.Core)));
-                    }
-
-                    static ArgumentSyntax CreateCollectionArgument(CoreDescriptor.CollectionEntry entry)
-                    {
-                        var argName = entry.CamelCaseIdentifierName;
-                        return
-                            Argument(
-                                argName
-                                .MemberAccess(IdentifierName(Names.ToCoreArray))
-                                .InvokeWithArguments());
-                    }
-                }
+                    CoreDescriptor.ComplexEntry =>
+                        entry.CamelCaseIdentifierName
+                        .MemberAccess(
+                            IdentifierName(Names.Core)),
+                    CoreDescriptor.CollectionEntry =>
+                        entry.CamelCaseIdentifierName
+                        .MemberAccess(
+                            IdentifierName(Names.ToCoreArray))
+                        .InvokeWithArguments(),
+                    _ => entry.CamelCaseIdentifierName
+                })
+                .AssignTo(entry.IdentifierName);
             }
             MethodDeclarationSyntax CreateForNode(
                 Func<CoreDescriptor.CollectionEntry, ParameterSyntax> createCollectionParameter,

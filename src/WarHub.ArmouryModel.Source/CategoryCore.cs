@@ -4,9 +4,9 @@ namespace WarHub.ArmouryModel.Source
 {
     [WhamNodeCore]
     [XmlType("category")]
-    public sealed partial class CategoryCore : RosterElementBaseCore
+    public sealed partial record CategoryCore : RosterElementBaseCore
     {
         [XmlAttribute("primary")]
-        public bool Primary { get; }
+        public bool Primary { get; init; }
     }
 }

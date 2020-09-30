@@ -4,18 +4,18 @@ namespace WarHub.ArmouryModel.Source
 {
     [WhamNodeCore]
     [XmlType("costType")]
-    public sealed partial class CostTypeCore : CommentableCore
+    public sealed partial record CostTypeCore : CommentableCore
     {
         [XmlAttribute("id")]
-        public string? Id { get; }
+        public string? Id { get; init; }
 
         [XmlAttribute("name")]
-        public string? Name { get; }
+        public string? Name { get; init; }
 
         [XmlAttribute("defaultCostLimit")]
-        public decimal DefaultCostLimit { get; }
+        public decimal DefaultCostLimit { get; init; }
 
         [XmlAttribute("hidden")]
-        public bool Hidden { get; }
+        public bool Hidden { get; init; }
     }
 }

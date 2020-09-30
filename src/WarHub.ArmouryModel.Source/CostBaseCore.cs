@@ -3,15 +3,15 @@
 namespace WarHub.ArmouryModel.Source
 {
     [WhamNodeCore]
-    public abstract partial class CostBaseCore
+    public abstract partial record CostBaseCore
     {
         [XmlAttribute("name")]
-        public string? Name { get; }
+        public string? Name { get; init; }
 
         [XmlAttribute("typeId")]
-        public string? TypeId { get; }
+        public string? TypeId { get; init; }
 
         [XmlAttribute("value")]
-        public decimal Value { get; }
+        public decimal Value { get; init; }
     }
 }

@@ -1,8 +1,8 @@
 ﻿namespace WarHub.ArmouryModel.Source
 {
     [WhamNodeCore]
-    public partial class DerivedTwiceWithNewPropsCore : AbstractDerivedWithNewPropCore
+    public partial record DerivedTwiceWithNewPropsCore : AbstractDerivedWithNewPropCore
     {
-        public RecursiveContainerCore Container { get; }
+        public RecursiveContainerCore Container { get; init; } = RecursiveContainerCore.Empty;
     }
 }

@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using System.Threading;
@@ -62,10 +61,9 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
 
         private static TypeSyntax GetNodePropertyType(CoreDescriptor.Entry entry) => entry switch
         {
-            CoreDescriptor.SimpleEntry => entry.Type,
             CoreDescriptor.ComplexEntry complex => complex.GetNodeTypeIdentifierName(),
             CoreDescriptor.CollectionEntry collection => collection.GetListNodeTypeIdentifierName(),
-            _ => throw new InvalidOperationException("Unknown descriptor entry type.")
+            _ => entry.Type
         };
 
         private ConstructorDeclarationSyntax GenerateConstructor()
@@ -281,22 +279,19 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                 }
                 var coreWithArg = entry switch
                 {
-                    CoreDescriptor.SimpleEntry => ValueParamSyntax,
                     CoreDescriptor.ComplexEntry => ValueParamSyntax.MemberAccess(CorePropertyIdentifierName),
                     CoreDescriptor.CollectionEntry =>
                         ValueParamSyntax.MemberAccess(
                             IdentifierName(Names.ToCoreArray))
                         .InvokeWithArguments(),
-                    _ => throw new NotImplementedException()
+                    _ => ValueParamSyntax
                 };
                 return signature
                     .WithExpressionBodyFull(
                         IdentifierName(Names.UpdateWith)
                         .InvokeWithArguments(
                             CorePropertyIdentifierName
-                            .MemberAccess(
-                                IdentifierName(Names.WithPrefix + entry.Identifier))
-                            .InvokeWithArguments(coreWithArg)));
+                            .With(entry.IdentifierName.Assign(coreWithArg))));
             }
         }
 

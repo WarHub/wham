@@ -3,10 +3,10 @@
 namespace WarHub.ArmouryModel.Source
 {
     [WhamNodeCore]
-    public partial class RootContainerCore
+    public partial record RootContainerCore
     {
-        public ImmutableArray<ContainerCore> LeftContainers { get; }
+        public ImmutableArray<ContainerCore> LeftContainers { get; init; } = ImmutableArray<ContainerCore>.Empty;
 
-        public ImmutableArray<ContainerCore> RightContainers { get; }
+        public ImmutableArray<ContainerCore> RightContainers { get; init; } = ImmutableArray<ContainerCore>.Empty;
     }
 }

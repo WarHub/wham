@@ -4,12 +4,12 @@ namespace WarHub.ArmouryModel.Source
 {
     [WhamNodeCore]
     [XmlType("tag")]
-    public sealed partial class RosterTagCore
+    public sealed partial record RosterTagCore
     {
         [XmlAttribute("id")]
-        public string? Id { get; }
+        public string? Id { get; init; }
 
         [XmlAttribute("name")]
-        public string? Name { get; }
+        public string? Name { get; init; }
     }
 }

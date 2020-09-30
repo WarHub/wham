@@ -50,8 +50,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration.Tests
         [Fact]
         public void ItemNode_HasPublicCoreProperty()
         {
-            var core = new ItemCore(null, null).ToNode().Core;
-
+            var core = new ItemCore().ToNode().Core;
             core.Should().NotBeNull();
         }
 

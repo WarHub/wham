@@ -4,27 +4,27 @@ using System.Xml.Serialization;
 namespace WarHub.ArmouryModel.Source
 {
     [WhamNodeCore]
-    public abstract partial class EntryBaseCore : CommentableCore
+    public abstract partial record EntryBaseCore : CommentableCore
     {
         [XmlAttribute("id")]
-        public string? Id { get; }
+        public string? Id { get; init; }
 
         [XmlAttribute("name")]
-        public string? Name { get; }
+        public string? Name { get; init; }
 
         [XmlAttribute("publicationId")]
-        public string? PublicationId { get; }
+        public string? PublicationId { get; init; }
 
         [XmlAttribute("page")]
-        public string? Page { get; }
+        public string? Page { get; init; }
 
         [XmlAttribute("hidden")]
-        public bool Hidden { get; }
+        public bool Hidden { get; init; }
 
         [XmlArray("modifiers")]
-        public ImmutableArray<ModifierCore> Modifiers { get; }
+        public ImmutableArray<ModifierCore> Modifiers { get; init; } = ImmutableArray<ModifierCore>.Empty;
 
         [XmlArray("modifierGroups")]
-        public ImmutableArray<ModifierGroupCore> ModifierGroups { get; }
+        public ImmutableArray<ModifierGroupCore> ModifierGroups { get; init; } = ImmutableArray<ModifierGroupCore>.Empty;
     }
 }

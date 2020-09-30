@@ -4,24 +4,24 @@ namespace WarHub.ArmouryModel.Source
 {
     [WhamNodeCore]
     [XmlType("publication")]
-    public sealed partial class PublicationCore : CommentableCore
+    public sealed partial record PublicationCore : CommentableCore
     {
         [XmlAttribute("id")]
-        public string? Id { get; }
+        public string? Id { get; init; }
 
         [XmlAttribute("name")]
-        public string? Name { get; }
+        public string? Name { get; init; }
 
         [XmlAttribute("shortName")]
-        public string? ShortName { get; }
+        public string? ShortName { get; init; }
 
         [XmlAttribute("publisher")]
-        public string? Publisher { get; }
+        public string? Publisher { get; init; }
 
         [XmlAttribute("publicationDate")]
-        public string? PublicationDate { get; }
+        public string? PublicationDate { get; init; }
 
         [XmlAttribute("publisherUrl")]
-        public string? PublisherUrl { get; }
+        public string? PublisherUrl { get; init; }
     }
 }

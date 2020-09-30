@@ -3,9 +3,9 @@
 namespace WarHub.ArmouryModel.Source
 {
     [WhamNodeCore]
-    public abstract partial class CommentableCore
+    public abstract partial record CommentableCore
     {
         [XmlElement("comment")]
-        public string? Comment { get; }
+        public string? Comment { get; init; }
     }
 }

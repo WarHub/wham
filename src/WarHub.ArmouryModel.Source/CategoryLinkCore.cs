@@ -4,12 +4,12 @@ namespace WarHub.ArmouryModel.Source
 {
     [WhamNodeCore]
     [XmlType("categoryLink")]
-    public sealed partial class CategoryLinkCore : ContainerEntryBaseCore
+    public sealed partial record CategoryLinkCore : ContainerEntryBaseCore
     {
         [XmlAttribute("targetId")]
-        public string? TargetId { get; }
+        public string? TargetId { get; init; }
 
         [XmlAttribute("primary")]
-        public bool Primary { get; }
+        public bool Primary { get; init; }
     }
 }

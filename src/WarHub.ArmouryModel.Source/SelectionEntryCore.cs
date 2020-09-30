@@ -5,12 +5,12 @@ namespace WarHub.ArmouryModel.Source
 {
     [WhamNodeCore]
     [XmlType("selectionEntry")]
-    public sealed partial class SelectionEntryCore : SelectionEntryBaseCore
+    public sealed partial record SelectionEntryCore : SelectionEntryBaseCore
     {
         [XmlAttribute("type")]
-        public SelectionEntryKind Type { get; }
+        public SelectionEntryKind Type { get; init; }
 
         [XmlArray("costs")]
-        public ImmutableArray<CostCore> Costs { get; }
+        public ImmutableArray<CostCore> Costs { get; init; } = ImmutableArray<CostCore>.Empty;
     }
 }

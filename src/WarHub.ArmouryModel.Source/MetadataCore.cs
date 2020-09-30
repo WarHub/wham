@@ -6,21 +6,21 @@ namespace WarHub.ArmouryModel.Source
     /// Describes metadata of an item, further along referred to as target item.
     /// </summary>
     [WhamNodeCore]
-    public sealed partial class MetadataCore
+    public sealed partial record MetadataCore
     {
         /// <summary>
         /// Gets an identifier of the target item described by this meta within some collection.
         /// </summary>
-        public string? Identifier { get; }
+        public string? Identifier { get; init; }
 
         /// <summary>
         /// Gets an identifier of an item preceding the target item.
         /// </summary>
-        public string? PrevIdentifier { get; }
+        public string? PrevIdentifier { get; init; }
 
         /// <summary>
         /// Gets sequence number of the target item within some collection, or null if not specified.
         /// </summary>
-        public int? Sequence { get; }
+        public int? Sequence { get; init; }
     }
 }

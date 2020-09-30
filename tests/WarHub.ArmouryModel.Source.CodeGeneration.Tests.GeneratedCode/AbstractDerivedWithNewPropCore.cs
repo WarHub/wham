@@ -1,8 +1,8 @@
 ﻿namespace WarHub.ArmouryModel.Source
 {
     [WhamNodeCore]
-    public abstract partial class AbstractDerivedWithNewPropCore : AbstractBaseCore
+    public abstract partial record AbstractDerivedWithNewPropCore : AbstractBaseCore
     {
-        public string? DerivedNewProp { get; }
+        public string? DerivedNewProp { get; init; }
     }
 }

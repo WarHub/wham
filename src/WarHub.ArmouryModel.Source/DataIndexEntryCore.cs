@@ -4,24 +4,24 @@ namespace WarHub.ArmouryModel.Source
 {
     [WhamNodeCore]
     [XmlType("dataIndexEntry")]
-    public sealed partial class DataIndexEntryCore
+    public sealed partial record DataIndexEntryCore
     {
         [XmlAttribute("filePath")]
-        public string? FilePath { get; }
+        public string? FilePath { get; init; }
 
         [XmlAttribute("dataType")]
-        public DataIndexEntryKind DataType { get; }
+        public DataIndexEntryKind DataType { get; init; }
 
         [XmlAttribute("dataId")]
-        public string? DataId { get; }
+        public string? DataId { get; init; }
 
         [XmlAttribute("dataName")]
-        public string? DataName { get; }
+        public string? DataName { get; init; }
 
         [XmlAttribute("dataBattleScribeVersion")]
-        public string? DataBattleScribeVersion { get; }
+        public string? DataBattleScribeVersion { get; init; }
 
         [XmlAttribute("dataRevision")]
-        public int DataRevision { get; }
+        public int DataRevision { get; init; }
     }
 }
