@@ -93,7 +93,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                         .WithType(type)
                         .WithDefault(
                             EqualsValueClause(
-                                DefaultExpression(type)));
+                                LiteralExpression(SyntaxKind.DefaultLiteralExpression)));
             }
             StatementSyntax CreateListNodeReturnStatement()
             {

@@ -149,6 +149,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
         private static ImmutableHashSet<string> RequiredNamespaces { get; } =
             ImmutableHashSet.Create(
                 Names.NamespaceSystem,
+                Names.NamespaceSystemCollections,
                 Names.NamespaceSystemCollectionsGeneric,
                 Names.NamespaceSystemCollectionsImmutable,
                 Names.NamespaceSystemDiagnostics,
@@ -162,6 +163,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
         private static ImmutableArray<UsingDirectiveSyntax> CreateRequiredUsings() =>
             ImmutableArray.Create(
                 UsingDirective(ParseName(Names.NamespaceSystem)),
+                UsingDirective(ParseName(Names.NamespaceSystemCollections)),
                 UsingDirective(ParseName(Names.NamespaceSystemCollectionsGeneric)),
                 UsingDirective(ParseName(Names.NamespaceSystemCollectionsImmutable)),
                 UsingDirective(ParseName(Names.NamespaceSystemDiagnostics)),

@@ -40,10 +40,9 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                 .AddTypes(
                     SimpleBaseType(
                         GenericName(
-                            Identifier(Names.IEnumerableGeneric))
+                            Identifier(Names.IEnumerable))
                         .AddTypeArgumentListArguments(
-                            IdentifierName(Names.FastSerializationProxy))
-                        .WithNamespace(Names.IEnumerableGenericNamespace)));
+                            IdentifierName(Names.FastSerializationProxy))));
         }
 
         private IEnumerable<MemberDeclarationSyntax> GenerateFseMembers()
@@ -152,14 +151,14 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                     .WithExpressionBodyFull(
                         ThrowExpression(
                             ObjectCreationExpression(
-                                ParseName(Names.NotSupportedExceptionFull))
+                                IdentifierName(Names.NotSupportedException))
                             .AddArgumentListArguments()));
 
                 static AttributeSyntax CreateObsoleteAttribute()
                 {
                     return
                         Attribute(
-                            ParseName(Names.ObsoleteFull))
+                            IdentifierName(Names.Obsolete))
                         .AddArgumentListArguments(
                             AttributeArgument(
                                 LiteralExpression(
@@ -174,10 +173,9 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                 return
                     MethodDeclaration(
                         GenericName(
-                            Identifier(Names.IEnumeratorGeneric))
+                            Identifier(Names.IEnumerator))
                         .AddTypeArgumentListArguments(
-                            IdentifierName(Names.FastSerializationProxy))
-                        .WithNamespace(Names.IEnumeratorGenericNamespace),
+                            IdentifierName(Names.FastSerializationProxy)),
                         Names.GetEnumerator)
                     .AddModifiers(SyntaxKind.PublicKeyword)
                     .AddBodyStatements(
@@ -202,11 +200,11 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
             {
                 return
                     MethodDeclaration(
-                        ParseTypeName(Names.IEnumeratorNonGenericFull),
+                        IdentifierName(Names.IEnumerator),
                         Identifier(Names.GetEnumerator))
                     .WithExplicitInterfaceSpecifier(
                         ExplicitInterfaceSpecifier(
-                            ParseName(Names.IEnumerableNonGenericFull)))
+                            IdentifierName(Names.IEnumerable)))
                     .WithExpressionBodyFull(
                         InvocationExpression(
                             IdentifierName(Names.GetEnumerator)));

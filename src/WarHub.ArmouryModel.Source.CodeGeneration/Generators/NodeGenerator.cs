@@ -486,7 +486,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                     =>
                     ThrowStatement(
                         ObjectCreationExpression(
-                            ParseName(Names.ArgumentOutOfRangeExceptionFull))
+                            IdentifierName(Names.ArgumentOutOfRangeException))
                         .AddArgumentListArguments(
                             Argument(
                                 InvocationExpression(
@@ -495,14 +495,12 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                                     Argument(indexIdentifierName)))));
             }
 
-            static QualifiedNameSyntax CreateIEnumerableOf(TypeSyntax typeParameter)
+            static NameSyntax CreateIEnumerableOf(TypeSyntax typeParameter)
             {
                 return
-                    QualifiedName(
-                        ParseName(Names.IEnumerableGenericNamespace),
-                        GenericName(
-                            Identifier(Names.IEnumerableGeneric))
-                        .AddTypeArgumentListArguments(typeParameter));
+                    GenericName(
+                        Identifier(Names.IEnumerable))
+                    .AddTypeArgumentListArguments(typeParameter);
             }
         }
     }

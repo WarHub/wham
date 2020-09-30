@@ -98,7 +98,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
         public static TypeSyntax ToIEnumerableType(this TypeSyntax typeArgument)
         {
             return
-                GenericName(Names.IEnumerableGeneric)
+                GenericName(Names.IEnumerable)
                 .AddTypeArgumentListArguments(typeArgument);
         }
 
