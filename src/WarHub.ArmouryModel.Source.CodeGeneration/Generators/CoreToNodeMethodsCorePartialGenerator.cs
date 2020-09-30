@@ -43,68 +43,29 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
         {
             const string ParentLocal = "parent";
             var nodeTypeIdentifierName = Descriptor.GetNodeTypeIdentifierName();
-            var derivedToNodeName = (IsDerived ? BaseType.Name : "") + Names.ToNode;
-            var abstractToNodeName = Descriptor.CoreTypeIdentifier.Text + Names.ToNode;
-            var thisToNodeName = IsAbstract ? abstractToNodeName : Names.ToNode;
-            if (IsDerived)
-            {
-                yield return DerivedToNodeMethod();
-            }
-            if (!IsAbstract)
-            {
-                yield return ToNodeCoreMethod();
-            }
-            if (IsAbstract)
-            {
-                yield return AbstractToNodeMethod();
-            }
+            var parentParameterBase =
+                Parameter(
+                    Identifier(ParentLocal))
+                .WithType(
+                    NullableType(
+                        IdentifierName(Names.SourceNode)));
             yield return ToNodeMethod();
             yield return ToNodeExplicitInterfaceMethod();
-            MethodDeclarationSyntax DerivedToNodeMethod()
-            {
-                return
-                    MethodDeclaration(
-                        IdentifierName(BaseType.Name.GetNodeTypeNameCore()),
-                        derivedToNodeName)
-                    .AddModifiers(SyntaxKind.ProtectedKeyword, SyntaxKind.SealedKeyword, SyntaxKind.OverrideKeyword)
-                    .Mutate(AddToNodeParameters)
-                    .Mutate(x => ForwardExpressionToNode(x, Names.ToNode));
-            }
-
-            static MethodDeclarationSyntax ToNodeCoreMethod()
-            {
-                return
-                    MethodDeclaration(
-                        IdentifierName(Names.SourceNode),
-                        Names.ToNodeCore)
-                    .AddModifiers(SyntaxKind.ProtectedKeyword, SyntaxKind.SealedKeyword, SyntaxKind.OverrideKeyword)
-                    .AddParameterListParameters(
-                        Parameter(
-                            Identifier(ParentLocal))
-                        .WithType(
-                            NullableType(
-                                IdentifierName(Names.SourceNode))))
-                    .Mutate(x => ForwardExpressionToNode(x, Names.ToNode));
-            }
-            MethodDeclarationSyntax AbstractToNodeMethod()
-            {
-                return
-                    MethodDeclaration(nodeTypeIdentifierName, abstractToNodeName)
-                    .AddModifiers(SyntaxKind.ProtectedKeyword, SyntaxKind.AbstractKeyword)
-                    .Mutate(AddToNodeParameters)
-                    .WithSemicolonTokenDefault();
-            }
             MethodDeclarationSyntax ToNodeMethod()
             {
                 return
                     MethodDeclaration(nodeTypeIdentifierName, Names.ToNode)
-                    .AddModifiers(
-                        SyntaxKind.PublicKeyword,
-                        SyntaxKind.NewKeyword)
-                    .Mutate(AddToNodeParameters)
+                    .AddModifiers(SyntaxKind.PublicKeyword)
+                    .MutateIf(IsAbstract, x => x.AddModifiers(SyntaxKind.AbstractKeyword))
+                    .AddModifiers(SyntaxKind.OverrideKeyword)
+                    .AddParameterListParameters(
+                        parentParameterBase
+                        .WithDefault(
+                            EqualsValueClause(
+                                LiteralExpression(SyntaxKind.NullLiteralExpression))))
                     .MutateIf(
                         IsAbstract,
-                        x => ForwardExpressionToNode(x, abstractToNodeName),
+                        x => x.WithSemicolonTokenDefault(),
                         x => x
                         .WithExpressionBodyFull(
                             ObjectCreationExpression(nodeTypeIdentifierName)
@@ -123,35 +84,9 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                             GenericName(
                                 Identifier(Names.ICore))
                             .AddTypeArgumentListArguments(nodeTypeIdentifierName)))
-                    .AddParameterListParameters(
-                        Parameter(
-                            Identifier(ParentLocal))
-                        .WithType(
-                            NullableType(
-                                IdentifierName(Names.SourceNode))))
-                    .Mutate(x => ForwardExpressionToNode(x, Names.ToNode));
-            }
-
-            static MethodDeclarationSyntax AddToNodeParameters(MethodDeclarationSyntax method)
-            {
-                return method
-                    .AddParameterListParameters(
-                        Parameter(
-                            Identifier(ParentLocal))
-                        .WithType(
-                            NullableType(
-                                IdentifierName(Names.SourceNode)))
-                        .WithDefault(
-                            EqualsValueClause(
-                                LiteralExpression(SyntaxKind.NullLiteralExpression))));
-            }
-
-            static MethodDeclarationSyntax ForwardExpressionToNode(MethodDeclarationSyntax method, string targetName)
-            {
-                return
-                    method
+                    .AddParameterListParameters(parentParameterBase)
                     .WithExpressionBodyFull(
-                        IdentifierName(targetName)
+                        IdentifierName(Names.ToNode)
                         .InvokeWithArguments(
                             IdentifierName(ParentLocal)));
             }
