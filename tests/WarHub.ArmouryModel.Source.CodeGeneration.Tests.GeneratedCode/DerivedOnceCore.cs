@@ -1,7 +1,7 @@
 ﻿namespace WarHub.ArmouryModel.Source
 {
     [WhamNodeCore]
-    public partial class DerivedOnceCore : AbstractBaseCore
+    public partial record DerivedOnceCore : AbstractBaseCore
     {
     }
 }

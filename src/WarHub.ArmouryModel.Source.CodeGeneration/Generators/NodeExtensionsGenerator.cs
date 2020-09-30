@@ -54,104 +54,71 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
             yield return CreateAddParams();
             MethodDeclarationSyntax CreateWithNodeList()
             {
-                return
-                    MethodDeclaration(nodeType, Names.WithPrefix + entry.Identifier)
-                    .AddModifiers(SyntaxKind.PublicKeyword, SyntaxKind.StaticKeyword)
-                    .AddParameterListParameters(
-                        Parameter(ThisParameterToken)
-                        .AddModifiers(SyntaxKind.ThisKeyword)
-                        .WithType(Descriptor.GetNodeTypeIdentifierName()),
-                        Parameter(entry.Identifier)
-                        .WithType(
-                            entry.GetNodeTypeIdentifierName().ToNodeListType()))
-                    .AddBodyStatements(
-                        ReturnStatement(
-                            ThisParameterSyntax
-                            .MemberAccess(
-                                IdentifierName(Names.UpdateWith))
-                            .InvokeWithArguments(
-                                ThisParameterSyntax
-                                .MemberAccess(NodeGenerator.CorePropertyIdentifierName)
-                                .MemberAccess(
-                                    IdentifierName(Names.WithPrefix + entry.Identifier))
-                                .InvokeWithArguments(
-                                    entry.IdentifierName
-                                    .MemberAccess(
-                                        IdentifierName(Names.ToCoreArray))
-                                    .InvokeWithArguments()))));
+                var parameter =
+                    Parameter(
+                        Identifier(NodesParamName))
+                    .WithType(
+                        entry.GetNodeTypeIdentifierName().ToNodeListType());
+                var withArg =
+                    IdentifierName(NodesParamName)
+                    .MemberAccess(
+                        IdentifierName(Names.ToListNode))
+                    .InvokeWithArguments();
+                return CreateMutator(Names.WithPrefix, parameter, withArg);
             }
             MethodDeclarationSyntax CreateWithParams()
             {
-                return CreateMutator(Names.WithPrefix, CreateParameters(), CreateNodesExpression());
-                IEnumerable<ParameterSyntax> CreateParameters()
-                {
-                    yield return
-                        Parameter(
-                            Identifier(NodesParamName))
-                        .AddModifiers(SyntaxKind.ParamsKeyword)
-                        .WithType(
-                            entryNodeType.ToArrayType());
-                }
-
-                static ExpressionSyntax CreateNodesExpression()
-                {
-                    return
-                        IdentifierName(NodesParamName)
-                        .MemberAccess(
-                            IdentifierName(Names.ToNodeList))
-                        .InvokeWithArguments();
-                }
+                var parameter =
+                    Parameter(
+                        Identifier(NodesParamName))
+                    .AddModifiers(SyntaxKind.ParamsKeyword)
+                    .WithType(
+                        entryNodeType.ToArrayType());
+                var withArg =
+                    IdentifierName(NodesParamName)
+                    .MemberAccess(
+                        IdentifierName(Names.ToNodeList))
+                    .InvokeWithArguments();
+                return CreateMutator(Names.WithPrefix, parameter, withArg);
             }
             MethodDeclarationSyntax CreateAddParams()
             {
-                return CreateMutator(Names.Add, CreateParameters(), CreateNodesExpression());
-                IEnumerable<ParameterSyntax> CreateParameters()
-                {
-                    yield return
-                        Parameter(
-                            Identifier(NodesParamName))
-                        .AddModifiers(SyntaxKind.ParamsKeyword)
-                        .WithType(
-                            entryNodeType.ToArrayType());
-                }
-                ExpressionSyntax CreateNodesExpression()
-                {
-                    return
-                        ThisParameterSyntax
-                        .MemberAccess(entry.IdentifierName)
-                        .MemberAccess(
-                            IdentifierName(Names.NodeList))
-                        .MemberAccess(
-                            IdentifierName(Names.AddRange))
-                        .InvokeWithArguments(
-                            IdentifierName(NodesParamName));
-                }
+                var parameter =
+                    Parameter(
+                        Identifier(NodesParamName))
+                    .AddModifiers(SyntaxKind.ParamsKeyword)
+                    .WithType(
+                        entryNodeType.ToArrayType());
+                var withArg =
+                    ThisParameterSyntax
+                    .MemberAccess(entry.IdentifierName)
+                    .MemberAccess(
+                        IdentifierName(Names.NodeList))
+                    .MemberAccess(
+                        IdentifierName(Names.AddRange))
+                    .InvokeWithArguments(
+                        IdentifierName(NodesParamName));
+                return CreateMutator(Names.Add, parameter, withArg);
             }
             MethodDeclarationSyntax CreateAddEnumerable()
             {
-                return CreateMutator(Names.Add, CreateParameters(), CreateNodesExpression());
-                IEnumerable<ParameterSyntax> CreateParameters()
-                {
-                    yield return
-                        Parameter(
-                            Identifier(NodesParamName))
-                        .WithType(
-                            entryNodeType.ToIEnumerableType());
-                }
-                ExpressionSyntax CreateNodesExpression()
-                {
-                    return
-                        ThisParameterSyntax
-                        .MemberAccess(entry.IdentifierName)
-                        .MemberAccess(
-                            IdentifierName(Names.NodeList))
-                        .MemberAccess(
-                            IdentifierName(Names.AddRange))
-                        .InvokeWithArguments(
-                            IdentifierName(NodesParamName));
-                }
+                var parameter =
+                    Parameter(
+                        Identifier(NodesParamName))
+                    .WithType(
+                        entryNodeType.ToIEnumerableType());
+                var withArg =
+                    ThisParameterSyntax
+                    .MemberAccess(entry.IdentifierName)
+                    .MemberAccess(
+                        IdentifierName(Names.NodeList))
+                    .MemberAccess(
+                        IdentifierName(Names.AddRange))
+                    .InvokeWithArguments(
+                        IdentifierName(NodesParamName));
+                return CreateMutator(Names.Add, parameter, withArg);
             }
-            MethodDeclarationSyntax CreateMutator(string prefix, IEnumerable<ParameterSyntax> parameters, ExpressionSyntax nodesExpression)
+            MethodDeclarationSyntax CreateMutator(string prefix, ParameterSyntax parameter, ExpressionSyntax nodesExpression)
             {
                 return
                     MethodDeclaration(nodeType, prefix + entry.Identifier)
@@ -159,8 +126,8 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                     .AddParameterListParameters(
                         Parameter(ThisParameterToken)
                         .AddModifiers(SyntaxKind.ThisKeyword)
-                        .WithType(Descriptor.GetNodeTypeIdentifierName()))
-                    .AddParameterListParameters(parameters)
+                        .WithType(Descriptor.GetNodeTypeIdentifierName()),
+                        parameter)
                     .AddBodyStatements(
                         ReturnStatement(
                             ThisParameterSyntax

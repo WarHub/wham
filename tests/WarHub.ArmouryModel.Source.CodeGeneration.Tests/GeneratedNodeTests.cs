@@ -48,6 +48,13 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration.Tests
         }
 
         [Fact]
+        public void ItemNode_HasPublicCoreProperty()
+        {
+            var core = new ItemCore().ToNode().Core;
+            core.Should().NotBeNull();
+        }
+
+        [Fact]
         public void DefaultNodeList_IsEmpty()
         {
             var list = default(NodeList<SourceNode>);
@@ -77,6 +84,17 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration.Tests
                     Assert.Equal(ItemId, x.Id);
                     Assert.Equal(ItemName, x.Name);
                 });
+        }
+
+        [Theory]
+        [InlineData(typeof(AbstractBaseNode))]
+        [InlineData(typeof(AbstractDerivedNode))]
+        [InlineData(typeof(AbstractDerivedWithNewPropNode))]
+        public void Abstract_node_has_abstract_readonly_properties(Type type)
+        {
+            var declared = type.GetProperties().Where(x => x.DeclaringType == type);
+
+            declared.Should().OnlyContain(x => x.GetGetMethod()!.IsAbstract && x.GetSetMethod() == null);
         }
 
         [Fact]

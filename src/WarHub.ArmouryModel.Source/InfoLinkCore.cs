@@ -4,12 +4,12 @@ namespace WarHub.ArmouryModel.Source
 {
     [WhamNodeCore]
     [XmlType("infoLink")]
-    public sealed partial class InfoLinkCore : EntryBaseCore
+    public sealed partial record InfoLinkCore : EntryBaseCore
     {
         [XmlAttribute("targetId")]
-        public string? TargetId { get; }
+        public string? TargetId { get; init; }
 
         [XmlAttribute("type")]
-        public InfoLinkKind Type { get; }
+        public InfoLinkKind Type { get; init; }
     }
 }

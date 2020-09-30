@@ -45,7 +45,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
 
             IEnumerable<INamedTypeSymbol> GetNodeCoreSymbols()
             {
-                foreach (var candidate in syntaxReceiver.CandidateClasses)
+                foreach (var candidate in syntaxReceiver.Candidates)
                 {
                     var model = context.Compilation.GetSemanticModel(candidate.SyntaxTree);
                     var classSymbol = model.GetDeclaredSymbol(candidate);
@@ -58,7 +58,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
 
             CoreDescriptor CreateDescriptor(INamedTypeSymbol coreSymbol)
             {
-                var declarationSyntax = (ClassDeclarationSyntax)coreSymbol.DeclaringSyntaxReferences[0].GetSyntax();
+                var declarationSyntax = (RecordDeclarationSyntax)coreSymbol.DeclaringSyntaxReferences[0].GetSyntax();
                 var attributes = declarationSyntax.AttributeLists
                     .SelectMany(x => x.Attributes)
                     .Where(x => x.IsNamed(Names.XmlRoot) || x.IsNamed(Names.XmlType))
@@ -68,20 +68,20 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                 var entries = GetCustomBaseTypesAndSelf(coreSymbol)
                     .Reverse()
                     .SelectMany(x => x.GetMembers().OfType<IPropertySymbol>())
-                    .Where(p => p is { IsReadOnly: true, IsStatic: false, IsIndexer: false, DeclaredAccessibility: Accessibility.Public })
+                    .Where(p => p is { IsStatic: false, IsIndexer: false, DeclaredAccessibility: Accessibility.Public })
                     .Select(p =>
                     {
                         var x = p.DeclaringSyntaxReferences.FirstOrDefault();
                         var syntax = (PropertyDeclarationSyntax?)x?.GetSyntax();
-                        var auto = syntax?.AccessorList?.Accessors.All(accessor => accessor.Body == null && accessor.ExpressionBody == null) ?? false;
+                        var auto = syntax?.AccessorList?.Accessors.All(ac => ac is { Body: null, ExpressionBody: null, Keyword: { ValueText: "get" or "init" } }) ?? false;
                         return auto ? new { syntax = syntax!, symbol = p } : null;
                     })
                     .Where(x => x != null)
-                    .Select(x => CoreDescriptorBuilder.CreateRecordEntry(x!.symbol, x.syntax, immutableArraySymbol, attributeSymbol))
+                    .Select(x => CoreDescriptorBuilder.CreateRecordEntry(x!.symbol, x.syntax, coreSymbol, immutableArraySymbol, attributeSymbol))
                     .ToImmutableArray();
                 var descriptor = new CoreDescriptor(
                     coreSymbol,
-                    ParseName(coreSymbol.ToDisplayString()),
+                    IdentifierName(declarationSyntax.Identifier),
                     declarationSyntax.Identifier.WithoutTrivia(),
                     entries,
                     attributes);
@@ -149,6 +149,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
         private static ImmutableHashSet<string> RequiredNamespaces { get; } =
             ImmutableHashSet.Create(
                 Names.NamespaceSystem,
+                Names.NamespaceSystemCollections,
                 Names.NamespaceSystemCollectionsGeneric,
                 Names.NamespaceSystemCollectionsImmutable,
                 Names.NamespaceSystemDiagnostics,
@@ -162,6 +163,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
         private static ImmutableArray<UsingDirectiveSyntax> CreateRequiredUsings() =>
             ImmutableArray.Create(
                 UsingDirective(ParseName(Names.NamespaceSystem)),
+                UsingDirective(ParseName(Names.NamespaceSystemCollections)),
                 UsingDirective(ParseName(Names.NamespaceSystemCollectionsGeneric)),
                 UsingDirective(ParseName(Names.NamespaceSystemCollectionsImmutable)),
                 UsingDirective(ParseName(Names.NamespaceSystemDiagnostics)),
@@ -170,11 +172,11 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
 
         private static IEnumerable<TypeDeclarationSyntax> GenerateCorePartials(CoreDescriptor descriptor)
         {
-            yield return RecordCorePartialGenerator.Generate(descriptor, default);
             if (descriptor.TypeSymbol.IsAbstract)
             {
                 yield break;
             }
+            yield return CoreEmptyPropertyPartialGenerator.Generate(descriptor, default);
             yield return BuilderCorePartialGenerator.Generate(descriptor, default);
             yield return FspCorePartialGenerator.Generate(descriptor, default);
             yield return FseCorePartialGenerator.Generate(descriptor, default);
@@ -202,14 +204,15 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
 
         private class SyntaxReceiver : ISyntaxReceiver
         {
-            public List<ClassDeclarationSyntax> CandidateClasses { get; } = new List<ClassDeclarationSyntax>();
+            public List<RecordDeclarationSyntax> Candidates { get; } = new List<RecordDeclarationSyntax>();
+
             public void OnVisitSyntaxNode(SyntaxNode syntaxNode)
             {
-                if (syntaxNode.IsKind(SyntaxKind.ClassDeclaration)
-                    && syntaxNode is ClassDeclarationSyntax classDeclaration
-                    && classDeclaration.AttributeLists.Count > 0)
+                if (syntaxNode.IsKind(SyntaxKind.RecordDeclaration)
+                    && syntaxNode is RecordDeclarationSyntax record
+                    && record.AttributeLists.Count > 0)
                 {
-                    CandidateClasses.Add(classDeclaration);
+                    Candidates.Add(record);
                 }
             }
         }

@@ -39,24 +39,24 @@ namespace WarHub.ArmouryModel.Source.BattleScribe
                 [RootElement.Roster] = new ElementCache(),
             }.ToImmutableDictionary();
 
-        public CatalogueNode DeserializeCatalogue(Func<XmlSerializer, object> deserialization)
-            => Deserialize<CatalogueCore.Builder>(deserialization, RootElement.Catalogue)
+        public CatalogueNode? DeserializeCatalogue(Func<XmlSerializer, object?> deserialization)
+            => Deserialize<CatalogueCore.Builder>(deserialization, RootElement.Catalogue)?
             .ToImmutable().ToNode();
 
-        public GamesystemNode DeserializeGamesystem(Func<XmlSerializer, object> deserialization)
-            => Deserialize<GamesystemCore.Builder>(deserialization, RootElement.GameSystem)
+        public GamesystemNode? DeserializeGamesystem(Func<XmlSerializer, object?> deserialization)
+            => Deserialize<GamesystemCore.Builder>(deserialization, RootElement.GameSystem)?
             .ToImmutable().ToNode();
 
-        public RosterNode DeserializeRoster(Func<XmlSerializer, object> deserialization)
-            => Deserialize<RosterCore.Builder>(deserialization, RootElement.Roster)
+        public RosterNode? DeserializeRoster(Func<XmlSerializer, object?> deserialization)
+            => Deserialize<RosterCore.Builder>(deserialization, RootElement.Roster)?
             .ToImmutable().ToNode();
 
-        public DataIndexNode DeserializeDataIndex(Func<XmlSerializer, object> deserialization)
-            => Deserialize<DataIndexCore.Builder>(deserialization, RootElement.DataIndex)
+        public DataIndexNode? DeserializeDataIndex(Func<XmlSerializer, object?> deserialization)
+            => Deserialize<DataIndexCore.Builder>(deserialization, RootElement.DataIndex)?
             .ToImmutable().ToNode();
 
-        public SourceNode Deserialize(
-            Func<XmlSerializer, object> deserialization,
+        public SourceNode? Deserialize(
+            Func<XmlSerializer, object?> deserialization,
             RootElement rootElement)
         {
             return rootElement switch
@@ -114,10 +114,10 @@ namespace WarHub.ArmouryModel.Source.BattleScribe
             serializer.Serialize(bsWriter, @object, namespaces);
         }
 
-        private T Deserialize<T>(Func<XmlSerializer, object> deserialization, RootElement rootElement)
+        private T? Deserialize<T>(Func<XmlSerializer, object?> deserialization, RootElement rootElement)
         {
             var serializer = GetDeserializer(rootElement);
-            return (T)deserialization(serializer);
+            return (T?)deserialization(serializer);
         }
 
         private XmlSerializerNamespaces GetNamespaces(RootElement rootElement)

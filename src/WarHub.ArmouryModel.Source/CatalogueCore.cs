@@ -6,18 +6,18 @@ namespace WarHub.ArmouryModel.Source
 {
     [WhamNodeCore]
     [XmlRoot(RootElementNames.Catalogue, Namespace = Namespaces.CatalogueXmlns, IsNullable = false)]
-    public sealed partial class CatalogueCore : CatalogueBaseCore
+    public sealed partial record CatalogueCore : CatalogueBaseCore
     {
         [XmlAttribute("library")]
-        public bool IsLibrary { get; }
+        public bool IsLibrary { get; init; }
 
         [XmlAttribute("gameSystemId")]
-        public string? GamesystemId { get; }
+        public string? GamesystemId { get; init; }
 
         [XmlAttribute("gameSystemRevision")]
-        public int GamesystemRevision { get; }
+        public int GamesystemRevision { get; init; }
 
         [XmlArray("catalogueLinks")]
-        public ImmutableArray<CatalogueLinkCore> CatalogueLinks { get; }
+        public ImmutableArray<CatalogueLinkCore> CatalogueLinks { get; init; } = ImmutableArray<CatalogueLinkCore>.Empty;
     }
 }

@@ -84,10 +84,10 @@ namespace WarHub.ArmouryModel.ProjectModel
             => configInfo.GetFullPath(configInfo.Configuration.GetSourceFolder(kind));
 
         public static string GetFullPath(this ProjectConfigurationInfo configInfo, SourceFolder folder)
-            => Path.Combine(Path.GetDirectoryName(configInfo.Filepath), folder.Subpath);
+            => Path.Combine(Path.GetDirectoryName(configInfo.Filepath) ?? "", folder.Subpath);
 
         public static DirectoryInfo GetDirectoryInfo(this ProjectConfigurationInfo configInfo)
-            => new DirectoryInfo(Path.GetDirectoryName(configInfo.Filepath));
+            => new DirectoryInfo(Path.GetDirectoryName(configInfo.Filepath) ?? "");
 
         public static string GetFilename(this ProjectConfigurationInfo configInfo)
             => Path.GetFileName(configInfo.Filepath);

@@ -14,7 +14,8 @@ jobs:
       - uses: actions/checkout@v2
         with:
           fetch-depth: 0 # all history
-      - uses: actions/setup-dotnet@v1
+      # - uses: actions/setup-dotnet@v1
+      - uses: ./.github/actions/install-dotnet
       - run: dotnet --info
       - run: dotnet tool restore
       - run: dotnet nbgv get-version

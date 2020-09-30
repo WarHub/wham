@@ -4,9 +4,9 @@ namespace WarHub.ArmouryModel.Source
 {
     [WhamNodeCore]
     [XmlType("condition")]
-    public sealed partial class ConditionCore : QueryFilteredBaseCore
+    public sealed partial record ConditionCore : QueryFilteredBaseCore
     {
         [XmlAttribute("type")]
-        public ConditionKind Type { get; }
+        public ConditionKind Type { get; init; }
     }
 }

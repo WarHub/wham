@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Threading;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
@@ -17,6 +18,11 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
         {
             return Descriptor.CoreTypeIdentifier;
         }
+
+        protected override TypeDeclarationSyntax GenerateTypeDeclarationCore(SyntaxToken typeIdentifier) =>
+            RecordDeclaration(Token(SyntaxKind.RecordKeyword), typeIdentifier)
+            .WithOpenBraceToken(Token(SyntaxKind.OpenBraceToken))
+            .WithCloseBraceToken(Token(SyntaxKind.CloseBraceToken));
 
         protected override IEnumerable<TypeParameterSyntax> GenerateTypeParameters()
         {

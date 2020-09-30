@@ -4,7 +4,7 @@ namespace WarHub.ArmouryModel.Source
 {
     [WhamNodeCore]
     [XmlType("categoryEntry")]
-    public sealed partial class CategoryEntryCore : ContainerEntryBaseCore
+    public sealed partial record CategoryEntryCore : ContainerEntryBaseCore
     {
     }
 }

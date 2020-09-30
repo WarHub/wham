@@ -13,7 +13,7 @@ namespace WarHub.ArmouryModel.Source.BattleScribe
         /// </summary>
         /// <param name="path">Filepath to (unzipped) gamesystem file.</param>
         /// <returns>Gamesystem data model.</returns>
-        public static GamesystemNode LoadGamesystem(string path)
+        public static GamesystemNode? LoadGamesystem(string path)
         {
             using var stream = File.OpenRead(path);
             return stream.DeserializeGamesystem();
@@ -24,7 +24,7 @@ namespace WarHub.ArmouryModel.Source.BattleScribe
         /// </summary>
         /// <param name="stream">Stream of gamesystem file content.</param>
         /// <returns>Gamesystem data model.</returns>
-        public static GamesystemNode LoadGamesystem(Stream stream)
+        public static GamesystemNode? LoadGamesystem(Stream stream)
         {
             return stream.DeserializeGamesystem();
         }
@@ -34,7 +34,7 @@ namespace WarHub.ArmouryModel.Source.BattleScribe
         /// </summary>
         /// <param name="path">Filepath to (unzipped) catalogue file.</param>
         /// <returns>Catalogue data model.</returns>
-        public static CatalogueNode LoadCatalogue(string path)
+        public static CatalogueNode? LoadCatalogue(string path)
         {
             using var stream = File.OpenRead(path);
             return stream.DeserializeCatalogue();
@@ -45,7 +45,7 @@ namespace WarHub.ArmouryModel.Source.BattleScribe
         /// </summary>
         /// <param name="stream">Stream of catalogue file content.</param>
         /// <returns>Catalogue data model.</returns>
-        public static CatalogueNode LoadCatalogue(Stream stream)
+        public static CatalogueNode? LoadCatalogue(Stream stream)
         {
             return stream.DeserializeCatalogue();
         }
@@ -55,7 +55,7 @@ namespace WarHub.ArmouryModel.Source.BattleScribe
         /// </summary>
         /// <param name="path">Filepath to (unzipped) roster file.</param>
         /// <returns>Roster data model.</returns>
-        public static RosterNode LoadRoster(string path)
+        public static RosterNode? LoadRoster(string path)
         {
             using var stream = File.OpenRead(path);
             return stream.DeserializeRoster();
@@ -66,7 +66,7 @@ namespace WarHub.ArmouryModel.Source.BattleScribe
         /// </summary>
         /// <param name="stream">Stream of roster file content.</param>
         /// <returns>Roster data model.</returns>
-        public static RosterNode LoadRoster(Stream stream)
+        public static RosterNode? LoadRoster(Stream stream)
         {
             return stream.DeserializeRoster();
         }
@@ -76,7 +76,7 @@ namespace WarHub.ArmouryModel.Source.BattleScribe
         /// </summary>
         /// <param name="path">Filepath to (unzipped) data index file.</param>
         /// <returns>Data index data model.</returns>
-        public static DataIndexNode LoadDataIndex(string path)
+        public static DataIndexNode? LoadDataIndex(string path)
         {
             using var stream = File.OpenRead(path);
             return stream.DeserializeDataIndex();
@@ -87,7 +87,7 @@ namespace WarHub.ArmouryModel.Source.BattleScribe
         /// </summary>
         /// <param name="stream">Stream of data index file content.</param>
         /// <returns>Data index data model.</returns>
-        public static DataIndexNode LoadDataIndex(Stream stream)
+        public static DataIndexNode? LoadDataIndex(Stream stream)
         {
             return stream.DeserializeDataIndex();
         }

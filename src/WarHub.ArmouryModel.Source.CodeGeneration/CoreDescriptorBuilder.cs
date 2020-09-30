@@ -12,24 +12,26 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
         public static CoreDescriptor.Entry CreateRecordEntry(
             IPropertySymbol symbol,
             PropertyDeclarationSyntax syntax,
+            INamedTypeSymbol typeSymbol,
             INamedTypeSymbol immutableArraySymbol,
             INamedTypeSymbol attributeSymbol)
         {
             var typeSyntax = syntax.Type;
             var typeIdentifier = syntax.Identifier.WithoutTrivia();
             var attributes = GetPropertyAttributeLists(syntax).ToImmutableArray();
+            var isDerived = !typeSymbol.Equals(symbol.ContainingType, SymbolEqualityComparer.Default);
             if (symbol.Type is INamedTypeSymbol namedType && namedType.SpecialType == SpecialType.None)
             {
                 if (namedType.Arity == 1 && immutableArraySymbol.Equals(namedType.OriginalDefinition, SymbolEqualityComparer.IncludeNullability))
                 {
-                    return new CoreDescriptor.CollectionEntry(symbol, typeIdentifier, (NameSyntax)typeSyntax, attributes);
+                    return new CoreDescriptor.CollectionEntry(symbol, isDerived, typeIdentifier, (NameSyntax)typeSyntax, attributes);
                 }
                 if (namedType.GetAttributes().Any(a => a.AttributeClass?.Equals(attributeSymbol, SymbolEqualityComparer.Default) == true))
                 {
-                    return new CoreDescriptor.ComplexEntry(symbol, typeIdentifier, typeSyntax, attributes);
+                    return new CoreDescriptor.ComplexEntry(symbol, isDerived, typeIdentifier, typeSyntax, attributes);
                 }
             }
-            return new CoreDescriptor.SimpleEntry(symbol, typeIdentifier, typeSyntax, attributes);
+            return new CoreDescriptor.SimpleEntry(symbol, isDerived, typeIdentifier, typeSyntax, attributes);
         }
 
         private static IEnumerable<AttributeListSyntax> GetPropertyAttributeLists(PropertyDeclarationSyntax syntax)

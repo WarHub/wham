@@ -134,6 +134,10 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
 
         private MethodDeclarationSyntax GetBuilderToImmutableMethod()
         {
+            var initExpressions =
+                Descriptor.Entries
+                .Select(x => AssignmentExpression(SyntaxKind.SimpleAssignmentExpression, x.IdentifierName, GetCorePropValue(x)))
+                .ToArray();
             return
                 MethodDeclaration(
                     Descriptor.CoreType,
@@ -141,32 +145,13 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                 .AddModifiers(SyntaxKind.PublicKeyword)
                 .AddBodyStatements(
                     ReturnStatement(
-                        ObjectCreationExpression(Descriptor.CoreType)
-                        .AddArgumentListArguments(
-                            Descriptor.Entries.Select(
-                                simpleEntry => Argument(simpleEntry.IdentifierName),
-                                CreateComplexArgument,
-                                CreateCollectionArgument))));
-
-            static ArgumentSyntax CreateComplexArgument(CoreDescriptor.Entry entry)
+                        Descriptor.CoreType.ObjectCreationWithInitializer(initExpressions)));
+            static ExpressionSyntax GetCorePropValue(CoreDescriptor.Entry entry) => entry switch
             {
-                return
-                    Argument(
-                        entry.IdentifierName
-                        .MemberAccess(
-                            IdentifierName(Names.ToImmutable))
-                        .InvokeWithArguments());
-            }
-
-            static ArgumentSyntax CreateCollectionArgument(CoreDescriptor.Entry entry)
-            {
-                return
-                    Argument(
-                        entry.IdentifierName
-                        .MemberAccess(
-                            IdentifierName(Names.ToImmutableRecursive))
-                        .InvokeWithArguments());
-            }
+                CoreDescriptor.CollectionEntry => entry.IdentifierName.MemberAccess(IdentifierName(Names.ToImmutableRecursive)).InvokeWithArguments(),
+                CoreDescriptor.ComplexEntry => entry.IdentifierName.MemberAccess(IdentifierName(Names.ToImmutable)).InvokeWithArguments(),
+                _ => entry.IdentifierName,
+            };
         }
 
         private MethodDeclarationSyntax GenerateToBuilderMethod()

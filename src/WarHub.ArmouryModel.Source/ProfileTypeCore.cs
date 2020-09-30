@@ -5,15 +5,15 @@ namespace WarHub.ArmouryModel.Source
 {
     [WhamNodeCore]
     [XmlType("profileType")]
-    public sealed partial class ProfileTypeCore : CommentableCore
+    public sealed partial record ProfileTypeCore : CommentableCore
     {
         [XmlAttribute("id")]
-        public string? Id { get; }
+        public string? Id { get; init; }
 
         [XmlAttribute("name")]
-        public string? Name { get; }
+        public string? Name { get; init; }
 
         [XmlArray("characteristicTypes")]
-        public ImmutableArray<CharacteristicTypeCore> CharacteristicTypes { get; }
+        public ImmutableArray<CharacteristicTypeCore> CharacteristicTypes { get; init; } = ImmutableArray<CharacteristicTypeCore>.Empty;
     }
 }

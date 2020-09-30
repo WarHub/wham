@@ -59,55 +59,76 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                     GenerateSourceNodeOverrideMethods());
         }
 
+        private static TypeSyntax GetNodePropertyType(CoreDescriptor.Entry entry) => entry switch
+        {
+            CoreDescriptor.ComplexEntry complex => complex.GetNodeTypeIdentifierName(),
+            CoreDescriptor.CollectionEntry collection => collection.GetListNodeTypeIdentifierName(),
+            _ => entry.Type
+        };
+
         private ConstructorDeclarationSyntax GenerateConstructor()
         {
             const string CoreLocal = "core";
             const string ParentLocal = "parent";
-            return
-                ConstructorDeclaration(
-                    Descriptor.GetNodeTypeName())
-                .MutateIf(IsAbstract, x => x.AddModifiers(SyntaxKind.ProtectedKeyword))
-                .AddModifiers(SyntaxKind.InternalKeyword)
-                .AddParameterListParameters(
-                    Parameter(
-                        Identifier(CoreLocal))
-                    .WithType(Descriptor.CoreType),
-                    Parameter(
-                        Identifier(ParentLocal))
-                    .WithType(
-                        NullableType(
-                            IdentifierName(Names.SourceNode))))
-                .WithInitializer(
-                    ConstructorInitializer(SyntaxKind.BaseConstructorInitializer)
-                    .AddArgumentListArguments(
-                        GetBaseArguments()))
-                .AddBodyStatements(
-                    GetBodyStatements());
-            IEnumerable<ArgumentSyntax> GetBaseArguments()
+            var coreLocalIdentifierName = IdentifierName(CoreLocal);
+            if (IsAbstract)
             {
-                if (IsDerived)
-                {
-                    yield return Argument(IdentifierName(CoreLocal));
-                }
-                yield return Argument(IdentifierName(ParentLocal));
+                return
+                    ConstructorDeclaration(
+                        Descriptor.GetNodeTypeName())
+                    .AddModifiers(SyntaxKind.ProtectedKeyword, SyntaxKind.InternalKeyword)
+                    .AddParameterListParameters(
+                        Parameter(
+                            Identifier(ParentLocal))
+                        .WithType(
+                            NullableType(
+                                IdentifierName(Names.SourceNode))))
+                    .WithInitializer(
+                        ConstructorInitializer(SyntaxKind.BaseConstructorInitializer)
+                        .AddArgumentListArguments(
+                            Argument(
+                                IdentifierName(ParentLocal))))
+                    .AddBodyStatements();
+            }
+            else
+            {
+                return
+                    ConstructorDeclaration(
+                        Descriptor.GetNodeTypeName())
+                    .AddModifiers(SyntaxKind.InternalKeyword)
+                    .AddParameterListParameters(
+                        Parameter(
+                                Identifier(CoreLocal))
+                            .WithType(Descriptor.CoreType),
+                        Parameter(
+                            Identifier(ParentLocal))
+                        .WithType(
+                            NullableType(
+                                IdentifierName(Names.SourceNode))))
+                    .WithInitializer(
+                        ConstructorInitializer(SyntaxKind.BaseConstructorInitializer)
+                        .AddArgumentListArguments(
+                            Argument(
+                                IdentifierName(ParentLocal))))
+                    .AddBodyStatements(
+                        GetBodyStatements());
             }
             IEnumerable<StatementSyntax> GetBodyStatements()
             {
                 yield return
                     CorePropertyIdentifierName
-                    .Assign(
-                        IdentifierName(CoreLocal))
+                    .Assign(coreLocalIdentifierName)
                     .AsStatement();
-                foreach (var entry in Descriptor.DeclaredEntries.Where(x => !x.IsSimple))
+                foreach (var entry in Descriptor.Entries.Where(x => !x.IsSimple))
                 {
                     yield return CreateNotSimpleInitialization(entry);
                 }
             }
 
-            static StatementSyntax CreateNotSimpleInitialization(CoreDescriptor.Entry entry)
+            StatementSyntax CreateNotSimpleInitialization(CoreDescriptor.Entry entry)
             {
                 return
-                    CorePropertyIdentifierName
+                    coreLocalIdentifierName
                     .MemberAccess(entry.IdentifierName)
                     .MemberAccess(
                         IdentifierName(entry.IsCollection ? Names.ToListNode : Names.ToNode))
@@ -126,9 +147,38 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
             }
             yield return CreateCoreProperty();
             yield return CreateExplicitInterfaceCoreProperty();
-            foreach (var property in Descriptor.DeclaredEntries.Select(CreateSimpleProperty, CreateComplexProperty, CreateCollectionProperty))
+            if (!IsAbstract)
             {
-                yield return property;
+                foreach (var entry in Descriptor.Entries)
+                {
+                    yield return
+                        PropertyDeclaration(
+                            GetNodePropertyType(entry),
+                            entry.Identifier)
+                        .AddModifiers(SyntaxKind.PublicKeyword)
+                        .MutateIf(entry.IsDerived, x => x.AddModifiers(SyntaxKind.OverrideKeyword))
+                        .Mutate(x => entry is CoreDescriptor.SimpleEntry
+                        ? x.WithExpressionBodyFull(
+                            CorePropertyIdentifierName
+                            .MemberAccess(entry.IdentifierName))
+                        : x.AddAccessorListAccessors(
+                            AccessorDeclaration(SyntaxKind.GetAccessorDeclaration)
+                            .WithSemicolonTokenDefault()));
+                }
+            }
+            else
+            {
+                foreach (var entry in Descriptor.DeclaredEntries)
+                {
+                    yield return
+                        PropertyDeclaration(
+                            GetNodePropertyType(entry),
+                            entry.Identifier)
+                        .AddModifiers(SyntaxKind.PublicKeyword, SyntaxKind.AbstractKeyword)
+                        .AddAccessorListAccessors(
+                            AccessorDeclaration(SyntaxKind.GetAccessorDeclaration)
+                            .WithSemicolonTokenDefault());
+                }
             }
             PropertyDeclarationSyntax CreateKindProperty()
             {
@@ -149,9 +199,9 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                     PropertyDeclaration(
                         Descriptor.CoreType,
                         CorePropertyIdentifier)
-                    .MutateIf(IsAbstract, x => x.AddModifiers(SyntaxKind.ProtectedKeyword))
-                    .AddModifiers(SyntaxKind.InternalKeyword)
-                    .MutateIf(IsDerived, x => x.AddModifiers(SyntaxKind.NewKeyword))
+                    .AddModifiers(SyntaxKind.PublicKeyword)
+                    .MutateIf(IsAbstract, x => x.AddModifiers(SyntaxKind.AbstractKeyword))
+                    .MutateIf(IsDerived, x => x.AddModifiers(SyntaxKind.OverrideKeyword))
                     .AddAccessorListAccessors(
                         AccessorDeclaration(SyntaxKind.GetAccessorDeclaration)
                         .WithSemicolonTokenDefault())
@@ -174,179 +224,74 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                         CorePropertyIdentifierName)
                     .AddAttributeListAttribute(DebuggerBrowsableNeverAttribute);
             }
-
-            PropertyDeclarationSyntax CreateSimpleProperty(CoreDescriptor.SimpleEntry entry)
-            {
-                return
-                    PropertyDeclaration(
-                        entry.Type,
-                        entry.Identifier)
-                    .AddModifiers(SyntaxKind.PublicKeyword)
-                    .MutateIf(IsAbstract, x => x.AddModifiers(SyntaxKind.VirtualKeyword))
-                    .WithExpressionBodyFull(
-                        CorePropertyIdentifierName
-                        .MemberAccess(entry.IdentifierName));
-            }
-
-            PropertyDeclarationSyntax CreateComplexProperty(CoreDescriptor.ComplexEntry entry)
-            {
-                return
-                    PropertyDeclaration(
-                        entry.GetNodeTypeIdentifierName(),
-                        entry.Identifier)
-                    .AddModifiers(SyntaxKind.PublicKeyword)
-                    .MutateIf(IsAbstract, x => x.AddModifiers(SyntaxKind.VirtualKeyword))
-                    .AddAccessorListAccessors(
-                        AccessorDeclaration(SyntaxKind.GetAccessorDeclaration)
-                        .WithSemicolonTokenDefault());
-            }
-
-            PropertyDeclarationSyntax CreateCollectionProperty(CoreDescriptor.CollectionEntry entry)
-            {
-                return
-                    PropertyDeclaration(
-                        entry.GetListNodeTypeIdentifierName(),
-                        entry.Identifier)
-                    .AddModifiers(SyntaxKind.PublicKeyword)
-                    .MutateIf(IsAbstract, x => x.AddModifiers(SyntaxKind.VirtualKeyword))
-                    .AddAccessorListAccessors(
-                        AccessorDeclaration(SyntaxKind.GetAccessorDeclaration)
-                        .WithSemicolonTokenDefault());
-            }
         }
 
         private IEnumerable<MethodDeclarationSyntax> GenerateMutatorMethods()
         {
             const string CoreParameter = "core";
-            yield return UpdateWithMethod();
-            if (IsDerived)
+            if (!IsAbstract)
             {
-                yield return DerivedUpdateWithMethod();
+                yield return UpdateWithMethod();
             }
-            foreach (var withMethod in Descriptor.Entries
-                .Select(WithForSimpleEntry, WithForComplexEntry, WithForCollectionEntry))
+            foreach (var entry in Descriptor.Entries)
             {
-                yield return withMethod;
+                yield return WithMethod(entry);
             }
             MethodDeclarationSyntax UpdateWithMethod()
             {
-                var methodSignatureBase =
+                return
                     MethodDeclaration(
                         Descriptor.GetNodeTypeIdentifierName(),
                         Names.UpdateWith)
-                    .MutateIf(IsAbstract, x => x.AddModifiers(SyntaxKind.ProtectedKeyword))
                     .AddModifiers(SyntaxKind.InternalKeyword)
                     .AddParameterListParameters(
                         Parameter(
                             Identifier(CoreParameter))
-                        .WithType(Descriptor.CoreType));
-                if (IsAbstract)
-                {
-                    return methodSignatureBase
-                        .AddModifiers(SyntaxKind.AbstractKeyword)
-                        .WithSemicolonTokenDefault();
-                }
-                return methodSignatureBase
-                    .AddBodyStatements(
-                        ReturnStatement(
-                            ConditionalExpression(
-                                BinaryExpression(
-                                    SyntaxKind.EqualsExpression,
-                                    ThisExpression().MemberAccess(CorePropertyIdentifierName),
-                                    IdentifierName(CoreParameter)),
-                                ThisExpression(),
-                                ObjectCreationExpression(
-                                    Descriptor.GetNodeTypeIdentifierName())
-                                .InvokeWithArguments(
-                                    IdentifierName(CoreParameter),
-                                    LiteralExpression(SyntaxKind.NullLiteralExpression)))));
-            }
-            MethodDeclarationSyntax DerivedUpdateWithMethod()
-            {
-                return
-                    MethodDeclaration(
-                        IdentifierName(BaseType.Name.GetNodeTypeNameCore()),
-                        Names.UpdateWith)
-                    .AddModifiers(
-                        SyntaxKind.ProtectedKeyword,
-                        SyntaxKind.InternalKeyword,
-                        SyntaxKind.SealedKeyword,
-                        SyntaxKind.OverrideKeyword)
-                    .AddParameterListParameters(
-                        Parameter(
-                            Identifier(CoreParameter))
-                        .WithType(
-                            IdentifierName(BaseType.Name)))
-                    .AddBodyStatements(
-                        ReturnStatement(
-                            IdentifierName(Names.UpdateWith)
+                        .WithType(Descriptor.CoreType))
+                    .WithExpressionBodyFull(
+                        ConditionalExpression(
+                            BinaryExpression(
+                                SyntaxKind.EqualsExpression,
+                                ThisExpression().MemberAccess(CorePropertyIdentifierName),
+                                IdentifierName(CoreParameter)),
+                            ThisExpression(),
+                            ObjectCreationExpression(
+                                Descriptor.GetNodeTypeIdentifierName())
                             .InvokeWithArguments(
-                                CastExpression(
-                                    Descriptor.CoreType,
-                                    IdentifierName(CoreParameter)))));
+                                IdentifierName(CoreParameter),
+                                LiteralExpression(SyntaxKind.NullLiteralExpression))));
             }
-            MethodDeclarationSyntax WithBasicPart(CoreDescriptor.Entry entry)
+            MethodDeclarationSyntax WithMethod(CoreDescriptor.Entry entry)
             {
-                return
+                var signature =
                     MethodDeclaration(
                         Descriptor.GetNodeTypeIdentifierName(),
                         Names.WithPrefix + entry.Identifier)
                     .AddModifiers(SyntaxKind.PublicKeyword)
-                    .MutateIf(
-                        IsDerived && !entry.Symbol.ContainingType.Equals(Descriptor.TypeSymbol, SymbolEqualityComparer.Default),
-                        x => x.AddModifiers(SyntaxKind.NewKeyword));
-            }
-            MethodDeclarationSyntax WithForSimpleEntry(CoreDescriptor.SimpleEntry entry)
-            {
-                return
-                    WithBasicPart(entry)
+                    .MutateIf(IsAbstract, x => x.AddModifiers(SyntaxKind.AbstractKeyword))
+                    .MutateIf(entry.IsDerived, x => x.AddModifiers(SyntaxKind.OverrideKeyword))
                     .AddParameterListParameters(
                         Parameter(ValueParamToken)
-                        .WithType(entry.Type))
+                        .WithType(GetNodePropertyType(entry)));
+                if (IsAbstract)
+                {
+                    return signature.WithSemicolonTokenDefault();
+                }
+                var coreWithArg = entry switch
+                {
+                    CoreDescriptor.ComplexEntry => ValueParamSyntax.MemberAccess(CorePropertyIdentifierName),
+                    CoreDescriptor.CollectionEntry =>
+                        ValueParamSyntax.MemberAccess(
+                            IdentifierName(Names.ToCoreArray))
+                        .InvokeWithArguments(),
+                    _ => ValueParamSyntax
+                };
+                return signature
                     .WithExpressionBodyFull(
                         IdentifierName(Names.UpdateWith)
                         .InvokeWithArguments(
                             CorePropertyIdentifierName
-                            .MemberAccess(
-                                IdentifierName(Names.WithPrefix + entry.Identifier))
-                            .InvokeWithArguments(ValueParamSyntax)));
-            }
-            MethodDeclarationSyntax WithForComplexEntry(CoreDescriptor.ComplexEntry entry)
-            {
-                return
-                    WithBasicPart(entry)
-                    .AddParameterListParameters(
-                        Parameter(ValueParamToken)
-                        .WithType(entry.GetNodeTypeIdentifierName()))
-                    .WithExpressionBodyFull(
-                        IdentifierName(Names.UpdateWith)
-                        .InvokeWithArguments(
-                            CorePropertyIdentifierName
-                            .MemberAccess(
-                                IdentifierName(Names.WithPrefix + entry.Identifier))
-                            .InvokeWithArguments(
-                                ValueParamSyntax.MemberAccess(CorePropertyIdentifierName))));
-            }
-            MethodDeclarationSyntax WithForCollectionEntry(CoreDescriptor.CollectionEntry entry)
-            {
-                return
-                    WithBasicPart(entry)
-                    .AddParameterListParameters(
-                        Parameter(ValueParamToken)
-                        .WithType(
-                            entry.GetListNodeTypeIdentifierName()))
-                    .AddBodyStatements(
-                        ReturnStatement(
-                            IdentifierName(Names.UpdateWith)
-                            .InvokeWithArguments(
-                                CorePropertyIdentifierName
-                                .MemberAccess(
-                                    IdentifierName(Names.WithPrefix + entry.Identifier))
-                                .InvokeWithArguments(
-                                    ValueParamSyntax
-                                    .MemberAccess(
-                                        IdentifierName(Names.ToCoreArray))
-                                    .InvokeWithArguments()))));
+                            .With(entry.IdentifierName.Assign(coreWithArg))));
             }
         }
 
@@ -474,7 +419,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                     =>
                     ThrowStatement(
                         ObjectCreationExpression(
-                            ParseName(Names.ArgumentOutOfRangeExceptionFull))
+                            IdentifierName(Names.ArgumentOutOfRangeException))
                         .AddArgumentListArguments(
                             Argument(
                                 InvocationExpression(
@@ -483,14 +428,12 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                                     Argument(indexIdentifierName)))));
             }
 
-            static QualifiedNameSyntax CreateIEnumerableOf(TypeSyntax typeParameter)
+            static NameSyntax CreateIEnumerableOf(TypeSyntax typeParameter)
             {
                 return
-                    QualifiedName(
-                        ParseName(Names.IEnumerableGenericNamespace),
-                        GenericName(
-                            Identifier(Names.IEnumerableGeneric))
-                        .AddTypeArgumentListArguments(typeParameter));
+                    GenericName(
+                        Identifier(Names.IEnumerable))
+                    .AddTypeArgumentListArguments(typeParameter);
             }
         }
     }

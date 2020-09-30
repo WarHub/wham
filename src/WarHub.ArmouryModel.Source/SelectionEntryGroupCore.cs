@@ -4,9 +4,9 @@ namespace WarHub.ArmouryModel.Source
 {
     [WhamNodeCore]
     [XmlType("selectionEntryGroup")]
-    public sealed partial class SelectionEntryGroupCore : SelectionEntryBaseCore
+    public sealed partial record SelectionEntryGroupCore : SelectionEntryBaseCore
     {
         [XmlAttribute("defaultSelectionEntryId")]
-        public string? DefaultSelectionEntryId { get; }
+        public string? DefaultSelectionEntryId { get; init; }
     }
 }

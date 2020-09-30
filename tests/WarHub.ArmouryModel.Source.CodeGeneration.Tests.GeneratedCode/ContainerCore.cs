@@ -5,15 +5,15 @@ namespace WarHub.ArmouryModel.Source
 {
     [WhamNodeCore]
     [XmlType("container")]
-    public partial class ContainerCore
+    public partial record ContainerCore
     {
         [XmlAttribute("id")]
-        public string? Id { get; }
+        public string? Id { get; init; }
 
         [XmlAttribute("name")]
-        public string? Name { get; }
+        public string? Name { get; init; }
 
         [XmlArray("items", Order = 0)]
-        public ImmutableArray<ItemCore> Items { get; }
+        public ImmutableArray<ItemCore> Items { get; init; } = ImmutableArray<ItemCore>.Empty;
     }
 }

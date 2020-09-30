@@ -4,9 +4,9 @@ namespace WarHub.ArmouryModel.Source
 {
     [WhamNodeCore]
     [XmlType("rule")]
-    public sealed partial class RuleCore : EntryBaseCore
+    public sealed partial record RuleCore : EntryBaseCore
     {
         [XmlElement("description")]
-        public string? Description { get; }
+        public string? Description { get; init; }
     }
 }

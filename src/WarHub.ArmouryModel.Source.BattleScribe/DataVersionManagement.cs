@@ -25,7 +25,8 @@ namespace WarHub.ArmouryModel.Source.BattleScribe
         {
             reader.MoveToContent();
             var rootElement = reader.LocalName.ParseRootElement();
-            var versionText = reader.GetAttribute(BattleScribeVersionAttributeName);
+            var versionText = reader.GetAttribute(BattleScribeVersionAttributeName)
+                ?? throw new InvalidOperationException(BattleScribeVersionAttributeName + " attribute not found on root element.");
             var version = BattleScribeVersion.Parse(versionText);
             return new VersionedElementInfo(rootElement, version);
         }
@@ -67,7 +68,7 @@ namespace WarHub.ArmouryModel.Source.BattleScribe
             var (reader, info) = ReadMigrated(inputReader);
             var sourceNode = BattleScribeXmlSerializer.Instance
                 .Deserialize(x => x.Deserialize(reader), info.Element);
-            sourceNode.Serialize(output);
+            sourceNode?.Serialize(output);
             return info;
         }
 
@@ -79,7 +80,8 @@ namespace WarHub.ArmouryModel.Source.BattleScribe
 
             XslCompiledTransform CreateXslt()
             {
-                using var migrationXlsStream = migrationInfo.OpenMigrationXslStream();
+                using var migrationXlsStream = migrationInfo.OpenMigrationXslStream()
+                    ?? throw new InvalidOperationException($"Failed to find migration XSL resource for {migrationInfo}.");
                 using var stylesheetReader = XmlReader.Create(migrationXlsStream, new XmlReaderSettings { CloseInput = false });
                 var transform = new XslCompiledTransform();
                 transform.Load(stylesheetReader);
@@ -93,7 +95,7 @@ namespace WarHub.ArmouryModel.Source.BattleScribe
             ApplyMigration(migrationInfo, reader, output);
         }
 
-        public static SourceNode DeserializeMigrated(Stream input)
+        public static SourceNode? DeserializeMigrated(Stream input)
         {
             var (reader, info) = ReadMigrated(input);
             using (reader)
@@ -102,7 +104,7 @@ namespace WarHub.ArmouryModel.Source.BattleScribe
             }
         }
 
-        public static SourceNode DeserializeAuto(
+        public static SourceNode? DeserializeAuto(
             Stream stream,
             MigrationMode mode = MigrationMode.None)
         {
@@ -125,13 +127,13 @@ namespace WarHub.ArmouryModel.Source.BattleScribe
                         $"Invalid {nameof(MigrationMode)} value.",
                         nameof(mode)),
             };
-            SourceNode DeserializeSimple(Stream source)
+            SourceNode? DeserializeSimple(Stream source)
             {
                 using var reader = XmlReader.Create(source);
                 var rootInfo = ReadRootElementInfo(reader);
                 return Serializer.Deserialize(x => x.Deserialize(reader), rootInfo.Element);
             }
-            SourceNode WithSeekable(Func<Stream, SourceNode> func)
+            SourceNode? WithSeekable(Func<Stream, SourceNode?> func)
             {
                 if (stream.CanSeek)
                 {

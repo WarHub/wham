@@ -12,20 +12,20 @@ namespace WarHub.ArmouryModel.Source
     /// </summary>
     [WhamNodeCore]
     [XmlType("repeat")]
-    public sealed partial class RepeatCore : QueryFilteredBaseCore
+    public sealed partial record RepeatCore : QueryFilteredBaseCore
     {
         /// <summary>
         /// Number of times the Modifier owner of this repeat should be applied
         /// per one satisfaction in [satisfaction count] - see type summary.
         /// </summary>
         [XmlAttribute("repeats")]
-        public int RepeatCount { get; }
+        public int RepeatCount { get; init; }
 
         /// <summary>
         /// If <see langword="true" />, the result of dividing query result by <see cref="QueryBaseCore.Value"/>
         /// is rounded up; otherwise it's rounded down.
         /// </summary>
         [XmlAttribute("roundUp")]
-        public bool RoundUp { get; }
+        public bool RoundUp { get; init; }
     }
 }

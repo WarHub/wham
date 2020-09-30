@@ -4,12 +4,12 @@ namespace WarHub.ArmouryModel.Source
 {
     [WhamNodeCore]
     [XmlType("characteristicType")]
-    public sealed partial class CharacteristicTypeCore : CommentableCore
+    public sealed partial record CharacteristicTypeCore : CommentableCore
     {
         [XmlAttribute("id")]
-        public string? Id { get; }
+        public string? Id { get; init; }
 
         [XmlAttribute("name")]
-        public string? Name { get; }
+        public string? Name { get; init; }
     }
 }

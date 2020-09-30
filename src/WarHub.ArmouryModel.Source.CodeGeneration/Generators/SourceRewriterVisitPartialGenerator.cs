@@ -130,38 +130,25 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                                 IdentifierName(Names.UpdateWith))
                             .InvokeWithArguments(
                                 IdentifierName(Node)
-                                    .MemberAccess(
-                                        IdentifierName(Names.Core))
-                                    .MemberAccess(
-                                        IdentifierName(Names.Update))
-                                    .InvokeWithArguments(
-                                        Descriptor.Entries
-                                            .Select(SimpleArgument, ComplexArgument, CollectionArgument))));
+                                .MemberAccess(
+                                    IdentifierName(Names.Core))
+                                .With(
+                                    nonSimpleEntries.Select(CreateAssignment))));
 
-                static ExpressionSyntax SimpleArgument(CoreDescriptor.SimpleEntry entry)
+                static ExpressionSyntax CreateAssignment(CoreDescriptor.Entry entry) => (entry switch
                 {
-                    return
-                        IdentifierName(Node)
-                            .MemberAccess(
-                                IdentifierName(Names.Core))
-                            .MemberAccess(entry.IdentifierName);
-                }
-
-                static ExpressionSyntax ComplexArgument(CoreDescriptor.ComplexEntry entry)
-                {
-                    return
-                        entry.CamelCaseIdentifierName.MemberAccess(
-                            IdentifierName(Names.Core));
-                }
-
-                static ExpressionSyntax CollectionArgument(CoreDescriptor.CollectionEntry entry)
-                {
-                    return
+                    CoreDescriptor.ComplexEntry =>
                         entry.CamelCaseIdentifierName
-                            .MemberAccess(
-                                IdentifierName(Names.ToCoreArray))
-                            .InvokeWithArguments();
-                }
+                        .MemberAccess(
+                            IdentifierName(Names.Core)),
+                    CoreDescriptor.CollectionEntry =>
+                        entry.CamelCaseIdentifierName
+                        .MemberAccess(
+                            IdentifierName(Names.ToCoreArray))
+                        .InvokeWithArguments(),
+                    _ => throw new InvalidOperationException("This only supports non-simple entries")
+                })
+                .AssignTo(entry.IdentifierName);
             }
         }
     }

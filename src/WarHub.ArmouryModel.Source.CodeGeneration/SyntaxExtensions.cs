@@ -245,6 +245,15 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
             return AssignmentExpression(SyntaxKind.SimpleAssignmentExpression, left, right);
         }
 
+        public static WithExpressionSyntax With(this ExpressionSyntax expr, IEnumerable<ExpressionSyntax> initializers) =>
+            WithExpression(expr, InitializerExpression(SyntaxKind.WithInitializerExpression, SeparatedList(initializers)));
+
+        public static WithExpressionSyntax With(this ExpressionSyntax expr, params ExpressionSyntax[] initializers) =>
+            expr.With(initializers.AsEnumerable());
+
+        public static ObjectCreationExpressionSyntax ObjectCreationWithInitializer(this TypeSyntax type, params ExpressionSyntax[] initializers) =>
+            ObjectCreationExpression(type).WithInitializer(InitializerExpression(SyntaxKind.ObjectInitializerExpression, SeparatedList(initializers)));
+
         public static bool IsNamed(this AttributeSyntax attribute, string name)
         {
             return attribute.Name is IdentifierNameSyntax id && (id.Identifier.Text == name || id.Identifier.Text == name + "Attribute");
