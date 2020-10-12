@@ -1,7 +1,6 @@
 ﻿using System.Collections.Immutable;
 using System.IO;
 using System.Threading.Tasks;
-using WarHub.ArmouryModel.ProjectModel;
 using WarHub.ArmouryModel.Source;
 using WarHub.ArmouryModel.Workspaces.BattleScribe;
 using WarHub.ArmouryModel.Workspaces.Gitree;
@@ -25,14 +24,14 @@ namespace WarHub.ArmouryModel.CliTool.Commands
             await ConvertFilesAsync(configInfo, workspace);
         }
 
-        private async Task ConvertFilesAsync(ProjectConfigurationInfo configInfo, XmlWorkspace workspace)
+        private async Task ConvertFilesAsync(GitreeWorkspaceOptions gitreeOptions, XmlWorkspace workspace)
         {
             var treeWriter = new GitreeWriter();
             foreach (var document in workspace.GetDocuments(SourceKind.Gamesystem, SourceKind.Catalogue))
             {
                 var sourceKind = document.Kind.GetSourceKindOrUnknown();
                 var filenameNoExt = Path.GetFileNameWithoutExtension(document.Filepath);
-                var folderPath = Path.Combine(configInfo.GetFullPath(sourceKind), filenameNoExt);
+                var folderPath = Path.Combine(gitreeOptions.GetFullPath(sourceKind), filenameNoExt);
                 var folder = Directory.CreateDirectory(folderPath);
                 Log.Information("Converting file {Name} into {Folder}", filenameNoExt, folder);
                 Log.Verbose("- Reading...");
@@ -45,11 +44,17 @@ namespace WarHub.ArmouryModel.CliTool.Commands
             }
         }
 
-        private static ProjectConfigurationInfo CreateDestinationProjectConfig(DirectoryInfo sourceDir, DirectoryInfo destDir)
+        private static GitreeWorkspaceOptions CreateDestinationProjectConfig(DirectoryInfo sourceDir, DirectoryInfo destDir)
         {
-            var configInfo = new ConvertedGitreeProjectConfigurationProvider().Create(sourceDir.FullName);
-            var destFilepath = Path.Combine(destDir.FullName, Path.GetFileName(configInfo.Filepath));
-            return configInfo.WithFilepath(destFilepath);
+            var options = GitreeWorkspaceOptions.Create(sourceDir.FullName);
+            var destFilepath = Path.Combine(destDir.FullName, Path.GetFileName(options.Filepath));
+            return options with
+            {
+                Filepath = destFilepath,
+                SourceDirectories = ImmutableArray.Create(
+                    new GitreeSourceFolder(GitreeSourceFolderKind.Catalogues, "src/catalogues"),
+                    new GitreeSourceFolder(GitreeSourceFolderKind.Gamesystems, "src/gamesystems"))
+            };
         }
 
         private XmlWorkspace CreateXmlWorkspace(DirectoryInfo sourceDir)
@@ -66,19 +71,6 @@ namespace WarHub.ArmouryModel.CliTool.Commands
             }
 
             return workspace;
-        }
-
-        private class ConvertedGitreeProjectConfigurationProvider : GitreeProjectConfigurationProvider
-        {
-            protected override ImmutableArray<SourceFolder> DefaultDirectoryReferences { get; } =
-                ImmutableArray.Create(
-                    new SourceFolder(SourceFolderKind.Catalogues, "src/catalogues"),
-                    new SourceFolder(SourceFolderKind.Gamesystems, "src/gamesystems"));
-
-            protected override ProjectConfiguration CreateDefaultCore(string path)
-            {
-                return base.CreateDefaultCore(path).WithSourceDirectories(DefaultDirectoryReferences);
-            }
         }
     }
 }

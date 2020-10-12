@@ -4,6 +4,10 @@
     {
         Unknown,
 
+        Gamesystem, GamesystemList,
+
+        Catalogue, CatalogueList,
+
         Class1, Class1List,
 
         Container, ContainerList,

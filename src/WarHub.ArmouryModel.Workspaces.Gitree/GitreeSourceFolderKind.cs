@@ -1,8 +1,8 @@
 ﻿using Newtonsoft.Json;
 
-namespace WarHub.ArmouryModel.ProjectModel
+namespace WarHub.ArmouryModel.Workspaces.Gitree
 {
-    public enum SourceFolderKind
+    public enum GitreeSourceFolderKind
     {
         [JsonProperty("all")]
         All,

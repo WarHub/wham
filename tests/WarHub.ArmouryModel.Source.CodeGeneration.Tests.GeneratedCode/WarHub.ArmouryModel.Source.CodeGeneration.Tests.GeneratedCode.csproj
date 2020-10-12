@@ -12,6 +12,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Include="..\..\src\WarHub.ArmouryModel.Source\DataIndexEntryKind.cs" Link="DataIndexEntryKind.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="System.Collections.Immutable" />
   </ItemGroup>
 

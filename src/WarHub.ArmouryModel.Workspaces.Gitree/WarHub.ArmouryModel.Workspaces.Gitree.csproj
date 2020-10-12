@@ -9,7 +9,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Amadevus.RecordGenerator" />
     <PackageReference Include="morelinq" />
     <PackageReference Include="Newtonsoft.Json" />
     <PackageReference Include="Optional" />

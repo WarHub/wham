@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using Newtonsoft.Json;
 
-namespace WarHub.ArmouryModel.ProjectModel
+namespace WarHub.ArmouryModel.Workspaces.Gitree.Serialization
 {
     /// <summary>
     /// Converts multiline strings into arrays of strings.
@@ -17,7 +17,7 @@ namespace WarHub.ArmouryModel.ProjectModel
             return objectType == typeof(string);
         }
 
-        public override object? ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
+        public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
         {
             if (reader.TokenType == JsonToken.Null || (reader.TokenType != JsonToken.StartArray && reader.TokenType != JsonToken.String))
             {

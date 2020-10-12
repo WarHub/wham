@@ -14,7 +14,11 @@ namespace WarHub.ArmouryModel.Workspaces.Gitree
             var children = folder.GetFolders().Select(ReadListFolder).ToImmutableArray();
             var nodeDocument = folder.GetDocuments().Single();
             var (node, wrappedNode) = ReadDocumentNodes(nodeDocument);
-            var blobItem = new GitreeNode(node, wrappedNode, false, children);
+            var blobItem = new GitreeNode(node, wrappedNode)
+            {
+                IsLeaf = false,
+                Lists = children
+            };
             return blobItem;
         }
 
@@ -22,14 +26,20 @@ namespace WarHub.ArmouryModel.Workspaces.Gitree
         {
             var documentItems = folder.GetDocuments().Select(ReadDocument).ToImmutableArray();
             var folderItems = folder.GetFolders().Select(ReadItemFolder).ToImmutableArray();
-            var blobList = new GitreeListNode(folder.Name, documentItems.AddRange(folderItems));
+            var blobList = new GitreeListNode(folder.Name)
+            {
+                Items = documentItems.AddRange(folderItems)
+            };
             return blobList;
         }
 
         private GitreeNode ReadDocument(GitreeStorageFileNode document)
         {
             var (node, wrappedNode) = ReadDocumentNodes(document);
-            var item = new GitreeNode(node, wrappedNode, true, ImmutableArray<GitreeListNode>.Empty);
+            var item = new GitreeNode(node, wrappedNode)
+            {
+                IsLeaf = true
+            };
             return item;
         }
 

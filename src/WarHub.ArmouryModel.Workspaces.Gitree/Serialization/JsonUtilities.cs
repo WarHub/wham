@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json;
 
-namespace WarHub.ArmouryModel.ProjectModel
+namespace WarHub.ArmouryModel.Workspaces.Gitree.Serialization
 {
     public static class JsonUtilities
     {

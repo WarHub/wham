@@ -4,20 +4,9 @@
   <PropertyGroup>
     <TargetFramework>net5</TargetFramework>
     <Description>Implementations of wham ProjectModel for BattleScribe format files: .cat(z), .gst(z), .bsi, .bsr.</Description>
-    <NoWarn>
-      <!--
-      CS8669:
-      The annotation for nullable reference types should only be used in code within a '#nullable'
-      annotations context. Auto-generated code requires an explicit '#nullable' directive in source.
-      // Amadevus.RecordGenerator doesn't support nullability
-      -->
-      8669;$(NoWarn)
-    </NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Amadevus.RecordGenerator" />
-    <PackageReference Include="morelinq" />
     <PackageReference Include="System.Collections.Immutable" />
   </ItemGroup>
 

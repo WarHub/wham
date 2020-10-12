@@ -41,7 +41,7 @@ namespace WarHub.ArmouryModel.Workspaces.Gitree
                     var treeNodes = CreateList(list.NodeList);
                     var name = Gitree.ChildListAliases.TryGetValue(info.Name, out var alias)
                         ? alias : info.Name;
-                    return new GitreeListNode(name, treeNodes).Some();
+                    return new GitreeListNode(name) { Items = treeNodes }.Some();
                 }
                 return default;
             }
@@ -67,7 +67,7 @@ namespace WarHub.ArmouryModel.Workspaces.Gitree
                 var newMeta = blob.Meta
                     .WithIdentifier(identifier)
                     .WithPrevIdentifier(prevTreeNode?.Datablob.Meta.Identifier);
-                return treeNode.WithDatablob(blob.WithMeta(newMeta));
+                return treeNode with { Datablob = blob.WithMeta(newMeta) };
             }
 
             string GetUniqueIdentifier(SourceNode node)

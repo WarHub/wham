@@ -13,10 +13,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Amadevus.RecordGenerator" />
-    <PackageReference Include="morelinq" />
-    <PackageReference Include="Newtonsoft.Json" />
-    <PackageReference Include="Optional" />
     <PackageReference Include="Serilog" />
     <PackageReference Include="Serilog.Sinks.Console" />
     <PackageReference Include="System.CommandLine" />

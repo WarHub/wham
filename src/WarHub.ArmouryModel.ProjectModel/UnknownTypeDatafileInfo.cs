@@ -1,16 +1,12 @@
 ﻿using System.IO;
 using System.Threading.Tasks;
-using Amadevus.RecordGenerator;
 using WarHub.ArmouryModel.Source;
 
 namespace WarHub.ArmouryModel.ProjectModel
 {
-    [Record]
-    public sealed partial class UnknownTypeDatafileInfo : IDatafileInfo, IDatafileInfo<SourceNode>
+    public record UnknownTypeDatafileInfo(string Filepath) : IDatafileInfo, IDatafileInfo<SourceNode>
     {
         private static readonly Task<SourceNode?> nullTask = Task.FromResult<SourceNode?>(null);
-
-        public string Filepath { get; }
 
         public SourceKind DataKind => SourceKind.Unknown;
 

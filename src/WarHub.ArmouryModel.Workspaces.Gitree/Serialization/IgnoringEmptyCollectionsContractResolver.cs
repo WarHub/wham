@@ -4,7 +4,7 @@ using System.Reflection;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 
-namespace WarHub.ArmouryModel.ProjectModel
+namespace WarHub.ArmouryModel.Workspaces.Gitree.Serialization
 {
     /// <summary>
     /// Ignores collections with no elements.
