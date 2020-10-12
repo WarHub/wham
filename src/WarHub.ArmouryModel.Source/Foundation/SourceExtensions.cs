@@ -42,6 +42,5 @@ namespace WarHub.ArmouryModel.Source
             => DataIndexKinds.TryGetValue(sourceKind, out var kind) ? kind : DataIndexEntryKind.Unknown;
 
         public static bool IsDataCatalogueKind(this SourceKind kind) => DataCatalogueKinds.Contains(kind);
-
     }
 }
