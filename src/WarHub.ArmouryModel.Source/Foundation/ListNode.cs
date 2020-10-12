@@ -6,6 +6,11 @@ using System.Linq;
 
 namespace WarHub.ArmouryModel.Source
 {
+    /// <summary>
+    /// An abstract base class for source node that represents
+    /// a set of other nodes of the same type.
+    /// </summary>
+    /// <typeparam name="TChild">Type of all child nodes.</typeparam>
     [DebuggerDisplay("Count = {" + nameof(Count) + "}, ElementKind = {" + nameof(ElementKind) + "}")]
     public abstract class ListNode<TChild> : SourceNode, IListNode, IReadOnlyList<TChild>
         where TChild : SourceNode
@@ -53,6 +58,13 @@ namespace WarHub.ArmouryModel.Source
                 .Select((node, i) => new ChildInfo(i.ToString("D", CultureInfo.InvariantCulture), node));
         }
 
+        /// <summary>
+        /// Creates a new list node of the same type, but with a new set
+        /// of child nodes.
+        /// </summary>
+        /// <param name="nodes">The nodes to become children of the new node.</param>
+        /// <returns>The newly created <see cref="ListNode{TChild}"/>,
+        /// being of the same type as this instance.</returns>
         public abstract ListNode<TChild> WithNodes(NodeList<TChild> nodes);
 
         public NodeList<TChild>.Enumerator GetEnumerator() => NodeList.GetEnumerator();

@@ -5,6 +5,9 @@ using WarHub.ArmouryModel.Source.XmlFormat;
 
 namespace WarHub.ArmouryModel.Source
 {
+    /// <summary>
+    /// Provides static creation methods for all types of <see cref="SourceNode"/>.
+    /// </summary>
     public static partial class NodeFactory
     {
         private static class Defaults

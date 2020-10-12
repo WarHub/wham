@@ -1,5 +1,8 @@
 ﻿namespace WarHub.ArmouryModel.Source
 {
+    /// <summary>
+    /// Enumeration of unique kinds (subtypes) of <see cref="SourceNode"/>s.
+    /// </summary>
     public enum SourceKind
     {
         Unknown,
