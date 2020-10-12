@@ -5,6 +5,8 @@ using WarHub.ArmouryModel.Source;
 
 namespace WarHub.ArmouryModel.Workspaces.BattleScribe
 {
+#pragma warning disable CS1587 // XML comment is not placed on a valid language element
+#pragma warning disable CA1801 // Parameter x of method .ctor is never used. Remove the parameter or use it in the method body.
     public record XmlDocument(
         /// <summary>
         /// Gets the kind of this document.
@@ -19,6 +21,8 @@ namespace WarHub.ArmouryModel.Workspaces.BattleScribe
         /// </summary>
         XmlWorkspace? Workspace = null)
     {
+#pragma warning restore CS1587
+#pragma warning restore CA1801
         /// <summary>
         /// Gets the filepath of this document.
         /// </summary>
