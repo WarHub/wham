@@ -8,19 +8,20 @@ using Newtonsoft.Json;
 using Optional;
 using Optional.Collections;
 using WarHub.ArmouryModel.ProjectModel;
+using WarHub.ArmouryModel.Workspaces.Gitree.Serialization;
 
 namespace WarHub.ArmouryModel.Workspaces.Gitree
 {
     public sealed class GitreeWorkspace : IWorkspace
     {
-        private GitreeWorkspace(ProjectConfigurationInfo info)
+        private GitreeWorkspace(GitreeWorkspaceOptions options)
         {
             Serializer = JsonUtilities.CreateSerializer();
-            Info = info;
+            Options = options;
             // TOD validate configuration, handle not-found paths
-            var documentFindingVisitor = new GitreeRootFindingVisitor(info, this);
+            var documentFindingVisitor = new GitreeRootFindingVisitor(this);
             Datafiles =
-                info.Configuration.SourceDirectories
+                options.SourceDirectories
                 .SelectMany(documentFindingVisitor.GetRootDocuments)
                 .Select(x => (IDatafileInfo)new GitreeDatafileInfo(x))
                 .ToImmutableArray();
@@ -28,10 +29,11 @@ namespace WarHub.ArmouryModel.Workspaces.Gitree
 
         internal JsonSerializer Serializer { get; }
 
-        public string RootPath => Info.GetDirectoryInfo().FullName;
+        public string RootPath => Options.GetDirectoryInfo().FullName;
 
         public ImmutableArray<IDatafileInfo> Datafiles { get; }
-        public ProjectConfigurationInfo Info { get; }
+
+        public GitreeWorkspaceOptions Options { get; }
 
         public static GitreeWorkspace CreateFromPath(string path)
         {
@@ -43,43 +45,41 @@ namespace WarHub.ArmouryModel.Workspaces.Gitree
         }
 
         public static GitreeWorkspace CreateFromConfigurationFile(string path)
-            => new GitreeWorkspace(new GitreeProjectConfigurationProvider().Create(path));
+            => new GitreeWorkspace(GitreeWorkspaceOptions.Create(path));
 
-        public static GitreeWorkspace CreateFromConfigurationInfo(ProjectConfigurationInfo info)
-            => new GitreeWorkspace(info);
+        public static GitreeWorkspace Create(GitreeWorkspaceOptions options)
+            => new GitreeWorkspace(options);
 
         public static GitreeWorkspace CreateFromDirectory(string path)
         {
             var configFiles =
                 new DirectoryInfo(path)
-                .EnumerateFiles("*" + ProjectConfiguration.FileExtension)
+                .EnumerateFiles("*" + GitreeWorkspaceOptions.FileExtension)
                 .ToList();
-            var configProvider = new GitreeProjectConfigurationProvider();
             return configFiles.Count switch
             {
-                0 => new GitreeWorkspace(configProvider.Create(path)),
-                1 => new GitreeWorkspace(configProvider.Create(configFiles[0].FullName)),
+                0 => new GitreeWorkspace(GitreeWorkspaceOptions.Create(path)),
+                1 => new GitreeWorkspace(GitreeWorkspaceOptions.Create(configFiles[0].FullName)),
                 _ => throw new InvalidOperationException("There's more than one project file in the directory"),
             };
         }
 
         private class GitreeRootFindingVisitor
         {
-            public GitreeRootFindingVisitor(ProjectConfigurationInfo info, GitreeWorkspace workspace)
+            public GitreeRootFindingVisitor(GitreeWorkspace workspace)
             {
-                Info = info;
                 Workspace = workspace;
             }
 
-            public ProjectConfigurationInfo Info { get; }
+            public GitreeWorkspaceOptions Options => Workspace.Options;
 
             public GitreeWorkspace Workspace { get; }
 
             private Queue<GitreeStorageFolderNode> FoldersToVisit { get; } = new Queue<GitreeStorageFolderNode>();
 
-            public IEnumerable<GitreeStorageFileNode> GetRootDocuments(SourceFolder sourceFolder)
+            public IEnumerable<GitreeStorageFileNode> GetRootDocuments(GitreeSourceFolder sourceFolder)
             {
-                var initialDir = Info.GetDirectoryInfoFor(sourceFolder);
+                var initialDir = Options.GetDirectoryInfoFor(sourceFolder);
                 var initialFolder = new GitreeStorageFolderNode(initialDir, null, Workspace);
 
                 FoldersToVisit.Enqueue(initialFolder);

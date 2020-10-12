@@ -1,20 +1,12 @@
 ﻿using System.IO;
 using System.Threading.Tasks;
-using Amadevus.RecordGenerator;
 using WarHub.ArmouryModel.Source;
 
 namespace WarHub.ArmouryModel.ProjectModel
 {
-    [Record]
-    public sealed partial class DatafileInfo<TData> : IDatafileInfo<TData>
+    public sealed record DatafileInfo<TData>(string Filepath, TData Data) : IDatafileInfo<TData>
         where TData : SourceNode
     {
-        // TODO internal ctor
-
-        public string Filepath { get; }
-
-        public TData Data { get; }
-
         public SourceKind DataKind => Data.Kind;
 
         public string GetStorageName() => Path.GetFileNameWithoutExtension(Filepath);

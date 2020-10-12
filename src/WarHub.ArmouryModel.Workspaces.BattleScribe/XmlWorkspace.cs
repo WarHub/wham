@@ -1,4 +1,5 @@
 ﻿using System.Collections.Immutable;
+using System.IO;
 using System.Linq;
 using WarHub.ArmouryModel.ProjectModel;
 
@@ -9,17 +10,17 @@ namespace WarHub.ArmouryModel.Workspaces.BattleScribe
     /// </summary>
     public sealed class XmlWorkspace : IWorkspace
     {
-        private XmlWorkspace(ProjectConfigurationInfo info, ImmutableArray<XmlDocument> documents)
+        private XmlWorkspace(XmlWorkspaceOptions info, ImmutableArray<XmlDocument> documents)
         {
-            Info = info;
-            Documents = documents.Select(x => x.WithWorkspace(this)).ToImmutableArray();
+            Options = info;
+            Documents = documents.Select(x => x with { Workspace = this }).ToImmutableArray();
         }
 
         private string? rootPath;
         private ImmutableArray<IDatafileInfo>? datafiles;
         private ImmutableDictionary<XmlDocumentKind, ImmutableArray<XmlDocument>>? documentsByKind;
 
-        public ProjectConfigurationInfo Info { get; }
+        public XmlWorkspaceOptions Options { get; }
 
         public ImmutableArray<XmlDocument> Documents { get; }
 
@@ -28,7 +29,7 @@ namespace WarHub.ArmouryModel.Workspaces.BattleScribe
                     group => group.Key,
                     group => group.ToImmutableArray());
 
-        public string RootPath => rootPath ??= Info.GetDirectoryInfo().FullName;
+        public string RootPath => rootPath ??= new DirectoryInfo(Options.SourceDirectory).FullName;
 
         public ImmutableArray<IDatafileInfo> Datafiles => datafiles ??= Documents.Select(x => x.DatafileInfo).ToImmutableArray();
 
@@ -39,22 +40,23 @@ namespace WarHub.ArmouryModel.Workspaces.BattleScribe
         /// <returns>Workspace created from the directory with all files with well-known extensions.</returns>
         public static XmlWorkspace CreateFromDirectory(string path)
         {
-            var info = new BattleScribeProjectConfigurationProvider().Create(path);
-            return CreateFromConfigurationInfo(info);
+            return Create(new XmlWorkspaceOptions
+            {
+                SourceDirectory = path
+            });
         }
 
         public static XmlWorkspace CreateFromDocuments(ImmutableArray<XmlDocument> documents)
         {
-            return new XmlWorkspace(new BattleScribeProjectConfigurationProvider().Empty, documents);
+            return new XmlWorkspace(new XmlWorkspaceOptions(), documents);
         }
 
-        public static XmlWorkspace CreateFromConfigurationInfo(ProjectConfigurationInfo info)
+        public static XmlWorkspace Create(XmlWorkspaceOptions options)
         {
-            var files = info.Configuration.SourceDirectories
-                .SelectMany(x => info.GetDirectoryInfoFor(x).EnumerateFiles());
+            var files = new DirectoryInfo(options.SourceDirectory).EnumerateFiles();
             var datafiles = files.Select(XmlFileExtensions.GetDatafileInfo).ToImmutableArray();
-            var documents = datafiles.Select(file => new XmlDocument(file.Filepath.GetXmlDocumentKind(), file, null)).ToImmutableArray();
-            return new XmlWorkspace(info, documents);
+            var documents = datafiles.Select(file => new XmlDocument(file, file.Filepath.GetXmlDocumentKind())).ToImmutableArray();
+            return new XmlWorkspace(options, documents);
         }
     }
 }

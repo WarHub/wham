@@ -4,6 +4,7 @@ using System.Linq;
 using Newtonsoft.Json;
 using Optional;
 using WarHub.ArmouryModel.Source;
+using WarHub.ArmouryModel.Workspaces.Gitree.Serialization;
 
 namespace WarHub.ArmouryModel.Workspaces.Gitree
 {
@@ -16,7 +17,7 @@ namespace WarHub.ArmouryModel.Workspaces.Gitree
         private const string Extension = ".json";
         private const string ExtensionPattern = "*.json";
 
-        private JsonSerializer Serializer { get; } = ProjectModel.JsonUtilities.CreateSerializer();
+        private JsonSerializer Serializer { get; } = JsonUtilities.CreateSerializer();
 
         public string WriteItem(GitreeNode blobItem, DirectoryInfo directory)
         {

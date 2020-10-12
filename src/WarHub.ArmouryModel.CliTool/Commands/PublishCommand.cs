@@ -4,13 +4,10 @@ using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using Amadevus.RecordGenerator;
-using WarHub.ArmouryModel.CliTool.Utilities;
 using WarHub.ArmouryModel.ProjectModel;
 using WarHub.ArmouryModel.Source;
 using WarHub.ArmouryModel.Source.XmlFormat;
 using WarHub.ArmouryModel.Workspaces.BattleScribe;
-using WarHub.ArmouryModel.Workspaces.Gitree;
 
 namespace WarHub.ArmouryModel.CliTool.Commands
 {
@@ -18,17 +15,16 @@ namespace WarHub.ArmouryModel.CliTool.Commands
     {
         internal static readonly string[] ArtifactNames = new[] { "xml", "zip", "index", "bsi", "bsr" };
 
-        [Record]
-        private partial class Options
+        private record Options
         {
-            public ImmutableArray<ArtifactType> Artifacts { get; }
-            public DirectoryInfo Source { get; }
-            public DirectoryInfo Output { get; }
-            public Uri Url { get; }
-            public ImmutableArray<Uri> AdditionalUrls { get; }
-            public bool UrlOnlyIndex { get; }
-            public string RepoName { get; }
-            public string Filename { get; }
+            public ImmutableArray<ArtifactType> Artifacts { get; init; }
+            public DirectoryInfo Source { get; init; }
+            public DirectoryInfo Output { get; init; }
+            public Uri Url { get; init; }
+            public ImmutableArray<Uri> AdditionalUrls { get; init; }
+            public bool UrlOnlyIndex { get; init; }
+            public string RepoName { get; init; }
+            public string Filename { get; init; }
         }
 
         public enum ArtifactType
@@ -53,12 +49,6 @@ namespace WarHub.ArmouryModel.CliTool.Commands
             string verbosity)
         {
             SetupLogger(verbosity);
-            var configInfo = new AutoProjectConfigurationProvider().Create(source.FullName);
-            Log.Debug("Using configuration: {@Config}", configInfo);
-            if (configInfo.Configuration.FormatProvider == ProjectFormatProviderType.Gitree)
-            {
-                Log.Warning("Gitree feature is a Work In Progress. It may not work as expected, or at all.");
-            }
 
             var artifactTypes = artifacts
                 .Distinct()
@@ -70,12 +60,12 @@ namespace WarHub.ArmouryModel.CliTool.Commands
                 Log.Information("Nothing to do.");
                 return;
             }
-            output ??= new DirectoryInfo(configInfo.Configuration.OutputPath);
+            output ??= new DirectoryInfo("artifacts");
             Log.Debug("Writing artifacts to: {Destination}", output);
             output.Create();
 
             Log.Debug("Loading workspace...");
-            var workspace = ReadWorkspaceFromConfig(configInfo);
+            var workspace = XmlWorkspace.CreateFromDirectory(source.FullName);
             Log.Debug(
                 "Workspace loaded. {DatafileCount} datafiles discovered.",
                 workspace.Datafiles.Count(x => x.DataKind.IsDataCatalogueKind()));
@@ -87,7 +77,7 @@ namespace WarHub.ArmouryModel.CliTool.Commands
 
             var resolvedFilename = string.IsNullOrWhiteSpace(filename) ? source.Name : filename;
 
-            var options = new Options.Builder
+            var options = new Options
             {
                 Artifacts = artifactTypes,
                 Source = source,
@@ -97,7 +87,7 @@ namespace WarHub.ArmouryModel.CliTool.Commands
                 RepoName = resolvedRepoName,
                 Filename = resolvedFilename,
                 UrlOnlyIndex = urlOnlyIndex
-            }.ToImmutable();
+            };
 
             foreach (var artifactType in options.Artifacts)
             {
@@ -156,7 +146,7 @@ namespace WarHub.ArmouryModel.CliTool.Commands
             var gst = (GamesystemNode)await workspace.Datafiles
                 .FirstOrDefault(x => x.DataKind == SourceKind.Gamesystem)
                 ?.GetDataAsync();
-            return gst?.Name ?? workspace.Info.GetDirectoryInfo().Name;
+            return gst?.Name ?? new DirectoryInfo(workspace.RootPath).Name;
         }
 
         private async Task PublishArtifactRepoDistributionAsync(IWorkspace workspace, Options options)
@@ -240,18 +230,6 @@ namespace WarHub.ArmouryModel.CliTool.Commands
             {
                 Log.Error(ex, "Failed to publish {OriginalFilepath}", originalItemPath);
             }
-        }
-
-        private static IWorkspace ReadWorkspaceFromConfig(ProjectConfigurationInfo info)
-        {
-            return info.Configuration.FormatProvider switch
-            {
-                ProjectFormatProviderType.Gitree => GitreeWorkspace.CreateFromConfigurationInfo(info),
-                ProjectFormatProviderType.BattleScribeXml => XmlWorkspace.CreateFromConfigurationInfo(info),
-                _ => throw new InvalidOperationException(
-                        $"Unknown {nameof(ProjectConfiguration.FormatProvider)}:" +
-                        $" {info.Configuration.FormatProvider}"),
-            };
         }
 
         private static ArtifactType ParseArtifactType(string name)

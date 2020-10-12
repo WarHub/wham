@@ -1,15 +1,11 @@
 ﻿using System.Collections.Immutable;
-using Amadevus.RecordGenerator;
 using System.Diagnostics;
 
 namespace WarHub.ArmouryModel.Workspaces.Gitree
 {
-    [Record]
     [DebuggerDisplay("{" + nameof(Name) + "}, Count = {" + nameof(Items) + ".Length}")]
-    public partial class GitreeListNode
+    public record GitreeListNode(string Name)
     {
-        public string Name { get; }
-
-        public ImmutableArray<GitreeNode> Items { get; }
+        public ImmutableArray<GitreeNode> Items { get; init; } = ImmutableArray<GitreeNode>.Empty;
     }
 }
