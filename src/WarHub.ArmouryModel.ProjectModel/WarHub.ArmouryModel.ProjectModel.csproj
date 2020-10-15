@@ -12,10 +12,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="System.Collections.Immutable" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\WarHub.ArmouryModel.Source\WarHub.ArmouryModel.Source.csproj" />
   </ItemGroup>
 

@@ -14,9 +14,6 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
     [Generator]
     public class RoslynWhamNodeGenerator : ISourceGenerator
     {
-        private const string ImmutableArrayMetadataName = "System.Collections.Immutable.ImmutableArray`1";
-        private const string WhamNodeCoreAttributeMetadataName = "WarHub.ArmouryModel.Source.WhamNodeCoreAttribute";
-
         public void Initialize(GeneratorInitializationContext context)
         {
             context.RegisterForSyntaxNotifications(() => new SyntaxReceiver());
@@ -29,15 +26,16 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                 return;
 
             var parseOptions = context.ParseOptions;
-            var attributeSymbol = context.Compilation.GetTypeByMetadataName(WhamNodeCoreAttributeMetadataName)
-                ?? throw new InvalidOperationException("Symbol not found: " + WhamNodeCoreAttributeMetadataName);
-            var immutableArraySymbol = context.Compilation.GetTypeByMetadataName(ImmutableArrayMetadataName)
-                ?? throw new InvalidOperationException("Symbol not found: " + ImmutableArrayMetadataName);
+            var descriptorBuilder = CoreDescriptorBuilder.Create(context.Compilation);
             var coreSymbols = GetNodeCoreSymbols().ToHashSet();
 
-            foreach (var coreSymbol in coreSymbols)
+            var descriptors = coreSymbols
+                .Select(x => descriptorBuilder.CreateDescriptor(x))
+                .OrderBy(x => x.RawModelName)
+                .ToImmutableArray();
+
+            foreach (var descriptor in descriptors)
             {
-                var descriptor = CreateDescriptor(coreSymbol);
                 var compilationUnit = CreateSource(descriptor);
                 var sourceText = SyntaxTree(compilationUnit, parseOptions, encoding: Encoding.UTF8).GetText();
                 context.AddSource(descriptor.RawModelName, sourceText);
@@ -49,53 +47,13 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                 {
                     var model = context.Compilation.GetSemanticModel(candidate.SyntaxTree);
                     var classSymbol = model.GetDeclaredSymbol(candidate);
-                    if (classSymbol?.GetAttributes().Any(data => data.AttributeClass?.Equals(attributeSymbol, SymbolEqualityComparer.Default) == true) == true)
+                    if (classSymbol?.GetAttributes().Any(IsWhamNodeCoreAttribute) == true)
                     {
                         yield return classSymbol;
                     }
                 }
-            }
-
-            CoreDescriptor CreateDescriptor(INamedTypeSymbol coreSymbol)
-            {
-                var declarationSyntax = (RecordDeclarationSyntax)coreSymbol.DeclaringSyntaxReferences[0].GetSyntax();
-                var attributes = declarationSyntax.AttributeLists
-                    .SelectMany(x => x.Attributes)
-                    .Where(x => x.IsNamed(Names.XmlRoot) || x.IsNamed(Names.XmlType))
-                    .Select(x => AttributeList().AddAttributes(x))
-                    .ToImmutableArray();
-
-                var entries = GetCustomBaseTypesAndSelf(coreSymbol)
-                    .Reverse()
-                    .SelectMany(x => x.GetMembers().OfType<IPropertySymbol>())
-                    .Where(p => p is { IsStatic: false, IsIndexer: false, DeclaredAccessibility: Accessibility.Public })
-                    .Select(p =>
-                    {
-                        var x = p.DeclaringSyntaxReferences.FirstOrDefault();
-                        var syntax = (PropertyDeclarationSyntax?)x?.GetSyntax();
-                        var auto = syntax?.AccessorList?.Accessors.All(ac => ac is { Body: null, ExpressionBody: null, Keyword: { ValueText: "get" or "init" } }) ?? false;
-                        return auto ? new { syntax = syntax!, symbol = p } : null;
-                    })
-                    .Where(x => x != null)
-                    .Select(x => CoreDescriptorBuilder.CreateRecordEntry(x!.symbol, x.syntax, coreSymbol, immutableArraySymbol, attributeSymbol))
-                    .ToImmutableArray();
-                var descriptor = new CoreDescriptor(
-                    coreSymbol,
-                    IdentifierName(declarationSyntax.Identifier),
-                    declarationSyntax.Identifier.WithoutTrivia(),
-                    entries,
-                    attributes);
-                return descriptor;
-
-                static IEnumerable<INamedTypeSymbol> GetCustomBaseTypesAndSelf(INamedTypeSymbol self)
-                {
-                    yield return self;
-                    while (self.BaseType?.SpecialType == SpecialType.None)
-                    {
-                        self = self.BaseType;
-                        yield return self;
-                    }
-                }
+                bool IsWhamNodeCoreAttribute(AttributeData data) =>
+                    SymbolEqualityComparer.Default.Equals(descriptorBuilder.WhamNodeCoreAttributeSymbol, data.AttributeClass);
             }
         }
 
