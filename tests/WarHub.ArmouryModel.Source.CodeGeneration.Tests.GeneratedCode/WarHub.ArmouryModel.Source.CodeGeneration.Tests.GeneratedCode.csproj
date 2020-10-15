@@ -16,10 +16,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="System.Collections.Immutable" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\..\src\WarHub.ArmouryModel.Source.CodeGeneration.Attributes\WarHub.ArmouryModel.Source.CodeGeneration.Attributes.csproj" PrivateAssets="all" Private="false" />
     <ProjectReference Include="..\..\src\WarHub.ArmouryModel.Source.CodeGeneration\WarHub.ArmouryModel.Source.CodeGeneration.csproj" ReferenceOutputAssembly="false" OutputItemType="Analyzer" />
   </ItemGroup>
