@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using System.Text;
@@ -40,6 +39,9 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                 var sourceText = SyntaxTree(compilationUnit, parseOptions, encoding: Encoding.UTF8).GetText();
                 context.AddSource(descriptor.RawModelName, sourceText);
             }
+
+            var serializerRoot = WhamSerializerGenerator.Generate(context.Compilation, descriptors);
+            context.AddSource("WhamCoreXmlSerializer", SyntaxTree(serializerRoot, parseOptions, encoding: Encoding.UTF8).GetText());
 
             IEnumerable<INamedTypeSymbol> GetNodeCoreSymbols()
             {

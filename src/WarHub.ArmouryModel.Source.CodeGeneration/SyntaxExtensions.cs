@@ -10,7 +10,19 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
 {
     internal static class SyntaxExtensions
     {
+        public static NullableTypeSyntax Nullable(this TypeSyntax @this) => NullableType(@this);
+
         public static StructDeclarationSyntax AddMembers(this StructDeclarationSyntax syntax, IEnumerable<MemberDeclarationSyntax> members)
+        {
+            return syntax.AddMembers(members.ToArray());
+        }
+
+        public static ClassDeclarationSyntax AddMembers(this ClassDeclarationSyntax syntax, IEnumerable<MemberDeclarationSyntax> members)
+        {
+            return syntax.AddMembers(members.ToArray());
+        }
+
+        public static NamespaceDeclarationSyntax AddMembers(this NamespaceDeclarationSyntax syntax, IEnumerable<MemberDeclarationSyntax> members)
         {
             return syntax.AddMembers(members.ToArray());
         }
