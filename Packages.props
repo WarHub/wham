@@ -29,7 +29,7 @@
                             Version="1.0.0"
                             Condition=" !$(IsTestingOnlyProject) " />
     <GlobalPackageReference Include="Nerdbank.GitVersioning"
-                            Version="3.2.31" />
+                            Version="3.3.37" />
   </ItemGroup>
   
 </Project>
