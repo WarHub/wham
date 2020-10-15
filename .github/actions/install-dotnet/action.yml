@@ -17,7 +17,7 @@ runs:
             else {
               (Get-Content global.json -Raw | ConvertFrom-Json).sdk.version
             }
-            Write-Host "::set-env name=RESOLVED_VERSION::$resolved"
+            echo "RESOLVED_VERSION=$resolved" >> $env:GITHUB_ENV
           shell: pwsh
         - name: Run install script
           run: |
@@ -35,8 +35,8 @@ runs:
               Invoke-WebRequest -Uri "https://dot.net/v1/dotnet-install.sh" -OutFile dotnet-install.sh
               bash dotnet-install.sh --version $env:RESOLVED_VERSION --install-dir $env:DOTNET_ROOT --verbose
               if (!$?) { exit $lastexitcode; }
-              Write-Host "::set-env name=DOTNET_ROOT::$env:DOTNET_ROOT"
-              Write-Host "::set-env name=PATH::$env:PATH"
+              echo "DOTNET_ROOT=$env:DOTNET_ROOT" >> $env:GITHUB_ENV
+              echo $env:DOTNET_ROOT >> $env:GITHUB_PATH
             }
             dotnet --list-sdks
           shell: pwsh
