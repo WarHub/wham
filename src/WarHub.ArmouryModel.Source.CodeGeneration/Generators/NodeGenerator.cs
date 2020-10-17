@@ -59,10 +59,10 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                     GenerateSourceNodeOverrideMethods());
         }
 
-        private static TypeSyntax GetNodePropertyType(CoreDescriptor.Entry entry) => entry switch
+        private static TypeSyntax GetNodePropertyType(CoreChildBase entry) => entry switch
         {
-            CoreDescriptor.ComplexEntry complex => complex.GetNodeTypeIdentifierName(),
-            CoreDescriptor.CollectionEntry collection => collection.GetListNodeTypeIdentifierName(),
+            CoreObjectChild complex => complex.GetNodeTypeIdentifierName(),
+            CoreListChild collection => collection.GetListNodeTypeIdentifierName(),
             _ => entry.Type
         };
 
@@ -119,19 +119,19 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                     CorePropertyIdentifierName
                     .Assign(coreLocalIdentifierName)
                     .AsStatement();
-                foreach (var entry in Descriptor.Entries.Where(x => !x.IsSimple))
+                foreach (var entry in Descriptor.Entries.Where(x => x is not CoreValueChild))
                 {
                     yield return CreateNotSimpleInitialization(entry);
                 }
             }
 
-            StatementSyntax CreateNotSimpleInitialization(CoreDescriptor.Entry entry)
+            StatementSyntax CreateNotSimpleInitialization(CoreChildBase entry)
             {
                 return
                     coreLocalIdentifierName
                     .MemberAccess(entry.IdentifierName)
                     .MemberAccess(
-                        IdentifierName(entry.IsCollection ? Names.ToListNode : Names.ToNode))
+                        IdentifierName(entry is CoreListChild ? Names.ToListNode : Names.ToNode))
                     .InvokeWithArguments(
                         ThisExpression())
                     .AssignTo(entry.IdentifierName)
@@ -156,8 +156,8 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                             GetNodePropertyType(entry),
                             entry.Identifier)
                         .AddModifiers(SyntaxKind.PublicKeyword)
-                        .MutateIf(entry.IsDerived, x => x.AddModifiers(SyntaxKind.OverrideKeyword))
-                        .Mutate(x => entry is CoreDescriptor.SimpleEntry
+                        .MutateIf(entry.IsInherited, x => x.AddModifiers(SyntaxKind.OverrideKeyword))
+                        .Mutate(x => entry is CoreValueChild
                         ? x.WithExpressionBodyFull(
                             CorePropertyIdentifierName
                             .MemberAccess(entry.IdentifierName))
@@ -261,7 +261,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                                 IdentifierName(CoreParameter),
                                 LiteralExpression(SyntaxKind.NullLiteralExpression))));
             }
-            MethodDeclarationSyntax WithMethod(CoreDescriptor.Entry entry)
+            MethodDeclarationSyntax WithMethod(CoreChildBase entry)
             {
                 var signature =
                     MethodDeclaration(
@@ -269,7 +269,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                         Names.WithPrefix + entry.Identifier)
                     .AddModifiers(SyntaxKind.PublicKeyword)
                     .MutateIf(IsAbstract, x => x.AddModifiers(SyntaxKind.AbstractKeyword))
-                    .MutateIf(entry.IsDerived, x => x.AddModifiers(SyntaxKind.OverrideKeyword))
+                    .MutateIf(entry.IsInherited, x => x.AddModifiers(SyntaxKind.OverrideKeyword))
                     .AddParameterListParameters(
                         Parameter(ValueParamToken)
                         .WithType(GetNodePropertyType(entry)));
@@ -279,8 +279,8 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                 }
                 var coreWithArg = entry switch
                 {
-                    CoreDescriptor.ComplexEntry => ValueParamSyntax.MemberAccess(CorePropertyIdentifierName),
-                    CoreDescriptor.CollectionEntry =>
+                    CoreObjectChild => ValueParamSyntax.MemberAccess(CorePropertyIdentifierName),
+                    CoreListChild =>
                         ValueParamSyntax.MemberAccess(
                             IdentifierName(Names.ToCoreArray))
                         .InvokeWithArguments(),
@@ -301,7 +301,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
             {
                 yield break;
             }
-            var children = Descriptor.Entries.Where(x => !x.IsSimple).ToImmutableArray();
+            var children = Descriptor.Entries.Where(x => x is not CoreValueChild).ToImmutableArray();
             yield return ChildrenCount();
             if (children.IsEmpty)
             {
@@ -335,7 +335,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                     .AddBodyStatements(
                         children.Select(CreateStatement));
 
-                static StatementSyntax CreateStatement(CoreDescriptor.Entry entry)
+                static StatementSyntax CreateStatement(CoreChildBase entry)
                 {
                     return
                         YieldStatement(
@@ -359,7 +359,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                     .AddBodyStatements(
                         children.Select(CreateStatement));
 
-                static StatementSyntax CreateStatement(CoreDescriptor.Entry entry)
+                static StatementSyntax CreateStatement(CoreChildBase entry)
                 {
                     return
                         YieldStatement(

@@ -10,6 +10,32 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
 {
     internal static class SyntaxExtensions
     {
+        public static T Instantiate<T>(this AttributeData data) where T : Attribute => (T)data.Instantiate(typeof(T));
+
+        public static Attribute Instantiate(this AttributeData data, Type type)
+        {
+            var instance = Activator.CreateInstance(type, data.ConstructorArguments.Select(GetConstantValue).ToArray());
+            foreach (var (name, value) in data.NamedArguments)
+            {
+                type.GetProperty(name).SetValue(instance, GetConstantValue(value));
+            }
+            return (Attribute)instance;
+
+            static object? GetConstantValue(TypedConstant constant)
+            {
+                return constant switch
+                {
+                    { IsNull: true } => null,
+                    { Kind: TypedConstantKind.Primitive } => constant.Value,
+                    _ => throw new InvalidOperationException($"Cannot instantiate argument value of {constant.Kind} kind.")
+                };
+            }
+        }
+
+        public static INamedTypeSymbol GetTypeByMetadataNameOrThrow(this Compilation compilation, string fullyQualifiedMetadataName) =>
+            compilation.GetTypeByMetadataName(fullyQualifiedMetadataName)
+            ?? throw new InvalidOperationException("Symbol not found: " + fullyQualifiedMetadataName);
+
         public static NullableTypeSyntax Nullable(this TypeSyntax @this) => NullableType(@this);
 
         public static StructDeclarationSyntax AddMembers(this StructDeclarationSyntax syntax, IEnumerable<MemberDeclarationSyntax> members)

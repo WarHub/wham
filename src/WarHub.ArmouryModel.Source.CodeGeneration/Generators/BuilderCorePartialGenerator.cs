@@ -69,11 +69,11 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
             }
         }
 
-        private IEnumerable<MemberDeclarationSyntax> GetPropertyMembers(CoreDescriptor.Entry entry)
+        private IEnumerable<MemberDeclarationSyntax> GetPropertyMembers(CoreChildBase entry)
         {
-            return entry is CoreDescriptor.CollectionEntry collectionEntry
+            return entry is CoreListChild collectionEntry
                 ? CreateLazyProperty(collectionEntry.Identifier, collectionEntry.ToListOfBuilderType())
-                : entry is CoreDescriptor.ComplexEntry complexEntry
+                : entry is CoreObjectChild complexEntry
                 ? CreateLazyProperty(complexEntry.Identifier, complexEntry.BuilderType)
                 : CreateSimpleProperty();
 
@@ -81,7 +81,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
             {
                 yield return
                     PropertyDeclaration(entry.Type, entry.Identifier)
-                    .AddAttributeLists(entry.AttributeLists)
+                    .AddAttributeLists(entry.XmlAttributeLists)
                     .AddModifiers(SyntaxKind.PublicKeyword)
                     .AddAccessorListAccessors(
                         AccessorDeclaration(SyntaxKind.GetAccessorDeclaration)
@@ -103,7 +103,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
 
                 yield return
                     PropertyDeclaration(type, identifier)
-                    .AddAttributeLists(entry.AttributeLists)
+                    .AddAttributeLists(entry.XmlAttributeLists)
                     .AddModifiers(SyntaxKind.PublicKeyword)
                     .AddAccessorListAccessors(
                         CreateGetter(),
@@ -146,10 +146,10 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                 .AddBodyStatements(
                     ReturnStatement(
                         Descriptor.CoreType.ObjectCreationWithInitializer(initExpressions)));
-            static ExpressionSyntax GetCorePropValue(CoreDescriptor.Entry entry) => entry switch
+            static ExpressionSyntax GetCorePropValue(CoreChildBase entry) => entry switch
             {
-                CoreDescriptor.CollectionEntry => entry.IdentifierName.MemberAccess(IdentifierName(Names.ToImmutableRecursive)).InvokeWithArguments(),
-                CoreDescriptor.ComplexEntry => entry.IdentifierName.MemberAccess(IdentifierName(Names.ToImmutable)).InvokeWithArguments(),
+                CoreListChild => entry.IdentifierName.MemberAccess(IdentifierName(Names.ToImmutableRecursive)).InvokeWithArguments(),
+                CoreObjectChild => entry.IdentifierName.MemberAccess(IdentifierName(Names.ToImmutable)).InvokeWithArguments(),
                 _ => entry.IdentifierName,
             };
         }
@@ -175,7 +175,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                                     CreateCollectionInitializer)
                                 .ToArray()))));
 
-            static ExpressionSyntax CreateSimpleInitializer(CoreDescriptor.Entry entry)
+            static ExpressionSyntax CreateSimpleInitializer(CoreChildBase entry)
             {
                 return
                     AssignmentExpression(
@@ -184,7 +184,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                         entry.IdentifierName);
             }
 
-            static ExpressionSyntax CreateComplexInitializer(CoreDescriptor.ComplexEntry entry)
+            static ExpressionSyntax CreateComplexInitializer(CoreObjectChild entry)
             {
                 return
                     AssignmentExpression(
@@ -196,7 +196,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                         .InvokeWithArguments());
             }
 
-            static ExpressionSyntax CreateCollectionInitializer(CoreDescriptor.CollectionEntry entry)
+            static ExpressionSyntax CreateCollectionInitializer(CoreListChild entry)
             {
                 return
                     AssignmentExpression(

@@ -8,22 +8,22 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
     internal static class CoreDescriptorExtensions
     {
         public static IEnumerable<T> Select<T>(
-            this IEnumerable<CoreDescriptor.Entry> entries,
-            Func<CoreDescriptor.SimpleEntry, T> simpleSelect,
-            Func<CoreDescriptor.ComplexEntry, T> complexSelect,
-            Func<CoreDescriptor.CollectionEntry, T> collectionSelect)
+            this IEnumerable<CoreChildBase> entries,
+            Func<CoreValueChild, T> simpleSelect,
+            Func<CoreObjectChild, T> complexSelect,
+            Func<CoreListChild, T> collectionSelect)
         {
             foreach (var entry in entries)
             {
-                if (entry is CoreDescriptor.SimpleEntry simple)
+                if (entry is CoreValueChild simple)
                 {
                     yield return simpleSelect(simple);
                 }
-                else if (entry is CoreDescriptor.ComplexEntry complex)
+                else if (entry is CoreObjectChild complex)
                 {
                     yield return complexSelect(complex);
                 }
-                else if (entry is CoreDescriptor.CollectionEntry collection)
+                else if (entry is CoreListChild collection)
                 {
                     yield return collectionSelect(collection);
                 }
@@ -50,17 +50,17 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
             return IdentifierName(descriptor.GetListNodeTypeName());
         }
 
-        public static IdentifierNameSyntax GetNodeTypeIdentifierName(this CoreDescriptor.ComplexEntry entry)
+        public static IdentifierNameSyntax GetNodeTypeIdentifierName(this CoreObjectChild entry)
         {
             return IdentifierName(entry.Type.ToString().GetNodeTypeNameCore());
         }
 
-        public static IdentifierNameSyntax GetNodeTypeIdentifierName(this CoreDescriptor.CollectionEntry entry)
+        public static IdentifierNameSyntax GetNodeTypeIdentifierName(this CoreListChild entry)
         {
             return IdentifierName(entry.CollectionTypeParameter.ToString().GetNodeTypeNameCore());
         }
 
-        public static IdentifierNameSyntax GetListNodeTypeIdentifierName(this CoreDescriptor.CollectionEntry entry)
+        public static IdentifierNameSyntax GetListNodeTypeIdentifierName(this CoreListChild entry)
         {
             return IdentifierName(entry.CollectionTypeParameter.ToString().GetListNodeTypeNameCore());
         }
@@ -85,7 +85,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
             return text.EndsWith(suffix, StringComparison.Ordinal) ? text.Substring(0, text.Length - suffix.Length) : text;
         }
 
-        public static TypeSyntax ToListOfBuilderType(this CoreDescriptor.CollectionEntry entry)
+        public static TypeSyntax ToListOfBuilderType(this CoreListChild entry)
         {
             return
                 GenericName(Names.ListGeneric)

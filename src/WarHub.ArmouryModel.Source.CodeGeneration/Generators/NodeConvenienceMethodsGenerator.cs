@@ -39,11 +39,11 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                 .AddBodyStatements(
                     Descriptor.Entries.Select(CreateAssignment));
 
-            static ParameterSyntax CreateParameter(CoreDescriptor.Entry entry)
+            static ParameterSyntax CreateParameter(CoreChildBase entry)
             {
-                var type = entry is CoreDescriptor.CollectionEntry collectionEntry
+                var type = entry is CoreListChild collectionEntry
                     ? collectionEntry.GetListNodeTypeIdentifierName()
-                    : entry is CoreDescriptor.ComplexEntry complexEntry
+                    : entry is CoreObjectChild complexEntry
                     ? complexEntry.GetNodeTypeIdentifierName()
                     : entry.Type;
                 return
@@ -52,7 +52,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                     .AddModifiers(SyntaxKind.OutKeyword);
             }
 
-            static StatementSyntax CreateAssignment(CoreDescriptor.Entry entry)
+            static StatementSyntax CreateAssignment(CoreChildBase entry)
             {
                 return
                     ExpressionStatement(

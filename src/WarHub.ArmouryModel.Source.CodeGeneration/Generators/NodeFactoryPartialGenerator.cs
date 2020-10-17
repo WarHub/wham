@@ -39,7 +39,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
             yield return CreateForNode(
                 CreateNodeListParameter,
                 CreateNodeListReturnStatement);
-            if (Descriptor.Entries.Any(x => x.IsCollection))
+            if (Descriptor.Entries.Any(x => x is CoreListChild))
             {
                 yield return CreateForNode(
                     CreateListNodeParameter,
@@ -78,14 +78,14 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                         .InvokeWithArguments(),
                     LiteralExpression(SyntaxKind.NullLiteralExpression)));
 
-            static ParameterSyntax CreateListNodeParameter(CoreDescriptor.CollectionEntry entry)
+            static ParameterSyntax CreateListNodeParameter(CoreListChild entry)
             {
                 return
                     Parameter(entry.CamelCaseIdentifier)
                         .WithType(entry.GetListNodeTypeIdentifierName());
             }
 
-            static ParameterSyntax CreateNodeListParameter(CoreDescriptor.CollectionEntry entry)
+            static ParameterSyntax CreateNodeListParameter(CoreListChild entry)
             {
                 var type = entry.GetNodeTypeIdentifierName().ToNodeListType();
                 return
@@ -102,14 +102,14 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                         IdentifierName(methodName)
                         .InvokeWithArguments(
                             Descriptor.Entries
-                                .Where(x => !x.IsCollection)
+                                .Where(x => x is not CoreListChild)
                                 .Select(e => e.CamelCaseIdentifierName)
                                 .Concat(
                                     Descriptor.Entries
-                                        .OfType<CoreDescriptor.CollectionEntry>()
+                                        .OfType<CoreListChild>()
                                         .Select(CreateCollectionArgument))));
 
-                static ExpressionSyntax CreateCollectionArgument(CoreDescriptor.CollectionEntry entry)
+                static ExpressionSyntax CreateCollectionArgument(CoreListChild entry)
                 {
                     return
                         entry.CamelCaseIdentifierName
@@ -128,13 +128,13 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                             IdentifierName(Names.ToNode))
                         .InvokeWithArguments());
 
-                static ExpressionSyntax CreateInitializer(CoreDescriptor.Entry entry) => (entry switch
+                static ExpressionSyntax CreateInitializer(CoreChildBase entry) => (entry switch
                 {
-                    CoreDescriptor.ComplexEntry =>
+                    CoreObjectChild =>
                         entry.CamelCaseIdentifierName
                         .MemberAccess(
                             IdentifierName(Names.Core)),
-                    CoreDescriptor.CollectionEntry =>
+                    CoreListChild =>
                         entry.CamelCaseIdentifierName
                         .MemberAccess(
                             IdentifierName(Names.ToCoreArray))
@@ -144,7 +144,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                 .AssignTo(entry.IdentifierName);
             }
             MethodDeclarationSyntax CreateForNode(
-                Func<CoreDescriptor.CollectionEntry, ParameterSyntax> createCollectionParameter,
+                Func<CoreListChild, ParameterSyntax> createCollectionParameter,
                 Func<StatementSyntax> createReturnStatement)
             {
                 return
@@ -162,22 +162,22 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                 {
                     return
                         Descriptor.Entries
-                        .Where(x => !x.IsCollection)
+                        .Where(x => x is not CoreListChild)
                         .Select(CreateSimpleParameter, CreateComplexParameter, null!)
                         .Concat(
                             Descriptor.Entries
-                            .OfType<CoreDescriptor.CollectionEntry>()
+                            .OfType<CoreListChild>()
                             .Select(createCollectionParameter));
                 }
 
-                static ParameterSyntax CreateSimpleParameter(CoreDescriptor.SimpleEntry entry)
+                static ParameterSyntax CreateSimpleParameter(CoreValueChild entry)
                 {
                     return
                         Parameter(entry.CamelCaseIdentifier)
                         .WithType(entry.Type);
                 }
 
-                static ParameterSyntax CreateComplexParameter(CoreDescriptor.ComplexEntry entry)
+                static ParameterSyntax CreateComplexParameter(CoreObjectChild entry)
                 {
                     var type = entry.GetNodeTypeIdentifierName();
                     return

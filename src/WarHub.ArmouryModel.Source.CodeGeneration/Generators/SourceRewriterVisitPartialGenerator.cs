@@ -38,7 +38,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                                 .InvokeWithArguments(
                                     IdentifierName(Node))));
             // VisitXyz
-            var nonSimpleEntries = Descriptor.Entries.Where(x => !x.IsSimple).ToImmutableArray();
+            var nonSimpleEntries = Descriptor.Entries.Where(x => x is not CoreValueChild).ToImmutableArray();
             yield return
                 CreateVisitMethodBase(
                         Names.Visit + Descriptor.RawModelName,
@@ -71,11 +71,11 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                                 .WithType(type));
             }
 
-            static StatementSyntax CreateChildVisitStatement(CoreDescriptor.Entry entry)
+            static StatementSyntax CreateChildVisitStatement(CoreChildBase entry)
             {
                 var initializerExpression = entry switch
                 {
-                    CoreDescriptor.CollectionEntry collectionEntry =>
+                    CoreListChild collectionEntry =>
                         IdentifierName(Names.Visit)
                         .InvokeWithArguments(
                             IdentifierName(Node)
@@ -88,7 +88,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                             IdentifierName(Names.NodeList))
                         .Coalesce(
                             LiteralExpression(SyntaxKind.DefaultLiteralExpression)),
-                    CoreDescriptor.ComplexEntry complex =>
+                    CoreObjectChild complex =>
                         IdentifierName(Names.Visit)
                         .InvokeWithArguments(
                             IdentifierName(Node)
@@ -108,7 +108,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                 return CreateLocalDeclaration(entry, initializerExpression);
             }
 
-            static StatementSyntax CreateLocalDeclaration(CoreDescriptor.Entry entry, ExpressionSyntax initializerExpression)
+            static StatementSyntax CreateLocalDeclaration(CoreChildBase entry, ExpressionSyntax initializerExpression)
             {
                 return
                     LocalDeclarationStatement(
@@ -135,13 +135,13 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                                 .With(
                                     nonSimpleEntries.Select(CreateAssignment))));
 
-                static ExpressionSyntax CreateAssignment(CoreDescriptor.Entry entry) => (entry switch
+                static ExpressionSyntax CreateAssignment(CoreChildBase entry) => (entry switch
                 {
-                    CoreDescriptor.ComplexEntry =>
+                    CoreObjectChild =>
                         entry.CamelCaseIdentifierName
                         .MemberAccess(
                             IdentifierName(Names.Core)),
-                    CoreDescriptor.CollectionEntry =>
+                    CoreListChild =>
                         entry.CamelCaseIdentifierName
                         .MemberAccess(
                             IdentifierName(Names.ToCoreArray))

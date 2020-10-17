@@ -58,7 +58,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
             foreach (var entry in Descriptor.Entries)
             {
                 yield return CreateProperty(entry);
-                if (entry.IsCollection)
+                if (entry is CoreListChild)
                 {
                     yield return CreateSpecifiedProperty(entry);
                 }
@@ -92,16 +92,17 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                         .WithSemicolonTokenDefault());
             }
 
-            static PropertyDeclarationSyntax CreateProperty(CoreDescriptor.Entry entry)
+            static PropertyDeclarationSyntax CreateProperty(CoreChildBase entry)
             {
-                var propertyType = entry is CoreDescriptor.CollectionEntry collectionEntry
-                    ? QualifiedName(collectionEntry.CollectionTypeParameter, IdentifierName(Names.FastSerializationEnumerable))
-                    : entry is CoreDescriptor.ComplexEntry complexEntry
-                    ? QualifiedName(complexEntry.NameSyntax, IdentifierName(Names.FastSerializationProxy))
-                    : entry.Type;
+                var propertyType = entry switch
+                {
+                    CoreListChild list => QualifiedName(list.CollectionTypeParameter, IdentifierName(Names.FastSerializationEnumerable)),
+                    CoreObjectChild obj => QualifiedName(obj.NameSyntax, IdentifierName(Names.FastSerializationProxy)),
+                    _ => entry.Type
+                };
                 return
                     PropertyDeclaration(propertyType, entry.Identifier)
-                    .AddAttributeLists(entry.AttributeLists)
+                    .AddAttributeLists(entry.XmlAttributeLists)
                     .AddModifiers(SyntaxKind.PublicKeyword)
                     .AddAccessorListAccessors(
                         AccessorDeclaration(SyntaxKind.GetAccessorDeclaration)
@@ -109,7 +110,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                             IdentifierName(PropertyName)
                             .MemberAccess(entry.IdentifierName)
                             .MutateIf(
-                                entry.IsComplex,
+                                entry is CoreObjectChild,
                                 x => x.MemberAccess(
                                     IdentifierName(Names.ToSerializationProxy))
                                     .InvokeWithArguments())),
@@ -122,7 +123,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                                     ArgumentList()))));
             }
 
-            static PropertyDeclarationSyntax CreateSpecifiedProperty(CoreDescriptor.Entry entry)
+            static PropertyDeclarationSyntax CreateSpecifiedProperty(CoreChildBase entry)
             {
                 return
                     PropertyDeclaration(

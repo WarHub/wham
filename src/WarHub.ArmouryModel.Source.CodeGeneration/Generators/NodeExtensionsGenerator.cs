@@ -39,11 +39,11 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
         protected override IEnumerable<MemberDeclarationSyntax> GenerateMembers()
         {
             return Descriptor.Entries
-                .OfType<CoreDescriptor.CollectionEntry>()
+                .OfType<CoreListChild>()
                 .SelectMany(GenerateConvenienceMutators);
         }
 
-        private IEnumerable<MethodDeclarationSyntax> GenerateConvenienceMutators(CoreDescriptor.CollectionEntry entry)
+        private IEnumerable<MethodDeclarationSyntax> GenerateConvenienceMutators(CoreListChild entry)
         {
             const string NodesParamName = "nodes";
             var nodeType = Descriptor.GetNodeTypeIdentifierName();

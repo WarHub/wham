@@ -2,18 +2,23 @@
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
+using System.Xml.Serialization;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using MoreLinq;
 using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
 namespace WarHub.ArmouryModel.Source.CodeGeneration
 {
     internal class WhamSerializerGenerator
     {
+        private const string XmlRootAttributeMetadataName = "System.Xml.Serialization.XmlRootAttribute";
+
         public WhamSerializerGenerator(Compilation compilation, ImmutableArray<CoreDescriptor> descriptors)
         {
             Compilation = compilation;
+            XmlRootSymbol = compilation.GetTypeByMetadataNameOrThrow(XmlRootAttributeMetadataName);
             Descriptors = descriptors;
             SealedCores = descriptors.Where(x => x.TypeSymbol.IsSealed).ToImmutableArray();
             RootCores = SealedCores
@@ -22,9 +27,14 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
         }
 
         public Compilation Compilation { get; }
+
         public ImmutableArray<CoreDescriptor> Descriptors { get; }
+
         public ImmutableArray<CoreDescriptor> SealedCores { get; }
+
         public ImmutableArray<CoreDescriptor> RootCores { get; }
+
+        public INamedTypeSymbol XmlRootSymbol { get; }
 
         internal static CompilationUnitSyntax Generate(Compilation compilation, ImmutableArray<CoreDescriptor> descriptors)
         {
@@ -131,6 +141,32 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                     .AddBodyStatements())
                 .AddMembers(
                     SealedCores.Select(CreateWriteCoreMethod));
+        }
+
+        private MethodDeclarationSyntax CreateReadRootMethod(CoreDescriptor type)
+        {
+            var rootAttributes = type.TypeSymbol.GetAttributes();
+            var xmlRoot = rootAttributes.Single(data => SymbolEqualityComparer.Default.Equals(XmlRootSymbol, data.AttributeClass));
+            var xmlRootArgs = xmlRoot.NamedArguments.ToDictionary();
+            var elementName = xmlRoot.ConstructorArguments.Length > 0
+                ? xmlRoot.ConstructorArguments[0].ToCSharpString()
+                : xmlRootArgs.TryGetValue(nameof(XmlRootAttribute.ElementName), out var elName)
+                ? elName.ToCSharpString()
+                : type.RawModelName;
+            return
+                MethodDeclaration(
+                    type.CoreType.Nullable(),
+                    Identifier("Read" + type.CoreTypeIdentifier))
+                .AddParameterListParameters()
+                .AddBodyStatements(
+                    CreateBody());
+
+            IEnumerable<StatementSyntax> CreateBody()
+            {
+                yield return
+                    ReturnStatement(
+                        LiteralExpression(SyntaxKind.NullLiteralExpression));
+            }
         }
 
         private MethodDeclarationSyntax CreateReadCoreMethod(CoreDescriptor type)
