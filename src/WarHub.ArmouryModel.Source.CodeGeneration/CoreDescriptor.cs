@@ -1,4 +1,5 @@
 ﻿using System.Collections.Immutable;
+using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using MoreLinq;
@@ -8,50 +9,54 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
 {
     internal class CoreDescriptor
     {
+        private QualifiedNameSyntax? coreBuilderType;
+        private GenericNameSyntax? listOfCoreBuilderType;
+        private GenericNameSyntax? immutableArrayOfCoreType;
+        private string? rawModelName;
+        private RecordDeclarationSyntax? declarationSyntax;
+        private SyntaxToken? coreTypeIdentifier;
+        private IdentifierNameSyntax? coreType;
+
         public CoreDescriptor(
             INamedTypeSymbol typeSymbol,
-            NameSyntax coreType,
-            SyntaxToken coreTypeIdentifier,
             ImmutableArray<CoreChildBase> entries,
-            ImmutableArray<AttributeListSyntax> coreTypeAttributeLists)
+            ImmutableArray<AttributeListSyntax> xmlAttributeLists)
         {
             TypeSymbol = typeSymbol;
-            CoreType = coreType;
-            CoreTypeIdentifier = coreTypeIdentifier;
             Entries = entries;
-            CoreTypeAttributeLists = coreTypeAttributeLists;
-            CoreBuilderType = QualifiedName(coreType, IdentifierName(Names.Builder));
-            ListOfCoreBuilderType = GenericName(Names.ListGeneric).AddTypeArgumentListArguments(CoreBuilderType);
-            ImmutableArrayOfCoreType = GenericName(Names.ImmutableArray).AddTypeArgumentListArguments(CoreType);
-            RawModelName = coreTypeIdentifier.ValueText.StripSuffixes();
-            var (derived, declared) = entries.Partition(x => x.IsInherited);
-            (DeclaredEntries, DerivedEntries) = (declared.ToImmutableArray(), derived.ToImmutableArray());
+            XmlAttributeLists = xmlAttributeLists;
         }
 
         public INamedTypeSymbol TypeSymbol { get; }
 
-        public NameSyntax CoreType { get; }
+        private RecordDeclarationSyntax DeclarationSyntax =>
+            declarationSyntax ??=
+            (RecordDeclarationSyntax)TypeSymbol.DeclaringSyntaxReferences.Single().GetSyntax();
 
-        public QualifiedNameSyntax CoreBuilderType { get; }
+        public SyntaxToken CoreTypeIdentifier =>
+            coreTypeIdentifier ??= DeclarationSyntax.Identifier.WithoutTrivia();
 
-        public GenericNameSyntax ListOfCoreBuilderType { get; }
+        public NameSyntax CoreType =>
+            coreType ??= IdentifierName(CoreTypeIdentifier);
 
-        public GenericNameSyntax ImmutableArrayOfCoreType { get; }
+        public QualifiedNameSyntax CoreBuilderType =>
+            coreBuilderType ??= QualifiedName(CoreType, IdentifierName(Names.Builder));
 
-        public SyntaxToken CoreTypeIdentifier { get; }
+        public GenericNameSyntax ListOfCoreBuilderType =>
+            listOfCoreBuilderType ??= GenericName(Names.ListGeneric).AddTypeArgumentListArguments(CoreBuilderType);
+
+        public GenericNameSyntax ImmutableArrayOfCoreType =>
+            immutableArrayOfCoreType ??= GenericName(Names.ImmutableArray).AddTypeArgumentListArguments(CoreType);
 
         /// <summary>
         /// Gets raw (un-suffixed with Core or Node) model name.
         /// </summary>
-        public string RawModelName { get; }
+        public string RawModelName =>
+            rawModelName ??= CoreTypeIdentifier.ValueText.StripSuffixes();
 
         public ImmutableArray<CoreChildBase> Entries { get; }
 
-        public ImmutableArray<CoreChildBase> DerivedEntries { get; }
-
-        public ImmutableArray<CoreChildBase> DeclaredEntries { get; }
-
-        public ImmutableArray<AttributeListSyntax> CoreTypeAttributeLists { get; }
+        public ImmutableArray<AttributeListSyntax> XmlAttributeLists { get; }
 
     }
 }

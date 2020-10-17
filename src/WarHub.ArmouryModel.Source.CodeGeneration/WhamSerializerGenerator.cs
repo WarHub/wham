@@ -22,7 +22,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
             Descriptors = descriptors;
             SealedCores = descriptors.Where(x => x.TypeSymbol.IsSealed).ToImmutableArray();
             RootCores = SealedCores
-                .Where(x => x.CoreTypeAttributeLists.SelectMany(x => x.Attributes).Any(x => x.IsNamed("XmlRoot")))
+                .Where(x => x.XmlAttributeLists.SelectMany(x => x.Attributes).Any(x => x.IsNamed("XmlRoot")))
                 .ToImmutableArray();
         }
 

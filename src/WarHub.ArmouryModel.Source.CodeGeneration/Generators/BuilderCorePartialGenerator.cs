@@ -43,7 +43,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
         {
             return
                 ClassDeclaration(Names.Builder)
-                .AddAttributeLists(Descriptor.CoreTypeAttributeLists)
+                .AddAttributeLists(Descriptor.XmlAttributeLists)
                 .AddModifiers(
                     SyntaxKind.PublicKeyword,
                     SyntaxKind.PartialKeyword)

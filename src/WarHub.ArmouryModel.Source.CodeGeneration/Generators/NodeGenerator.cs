@@ -168,7 +168,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
             }
             else
             {
-                foreach (var entry in Descriptor.DeclaredEntries)
+                foreach (var entry in Descriptor.Entries.Where(x => x.IsDeclared))
                 {
                     yield return
                         PropertyDeclaration(

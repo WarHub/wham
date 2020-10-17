@@ -60,10 +60,10 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
         public CoreDescriptor CreateDescriptor(INamedTypeSymbol coreSymbol)
         {
             var declarationSyntax = (RecordDeclarationSyntax)coreSymbol.DeclaringSyntaxReferences[0].GetSyntax();
-            var attributes = declarationSyntax.AttributeLists
+            var xmlAttributes = declarationSyntax.AttributeLists
                 .SelectMany(x => x.Attributes)
                 .Where(x => x.IsNamed(Names.XmlRoot) || x.IsNamed(Names.XmlType))
-                .Select(x => AttributeList().AddAttributes(x))
+                .Select(x => AttributeList(SingletonSeparatedList(x)))
                 .ToImmutableArray();
 
             var entries = GetCustomBaseTypesAndSelf(coreSymbol)
@@ -82,10 +82,8 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                 .ToImmutableArray();
             var descriptor = new CoreDescriptor(
                 coreSymbol,
-                IdentifierName(declarationSyntax.Identifier),
-                declarationSyntax.Identifier.WithoutTrivia(),
                 entries,
-                attributes);
+                xmlAttributes);
             return descriptor;
 
             static IEnumerable<INamedTypeSymbol> GetCustomBaseTypesAndSelf(INamedTypeSymbol self)

@@ -18,6 +18,14 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
 
         public IPropertySymbol Symbol { get; }
 
+        /// <summary>
+        /// Gets true if this property was declared in descriptor's type, not inherited.
+        /// </summary>
+        public bool IsDeclared => !IsInherited;
+
+        /// <summary>
+        /// Gets true if this property was inherited, not declared in descriptor's type.
+        /// </summary>
         public bool IsInherited { get; }
 
         public ImmutableArray<AttributeListSyntax> XmlAttributeLists { get; }

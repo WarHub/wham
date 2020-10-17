@@ -28,7 +28,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
         {
             return
                 StructDeclaration(Names.FastSerializationProxy)
-                .AddAttributeLists(Descriptor.CoreTypeAttributeLists)
+                .AddAttributeLists(Descriptor.XmlAttributeLists)
                 .AddModifiers(SyntaxKind.PublicKeyword)
                 .AddMembers(
                     GetFastSerializationProxyMembers());

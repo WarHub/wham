@@ -21,7 +21,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
 
         protected override IEnumerable<MemberDeclarationSyntax> GenerateMembers()
         {
-            if (Descriptor.DeclaredEntries.Length > 0)
+            if (Descriptor.Entries.Any(x => x.IsDeclared))
             {
                 yield return GenerateDeconstruct();
             }
