@@ -9,11 +9,16 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
 {
     internal abstract class CoreChildBase
     {
-        protected CoreChildBase(IPropertySymbol symbol, bool isInherited, ImmutableArray<AttributeListSyntax> xmlAttributeLists)
+        protected CoreChildBase(
+            IPropertySymbol symbol,
+            bool isInherited,
+            ImmutableArray<AttributeListSyntax> xmlAttributeLists,
+            XmlResolvedInfo xml)
         {
             Symbol = symbol;
             IsInherited = isInherited;
             XmlAttributeLists = xmlAttributeLists;
+            Xml = xml;
         }
 
         public IPropertySymbol Symbol { get; }
@@ -29,6 +34,8 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
         public bool IsInherited { get; }
 
         public ImmutableArray<AttributeListSyntax> XmlAttributeLists { get; }
+
+        public XmlResolvedInfo Xml { get; }
 
         private PropertyDeclarationSyntax DeclarationSyntax =>
             declarationSyntax ??=

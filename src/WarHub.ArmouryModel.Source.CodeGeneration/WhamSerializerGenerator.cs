@@ -1,28 +1,25 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
-using System.Xml.Serialization;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using MoreLinq;
 using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
 namespace WarHub.ArmouryModel.Source.CodeGeneration
 {
     internal class WhamSerializerGenerator
     {
-        private const string XmlRootAttributeMetadataName = "System.Xml.Serialization.XmlRootAttribute";
+        private const string WhamCoreXmlSerializationReaderName = "WhamCoreXmlSerializationReader";
+        private const string WhamCoreXmlSerializationWriterName = "WhamCoreXmlSerializationWriter";
 
         public WhamSerializerGenerator(Compilation compilation, ImmutableArray<CoreDescriptor> descriptors)
         {
             Compilation = compilation;
-            XmlRootSymbol = compilation.GetTypeByMetadataNameOrThrow(XmlRootAttributeMetadataName);
             Descriptors = descriptors;
             SealedCores = descriptors.Where(x => x.TypeSymbol.IsSealed).ToImmutableArray();
             RootCores = SealedCores
-                .Where(x => x.XmlAttributeLists.SelectMany(x => x.Attributes).Any(x => x.IsNamed("XmlRoot")))
+                .Where(x => x.Xml.IsRoot)
                 .ToImmutableArray();
         }
 
@@ -33,8 +30,6 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
         public ImmutableArray<CoreDescriptor> SealedCores { get; }
 
         public ImmutableArray<CoreDescriptor> RootCores { get; }
-
-        public INamedTypeSymbol XmlRootSymbol { get; }
 
         internal static CompilationUnitSyntax Generate(Compilation compilation, ImmutableArray<CoreDescriptor> descriptors)
         {
@@ -67,10 +62,13 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
         {
             yield return CreateXmlSerializationWriter();
             yield return CreateXmlSerializationReader();
-            yield return CreateXmlSerializer();
+            foreach (var root in RootCores)
+            {
+                yield return CreateXmlSerializer(root);
+            }
         }
 
-        private ClassDeclarationSyntax CreateXmlSerializer()
+        private ClassDeclarationSyntax CreateXmlSerializer(CoreDescriptor root)
         {
             return ClassDeclaration("WhamCoreXmlSerializer")
                 .AddModifiers(SyntaxKind.PublicKeyword, SyntaxKind.SealedKeyword)
@@ -89,7 +87,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                 .AddBodyStatements(
                     ReturnStatement(
                         ObjectCreationExpression(
-                            IdentifierName("WhamCoreXmlSerializationReader"))
+                            IdentifierName(WhamCoreXmlSerializationReaderName))
                         .AddArgumentListArguments()));
 
             MethodDeclarationSyntax CreateWriter() =>
@@ -100,13 +98,13 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                 .AddBodyStatements(
                     ReturnStatement(
                         ObjectCreationExpression(
-                            IdentifierName("WhamCoreXmlSerializationWriter"))
+                            IdentifierName(WhamCoreXmlSerializationWriterName))
                         .AddArgumentListArguments()));
         }
 
         private ClassDeclarationSyntax CreateXmlSerializationReader()
         {
-            return ClassDeclaration("WhamCoreXmlSerializationReader")
+            return ClassDeclaration(WhamCoreXmlSerializationReaderName)
                 .AddModifiers(SyntaxKind.PublicKeyword)
                 .AddBaseListTypes(
                     SimpleBaseType(
@@ -123,12 +121,14 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                     .AddModifiers(SyntaxKind.ProtectedKeyword, SyntaxKind.OverrideKeyword)
                     .AddBodyStatements())
                 .AddMembers(
+                    RootCores.Select(CreateReadRootMethod))
+                .AddMembers(
                     SealedCores.Select(CreateReadCoreMethod));
         }
 
         private ClassDeclarationSyntax CreateXmlSerializationWriter()
         {
-            return ClassDeclaration("WhamCoreXmlSerializationWriter")
+            return ClassDeclaration(WhamCoreXmlSerializationWriterName)
                 .AddModifiers(SyntaxKind.PublicKeyword)
                 .AddBaseListTypes(
                     SimpleBaseType(
@@ -145,18 +145,10 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
 
         private MethodDeclarationSyntax CreateReadRootMethod(CoreDescriptor type)
         {
-            var rootAttributes = type.TypeSymbol.GetAttributes();
-            var xmlRoot = rootAttributes.Single(data => SymbolEqualityComparer.Default.Equals(XmlRootSymbol, data.AttributeClass));
-            var xmlRootArgs = xmlRoot.NamedArguments.ToDictionary();
-            var elementName = xmlRoot.ConstructorArguments.Length > 0
-                ? xmlRoot.ConstructorArguments[0].ToCSharpString()
-                : xmlRootArgs.TryGetValue(nameof(XmlRootAttribute.ElementName), out var elName)
-                ? elName.ToCSharpString()
-                : type.RawModelName;
             return
                 MethodDeclaration(
                     type.CoreType.Nullable(),
-                    Identifier("Read" + type.CoreTypeIdentifier))
+                    Identifier("Read_" + type.Xml.ElementName))
                 .AddParameterListParameters()
                 .AddBodyStatements(
                     CreateBody());
@@ -174,7 +166,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
             return
                 MethodDeclaration(
                     type.CoreType.Nullable(),
-                    Identifier("Read" + type.CoreTypeIdentifier))
+                    Identifier("Read_" + type.CoreTypeIdentifier))
                 .AddParameterListParameters(
                     Parameter(
                         Identifier("isNullable"))

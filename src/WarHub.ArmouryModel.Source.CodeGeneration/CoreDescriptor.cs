@@ -20,11 +20,13 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
         public CoreDescriptor(
             INamedTypeSymbol typeSymbol,
             ImmutableArray<CoreChildBase> entries,
-            ImmutableArray<AttributeListSyntax> xmlAttributeLists)
+            ImmutableArray<AttributeListSyntax> xmlAttributeLists,
+            XmlResolvedInfo xml)
         {
             TypeSymbol = typeSymbol;
             Entries = entries;
             XmlAttributeLists = xmlAttributeLists;
+            Xml = xml;
         }
 
         public INamedTypeSymbol TypeSymbol { get; }
@@ -58,5 +60,6 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
 
         public ImmutableArray<AttributeListSyntax> XmlAttributeLists { get; }
 
+        public XmlResolvedInfo Xml { get; }
     }
 }

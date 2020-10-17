@@ -83,7 +83,8 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
             var descriptor = new CoreDescriptor(
                 coreSymbol,
                 entries,
-                xmlAttributes);
+                xmlAttributes,
+                CreateXmlResolvedInfo(coreSymbol));
             return descriptor;
 
             static IEnumerable<INamedTypeSymbol> GetCustomBaseTypesAndSelf(INamedTypeSymbol self)
@@ -102,20 +103,21 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
             PropertyDeclarationSyntax syntax,
             INamedTypeSymbol typeSymbol)
         {
-            var isDerived = !typeSymbol.Equals(symbol.ContainingType, SymbolEqualityComparer.Default);
+            var isInherited = !typeSymbol.Equals(symbol.ContainingType, SymbolEqualityComparer.Default);
             var attributes = GetPropertyAttributeLists(syntax).ToImmutableArray();
+            var xml = CreateXmlResolvedInfo(symbol);
             if (symbol.Type is INamedTypeSymbol namedType && namedType.SpecialType == SpecialType.None)
             {
                 if (namedType.Arity == 1 && ImmutableArraySymbol.Equals(namedType.OriginalDefinition, SymbolEqualityComparer.IncludeNullability))
                 {
-                    return new CoreListChild(symbol, isDerived, attributes);
+                    return new CoreListChild(symbol, isInherited, attributes, xml);
                 }
                 if (namedType.GetAttributes().Any(a => a.AttributeClass?.Equals(WhamNodeCoreAttributeSymbol, SymbolEqualityComparer.Default) == true))
                 {
-                    return new CoreObjectChild(symbol, isDerived, attributes);
+                    return new CoreObjectChild(symbol, isInherited, attributes, xml);
                 }
             }
-            return new CoreValueChild(symbol, isDerived, attributes);
+            return new CoreValueChild(symbol, isInherited, attributes, xml);
         }
 
         private static IEnumerable<AttributeListSyntax> GetPropertyAttributeLists(PropertyDeclarationSyntax syntax)

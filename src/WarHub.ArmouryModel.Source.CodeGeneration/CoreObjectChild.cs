@@ -7,8 +7,8 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
 {
     internal class CoreObjectChild : CoreChildBase
     {
-        public CoreObjectChild(IPropertySymbol symbol, bool isDerived, ImmutableArray<AttributeListSyntax> attributeLists)
-            : base(symbol, isDerived, attributeLists)
+        public CoreObjectChild(IPropertySymbol symbol, bool isDerived, ImmutableArray<AttributeListSyntax> attributeLists, XmlResolvedInfo xml)
+            : base(symbol, isDerived, attributeLists, xml)
         {
         }
 
