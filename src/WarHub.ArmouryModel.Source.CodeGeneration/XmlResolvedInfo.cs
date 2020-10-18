@@ -1,7 +1,12 @@
-﻿namespace WarHub.ArmouryModel.Source.CodeGeneration
+﻿using Microsoft.CodeAnalysis.CSharp.Syntax;
+
+namespace WarHub.ArmouryModel.Source.CodeGeneration
 {
     internal class XmlResolvedInfo
     {
+        private LiteralExpressionSyntax? elementNameLiteralExpression;
+        private LiteralExpressionSyntax? namespaceLiteralExpression;
+
         public XmlResolvedInfo(string elementName, string? @namespace, XmlNodeKind kind, bool isRoot = false)
         {
             ElementName = elementName;
@@ -11,7 +16,15 @@
         }
 
         public string ElementName { get; }
+
+        public LiteralExpressionSyntax ElementNameLiteralExpression =>
+            elementNameLiteralExpression ??= ElementName.ToLiteralExpression();
+
         public string? Namespace { get; }
+
+        public LiteralExpressionSyntax NamespaceLiteralExpression =>
+            namespaceLiteralExpression ??= (Namespace ?? "").ToLiteralExpression();
+
         public XmlNodeKind Kind { get; }
         public bool IsRoot { get; }
 

@@ -1,5 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.IO;
 using System.Linq;
 using System.Text;
 using Microsoft.CodeAnalysis;
@@ -20,7 +22,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
 
         public void Execute(GeneratorExecutionContext context)
         {
-            //Debugger.Launch();
+            //System.Diagnostics.Debugger.Launch();
             if (context.SyntaxReceiver is not SyntaxReceiver syntaxReceiver)
                 return;
 
@@ -41,7 +43,10 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
             }
 
             var serializerRoot = WhamSerializerGenerator.Generate(context.Compilation, descriptors);
-            context.AddSource("WhamCoreXmlSerializer", SyntaxTree(serializerRoot, parseOptions, encoding: Encoding.UTF8).GetText());
+            var serializerSource = SyntaxTree(serializerRoot, parseOptions, encoding: Encoding.UTF8).GetText();
+            using (var serializerWriter = File.CreateText(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile) + "/serializer.cs"))
+                serializerSource.Write(serializerWriter);
+            context.AddSource("WhamCoreXmlSerializer", serializerSource);
 
             IEnumerable<INamedTypeSymbol> GetNodeCoreSymbols()
             {

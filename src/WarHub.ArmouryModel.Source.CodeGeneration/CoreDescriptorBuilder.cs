@@ -147,7 +147,10 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                 if (info is { })
                     return info;
             }
-            return XmlResolvedInfo.CreateElement(symbol.Name);
+            return symbol switch {
+                IPropertySymbol { Type: var type } when IsImmutableArray(type) => XmlResolvedInfo.CreateArray(symbol.Name),
+                _ => XmlResolvedInfo.CreateElement(symbol.Name)
+            };
 
             IEnumerable<Attribute> GetXmlAttributes()
             {
@@ -158,5 +161,8 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                 }
             }
         }
+
+        private bool IsImmutableArray(ISymbol symbol)
+            => SymbolEqualityComparer.Default.Equals(ImmutableArraySymbol, symbol.IsDefinition ? symbol : symbol.OriginalDefinition);
     }
 }

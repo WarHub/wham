@@ -3,8 +3,10 @@ using System.Collections.Generic;
 using System.IO;
 using System.Xml;
 using System.Xml.Schema;
+using System.Xml.Serialization;
 using FluentAssertions;
 using Microsoft.XmlDiffPatch;
+using WarHub.ArmouryModel.Source.BattleScribe.Utilities;
 using WarHub.ArmouryModel.Source.XmlFormat;
 using Xunit;
 
@@ -74,7 +76,19 @@ namespace WarHub.ArmouryModel.Source.BattleScribe.Tests
             static Stream Serialize(SourceNode node)
             {
                 var stream = new MemoryStream();
-                node.Serialize(stream);
+                //node.Serialize(stream);
+                XmlSerializer serializer = node switch
+                {
+                    GamesystemNode => new GamesystemCoreXmlSerializer(),
+                    CatalogueNode => new CatalogueCoreXmlSerializer(),
+                    RosterNode => new RosterCoreXmlSerializer(),
+                    _ => throw new InvalidOperationException()
+                };
+                using var xmlWriter = BattleScribeConformantXmlWriter.Create(stream);
+                var core = (node as INodeWithCore<NodeCore>)!.Core;
+                var ns = new XmlSerializerNamespaces();
+                ns.Add("", node.Kind.ToRootElement().Info().Namespace);
+                serializer.Serialize(xmlWriter, core, ns);
                 stream.Position = 0;
                 return stream;
             }

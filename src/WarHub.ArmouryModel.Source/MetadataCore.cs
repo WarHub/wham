@@ -19,8 +19,8 @@ namespace WarHub.ArmouryModel.Source
         public string? PrevIdentifier { get; init; }
 
         /// <summary>
-        /// Gets sequence number of the target item within some collection, or null if not specified.
+        /// Gets sequence number of the target item within some collection, defaults to 0.
         /// </summary>
-        public int? Sequence { get; init; }
+        public int Sequence { get; init; }
     }
 }

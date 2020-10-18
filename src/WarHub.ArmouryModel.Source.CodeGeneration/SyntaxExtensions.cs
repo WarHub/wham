@@ -10,6 +10,9 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
 {
     internal static class SyntaxExtensions
     {
+        public static LiteralExpressionSyntax ToLiteralExpression(this string value) =>
+            LiteralExpression(SyntaxKind.StringLiteralExpression, Literal(value));
+
         public static T Instantiate<T>(this AttributeData data) where T : Attribute => (T)data.Instantiate(typeof(T));
 
         public static Attribute Instantiate(this AttributeData data, Type type)
@@ -218,6 +221,12 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
             return MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression, expr, name);
         }
 
+        public static ExpressionSyntax MemberAccess(this ExpressionSyntax expr, string name) =>
+            expr.MemberAccess(IdentifierName(name));
+
+        public static ExpressionSyntax And(this ExpressionSyntax left, ExpressionSyntax right)
+            => BinaryExpression(SyntaxKind.LogicalAndExpression, left, right);
+
         public static ExpressionSyntax AsCast(this ExpressionSyntax expr, TypeSyntax type)
         {
             return BinaryExpression(SyntaxKind.AsExpression, expr, type);
@@ -238,6 +247,9 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
             return BinaryExpression(SyntaxKind.CoalesceExpression, expr, ifNullExpr);
         }
 
+        public static ExpressionSyntax Invoke(this string identifier, params ExpressionSyntax[] args) =>
+            IdentifierName(identifier).InvokeWithArguments(args);
+
         public static ExpressionSyntax InvokeWithArguments(this ExpressionSyntax expr, params ExpressionSyntax[] args)
         {
             return InvocationExpression(expr).AddArgumentListArguments(args.Select(Argument).ToArray());
@@ -247,6 +259,47 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
         {
             return InvocationExpression(expr).AddArgumentListArguments(args.Select(Argument).ToArray());
         }
+
+        public static string? GetStringOrThrow(this TypedConstant constant) => constant switch
+        {
+            { IsNull: true} => null,
+            { Kind: TypedConstantKind.Primitive, Type: { SpecialType: SpecialType.System_String } } => constant.Value!.ToString(),
+            _ => throw new InvalidOperationException("Can't read constant.")
+        };
+
+        public static LocalDeclarationStatementSyntax AsStatement(this VariableDeclarationSyntax declaration) =>
+            LocalDeclarationStatement(declaration);
+
+
+        public static VariableDeclarationSyntax InitVar(this string identifier, ExpressionSyntax value) =>
+            Identifier(identifier).InitVar(value);
+
+        public static VariableDeclarationSyntax InitVar(this SyntaxToken identifier, ExpressionSyntax value) =>
+            VariableDeclaration(
+                IdentifierName("var"),
+                SingletonSeparatedList(
+                    VariableDeclarator(
+                        identifier,
+                        argumentList: null, 
+                        initializer: EqualsValueClause(value))));
+
+        public static ExpressionSyntax Is(this ExpressionSyntax expr, PatternSyntax pattern) =>
+                IsPatternExpression(expr, pattern);
+
+        public static ExpressionSyntax ElementAccess(this ExpressionSyntax expr, params ExpressionSyntax[] indexerArg) =>
+            ElementAccessExpression(expr, BracketedArgumentList(SeparatedList(indexerArg.Select(Argument))));
+
+        public static ExpressionSyntax IsNot(this ExpressionSyntax expr, PatternSyntax pattern) =>
+            IsPatternExpression(expr, UnaryPattern(Token(SyntaxKind.NotKeyword), pattern));
+
+        public static ExpressionSyntax OpLessThan(this ExpressionSyntax left, ExpressionSyntax right) =>
+            BinaryExpression(SyntaxKind.LessThanExpression, left, right);
+
+        public static ExpressionSyntax OpEquals(this ExpressionSyntax left, ExpressionSyntax right) =>
+            BinaryExpression(SyntaxKind.EqualsExpression, left, right);
+
+        public static ExpressionSyntax OpNotEquals(this ExpressionSyntax left, ExpressionSyntax right) =>
+            BinaryExpression(SyntaxKind.NotEqualsExpression, left, right);
 
         public static ObjectCreationExpressionSyntax WithArguments(this ObjectCreationExpressionSyntax expr, params ExpressionSyntax[] args)
         {
