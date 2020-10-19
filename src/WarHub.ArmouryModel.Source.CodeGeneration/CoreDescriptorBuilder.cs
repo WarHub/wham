@@ -62,7 +62,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
             var declarationSyntax = (RecordDeclarationSyntax)coreSymbol.DeclaringSyntaxReferences[0].GetSyntax();
             var xmlAttributes = declarationSyntax.AttributeLists
                 .SelectMany(x => x.Attributes)
-                .Where(x => x.IsNamed(Names.XmlRoot) || x.IsNamed(Names.XmlType))
+                .Where(x => IsNamed(x, Names.XmlRoot) || IsNamed(x, Names.XmlType))
                 .Select(x => AttributeList(SingletonSeparatedList(x)))
                 .ToImmutableArray();
 
@@ -124,7 +124,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
         {
             var xmlAttributeNames = new[] { Names.XmlArray, Names.XmlAttribute, Names.XmlElement, Names.XmlText };
             var attributes = syntax.AttributeLists.SelectMany(list => list.Attributes);
-            var xmlAttributes = attributes.Where(att => xmlAttributeNames.Any(name => att.IsNamed(name)));
+            var xmlAttributes = attributes.Where(att => xmlAttributeNames.Any(name => IsNamed(att, name)));
             return xmlAttributes.Select(att => AttributeList().AddAttributes(att));
         }
 
@@ -157,10 +157,33 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                 foreach (var data in symbol.GetAttributes())
                 {
                     if (data.AttributeClass is { } @class && XmlAttributeSymbols.TryGetValue(@class, out var type))
-                        yield return data.Instantiate(type);
+                        yield return Instantiate(type, data);
+                }
+
+                static Attribute Instantiate(Type type, AttributeData data)
+                {
+                    var instance = Activator.CreateInstance(type, data.ConstructorArguments.Select(GetConstantValue).ToArray());
+                    foreach (var (name, value) in data.NamedArguments)
+                    {
+                        type.GetProperty(name).SetValue(instance, GetConstantValue(value));
+                    }
+                    return (Attribute)instance;
+
+                    static object? GetConstantValue(TypedConstant constant)
+                    {
+                        return constant switch
+                        {
+                            { IsNull: true } => null,
+                            { Kind: TypedConstantKind.Primitive } => constant.Value,
+                            _ => throw new InvalidOperationException($"Cannot instantiate argument value of {constant.Kind} kind.")
+                        };
+                    }
                 }
             }
         }
+        private static bool IsNamed(AttributeSyntax attribute, string name) =>
+            attribute.Name is IdentifierNameSyntax id && (id.Identifier.Text == name || id.Identifier.Text == name + "Attribute");
+
 
         private bool IsImmutableArray(ISymbol symbol)
             => SymbolEqualityComparer.Default.Equals(ImmutableArraySymbol, symbol.IsDefinition ? symbol : symbol.OriginalDefinition);

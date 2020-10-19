@@ -84,7 +84,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                     .AddModifiers(SyntaxKind.PrivateKeyword)
                     .AddAccessorListAccessors(
                         AccessorDeclaration(SyntaxKind.GetAccessorDeclaration)
-                        .WithSemicolonTokenDefault());
+                        .WithSemicolonToken());
             }
 
             static MemberDeclarationSyntax CreateCountProperty()
@@ -98,11 +98,11 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                     .WithExpressionBodyFull(
                         ConditionalExpression(
                             IdentifierName(EnumerablePropName)
-                            .MemberAccess(
+                            .Dot(
                                 IdentifierName(nameof(System.Collections.Immutable.ImmutableArray<int>.IsDefault))),
                             LiteralExpression(SyntaxKind.NumericLiteralExpression, Literal(0)),
                             IdentifierName(EnumerablePropName)
-                            .MemberAccess(
+                            .Dot(
                                 IdentifierName(nameof(System.Collections.Immutable.ImmutableArray<int>.Length)))));
             }
 
@@ -125,7 +125,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                         .AddArgumentListArguments(
                             Argument(
                                 IdentifierName(IndexParamName)))
-                        .MemberAccess(
+                        .Dot(
                             IdentifierName(Names.ToSerializationProxy))
                         .Invoke());
             }
@@ -181,7 +181,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                     .AddBodyStatements(
                         IfStatement(
                             IdentifierName(EnumerablePropName)
-                            .MemberAccess(
+                            .Dot(
                                 IdentifierName(nameof(System.Collections.Immutable.ImmutableArray<int>.IsDefaultOrEmpty))),
                             YieldStatement(SyntaxKind.YieldBreakStatement)),
                         ForEachStatement(
@@ -191,7 +191,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                             YieldStatement(
                                 SyntaxKind.YieldReturnStatement,
                                 IdentifierName(ItemVarName)
-                                .MemberAccess(
+                                .Dot(
                                     IdentifierName(Names.ToSerializationProxy))
                                 .Invoke())));
             }

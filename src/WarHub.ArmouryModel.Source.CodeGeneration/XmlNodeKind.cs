@@ -1,6 +1,6 @@
 ﻿namespace WarHub.ArmouryModel.Source.CodeGeneration
 {
-    public enum XmlNodeKind
+    internal enum XmlNodeKind
     {
         Element,
         Attribute,

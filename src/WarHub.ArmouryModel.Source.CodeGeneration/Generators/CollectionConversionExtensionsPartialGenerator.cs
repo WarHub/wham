@@ -63,9 +63,9 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
             {
                 return
                     IdentifierName(List)
-                    .MemberAccess(
+                    .Dot(
                         IdentifierName(Names.NodeList))
-                    .MemberAccess(
+                    .Dot(
                         IdentifierName(Names.ToCoreArray))
                     .Invoke();
             }
@@ -97,7 +97,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
             {
                 return
                     IdentifierName(Nodes)
-                    .MemberAccess(
+                    .Dot(
                         GenericName(
                             Identifier(Names.ToCoreArray))
                         .AddTypeArgumentListArguments(
@@ -181,7 +181,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
             {
                 return
                     IdentifierName(Cores)
-                    .MemberAccess(
+                    .Dot(
                         GenericName(
                             Identifier(Names.ToNodeList))
                         .AddTypeArgumentListArguments(
@@ -229,10 +229,10 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
             {
                 return
                     IdentifierName(Nodes)
-                        .MemberAccess(
+                        .Dot(
                             IdentifierName(Names.ToCoreArray))
                         .Invoke()
-                        .MemberAccess(
+                        .Dot(
                             IdentifierName(Names.ToListNode))
                         .Invoke(
                             IdentifierName(Parent));
@@ -265,7 +265,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
             {
                 return
                     IdentifierName(Builders)
-                    .MemberAccess(
+                    .Dot(
                         GenericName(
                             Identifier(Names.ToImmutableRecursive))
                         .AddTypeArgumentListArguments(
@@ -301,7 +301,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
             {
                 return
                     IdentifierName(Cores)
-                    .MemberAccess(
+                    .Dot(
                         GenericName(
                             Identifier(Names.ToBuildersList))
                         .AddTypeArgumentListArguments(

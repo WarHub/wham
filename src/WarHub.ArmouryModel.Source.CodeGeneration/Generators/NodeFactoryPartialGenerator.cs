@@ -55,7 +55,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                     Descriptor.GetListNodeTypeIdentifierName())
                 .Invoke(
                     IdentifierName(List)
-                        .MemberAccess(
+                        .Dot(
                             IdentifierName(Names.ToCoreArray))
                         .Invoke(),
                     LiteralExpression(SyntaxKind.NullLiteralExpression)));
@@ -70,10 +70,10 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                     Descriptor.GetListNodeTypeIdentifierName())
                 .Invoke(
                     IdentifierName(List)
-                        .MemberAccess(
+                        .Dot(
                             IdentifierName(Names.ToNodeList))
                         .Invoke()
-                        .MemberAccess(
+                        .Dot(
                             IdentifierName(Names.ToCoreArray))
                         .Invoke(),
                     LiteralExpression(SyntaxKind.NullLiteralExpression)));
@@ -99,21 +99,22 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
             {
                 return
                     ReturnStatement(
-                        IdentifierName(methodName)
-                        .InvokeWithArguments(
+                        methodName
+                        .Invoke(
                             Descriptor.Entries
-                                .Where(x => x is not CoreListChild)
-                                .Select(e => e.CamelCaseIdentifierName)
-                                .Concat(
-                                    Descriptor.Entries
-                                        .OfType<CoreListChild>()
-                                        .Select(CreateCollectionArgument))));
+                            .Where(x => x is not CoreListChild)
+                            .Select(e => e.CamelCaseIdentifierName)
+                            .Concat(
+                                Descriptor.Entries
+                                .OfType<CoreListChild>()
+                                .Select(CreateCollectionArgument))
+                            .ToArray()));
 
                 static ExpressionSyntax CreateCollectionArgument(CoreListChild entry)
                 {
                     return
                         entry.CamelCaseIdentifierName
-                        .MemberAccess(
+                        .Dot(
                             IdentifierName(Names.NodeList));
                 }
             }
@@ -124,7 +125,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                         Descriptor.CoreType.ObjectCreationWithInitializer(
                             Descriptor.Entries.Select(CreateInitializer)
                             .ToArray())
-                        .MemberAccess(
+                        .Dot(
                             IdentifierName(Names.ToNode))
                         .Invoke());
 
@@ -132,11 +133,11 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                 {
                     CoreObjectChild =>
                         entry.CamelCaseIdentifierName
-                        .MemberAccess(
+                        .Dot(
                             IdentifierName(Names.Core)),
                     CoreListChild =>
                         entry.CamelCaseIdentifierName
-                        .MemberAccess(
+                        .Dot(
                             IdentifierName(Names.ToCoreArray))
                         .Invoke(),
                     _ => entry.CamelCaseIdentifierName

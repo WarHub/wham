@@ -89,7 +89,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                     .AddModifiers(SyntaxKind.InternalKeyword)
                     .AddAccessorListAccessors(
                         AccessorDeclaration(SyntaxKind.GetAccessorDeclaration)
-                        .WithSemicolonTokenDefault());
+                        .WithSemicolonToken());
             }
 
             static PropertyDeclarationSyntax CreateProperty(CoreChildBase entry)
@@ -108,10 +108,10 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                         AccessorDeclaration(SyntaxKind.GetAccessorDeclaration)
                         .WithExpressionBodyFull(
                             IdentifierName(PropertyName)
-                            .MemberAccess(entry.IdentifierName)
+                            .Dot(entry.IdentifierName)
                             .MutateIf(
                                 entry is CoreObjectChild,
-                                x => x.MemberAccess(
+                                x => x.Dot(
                                     IdentifierName(Names.ToSerializationProxy))
                                     .Invoke())),
                         AccessorDeclaration(SyntaxKind.SetAccessorDeclaration)

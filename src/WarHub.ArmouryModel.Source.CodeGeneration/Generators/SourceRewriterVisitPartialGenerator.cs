@@ -79,27 +79,27 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                         IdentifierName(Names.Visit)
                         .Invoke(
                             IdentifierName(Node)
-                            .MemberAccess(entry.IdentifierName))
+                            .Dot(entry.IdentifierName))
                         .Cast(
                             NullableType(
                                 collectionEntry.GetListNodeTypeIdentifierName()))
-                        .WrapInParentheses()
-                        .ConditionalMemberAccess(
+                        .WrapInParens()
+                        .QuestionDot(
                             IdentifierName(Names.NodeList))
-                        .Coalesce(
+                        .QuestionQuestion(
                             LiteralExpression(SyntaxKind.DefaultLiteralExpression)),
                     CoreObjectChild complex =>
                         IdentifierName(Names.Visit)
                         .Invoke(
                             IdentifierName(Node)
-                            .MemberAccess(entry.IdentifierName))
+                            .Dot(entry.IdentifierName))
                         .Cast(
                             NullableType(
                                 complex.GetNodeTypeIdentifierName()))
-                        .WrapInParentheses()
-                        .Coalesce(
+                        .WrapInParens()
+                        .QuestionQuestion(
                             IdentifierName(Names.NodeFactory)
-                            .MemberAccess(
+                            .Dot(
                                 IdentifierName(
                                     complex.NameSyntax.ToString().StripSuffixes()))
                             .Invoke()),
@@ -126,11 +126,11 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                 return
                     ReturnStatement(
                         IdentifierName(Node)
-                            .MemberAccess(
+                            .Dot(
                                 IdentifierName(Names.UpdateWith))
                             .Invoke(
                                 IdentifierName(Node)
-                                .MemberAccess(
+                                .Dot(
                                     IdentifierName(Names.Core))
                                 .With(
                                     nonSimpleEntries.Select(CreateAssignment))));
@@ -139,11 +139,11 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                 {
                     CoreObjectChild =>
                         entry.CamelCaseIdentifierName
-                        .MemberAccess(
+                        .Dot(
                             IdentifierName(Names.Core)),
                     CoreListChild =>
                         entry.CamelCaseIdentifierName
-                        .MemberAccess(
+                        .Dot(
                             IdentifierName(Names.ToCoreArray))
                         .Invoke(),
                     _ => throw new InvalidOperationException("This only supports non-simple entries")

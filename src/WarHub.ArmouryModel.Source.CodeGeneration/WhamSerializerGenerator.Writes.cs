@@ -103,7 +103,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                 foreach (var element in elements)
                 {
                     var n = element.Xml.ElementNameLiteralExpression;
-                    var value = o.MemberAccess(element.IdentifierName);
+                    var value = o.Dot(element.IdentifierName);
                     yield return element switch
                     {
                         { Xml: { Kind: XmlNodeKind.TextContent }, Symbol: { Type: { SpecialType: SpecialType.System_String } } } =>
@@ -128,7 +128,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
 
             ExpressionSyntax TransformToString(CoreChildBase child)
             {
-                var propValue = o.MemberAccess(child.IdentifierName);
+                var propValue = o.Dot(child.IdentifierName);
                 return child.Symbol.Type switch
                 {
                     { SpecialType: SpecialType.System_String } => propValue,
@@ -146,7 +146,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                 var i = IdentifierName("i");
                 return
                     Block(
-                        a.Identifier.InitVar(o.MemberAccess(list.IdentifierName)).AsStatement(),
+                        a.Identifier.InitVar(o.Dot(list.IdentifierName)).AsStatement(),
                         IfStatement(
                             Not(a.Dot(nameof(ImmutableArray<int>.IsDefaultOrEmpty))),
                             Block(
@@ -183,7 +183,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
             var v = IdentifierName("v");
             var type = IdentifierName(symbol.Name);
             var valueToString = v.Cast(Long)
-                .WrapInParentheses()
+                .WrapInParens()
                 .Dot("ToString")
                 .Invoke(InvariantCulture);
             var typeFullName = TypeOfExpression(type).Dot(nameof(Type.FullName));

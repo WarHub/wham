@@ -61,7 +61,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                         entry.GetNodeTypeIdentifierName().ToNodeListType());
                 var withArg =
                     IdentifierName(NodesParamName)
-                    .MemberAccess(
+                    .Dot(
                         IdentifierName(Names.ToListNode))
                     .Invoke();
                 return CreateMutator(Names.WithPrefix, parameter, withArg);
@@ -76,7 +76,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                         entryNodeType.ToArrayType());
                 var withArg =
                     IdentifierName(NodesParamName)
-                    .MemberAccess(
+                    .Dot(
                         IdentifierName(Names.ToNodeList))
                     .Invoke();
                 return CreateMutator(Names.WithPrefix, parameter, withArg);
@@ -91,10 +91,10 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                         entryNodeType.ToArrayType());
                 var withArg =
                     ThisParameterSyntax
-                    .MemberAccess(entry.IdentifierName)
-                    .MemberAccess(
+                    .Dot(entry.IdentifierName)
+                    .Dot(
                         IdentifierName(Names.NodeList))
-                    .MemberAccess(
+                    .Dot(
                         IdentifierName(Names.AddRange))
                     .Invoke(
                         IdentifierName(NodesParamName));
@@ -109,10 +109,10 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                         entryNodeType.ToIEnumerableType());
                 var withArg =
                     ThisParameterSyntax
-                    .MemberAccess(entry.IdentifierName)
-                    .MemberAccess(
+                    .Dot(entry.IdentifierName)
+                    .Dot(
                         IdentifierName(Names.NodeList))
-                    .MemberAccess(
+                    .Dot(
                         IdentifierName(Names.AddRange))
                     .Invoke(
                         IdentifierName(NodesParamName));
@@ -131,7 +131,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                     .AddBodyStatements(
                         ReturnStatement(
                             ThisParameterSyntax
-                            .MemberAccess(
+                            .Dot(
                                 IdentifierName(Names.WithPrefix + entry.Identifier))
                             .Invoke(nodesExpression)));
             }

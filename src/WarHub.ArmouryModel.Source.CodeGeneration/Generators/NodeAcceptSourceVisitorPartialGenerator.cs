@@ -46,7 +46,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                 .AddBodyStatements(
                     ExpressionStatement(
                         IdentifierName(Visitor)
-                        .MemberAccess(
+                        .Dot(
                             IdentifierName(Names.Visit + Descriptor.RawModelName))
                         .Invoke(
                             ThisExpression())));
@@ -75,7 +75,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                 .AddBodyStatements(
                     ReturnStatement(
                         IdentifierName(Visitor)
-                        .MemberAccess(
+                        .Dot(
                             IdentifierName(Names.Visit + Descriptor.RawModelName))
                         .Invoke(
                             ThisExpression())));

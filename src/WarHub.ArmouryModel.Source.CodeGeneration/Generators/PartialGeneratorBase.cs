@@ -97,7 +97,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                 .AddArgumentListArguments(
                     AttributeArgument(
                         IdentifierName(Names.DebuggerBrowsableState)
-                        .MemberAccess(
+                        .Dot(
                             IdentifierName(Names.DebuggerBrowsableStateNever))));
         });
 

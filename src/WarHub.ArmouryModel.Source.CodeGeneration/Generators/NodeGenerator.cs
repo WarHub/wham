@@ -129,8 +129,8 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
             {
                 return
                     coreLocalIdentifierName
-                    .MemberAccess(entry.IdentifierName)
-                    .MemberAccess(
+                    .Dot(entry.IdentifierName)
+                    .Dot(
                         IdentifierName(entry is CoreListChild ? Names.ToListNode : Names.ToNode))
                     .Invoke(
                         ThisExpression())
@@ -160,10 +160,10 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                         .Mutate(x => entry is CoreValueChild
                         ? x.WithExpressionBodyFull(
                             CorePropertyIdentifierName
-                            .MemberAccess(entry.IdentifierName))
+                            .Dot(entry.IdentifierName))
                         : x.AddAccessorListAccessors(
                             AccessorDeclaration(SyntaxKind.GetAccessorDeclaration)
-                            .WithSemicolonTokenDefault()));
+                            .WithSemicolonToken()));
                 }
             }
             else
@@ -177,7 +177,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                         .AddModifiers(SyntaxKind.PublicKeyword, SyntaxKind.AbstractKeyword)
                         .AddAccessorListAccessors(
                             AccessorDeclaration(SyntaxKind.GetAccessorDeclaration)
-                            .WithSemicolonTokenDefault());
+                            .WithSemicolonToken());
                 }
             }
             PropertyDeclarationSyntax CreateKindProperty()
@@ -190,7 +190,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                     .AddModifiers(SyntaxKind.PublicKeyword, SyntaxKind.OverrideKeyword)
                     .WithExpressionBodyFull(
                         IdentifierName(Names.SourceKind)
-                        .MemberAccess(
+                        .Dot(
                             IdentifierName(kindString)));
             }
             PropertyDeclarationSyntax CreateCoreProperty()
@@ -204,9 +204,9 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                     .MutateIf(IsDerived, x => x.AddModifiers(SyntaxKind.OverrideKeyword))
                     .AddAccessorListAccessors(
                         AccessorDeclaration(SyntaxKind.GetAccessorDeclaration)
-                        .WithSemicolonTokenDefault())
+                        .WithSemicolonToken())
                     .MutateIf(IsAbstract, x =>
-                        x.AddAttributeListAttribute(DebuggerBrowsableNeverAttribute));
+                        x.AddAttributeListAttributes(DebuggerBrowsableNeverAttribute));
             }
             PropertyDeclarationSyntax CreateExplicitInterfaceCoreProperty()
             {
@@ -222,7 +222,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                                 Descriptor.CoreType)))
                     .WithExpressionBodyFull(
                         CorePropertyIdentifierName)
-                    .AddAttributeListAttribute(DebuggerBrowsableNeverAttribute);
+                    .AddAttributeListAttributes(DebuggerBrowsableNeverAttribute);
             }
         }
 
@@ -252,7 +252,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                         ConditionalExpression(
                             BinaryExpression(
                                 SyntaxKind.EqualsExpression,
-                                ThisExpression().MemberAccess(CorePropertyIdentifierName),
+                                ThisExpression().Dot(CorePropertyIdentifierName),
                                 IdentifierName(CoreParameter)),
                             ThisExpression(),
                             ObjectCreationExpression(
@@ -275,13 +275,13 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                         .WithType(GetNodePropertyType(entry)));
                 if (IsAbstract)
                 {
-                    return signature.WithSemicolonTokenDefault();
+                    return signature.WithSemicolonToken();
                 }
                 var coreWithArg = entry switch
                 {
-                    CoreObjectChild => ValueParamSyntax.MemberAccess(CorePropertyIdentifierName),
+                    CoreObjectChild => ValueParamSyntax.Dot(CorePropertyIdentifierName),
                     CoreListChild =>
-                        ValueParamSyntax.MemberAccess(
+                        ValueParamSyntax.Dot(
                             IdentifierName(Names.ToCoreArray))
                         .Invoke(),
                     _ => ValueParamSyntax

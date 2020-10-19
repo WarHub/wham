@@ -85,9 +85,9 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                     .AddModifiers(SyntaxKind.PublicKeyword)
                     .AddAccessorListAccessors(
                         AccessorDeclaration(SyntaxKind.GetAccessorDeclaration)
-                        .WithSemicolonTokenDefault(),
+                        .WithSemicolonToken(),
                         AccessorDeclaration(SyntaxKind.SetAccessorDeclaration)
-                        .WithSemicolonTokenDefault());
+                        .WithSemicolonToken());
             }
             IEnumerable<MemberDeclarationSyntax> CreateLazyProperty(SyntaxToken identifier, TypeSyntax type)
             {
@@ -148,8 +148,8 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                         Descriptor.CoreType.ObjectCreationWithInitializer(initExpressions)));
             static ExpressionSyntax GetCorePropValue(CoreChildBase entry) => entry switch
             {
-                CoreListChild => entry.IdentifierName.MemberAccess(IdentifierName(Names.ToImmutableRecursive)).Invoke(),
-                CoreObjectChild => entry.IdentifierName.MemberAccess(IdentifierName(Names.ToImmutable)).Invoke(),
+                CoreListChild => entry.IdentifierName.Dot(IdentifierName(Names.ToImmutableRecursive)).Invoke(),
+                CoreObjectChild => entry.IdentifierName.Dot(IdentifierName(Names.ToImmutable)).Invoke(),
                 _ => entry.IdentifierName,
             };
         }
@@ -191,7 +191,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                         SyntaxKind.SimpleAssignmentExpression,
                         entry.IdentifierName,
                         entry.IdentifierName
-                        .MemberAccess(
+                        .Dot(
                             IdentifierName(Names.ToBuilder))
                         .Invoke());
             }
@@ -203,7 +203,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                         SyntaxKind.SimpleAssignmentExpression,
                         entry.IdentifierName,
                         entry.IdentifierName
-                        .MemberAccess(
+                        .Dot(
                             IdentifierName(Names.ToBuildersList))
                         .Invoke());
             }

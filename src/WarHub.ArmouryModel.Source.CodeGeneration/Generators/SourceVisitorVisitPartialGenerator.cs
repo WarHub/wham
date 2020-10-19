@@ -47,7 +47,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                     .AddBodyStatements(
                         ExpressionStatement(
                             ThisExpression()
-                            .MemberAccess(
+                            .Dot(
                                 IdentifierName(Names.DefaultVisit))
                             .Invoke(
                                 IdentifierName(Node))));

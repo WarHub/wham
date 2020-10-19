@@ -205,7 +205,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                         IdentifierName("reader")
                         .Cast(
                             IdentifierName(WhamCoreXmlSerializationReaderName))
-                        .WrapInParentheses()
+                        .WrapInParens()
                         .Dot(
                             ReadRootName(root))
                         .Invoke()));
@@ -225,7 +225,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                     IdentifierName("writer")
                     .Cast(
                         IdentifierName(WhamCoreXmlSerializationWriterName))
-                    .WrapInParentheses()
+                    .WrapInParens()
                     .Dot(
                         WriteRootName(root))
                     .Invoke(
