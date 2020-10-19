@@ -132,7 +132,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                     .MemberAccess(entry.IdentifierName)
                     .MemberAccess(
                         IdentifierName(entry is CoreListChild ? Names.ToListNode : Names.ToNode))
-                    .InvokeWithArguments(
+                    .Invoke(
                         ThisExpression())
                     .AssignTo(entry.IdentifierName)
                     .AsStatement();
@@ -257,7 +257,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                             ThisExpression(),
                             ObjectCreationExpression(
                                 Descriptor.GetNodeTypeIdentifierName())
-                            .InvokeWithArguments(
+                            .Invoke(
                                 IdentifierName(CoreParameter),
                                 LiteralExpression(SyntaxKind.NullLiteralExpression))));
             }
@@ -283,13 +283,13 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                     CoreListChild =>
                         ValueParamSyntax.MemberAccess(
                             IdentifierName(Names.ToCoreArray))
-                        .InvokeWithArguments(),
+                        .Invoke(),
                     _ => ValueParamSyntax
                 };
                 return signature
                     .WithExpressionBodyFull(
                         IdentifierName(Names.UpdateWith)
-                        .InvokeWithArguments(
+                        .Invoke(
                             CorePropertyIdentifierName
                             .With(entry.IdentifierName.Assign(coreWithArg))));
             }
@@ -342,9 +342,9 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                             SyntaxKind.YieldReturnStatement,
                             ObjectCreationExpression(
                                 IdentifierName(Names.ChildInfo))
-                            .InvokeWithArguments(
+                            .Invoke(
                                 IdentifierName("nameof")
-                                .InvokeWithArguments(entry.IdentifierName),
+                                .Invoke(entry.IdentifierName),
                                 entry.IdentifierName));
                 }
             }

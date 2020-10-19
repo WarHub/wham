@@ -49,7 +49,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                             ThisExpression()
                             .MemberAccess(
                                 IdentifierName(Names.DefaultVisit))
-                            .InvokeWithArguments(
+                            .Invoke(
                                 IdentifierName(Node))));
             }
         }

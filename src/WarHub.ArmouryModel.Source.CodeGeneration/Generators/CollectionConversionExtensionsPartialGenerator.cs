@@ -67,7 +67,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                         IdentifierName(Names.NodeList))
                     .MemberAccess(
                         IdentifierName(Names.ToCoreArray))
-                    .InvokeWithArguments();
+                    .Invoke();
             }
         }
 
@@ -103,7 +103,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                         .AddTypeArgumentListArguments(
                             Descriptor.CoreType,
                             Descriptor.GetNodeTypeIdentifierName()))
-                    .InvokeWithArguments();
+                    .Invoke();
             }
         }
 
@@ -187,7 +187,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                         .AddTypeArgumentListArguments(
                             Descriptor.GetNodeTypeIdentifierName(),
                             Descriptor.CoreType))
-                    .InvokeWithArguments(
+                    .Invoke(
                             IdentifierName(Parent));
             }
         }
@@ -231,10 +231,10 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                     IdentifierName(Nodes)
                         .MemberAccess(
                             IdentifierName(Names.ToCoreArray))
-                        .InvokeWithArguments()
+                        .Invoke()
                         .MemberAccess(
                             IdentifierName(Names.ToListNode))
-                        .InvokeWithArguments(
+                        .Invoke(
                             IdentifierName(Parent));
             }
         }
@@ -271,7 +271,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                         .AddTypeArgumentListArguments(
                             Descriptor.CoreBuilderType,
                             Descriptor.CoreType))
-                    .InvokeWithArguments();
+                    .Invoke();
             }
         }
 
@@ -307,7 +307,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                         .AddTypeArgumentListArguments(
                             Descriptor.CoreType,
                             Descriptor.CoreBuilderType))
-                    .InvokeWithArguments();
+                    .Invoke();
             }
         }
     }

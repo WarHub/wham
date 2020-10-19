@@ -53,11 +53,11 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                     Descriptor.GetNodeTypeIdentifierName().ToNodeListType()),
                 ObjectCreationExpression(
                     Descriptor.GetListNodeTypeIdentifierName())
-                .InvokeWithArguments(
+                .Invoke(
                     IdentifierName(List)
                         .MemberAccess(
                             IdentifierName(Names.ToCoreArray))
-                        .InvokeWithArguments(),
+                        .Invoke(),
                     LiteralExpression(SyntaxKind.NullLiteralExpression)));
             // params parameter
             yield return CreateForList(
@@ -68,14 +68,14 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                     Descriptor.GetNodeTypeIdentifierName().ToArrayType()),
                 ObjectCreationExpression(
                     Descriptor.GetListNodeTypeIdentifierName())
-                .InvokeWithArguments(
+                .Invoke(
                     IdentifierName(List)
                         .MemberAccess(
                             IdentifierName(Names.ToNodeList))
-                        .InvokeWithArguments()
+                        .Invoke()
                         .MemberAccess(
                             IdentifierName(Names.ToCoreArray))
-                        .InvokeWithArguments(),
+                        .Invoke(),
                     LiteralExpression(SyntaxKind.NullLiteralExpression)));
 
             static ParameterSyntax CreateListNodeParameter(CoreListChild entry)
@@ -126,7 +126,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                             .ToArray())
                         .MemberAccess(
                             IdentifierName(Names.ToNode))
-                        .InvokeWithArguments());
+                        .Invoke());
 
                 static ExpressionSyntax CreateInitializer(CoreChildBase entry) => (entry switch
                 {
@@ -138,7 +138,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                         entry.CamelCaseIdentifierName
                         .MemberAccess(
                             IdentifierName(Names.ToCoreArray))
-                        .InvokeWithArguments(),
+                        .Invoke(),
                     _ => entry.CamelCaseIdentifierName
                 })
                 .AssignTo(entry.IdentifierName);

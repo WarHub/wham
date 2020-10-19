@@ -148,8 +148,8 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                         Descriptor.CoreType.ObjectCreationWithInitializer(initExpressions)));
             static ExpressionSyntax GetCorePropValue(CoreChildBase entry) => entry switch
             {
-                CoreListChild => entry.IdentifierName.MemberAccess(IdentifierName(Names.ToImmutableRecursive)).InvokeWithArguments(),
-                CoreObjectChild => entry.IdentifierName.MemberAccess(IdentifierName(Names.ToImmutable)).InvokeWithArguments(),
+                CoreListChild => entry.IdentifierName.MemberAccess(IdentifierName(Names.ToImmutableRecursive)).Invoke(),
+                CoreObjectChild => entry.IdentifierName.MemberAccess(IdentifierName(Names.ToImmutable)).Invoke(),
                 _ => entry.IdentifierName,
             };
         }
@@ -193,7 +193,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                         entry.IdentifierName
                         .MemberAccess(
                             IdentifierName(Names.ToBuilder))
-                        .InvokeWithArguments());
+                        .Invoke());
             }
 
             static ExpressionSyntax CreateCollectionInitializer(CoreListChild entry)
@@ -205,7 +205,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                         entry.IdentifierName
                         .MemberAccess(
                             IdentifierName(Names.ToBuildersList))
-                        .InvokeWithArguments());
+                        .Invoke());
             }
         }
     }

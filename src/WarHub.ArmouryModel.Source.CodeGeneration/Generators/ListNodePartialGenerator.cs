@@ -83,7 +83,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                     IdentifierName(Cores)
                         .MemberAccess(
                             IdentifierName(Names.ToNodeList))
-                        .InvokeWithArguments(
+                        .Invoke(
                             ThisExpression())
                         .AssignTo(
                             IdentifierName(Names.NodeList))
@@ -152,7 +152,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                         IdentifierName(Visitor)
                         .MemberAccess(
                             IdentifierName(Names.Visit + Descriptor.RawModelName + Names.ListSuffix))
-                        .InvokeWithArguments(
+                        .Invoke(
                             ThisExpression())));
         }
 
@@ -181,7 +181,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                         IdentifierName(Visitor)
                         .MemberAccess(
                             IdentifierName(Names.Visit + Descriptor.RawModelName + Names.ListSuffix))
-                        .InvokeWithArguments(
+                        .Invoke(
                             ThisExpression())));
         }
 
@@ -213,7 +213,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                             IdentifierName(NodesVarName)
                             .MemberAccess(
                                 IdentifierName(Names.ToListNode))
-                            .InvokeWithArguments())));
+                            .Invoke())));
         }
     }
 }

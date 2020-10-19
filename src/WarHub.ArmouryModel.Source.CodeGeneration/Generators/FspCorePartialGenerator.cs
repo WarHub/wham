@@ -113,7 +113,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                                 entry is CoreObjectChild,
                                 x => x.MemberAccess(
                                     IdentifierName(Names.ToSerializationProxy))
-                                    .InvokeWithArguments())),
+                                    .Invoke())),
                         AccessorDeclaration(SyntaxKind.SetAccessorDeclaration)
                         .WithExpressionBodyFull(
                             ThrowExpression(

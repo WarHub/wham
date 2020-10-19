@@ -221,7 +221,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
             return MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression, expr, name);
         }
 
-        public static ExpressionSyntax MemberAccess(this ExpressionSyntax expr, string name) =>
+        public static ExpressionSyntax Dot(this ExpressionSyntax expr, string name) =>
             expr.MemberAccess(IdentifierName(name));
 
         public static ExpressionSyntax And(this ExpressionSyntax left, ExpressionSyntax right)
@@ -248,9 +248,9 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
         }
 
         public static ExpressionSyntax Invoke(this string identifier, params ExpressionSyntax[] args) =>
-            IdentifierName(identifier).InvokeWithArguments(args);
+            IdentifierName(identifier).Invoke(args);
 
-        public static ExpressionSyntax InvokeWithArguments(this ExpressionSyntax expr, params ExpressionSyntax[] args)
+        public static ExpressionSyntax Invoke(this ExpressionSyntax expr, params ExpressionSyntax[] args)
         {
             return InvocationExpression(expr).AddArgumentListArguments(args.Select(Argument).ToArray());
         }

@@ -87,7 +87,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                     .AddParameterListParameters(parentParameterBase)
                     .WithExpressionBodyFull(
                         IdentifierName(Names.ToNode)
-                        .InvokeWithArguments(
+                        .Invoke(
                             IdentifierName(ParentLocal)));
             }
         }

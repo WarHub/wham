@@ -48,7 +48,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                         IdentifierName(Visitor)
                         .MemberAccess(
                             IdentifierName(Names.Visit + Descriptor.RawModelName))
-                        .InvokeWithArguments(
+                        .Invoke(
                             ThisExpression())));
         }
 
@@ -77,7 +77,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                         IdentifierName(Visitor)
                         .MemberAccess(
                             IdentifierName(Names.Visit + Descriptor.RawModelName))
-                        .InvokeWithArguments(
+                        .Invoke(
                             ThisExpression())));
         }
     }

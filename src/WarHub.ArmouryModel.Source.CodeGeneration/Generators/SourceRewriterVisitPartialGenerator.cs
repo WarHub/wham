@@ -35,7 +35,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                     .AddBodyStatements(
                         ReturnStatement(
                             IdentifierName(Names.VisitListNode)
-                                .InvokeWithArguments(
+                                .Invoke(
                                     IdentifierName(Node))));
             // VisitXyz
             var nonSimpleEntries = Descriptor.Entries.Where(x => x is not CoreValueChild).ToImmutableArray();
@@ -77,7 +77,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                 {
                     CoreListChild collectionEntry =>
                         IdentifierName(Names.Visit)
-                        .InvokeWithArguments(
+                        .Invoke(
                             IdentifierName(Node)
                             .MemberAccess(entry.IdentifierName))
                         .Cast(
@@ -90,7 +90,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                             LiteralExpression(SyntaxKind.DefaultLiteralExpression)),
                     CoreObjectChild complex =>
                         IdentifierName(Names.Visit)
-                        .InvokeWithArguments(
+                        .Invoke(
                             IdentifierName(Node)
                             .MemberAccess(entry.IdentifierName))
                         .Cast(
@@ -102,7 +102,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                             .MemberAccess(
                                 IdentifierName(
                                     complex.NameSyntax.ToString().StripSuffixes()))
-                            .InvokeWithArguments()),
+                            .Invoke()),
                     _ => throw new NotSupportedException("Cannot visit child of simple type")
                 };
                 return CreateLocalDeclaration(entry, initializerExpression);
@@ -128,7 +128,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                         IdentifierName(Node)
                             .MemberAccess(
                                 IdentifierName(Names.UpdateWith))
-                            .InvokeWithArguments(
+                            .Invoke(
                                 IdentifierName(Node)
                                 .MemberAccess(
                                     IdentifierName(Names.Core))
@@ -145,7 +145,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                         entry.CamelCaseIdentifierName
                         .MemberAccess(
                             IdentifierName(Names.ToCoreArray))
-                        .InvokeWithArguments(),
+                        .Invoke(),
                     _ => throw new InvalidOperationException("This only supports non-simple entries")
                 })
                 .AssignTo(entry.IdentifierName);

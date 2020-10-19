@@ -127,7 +127,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                                 IdentifierName(IndexParamName)))
                         .MemberAccess(
                             IdentifierName(Names.ToSerializationProxy))
-                        .InvokeWithArguments());
+                        .Invoke());
             }
 
             static MemberDeclarationSyntax CreateAddMethod()
@@ -193,7 +193,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                                 IdentifierName(ItemVarName)
                                 .MemberAccess(
                                     IdentifierName(Names.ToSerializationProxy))
-                                .InvokeWithArguments())));
+                                .Invoke())));
             }
 
             static MemberDeclarationSyntax CreateExplicitInterafceGetEnumeratorMethod()

@@ -63,7 +63,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                     IdentifierName(NodesParamName)
                     .MemberAccess(
                         IdentifierName(Names.ToListNode))
-                    .InvokeWithArguments();
+                    .Invoke();
                 return CreateMutator(Names.WithPrefix, parameter, withArg);
             }
             MethodDeclarationSyntax CreateWithParams()
@@ -78,7 +78,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                     IdentifierName(NodesParamName)
                     .MemberAccess(
                         IdentifierName(Names.ToNodeList))
-                    .InvokeWithArguments();
+                    .Invoke();
                 return CreateMutator(Names.WithPrefix, parameter, withArg);
             }
             MethodDeclarationSyntax CreateAddParams()
@@ -96,7 +96,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                         IdentifierName(Names.NodeList))
                     .MemberAccess(
                         IdentifierName(Names.AddRange))
-                    .InvokeWithArguments(
+                    .Invoke(
                         IdentifierName(NodesParamName));
                 return CreateMutator(Names.Add, parameter, withArg);
             }
@@ -114,7 +114,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                         IdentifierName(Names.NodeList))
                     .MemberAccess(
                         IdentifierName(Names.AddRange))
-                    .InvokeWithArguments(
+                    .Invoke(
                         IdentifierName(NodesParamName));
                 return CreateMutator(Names.Add, parameter, withArg);
             }
@@ -133,7 +133,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                             ThisParameterSyntax
                             .MemberAccess(
                                 IdentifierName(Names.WithPrefix + entry.Identifier))
-                            .InvokeWithArguments(nodesExpression)));
+                            .Invoke(nodesExpression)));
             }
         }
     }
