@@ -39,9 +39,6 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
         public static ExpressionSyntax ElementAccess(this ExpressionSyntax expr, params ExpressionSyntax[] indexerArg) =>
             ElementAccessExpression(expr, BracketedArgumentList(SeparatedList(indexerArg.Select(Argument))));
 
-        public static VariableDeclarationSyntax InitVar(this string identifier, ExpressionSyntax value) =>
-            Identifier(identifier).InitVar(value);
-
         public static VariableDeclarationSyntax InitVar(this SyntaxToken identifier, ExpressionSyntax value) =>
             VariableDeclaration(
                 IdentifierName("var"),
@@ -50,6 +47,12 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                         identifier,
                         argumentList: null,
                         initializer: EqualsValueClause(value))));
+
+        public static VariableDeclarationSyntax InitVar(this IdentifierNameSyntax identifierName, ExpressionSyntax value) =>
+            identifierName.Identifier.InitVar(value);
+
+        public static StatementSyntax InitVarStatement(this IdentifierNameSyntax identifierName, ExpressionSyntax value) =>
+            identifierName.Identifier.InitVar(value).AsStatement();
 
         public static ExpressionSyntax Invoke(this string identifier, params ExpressionSyntax[] args) =>
             IdentifierName(identifier).Invoke(args);
@@ -68,6 +71,9 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
         public static ObjectCreationExpressionSyntax ObjectCreationWithInitializer(this TypeSyntax type, params ExpressionSyntax[] initializers) =>
             ObjectCreationExpression(type).WithInitializer(InitializerExpression(SyntaxKind.ObjectInitializerExpression, SeparatedList(initializers)));
 
+        public static ExpressionSyntax OpAdd(this ExpressionSyntax left, ExpressionSyntax right) =>
+            BinaryExpression(SyntaxKind.AddExpression, left, right);
+
         public static ExpressionSyntax OpEquals(this ExpressionSyntax left, ExpressionSyntax right) =>
             BinaryExpression(SyntaxKind.EqualsExpression, left, right);
 
@@ -77,14 +83,26 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
         public static ExpressionSyntax OpNotEquals(this ExpressionSyntax left, ExpressionSyntax right) =>
             BinaryExpression(SyntaxKind.NotEqualsExpression, left, right);
 
+        public static ExpressionSyntax Or(this ExpressionSyntax left, ExpressionSyntax right) =>
+            BinaryExpression(SyntaxKind.LogicalOrExpression, left, right);
+
+        public static BinaryPatternSyntax Or(this PatternSyntax left, PatternSyntax right) =>
+            BinaryPattern(SyntaxKind.OrPattern, left, right);
+
         public static ExpressionSyntax QuestionDot(this ExpressionSyntax expr, SimpleNameSyntax name) =>
             ConditionalAccessExpression(expr, MemberBindingExpression(name));
 
         public static ExpressionSyntax QuestionQuestion(this ExpressionSyntax expr, ExpressionSyntax ifNullExpr) =>
             BinaryExpression(SyntaxKind.CoalesceExpression, expr, ifNullExpr);
 
+        public static ExpressionSyntax SuppressNullableWarning(this ExpressionSyntax expr) =>
+            PostfixUnaryExpression(SyntaxKind.SuppressNullableWarningExpression, expr);
+
         public static LiteralExpressionSyntax ToLiteralExpression(this string value) =>
             LiteralExpression(SyntaxKind.StringLiteralExpression, Literal(value));
+
+        public static LiteralExpressionSyntax ToLiteralExpression(this int value) =>
+            LiteralExpression(SyntaxKind.NumericLiteralExpression, Literal(value));
 
         public static ArrayTypeSyntax ToArrayType(this TypeSyntax identifier) =>
             ArrayType(identifier).AddRankSpecifiers(ArrayRankSpecifier());

@@ -133,7 +133,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                 {
                     { SpecialType: SpecialType.System_String } => propValue,
                     { TypeKind: TypeKind.Enum } enumSymbol => CreateWriteEnumCall(enumSymbol, propValue),
-                    _ => XmlConvertToString(propValue)
+                    _ => XmlConvert.ToString(propValue)
                 };
             }
 
@@ -146,7 +146,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                 var i = IdentifierName("i");
                 return
                     Block(
-                        a.Identifier.InitVar(o.Dot(list.IdentifierName)).AsStatement(),
+                        a.InitVarStatement(o.Dot(list.IdentifierName)),
                         IfStatement(
                             Not(a.Dot(nameof(ImmutableArray<int>.IsDefaultOrEmpty))),
                             Block(
@@ -156,7 +156,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                     yield return "WriteStartElement".Invoke(n, ns, Null, False).AsStatement();
                     yield return
                         ForStatement(
-                            declaration: i.Identifier.InitVar(Zero),
+                            declaration: i.InitVar(Zero),
                             initializers: default,
                             condition: i.OpLessThan(a.Dot("Length")),
                             incrementors: SingletonSeparatedList<ExpressionSyntax>(
@@ -186,7 +186,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                 .WrapInParens()
                 .Dot("ToString")
                 .Invoke(InvariantCulture);
-            var typeFullName = TypeOfExpression(type).Dot(nameof(Type.FullName));
+            var typeFullName = symbol.ToDisplayString().ToLiteralExpression();
             return
                 MethodDeclaration(String, WriteEnumName(symbol))
                 .AddParameterListParameters(
@@ -217,7 +217,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                 return
                     SwitchExpressionArm(
                         ConstantPattern(type.Dot(symbol.Name)),
-                        LiteralExpression(SyntaxKind.StringLiteralExpression, Literal(text)));
+                        text.ToLiteralExpression());
             }
         }
     }

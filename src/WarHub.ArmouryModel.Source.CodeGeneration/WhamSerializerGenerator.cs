@@ -80,9 +80,6 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                         SyntaxKind.EndOfDirectiveToken,
                         TriviaList())));
 
-        private ExpressionSyntax XmlConvertToString(ExpressionSyntax arg) =>
-            XmlConvertToStringName.Invoke(arg);
-
         public static CompilationUnitSyntax Generate(Compilation compilation, ImmutableArray<CoreDescriptor> descriptors)
         {
             var generator = new WhamSerializerGenerator(compilation, descriptors);
@@ -208,7 +205,8 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                         .WrapInParens()
                         .Dot(
                             ReadRootName(root))
-                        .Invoke()));
+                        .Invoke()
+                        .SuppressNullableWarning(/* not sure why the return is non-null; framework-generated code returns nulls. */)));
 
             MethodDeclarationSyntax Serialize() =>
                 MethodDeclaration(Void, "Serialize")
@@ -216,7 +214,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                 .AddParameterListParameters(
                     Parameter(
                         Identifier("objectToSerialize"))
-                    .WithType(Object),
+                    .WithType(Object.Nullable()),
                     Parameter(
                         Identifier("writer"))
                     .WithType(
@@ -245,15 +243,107 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                 .AddMembers(
                     MethodDeclaration(Void, "InitCallbacks")
                     .AddModifiers(SyntaxKind.ProtectedKeyword, SyntaxKind.OverrideKeyword)
-                    .AddBodyStatements(),
-                    MethodDeclaration(Void, "InitIDs")
-                    .AddModifiers(SyntaxKind.ProtectedKeyword, SyntaxKind.OverrideKeyword)
                     .AddBodyStatements())
                 .AddMembers(
                     RootCores.Select(CreateReadRootMethod))
                 .AddMembers(
-                    SealedCores.Select(CreateReadCoreMethod));
+                    SealedCores.Select(CreateReadCoreMethod))
+                .AddMembers(
+                    UsedEnumSymbols.OrderBy(x => x.Name).Select(CreateReadEnumMethod))
+                .AddMembers(
+                    CreateReadCoreWitnessMembers())
+                .AddMembers(
+                    CreateReaderAtomizationMembers());
+
+            IEnumerable<MemberDeclarationSyntax> CreateReadCoreWitnessMembers()
+            {
+                // This implements cost-free collection reading implemented via single method
+                // and not duplicated across every single place it happens; at the cost of
+                // generating a simple witness struct type per Core type.
+                yield return
+                ParseMemberDeclaration(@"
+                    interface IReadNotnullCoreWitness<T> where T : notnull
+                    {
+                        T? Read(WhamCoreXmlSerializationReader @this, string ns, bool isNullable, bool checkType);
+                    }
+                    ") ?? StructDeclaration("Error").WithLeadingTrivia(Error("Failed to parse IReadNotnullCoreWitness type."));
+                yield return
+                ParseMemberDeclaration(@"
+                    List<T> ReadNotnullListWithWitness<T, TWitness>(string n, string ns)
+                        where T : notnull where TWitness : struct, IReadNotnullCoreWitness<T>
+                    {
+                        if (Reader.IsEmptyElement)
+                        {
+                            Reader.Skip();
+                            return new List<T>(0);
+                        }
+                        var a = new List<T>();
+                        var witness = default(TWitness);
+                        Reader.ReadStartElement();
+                        Reader.MoveToContent();
+                        int whileIterations = 0;
+                        int readerCount = ReaderCount;
+                        while (Reader.NodeType is not System.Xml.XmlNodeType.EndElement and not System.Xml.XmlNodeType.None)
+                        {
+                            if (Reader.NodeType == System.Xml.XmlNodeType.Element
+                                && Reader.LocalName == (object)n && Reader.NamespaceURI == (object)ns)
+                            {
+                                if (witness.Read(this, ns, true, true) is { } core)
+                                    a.Add(core);
+                            }
+                            else
+                            {
+                                UnknownNode(null, ns + ':' + n);
+                            }
+                            Reader.MoveToContent();
+                            CheckReaderCount(ref whileIterations, ref readerCount);
+                        }
+                        ReadEndElement();
+                        return a;
+                    }
+                    ") ?? StructDeclaration("Error").WithLeadingTrivia(Error("Failed to parse ReadNotnullListWithWitness method."));
+                var @this = IdentifierName("@this");
+                var ns = IdentifierName("ns");
+                var isNullable = IdentifierName("isNullable");
+                var checkType = IdentifierName("checkType");
+                var readCoreParams = new[]
+                {
+                    Parameter(@this.Identifier).WithType(IdentifierName(WhamCoreXmlSerializationReaderName)),
+                    Parameter(ns.Identifier).WithType(String),
+                    Parameter(isNullable.Identifier).WithType(Bool),
+                    Parameter(checkType.Identifier).WithType(Bool)
+                };
+                foreach (var core in SealedCores)
+                {
+                    /*
+                        struct Read_SomeCore_Witness : IReadNotnullCoreWitness<SomeCore>
+                        {
+                            public SomeCore? Read(WhamCoreXmlSerializationReader @this, string ns, bool isNullable, bool checkType)
+                            {
+                                return @this.Read_SomeCore(ns, isNullable, checkType);
+                            }
+                        }
+                     */
+                    var witness = ReadCoreWitnessTypeName(core);
+                    yield return
+                        StructDeclaration(witness.Identifier)
+                        .AddBaseListTypes(
+                            SimpleBaseType(
+                                GenericName("IReadNotnullCoreWitness")
+                                .AddTypeArgumentListArguments(core.CoreType)))
+                        .AddMembers(
+                            MethodDeclaration(core.CoreType.Nullable(), "Read")
+                            .AddModifiers(SyntaxKind.PublicKeyword)
+                            .AddParameterListParameters(readCoreParams)
+                            .AddBodyStatements(
+                                ReturnStatement(
+                                    @this.Dot(ReadCoreName(core)).Invoke(ns, isNullable, checkType))));
+                }
+            }
         }
+
+        private static IdentifierNameSyntax ReadCoreWitnessTypeName(CoreDescriptor core) =>
+            IdentifierName(ReadCoreName(core) + "_Witness");
 
         private ClassDeclarationSyntax CreateXmlSerializationWriter()
         {

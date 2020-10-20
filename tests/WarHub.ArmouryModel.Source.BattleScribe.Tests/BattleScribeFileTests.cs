@@ -18,21 +18,21 @@ namespace WarHub.ArmouryModel.Source.BattleScribe.Tests
         [Trait("XmlSerialization", "ReadWriteTest")]
         public void ReadWriteGamesystem()
         {
-            ReadWriteXml(TestData.Gamesystem, s => s.DeserializeGamesystem()!);
+            ReadWriteXml(TestData.Gamesystem, Deserialize<GamesystemCoreXmlSerializer>);
         }
 
         [Fact]
         [Trait("XmlSerialization", "ReadWriteTest")]
         public void ReadWriteCatalogue()
         {
-            ReadWriteXml(TestData.Catalogue, s => s.DeserializeCatalogue()!);
+            ReadWriteXml(TestData.Catalogue, Deserialize<CatalogueCoreXmlSerializer>);
         }
 
         [Fact]
         [Trait("XmlSerialization", "ReadWriteTest")]
         public void ReadWriteRoster()
         {
-            ReadWriteXml(TestData.Roster, s => s.DeserializeRoster()!);
+            ReadWriteXml(TestData.Roster, Deserialize<RosterCoreXmlSerializer>);
         }
 
         [Theory]
@@ -58,6 +58,13 @@ namespace WarHub.ArmouryModel.Source.BattleScribe.Tests
             validation.Should().BeEmpty();
 
             void HandleValidation(object? sender, ValidationEventArgs e) => validation.Add(e);
+        }
+
+        private static SourceNode Deserialize<T>(Stream stream) where T : XmlSerializer, new()
+        {
+            using var reader = XmlReader.Create(stream);
+            var serializer = new T();
+            return ((NodeCore)serializer.Deserialize(reader)!).ToNode();
         }
 
         private static void ReadWriteXml(string datafile, Func<Stream, SourceNode> deserialize)

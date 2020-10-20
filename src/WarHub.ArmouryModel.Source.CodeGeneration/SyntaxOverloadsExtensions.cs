@@ -8,9 +8,6 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
 {
     internal static class SyntaxOverloadsExtensions
     {
-        public static ObjectCreationExpressionSyntax AddArgumentListArguments(this ObjectCreationExpressionSyntax syntax, IEnumerable<ArgumentSyntax> arguments) =>
-            syntax.AddArgumentListArguments(arguments.ToArray());
-
         public static PropertyDeclarationSyntax AddAttributeListAttributes(this PropertyDeclarationSyntax syntax, params AttributeSyntax[] attributes) =>
             syntax.AddAttributeLists(AttributeList(SeparatedList(attributes.ToArray())));
 
