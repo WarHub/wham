@@ -5,7 +5,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
 {
     internal class XmlReaderMembers
     {
-        private static IdentifierNameSyntax Reader { get; } = IdentifierName("Reader");/*co u ciebie słychać?*/
+        private static IdentifierNameSyntax Reader { get; } = IdentifierName("Reader");
 
         private StatementSyntax MoveToContentCache { get; } =
             Reader.Dot("MoveToContent").Invoke().AsStatement();

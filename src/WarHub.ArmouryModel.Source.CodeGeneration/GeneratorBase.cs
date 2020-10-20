@@ -36,6 +36,5 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                             PreprocessingMessage(message)),
                         SyntaxKind.EndOfDirectiveToken,
                         TriviaList())));
-
     }
 }
