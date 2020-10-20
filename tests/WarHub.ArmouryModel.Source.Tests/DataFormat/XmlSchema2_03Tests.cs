@@ -142,7 +142,7 @@ spanning multiple lines</readme>
         {
             var xml = $"<modifier type=\"{kindString}\" />";
             using var reader = XmlReader.Create(new StringReader(xml));
-            var modifier = (ModifierCore.Builder)new XmlSerializer(typeof(ModifierCore.Builder)).Deserialize(reader)!;
+            var modifier = (ModifierCore)new XmlSerializer(typeof(ModifierCore)).Deserialize(reader)!;
 
             modifier.Type.Should().Be(kindValue);
         }

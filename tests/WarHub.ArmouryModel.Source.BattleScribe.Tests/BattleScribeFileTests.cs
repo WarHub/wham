@@ -1,12 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
 using System.Xml;
 using System.Xml.Schema;
-using System.Xml.Serialization;
 using FluentAssertions;
 using Microsoft.XmlDiffPatch;
-using WarHub.ArmouryModel.Source.BattleScribe.Utilities;
 using WarHub.ArmouryModel.Source.XmlFormat;
 using Xunit;
 
@@ -18,21 +15,21 @@ namespace WarHub.ArmouryModel.Source.BattleScribe.Tests
         [Trait("XmlSerialization", "ReadWriteTest")]
         public void ReadWriteGamesystem()
         {
-            ReadWriteXml(TestData.Gamesystem, Deserialize<GamesystemCoreXmlSerializer>);
+            ReadWriteXml(TestData.Gamesystem);
         }
 
         [Fact]
         [Trait("XmlSerialization", "ReadWriteTest")]
         public void ReadWriteCatalogue()
         {
-            ReadWriteXml(TestData.Catalogue, Deserialize<CatalogueCoreXmlSerializer>);
+            ReadWriteXml(TestData.Catalogue);
         }
 
         [Fact]
         [Trait("XmlSerialization", "ReadWriteTest")]
         public void ReadWriteRoster()
         {
-            ReadWriteXml(TestData.Roster, Deserialize<RosterCoreXmlSerializer>);
+            ReadWriteXml(TestData.Roster);
         }
 
         [Theory]
@@ -60,42 +57,22 @@ namespace WarHub.ArmouryModel.Source.BattleScribe.Tests
             void HandleValidation(object? sender, ValidationEventArgs e) => validation.Add(e);
         }
 
-        private static SourceNode Deserialize<T>(Stream stream) where T : XmlSerializer, new()
-        {
-            using var reader = XmlReader.Create(stream);
-            var serializer = new T();
-            return ((NodeCore)serializer.Deserialize(reader)!).ToNode();
-        }
-
-        private static void ReadWriteXml(string datafile, Func<Stream, SourceNode> deserialize)
+        private static void ReadWriteXml(string datafile)
         {
             var readNode = Deserialize();
             using var outputStream = Serialize(readNode);
             var xmlDiff = DiffXml(outputStream);
             xmlDiff.Should().BeNull();
-
             SourceNode Deserialize()
             {
                 using var stream = datafile.GetDatafileStream();
-                return deserialize(stream);
+                return stream.DeserializeSourceNodeAuto()!;
             }
 
             static Stream Serialize(SourceNode node)
             {
                 var stream = new MemoryStream();
-                //node.Serialize(stream);
-                XmlSerializer serializer = node switch
-                {
-                    GamesystemNode => new GamesystemCoreXmlSerializer(),
-                    CatalogueNode => new CatalogueCoreXmlSerializer(),
-                    RosterNode => new RosterCoreXmlSerializer(),
-                    _ => throw new InvalidOperationException()
-                };
-                using var xmlWriter = BattleScribeConformantXmlWriter.Create(stream);
-                var core = (node as INodeWithCore<NodeCore>)!.Core;
-                var ns = new XmlSerializerNamespaces();
-                ns.Add("", node.Kind.ToRootElement().Info().Namespace);
-                serializer.Serialize(xmlWriter, core, ns);
+                node.Serialize(stream);
                 stream.Position = 0;
                 return stream;
             }
