@@ -97,12 +97,14 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                             NullableType(
                                 complex.GetNodeTypeIdentifierName()))
                         .WrapInParens()
-                        .QuestionQuestion(
-                            IdentifierName(Names.NodeFactory)
-                            .Dot(
-                                IdentifierName(
-                                    complex.NameSyntax.ToString().StripSuffixes()))
-                            .Invoke()),
+                        .MutateIf(
+                            complex.Symbol.Type.NullableAnnotation == NullableAnnotation.Annotated,
+                            x => x.QuestionQuestion(
+                                IdentifierName(Names.NodeFactory)
+                                .Dot(
+                                    IdentifierName(
+                                        complex.NameSyntax.ToString().StripSuffixes()))
+                                .Invoke())),
                     _ => throw new NotSupportedException("Cannot visit child of simple type")
                 };
                 return CreateLocalDeclaration(entry, initializerExpression);
@@ -137,6 +139,10 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
 
                 static ExpressionSyntax CreateAssignment(CoreChildBase entry) => (entry switch
                 {
+                    CoreObjectChild { Symbol: { Type: { NullableAnnotation: NullableAnnotation.Annotated } } } =>
+                        entry.CamelCaseIdentifierName
+                        .QuestionDot(
+                            IdentifierName(Names.Core)),
                     CoreObjectChild =>
                         entry.CamelCaseIdentifierName
                         .Dot(

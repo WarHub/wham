@@ -89,6 +89,9 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
         public static BinaryPatternSyntax Or(this PatternSyntax left, PatternSyntax right) =>
             BinaryPattern(SyntaxKind.OrPattern, left, right);
 
+        public static ExpressionSyntax QuestionDot(this ExpressionSyntax expr, string name) =>
+            ConditionalAccessExpression(expr, MemberBindingExpression(IdentifierName(name)));
+
         public static ExpressionSyntax QuestionDot(this ExpressionSyntax expr, SimpleNameSyntax name) =>
             ConditionalAccessExpression(expr, MemberBindingExpression(name));
 
@@ -128,7 +131,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
         public static SyntaxToken WithoutTrivia(this SyntaxToken syntax) =>
             syntax.WithLeadingTrivia(TriviaList()).WithTrailingTrivia(TriviaList());
 
-        public static ParenthesizedExpressionSyntax WrapInParens(this ExpressionSyntax expr) =>
+        public static ExpressionSyntax WrapInParens(this ExpressionSyntax expr) =>
             ParenthesizedExpression(expr);
     }
 }

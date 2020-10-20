@@ -12,6 +12,8 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
         {
         }
 
+        public bool IsNullable => Symbol.Type.NullableAnnotation == NullableAnnotation.Annotated;
+
         private NameSyntax? nameSyntax;
         public NameSyntax NameSyntax =>
             nameSyntax ??= (NameSyntax)(Type is NullableTypeSyntax nullable ? nullable.ElementType : Type);

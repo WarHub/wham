@@ -12,7 +12,7 @@ using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
 namespace WarHub.ArmouryModel.Source.CodeGeneration
 {
-    internal partial class WhamSerializerGenerator
+    internal partial class WhamSerializerGenerator : GeneratorBase
     {
         private const string WhamCoreXmlSerializationReaderName = "WhamCoreXmlSerializationReader";
         private const string WhamCoreXmlSerializationWriterName = "WhamCoreXmlSerializationWriter";
@@ -49,36 +49,6 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
 
         private NameSyntax XmlConvertToStringName { get; } =
             ParseName("System.Xml.XmlConvert.ToString");
-
-        private LiteralExpressionSyntax Null { get; } =
-            LiteralExpression(SyntaxKind.NullLiteralExpression, Token(SyntaxKind.NullKeyword));
-
-        private LiteralExpressionSyntax True { get; } =
-            LiteralExpression(SyntaxKind.TrueLiteralExpression, Token(SyntaxKind.TrueKeyword));
-
-        private LiteralExpressionSyntax False { get; } =
-            LiteralExpression(SyntaxKind.FalseLiteralExpression, Token(SyntaxKind.FalseKeyword));
-
-        private LiteralExpressionSyntax Zero { get; } =
-            LiteralExpression(SyntaxKind.NumericLiteralExpression, Literal(0));
-
-        private PredefinedTypeSyntax Long { get; } = PredefinedType(Token(SyntaxKind.LongKeyword));
-        private PredefinedTypeSyntax Bool { get; } = PredefinedType(Token(SyntaxKind.BoolKeyword));
-        private PredefinedTypeSyntax Void { get; } = PredefinedType(Token(SyntaxKind.VoidKeyword));
-        private PredefinedTypeSyntax String { get; } = PredefinedType(Token(SyntaxKind.StringKeyword));
-        private PredefinedTypeSyntax Object { get; } = PredefinedType(Token(SyntaxKind.ObjectKeyword));
-
-        private static ExpressionSyntax Not(ExpressionSyntax e) => PrefixUnaryExpression(SyntaxKind.LogicalNotExpression, e);
-
-        private static SyntaxTrivia Error(string message) =>
-            Trivia(
-                ErrorDirectiveTrivia(true)
-                .WithEndOfDirectiveToken(
-                    Token(
-                        TriviaList(
-                            PreprocessingMessage(message)),
-                        SyntaxKind.EndOfDirectiveToken,
-                        TriviaList())));
 
         public static CompilationUnitSyntax Generate(Compilation compilation, ImmutableArray<CoreDescriptor> descriptors)
         {

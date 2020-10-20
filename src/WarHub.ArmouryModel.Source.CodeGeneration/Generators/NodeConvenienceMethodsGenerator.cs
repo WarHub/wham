@@ -41,11 +41,13 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
 
             static ParameterSyntax CreateParameter(CoreChildBase entry)
             {
-                var type = entry is CoreListChild collectionEntry
-                    ? collectionEntry.GetListNodeTypeIdentifierName()
-                    : entry is CoreObjectChild complexEntry
-                    ? complexEntry.GetNodeTypeIdentifierName()
-                    : entry.Type;
+                var type = entry switch
+                {
+                    CoreListChild list => list.GetListNodeTypeIdentifierName(),
+                    CoreObjectChild { IsNullable: true } obj => obj.GetNodeTypeIdentifierName().Nullable(),
+                    CoreObjectChild obj => obj.GetNodeTypeIdentifierName(),
+                    _ => entry.Type
+                };
                 return
                     Parameter(entry.CamelCaseIdentifier)
                     .WithType(type)

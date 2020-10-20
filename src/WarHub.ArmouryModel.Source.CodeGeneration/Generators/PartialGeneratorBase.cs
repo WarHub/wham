@@ -9,7 +9,7 @@ using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
 namespace WarHub.ArmouryModel.Source.CodeGeneration
 {
-    internal abstract class PartialGeneratorBase
+    internal abstract class PartialGeneratorBase : GeneratorBase
     {
         protected PartialGeneratorBase(CoreDescriptor descriptor, CancellationToken cancellationToken)
         {

@@ -10,7 +10,7 @@ namespace WarHub.ArmouryModel.Source
     [WhamNodeCore]
     public sealed partial record DatablobCore
     {
-        public MetadataCore Meta { get; init; } = MetadataCore.Empty;
+        public MetadataCore? Meta { get; init; }
 
         public ImmutableArray<CatalogueCore> Catalogues { get; init; } = ImmutableArray<CatalogueCore>.Empty;
 

@@ -13,10 +13,8 @@
         /// <param name="node">Node to visit.</param>
         public override void DefaultVisit(SourceNode node)
         {
-            var childCount = node.ChildrenCount;
-            for (var i = 0; i < childCount; i++)
+            foreach (var child in node.Children())
             {
-                var child = node.GetChild(i);
                 Visit(child);
             }
         }

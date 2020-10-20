@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using System.Threading;
@@ -14,7 +15,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
     {
         public const string CoreProperty = "Core";
         public static readonly SyntaxToken CorePropertyIdentifier = Identifier(CoreProperty);
-        public static readonly IdentifierNameSyntax CorePropertyIdentifierName = IdentifierName(CoreProperty);
+        public static readonly IdentifierNameSyntax Core = IdentifierName(CoreProperty);
         public static readonly SyntaxToken ValueParamToken = Identifier("value");
         public static readonly IdentifierNameSyntax ValueParamSyntax = IdentifierName(ValueParamToken);
 
@@ -61,6 +62,8 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
 
         private static TypeSyntax GetNodePropertyType(CoreChildBase entry) => entry switch
         {
+            CoreObjectChild { Symbol: { Type: { NullableAnnotation: NullableAnnotation.Annotated } } } complex =>
+                complex.GetNodeTypeIdentifierName().Nullable(),
             CoreObjectChild complex => complex.GetNodeTypeIdentifierName(),
             CoreListChild collection => collection.GetListNodeTypeIdentifierName(),
             _ => entry.Type
@@ -70,7 +73,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
         {
             const string CoreLocal = "core";
             const string ParentLocal = "parent";
-            var coreLocalIdentifierName = IdentifierName(CoreLocal);
+            var core = IdentifierName(CoreLocal);
             if (IsAbstract)
             {
                 return
@@ -116,8 +119,8 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
             IEnumerable<StatementSyntax> GetBodyStatements()
             {
                 yield return
-                    CorePropertyIdentifierName
-                    .Assign(coreLocalIdentifierName)
+                    Core
+                    .Assign(core)
                     .AsStatement();
                 foreach (var entry in Descriptor.Entries.Where(x => x is not CoreValueChild))
                 {
@@ -127,15 +130,15 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
 
             StatementSyntax CreateNotSimpleInitialization(CoreChildBase entry)
             {
-                return
-                    coreLocalIdentifierName
-                    .Dot(entry.IdentifierName)
-                    .Dot(
-                        IdentifierName(entry is CoreListChild ? Names.ToListNode : Names.ToNode))
-                    .Invoke(
-                        ThisExpression())
-                    .AssignTo(entry.IdentifierName)
-                    .AsStatement();
+                var value = entry switch
+                {
+                    CoreObjectChild { IsNullable: true } =>
+                        core.Dot(entry.IdentifierName).QuestionDot(Names.ToNode).Invoke(ThisExpression()),
+                    CoreObjectChild => core.Dot(entry.IdentifierName).Dot(Names.ToNode).Invoke(ThisExpression()),
+                    CoreListChild => core.Dot(entry.IdentifierName).Dot(Names.ToListNode).Invoke(ThisExpression()),
+                    _ => throw new InvalidOperationException("Object or List child only.")
+                };
+                return entry.IdentifierName.Assign(value).AsStatement();
             }
         }
 
@@ -159,7 +162,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                         .MutateIf(entry.IsInherited, x => x.AddModifiers(SyntaxKind.OverrideKeyword))
                         .Mutate(x => entry is CoreValueChild
                         ? x.WithExpressionBodyFull(
-                            CorePropertyIdentifierName
+                            Core
                             .Dot(entry.IdentifierName))
                         : x.AddAccessorListAccessors(
                             AccessorDeclaration(SyntaxKind.GetAccessorDeclaration)
@@ -221,7 +224,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                             .AddTypeArgumentListArguments(
                                 Descriptor.CoreType)))
                     .WithExpressionBodyFull(
-                        CorePropertyIdentifierName)
+                        Core)
                     .AddAttributeListAttributes(DebuggerBrowsableNeverAttribute);
             }
         }
@@ -252,7 +255,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                         ConditionalExpression(
                             BinaryExpression(
                                 SyntaxKind.EqualsExpression,
-                                ThisExpression().Dot(CorePropertyIdentifierName),
+                                ThisExpression().Dot(Core),
                                 IdentifierName(CoreParameter)),
                             ThisExpression(),
                             ObjectCreationExpression(
@@ -279,7 +282,8 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                 }
                 var coreWithArg = entry switch
                 {
-                    CoreObjectChild => ValueParamSyntax.Dot(CorePropertyIdentifierName),
+                    CoreObjectChild { IsNullable: true } => ValueParamSyntax.QuestionDot(Core),
+                    CoreObjectChild => ValueParamSyntax.Dot(Core),
                     CoreListChild =>
                         ValueParamSyntax.Dot(
                             IdentifierName(Names.ToCoreArray))
@@ -290,7 +294,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                     .WithExpressionBodyFull(
                         IdentifierName(Names.UpdateWith)
                         .Invoke(
-                            CorePropertyIdentifierName
+                            Core
                             .With(entry.IdentifierName.Assign(coreWithArg))));
             }
         }
@@ -302,14 +306,23 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                 yield break;
             }
             var children = Descriptor.Entries.Where(x => x is not CoreValueChild).ToImmutableArray();
-            yield return ChildrenCount();
+            var anyNullable = children.Any(x => x is CoreObjectChild { IsNullable: true });
+            if (!anyNullable)
+            {
+                // otherwise default SourceNode implementation is good enough
+                yield return ChildrenCount();
+            }
             if (children.IsEmpty)
             {
                 yield break;
             }
             yield return ChildrenInfos();
             yield return Children();
-            yield return GetChild();
+            if (!anyNullable)
+            {
+                // otherwise default SourceNode implementation is good enough
+                yield return GetChild();
+            }
             MemberDeclarationSyntax ChildrenCount()
             {
                 return
@@ -320,9 +333,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                         SyntaxKind.ProtectedKeyword,
                         SyntaxKind.InternalKeyword,
                         SyntaxKind.OverrideKeyword)
-                    .WithExpressionBodyFull(
-                        LiteralExpression(SyntaxKind.NumericLiteralExpression,
-                        Literal(children.Length)));
+                    .WithExpressionBodyFull(children.Length.ToLiteralExpression());
             }
             MemberDeclarationSyntax ChildrenInfos()
             {
@@ -335,9 +346,9 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                     .AddBodyStatements(
                         children.Select(CreateStatement));
 
-                static StatementSyntax CreateStatement(CoreChildBase entry)
+                StatementSyntax CreateStatement(CoreChildBase entry)
                 {
-                    return
+                    var yieldReturn =
                         YieldStatement(
                             SyntaxKind.YieldReturnStatement,
                             ObjectCreationExpression(
@@ -346,6 +357,14 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                                 IdentifierName("nameof")
                                 .Invoke(entry.IdentifierName),
                                 entry.IdentifierName));
+                    return entry switch
+                    {
+                        CoreObjectChild { IsNullable: true } =>
+                            IfStatement(
+                                entry.IdentifierName.IsNot(ConstantPattern(Null)),
+                                yieldReturn),
+                        _ => yieldReturn
+                    };
                 }
             }
             MemberDeclarationSyntax Children()
@@ -359,12 +378,20 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                     .AddBodyStatements(
                         children.Select(CreateStatement));
 
-                static StatementSyntax CreateStatement(CoreChildBase entry)
+                StatementSyntax CreateStatement(CoreChildBase entry)
                 {
-                    return
+                    var yieldReturn =
                         YieldStatement(
                             SyntaxKind.YieldReturnStatement,
                             entry.IdentifierName);
+                    return entry switch
+                    {
+                        CoreObjectChild { IsNullable: true } =>
+                            IfStatement(
+                                entry.IdentifierName.IsNot(ConstantPattern(Null)),
+                                yieldReturn),
+                        _ => yieldReturn
+                    };
                 }
             }
             MemberDeclarationSyntax GetChild()
@@ -401,9 +428,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                             SwitchSection()
                             .AddLabels(
                                 CaseSwitchLabel(
-                                    LiteralExpression(
-                                        SyntaxKind.NumericLiteralExpression,
-                                        Literal(index))))
+                                    index.ToLiteralExpression()))
                             .AddStatements(
                                 ReturnStatement(
                                     child.IdentifierName));
