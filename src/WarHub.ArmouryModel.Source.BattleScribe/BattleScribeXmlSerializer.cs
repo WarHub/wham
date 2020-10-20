@@ -26,7 +26,6 @@ namespace WarHub.ArmouryModel.Source.BattleScribe
         private class ElementCache
         {
             public XmlSerializer? Serializer;
-            public XmlSerializer? Deserializer;
             public XmlSerializerNamespaces? Namespaces;
         }
 
@@ -40,20 +39,16 @@ namespace WarHub.ArmouryModel.Source.BattleScribe
             }.ToImmutableDictionary();
 
         public CatalogueNode? DeserializeCatalogue(Func<XmlSerializer, object?> deserialization)
-            => Deserialize<CatalogueCore.Builder>(deserialization, RootElement.Catalogue)?
-            .ToImmutable().ToNode();
+            => Deserialize<CatalogueCore>(deserialization, RootElement.Catalogue)?.ToNode();
 
         public GamesystemNode? DeserializeGamesystem(Func<XmlSerializer, object?> deserialization)
-            => Deserialize<GamesystemCore.Builder>(deserialization, RootElement.GameSystem)?
-            .ToImmutable().ToNode();
+            => Deserialize<GamesystemCore>(deserialization, RootElement.GameSystem)?.ToNode();
 
         public RosterNode? DeserializeRoster(Func<XmlSerializer, object?> deserialization)
-            => Deserialize<RosterCore.Builder>(deserialization, RootElement.Roster)?
-            .ToImmutable().ToNode();
+            => Deserialize<RosterCore>(deserialization, RootElement.Roster)?.ToNode();
 
         public DataIndexNode? DeserializeDataIndex(Func<XmlSerializer, object?> deserialization)
-            => Deserialize<DataIndexCore.Builder>(deserialization, RootElement.DataIndex)?
-            .ToImmutable().ToNode();
+            => Deserialize<DataIndexCore>(deserialization, RootElement.DataIndex)?.ToNode();
 
         public SourceNode? Deserialize(
             Func<XmlSerializer, object?> deserialization,
@@ -71,33 +66,15 @@ namespace WarHub.ArmouryModel.Source.BattleScribe
             };
         }
 
-        public void SerializeGamesystem(GamesystemNode node, TextWriter writer)
-            => Serialize(writer, node.GetSerializationProxy(), node.Kind.ToRootElement());
-
-        public void SerializeCatalogue(CatalogueNode node, TextWriter writer)
-            => Serialize(writer, node.GetSerializationProxy(), node.Kind.ToRootElement());
-
-        public void SerializeRoster(RosterNode node, TextWriter writer)
-            => Serialize(writer, node.GetSerializationProxy(), node.Kind.ToRootElement());
-
-        public void SerializeDataIndex(DataIndexNode node, TextWriter writer)
-            => Serialize(writer, node.GetSerializationProxy(), node.Kind.ToRootElement());
-
         public void Serialize(SourceNode node, TextWriter writer)
         {
             switch (node.Kind)
             {
                 case SourceKind.Gamesystem:
-                    SerializeGamesystem((GamesystemNode)node, writer);
-                    return;
                 case SourceKind.Catalogue:
-                    SerializeCatalogue((CatalogueNode)node, writer);
-                    return;
                 case SourceKind.Roster:
-                    SerializeRoster((RosterNode)node, writer);
-                    return;
                 case SourceKind.DataIndex:
-                    SerializeDataIndex((DataIndexNode)node, writer);
+                    Serialize(writer, ((INodeWithCore<NodeCore>)node).Core, node.Kind.ToRootElement());
                     return;
                 default:
                     throw new ArgumentException(
@@ -116,7 +93,7 @@ namespace WarHub.ArmouryModel.Source.BattleScribe
 
         private T? Deserialize<T>(Func<XmlSerializer, object?> deserialization, RootElement rootElement)
         {
-            var serializer = GetDeserializer(rootElement);
+            var serializer = GetSerializer(rootElement);
             return (T?)deserialization(serializer);
         }
 
@@ -146,27 +123,9 @@ namespace WarHub.ArmouryModel.Source.BattleScribe
             {
                 return existing;
             }
-            var created = CreateSerializer(rootElement);
+            var created = rootElement.Info().Serializer;
             return Interlocked.CompareExchange(ref cached, created, null) is null
                 ? created : cached;
-
-            static XmlSerializer CreateSerializer(RootElement rootElement)
-                => new XmlSerializer(rootElement.Info().SerializationProxyType);
-        }
-
-        private XmlSerializer GetDeserializer(RootElement rootElement)
-        {
-            ref var cached = ref elementCacheDictionary[rootElement].Deserializer;
-            if (cached is { } existing)
-            {
-                return existing;
-            }
-            var created = CreateDeserializer(rootElement);
-            return Interlocked.CompareExchange(ref cached, created, null) is null
-                ? created : cached;
-
-            static XmlSerializer CreateDeserializer(RootElement rootElement)
-                => new XmlSerializer(rootElement.Info().BuilderType);
         }
     }
 }

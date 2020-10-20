@@ -1,7 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.IO;
 using System.Linq;
 using System.Text;
 using Microsoft.CodeAnalysis;
@@ -44,8 +42,9 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
 
             var serializerRoot = WhamSerializerGenerator.Generate(context.Compilation, descriptors);
             var serializerSource = SyntaxTree(serializerRoot, parseOptions, encoding: Encoding.UTF8).GetText();
-            using (var serializerWriter = File.CreateText(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile) + "/serializer.cs"))
-                serializerSource.Write(serializerWriter);
+            //var serializerSourceFilePath = System.Environment.GetFolderPath(System.Environment.SpecialFolder.UserProfile) + "/serializer.cs";
+            //using (var serializerWriter = System.IO.File.CreateText(serializerSourceFilePath))
+            //    serializerSource.Write(serializerWriter);
             context.AddSource("WhamCoreXmlSerializer", serializerSource);
 
             IEnumerable<INamedTypeSymbol> GetNodeCoreSymbols()
@@ -142,9 +141,6 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                 yield break;
             }
             yield return CoreEmptyPropertyPartialGenerator.Generate(descriptor, default);
-            yield return BuilderCorePartialGenerator.Generate(descriptor, default);
-            yield return FspCorePartialGenerator.Generate(descriptor, default);
-            yield return FseCorePartialGenerator.Generate(descriptor, default);
         }
 
         private static IEnumerable<TypeDeclarationSyntax> GenerateNodePartials(CoreDescriptor descriptor)
