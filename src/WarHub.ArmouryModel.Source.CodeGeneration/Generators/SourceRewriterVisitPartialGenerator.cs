@@ -98,7 +98,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                                 complex.GetNodeTypeIdentifierName()))
                         .WrapInParens()
                         .MutateIf(
-                            complex.Symbol.Type.NullableAnnotation == NullableAnnotation.Annotated,
+                            complex.Symbol.Type.NullableAnnotation != NullableAnnotation.Annotated,
                             x => x.QuestionQuestion(
                                 IdentifierName(Names.NodeFactory)
                                 .Dot(
