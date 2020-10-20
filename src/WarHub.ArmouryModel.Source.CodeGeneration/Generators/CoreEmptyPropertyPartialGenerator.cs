@@ -25,7 +25,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                 .AddModifiers(SyntaxKind.PublicKeyword, SyntaxKind.StaticKeyword)
                 .AddAccessorListAccessors(
                     AccessorDeclaration(SyntaxKind.GetAccessorDeclaration)
-                    .WithSemicolonTokenDefault())
+                    .WithSemicolonToken())
                 .WithInitializer(
                     EqualsValueClause(
                         ImplicitObjectCreationExpression()))

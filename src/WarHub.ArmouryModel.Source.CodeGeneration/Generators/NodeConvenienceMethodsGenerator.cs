@@ -21,7 +21,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
 
         protected override IEnumerable<MemberDeclarationSyntax> GenerateMembers()
         {
-            if (Descriptor.DeclaredEntries.Length > 0)
+            if (Descriptor.Entries.Any(x => x.IsDeclared))
             {
                 yield return GenerateDeconstruct();
             }
@@ -39,20 +39,22 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                 .AddBodyStatements(
                     Descriptor.Entries.Select(CreateAssignment));
 
-            static ParameterSyntax CreateParameter(CoreDescriptor.Entry entry)
+            static ParameterSyntax CreateParameter(CoreChildBase entry)
             {
-                var type = entry is CoreDescriptor.CollectionEntry collectionEntry
-                    ? collectionEntry.GetListNodeTypeIdentifierName()
-                    : entry is CoreDescriptor.ComplexEntry complexEntry
-                    ? complexEntry.GetNodeTypeIdentifierName()
-                    : entry.Type;
+                var type = entry switch
+                {
+                    CoreListChild list => list.GetListNodeTypeIdentifierName(),
+                    CoreObjectChild { IsNullable: true } obj => obj.GetNodeTypeIdentifierName().Nullable(),
+                    CoreObjectChild obj => obj.GetNodeTypeIdentifierName(),
+                    _ => entry.Type
+                };
                 return
                     Parameter(entry.CamelCaseIdentifier)
                     .WithType(type)
                     .AddModifiers(SyntaxKind.OutKeyword);
             }
 
-            static StatementSyntax CreateAssignment(CoreDescriptor.Entry entry)
+            static StatementSyntax CreateAssignment(CoreChildBase entry)
             {
                 return
                     ExpressionStatement(

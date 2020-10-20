@@ -7,16 +7,16 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration.Tests
     internal static class TestHelpers
     {
         public static RootContainerNode EmptyRootNode
-            => new RootContainerCore.Builder().ToImmutable().ToNode();
+            => RootContainerCore.Empty.ToNode();
 
         public static ItemNode EmptyItemNode
-            => new ItemCore.Builder().ToImmutable().ToNode();
+            => ItemCore.Empty.ToNode();
 
         public static ContainerNode EmptyContainerNode
-            => new ContainerCore.Builder().ToImmutable().ToNode();
+            => ContainerCore.Empty.ToNode();
 
         public static RecursiveContainerNode EmptyRecursiveNode
-            => new RecursiveContainerCore.Builder().ToImmutable().ToNode();
+            => RecursiveContainerCore.Empty.ToNode();
 
         public static class SymmetricTree
         {

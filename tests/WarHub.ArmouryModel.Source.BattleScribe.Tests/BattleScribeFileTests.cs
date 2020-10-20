@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
 using System.Xml;
 using System.Xml.Schema;
@@ -16,21 +15,21 @@ namespace WarHub.ArmouryModel.Source.BattleScribe.Tests
         [Trait("XmlSerialization", "ReadWriteTest")]
         public void ReadWriteGamesystem()
         {
-            ReadWriteXml(TestData.Gamesystem, s => s.DeserializeGamesystem()!);
+            ReadWriteXml(TestData.Gamesystem);
         }
 
         [Fact]
         [Trait("XmlSerialization", "ReadWriteTest")]
         public void ReadWriteCatalogue()
         {
-            ReadWriteXml(TestData.Catalogue, s => s.DeserializeCatalogue()!);
+            ReadWriteXml(TestData.Catalogue);
         }
 
         [Fact]
         [Trait("XmlSerialization", "ReadWriteTest")]
         public void ReadWriteRoster()
         {
-            ReadWriteXml(TestData.Roster, s => s.DeserializeRoster()!);
+            ReadWriteXml(TestData.Roster);
         }
 
         [Theory]
@@ -58,17 +57,16 @@ namespace WarHub.ArmouryModel.Source.BattleScribe.Tests
             void HandleValidation(object? sender, ValidationEventArgs e) => validation.Add(e);
         }
 
-        private static void ReadWriteXml(string datafile, Func<Stream, SourceNode> deserialize)
+        private static void ReadWriteXml(string datafile)
         {
             var readNode = Deserialize();
             using var outputStream = Serialize(readNode);
             var xmlDiff = DiffXml(outputStream);
             xmlDiff.Should().BeNull();
-
             SourceNode Deserialize()
             {
                 using var stream = datafile.GetDatafileStream();
-                return deserialize(stream);
+                return stream.DeserializeSourceNodeAuto()!;
             }
 
             static Stream Serialize(SourceNode node)

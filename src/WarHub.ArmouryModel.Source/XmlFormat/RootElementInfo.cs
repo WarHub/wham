@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Xml.Serialization;
 
 namespace WarHub.ArmouryModel.Source.XmlFormat
 {
@@ -19,9 +20,7 @@ namespace WarHub.ArmouryModel.Source.XmlFormat
 
         public SourceKind SourceKind => SourceKindFromElement[Element];
 
-        public Type SerializationProxyType => SerializationProxyTypeFromElement[Element];
-
-        public Type BuilderType => BuilderTypeFromElement[Element];
+        public XmlSerializer Serializer => XmlSerializerFromElement[Element];
 
         public BattleScribeVersion CurrentVersion
         {
@@ -83,22 +82,13 @@ namespace WarHub.ArmouryModel.Source.XmlFormat
                 [RootElement.Roster] = SourceKind.Roster,
             }.ToImmutableDictionary();
 
-        internal static ImmutableDictionary<RootElement, Type> SerializationProxyTypeFromElement { get; }
-            = new Dictionary<RootElement, Type>
+        internal static ImmutableDictionary<RootElement, XmlSerializer> XmlSerializerFromElement { get; }
+            = new Dictionary<RootElement, XmlSerializer>
             {
-                [RootElement.Catalogue] = typeof(CatalogueCore.FastSerializationProxy),
-                [RootElement.DataIndex] = typeof(DataIndexCore.FastSerializationProxy),
-                [RootElement.GameSystem] = typeof(GamesystemCore.FastSerializationProxy),
-                [RootElement.Roster] = typeof(RosterCore.FastSerializationProxy),
-            }.ToImmutableDictionary();
-
-        internal static ImmutableDictionary<RootElement, Type> BuilderTypeFromElement { get; }
-            = new Dictionary<RootElement, Type>
-            {
-                [RootElement.Catalogue] = typeof(CatalogueCore.Builder),
-                [RootElement.DataIndex] = typeof(DataIndexCore.Builder),
-                [RootElement.GameSystem] = typeof(GamesystemCore.Builder),
-                [RootElement.Roster] = typeof(RosterCore.Builder),
+                [RootElement.Catalogue] = new CatalogueCoreXmlSerializer(),
+                [RootElement.DataIndex] = new DataIndexCoreXmlSerializer(),
+                [RootElement.GameSystem] = new GamesystemCoreXmlSerializer(),
+                [RootElement.Roster] = new RosterCoreXmlSerializer(),
             }.ToImmutableDictionary();
 
         internal static ImmutableDictionary<SourceKind, RootElement> ElementFromSourceKind { get; }

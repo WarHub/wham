@@ -43,7 +43,7 @@ namespace WarHub.ArmouryModel.Source
         /// <summary>
         /// Gets index in parent, or -1 if no parent.
         /// </summary>
-        public int IndexInParent => IndexInParentLazy ?? CalculateAndSaveIndexInParent();
+        public int IndexInParent => IndexInParentLazy ??= CalculateIndexInParent();
 
         /// <summary>
         /// Traverses ancestry path and returns each node beginning with this node's parent, if any.
@@ -71,7 +71,7 @@ namespace WarHub.ArmouryModel.Source
         /// <returns>Enumeration of this node's children.</returns>
         public virtual IEnumerable<SourceNode> Children()
         {
-            return Enumerable.Empty<SourceNode>();
+            return ChildrenInfos().Select(x => x.Node);
         }
 
         /// <summary>
@@ -180,10 +180,6 @@ namespace WarHub.ArmouryModel.Source
         /// <exception cref="ArgumentOutOfRangeException">When index is out of range.</exception>
         protected internal virtual SourceNode GetChild(int index)
         {
-            if (index < 0 || index >= ChildrenCount)
-            {
-                throw new ArgumentOutOfRangeException(nameof(index));
-            }
             return Children().ElementAt(index);
         }
 
@@ -228,28 +224,22 @@ namespace WarHub.ArmouryModel.Source
             }
         }
 
-        private int CalculateAndSaveIndexInParent()
+        int CalculateIndexInParent()
         {
-            var indexInParent = CalculateIndex();
-            IndexInParentLazy = indexInParent;
-            return indexInParent;
-
-            int CalculateIndex()
+            if (Parent == null)
             {
-                if (Parent == null)
-                {
-                    return -1;
-                }
-                for (var index = 0; index < Parent.ChildrenCount; index++)
-                {
-                    var sibling = Parent.GetChild(index);
-                    if (ReferenceEquals(this, sibling))
-                    {
-                        return index;
-                    }
-                }
                 return -1;
             }
+            var count = Parent.ChildrenCount;
+            for (var index = 0; index < count; index++)
+            {
+                var sibling = Parent.GetChild(index);
+                if (ReferenceEquals(this, sibling))
+                {
+                    return index;
+                }
+            }
+            return -1;
         }
     }
 }

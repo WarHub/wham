@@ -21,19 +21,17 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration.Tests
         {
             public static ContainerNode CreateContainer()
             {
-                return new ContainerCore.Builder
+                return new ContainerCore
                 {
                     Id = ContainerId,
                     Name = ContainerName,
-                    Items =
-                {
-                    new ItemCore.Builder
-                    {
-                        Id = ItemId,
-                        Name = ItemName
-                    }
-                }
-                }.ToImmutable().ToNode();
+                    Items = ImmutableArray.Create(
+                        new ItemCore
+                        {
+                            Id = ItemId,
+                            Name = ItemName
+                        })
+                }.ToNode();
             }
         }
 
@@ -110,9 +108,9 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration.Tests
         {
             const string Item1Id = "id1";
             const string Item2Id = "id2";
-            var item1 = new ItemCore.Builder { Id = Item1Id };
-            var item2Node = new ItemCore.Builder { Id = Item2Id }.ToImmutable().ToNode();
-            var container = new ContainerCore.Builder { Items = { item1 } }.ToImmutable().ToNode();
+            var item1 = new ItemCore { Id = Item1Id };
+            var item2Node = new ItemCore { Id = Item2Id }.ToNode();
+            var container = new ContainerCore { Items = ImmutableArray.Create(item1) }.ToNode();
             var newContainer = container.WithItems(item2Node);
             Assert.NotSame(container, newContainer);
             Assert.Collection(
@@ -128,9 +126,9 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration.Tests
         {
             const string Item1Id = "id1";
             const string Item2Id = "id2";
-            var item1 = new ItemCore.Builder { Id = Item1Id };
-            var item2Node = new ItemCore.Builder { Id = Item2Id }.ToImmutable().ToNode();
-            var container = new ContainerCore.Builder { Items = { item1 } }.ToImmutable().ToNode();
+            var item1 = new ItemCore { Id = Item1Id };
+            var item2Node = new ItemCore { Id = Item2Id }.ToNode();
+            var container = new ContainerCore { Items = ImmutableArray.Create(item1) }.ToNode();
             var newContainer = container.AddItems(item2Node);
             Assert.NotSame(container, newContainer);
             Assert.Collection(
@@ -147,9 +145,9 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration.Tests
         {
             const string Item1Id = "id1";
             const string Item2Id = "id2";
-            var item1 = new ItemCore.Builder { Id = Item1Id };
-            var item2Node = new ItemCore.Builder { Id = Item2Id }.ToImmutable().ToNode();
-            var container = new ContainerCore.Builder { Items = { item1 } }.ToImmutable().ToNode();
+            var item1 = new ItemCore { Id = Item1Id };
+            var item2Node = new ItemCore { Id = Item2Id }.ToNode();
+            var container = new ContainerCore { Items = ImmutableArray.Create(item1) }.ToNode();
             var newContainer = container.AddItems(new[] { item2Node }.ToImmutableList());
             Assert.NotSame(container, newContainer);
             Assert.Collection(
@@ -164,7 +162,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration.Tests
         [Fact]
         public void Ancestors_OnRoot_ReturnsNone()
         {
-            var item = new ItemCore.Builder().ToImmutable().ToNode();
+            var item = new ItemCore().ToNode();
             var ancestors = item.Ancestors();
             Assert.Empty(ancestors);
         }
@@ -195,7 +193,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration.Tests
         [Fact]
         public void AncestorsAndSelf_OnRoot_ReturnsSelf()
         {
-            var item = new ItemCore.Builder().ToImmutable().ToNode();
+            var item = new ItemCore().ToNode();
             var ancestors = item.AncestorsAndSelf();
             Assert.Collection(ancestors, x => Assert.Same(item, x));
         }

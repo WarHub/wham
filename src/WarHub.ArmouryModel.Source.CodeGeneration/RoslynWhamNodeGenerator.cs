@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using System.Text;
@@ -21,7 +20,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
 
         public void Execute(GeneratorExecutionContext context)
         {
-            //Debugger.Launch();
+            //System.Diagnostics.Debugger.Launch();
             if (context.SyntaxReceiver is not SyntaxReceiver syntaxReceiver)
                 return;
 
@@ -40,6 +39,13 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                 var sourceText = SyntaxTree(compilationUnit, parseOptions, encoding: Encoding.UTF8).GetText();
                 context.AddSource(descriptor.RawModelName, sourceText);
             }
+
+            var serializerRoot = WhamSerializerGenerator.Generate(context.Compilation, descriptors);
+            var serializerSource = SyntaxTree(serializerRoot, parseOptions, encoding: Encoding.UTF8).GetText();
+            //var serializerSourceFilePath = System.Environment.GetFolderPath(System.Environment.SpecialFolder.UserProfile) + "/serializer.cs";
+            //using (var serializerWriter = System.IO.File.CreateText(serializerSourceFilePath))
+            //    serializerSource.Write(serializerWriter);
+            context.AddSource("WhamCoreXmlSerializer", serializerSource);
 
             IEnumerable<INamedTypeSymbol> GetNodeCoreSymbols()
             {
@@ -135,9 +141,6 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                 yield break;
             }
             yield return CoreEmptyPropertyPartialGenerator.Generate(descriptor, default);
-            yield return BuilderCorePartialGenerator.Generate(descriptor, default);
-            yield return FspCorePartialGenerator.Generate(descriptor, default);
-            yield return FseCorePartialGenerator.Generate(descriptor, default);
         }
 
         private static IEnumerable<TypeDeclarationSyntax> GenerateNodePartials(CoreDescriptor descriptor)

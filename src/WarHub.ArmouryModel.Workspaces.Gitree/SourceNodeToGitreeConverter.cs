@@ -14,7 +14,7 @@ namespace WarHub.ArmouryModel.Workspaces.Gitree
             = new SeparatableChildrenRemover();
 
         private static DatablobNode EmptyBlob { get; }
-            = NodeFactory.Datablob(NodeFactory.Metadata(null, null, null));
+            = NodeFactory.Datablob(NodeFactory.Metadata(null, null, 0));
 
         public override GitreeNode Visit(SourceNode node)
         {

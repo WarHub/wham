@@ -39,11 +39,11 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
         protected override IEnumerable<MemberDeclarationSyntax> GenerateMembers()
         {
             return Descriptor.Entries
-                .OfType<CoreDescriptor.CollectionEntry>()
+                .OfType<CoreListChild>()
                 .SelectMany(GenerateConvenienceMutators);
         }
 
-        private IEnumerable<MethodDeclarationSyntax> GenerateConvenienceMutators(CoreDescriptor.CollectionEntry entry)
+        private IEnumerable<MethodDeclarationSyntax> GenerateConvenienceMutators(CoreListChild entry)
         {
             const string NodesParamName = "nodes";
             var nodeType = Descriptor.GetNodeTypeIdentifierName();
@@ -61,9 +61,9 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                         entry.GetNodeTypeIdentifierName().ToNodeListType());
                 var withArg =
                     IdentifierName(NodesParamName)
-                    .MemberAccess(
+                    .Dot(
                         IdentifierName(Names.ToListNode))
-                    .InvokeWithArguments();
+                    .Invoke();
                 return CreateMutator(Names.WithPrefix, parameter, withArg);
             }
             MethodDeclarationSyntax CreateWithParams()
@@ -76,9 +76,9 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                         entryNodeType.ToArrayType());
                 var withArg =
                     IdentifierName(NodesParamName)
-                    .MemberAccess(
+                    .Dot(
                         IdentifierName(Names.ToNodeList))
-                    .InvokeWithArguments();
+                    .Invoke();
                 return CreateMutator(Names.WithPrefix, parameter, withArg);
             }
             MethodDeclarationSyntax CreateAddParams()
@@ -91,12 +91,12 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                         entryNodeType.ToArrayType());
                 var withArg =
                     ThisParameterSyntax
-                    .MemberAccess(entry.IdentifierName)
-                    .MemberAccess(
+                    .Dot(entry.IdentifierName)
+                    .Dot(
                         IdentifierName(Names.NodeList))
-                    .MemberAccess(
+                    .Dot(
                         IdentifierName(Names.AddRange))
-                    .InvokeWithArguments(
+                    .Invoke(
                         IdentifierName(NodesParamName));
                 return CreateMutator(Names.Add, parameter, withArg);
             }
@@ -109,12 +109,12 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                         entryNodeType.ToIEnumerableType());
                 var withArg =
                     ThisParameterSyntax
-                    .MemberAccess(entry.IdentifierName)
-                    .MemberAccess(
+                    .Dot(entry.IdentifierName)
+                    .Dot(
                         IdentifierName(Names.NodeList))
-                    .MemberAccess(
+                    .Dot(
                         IdentifierName(Names.AddRange))
-                    .InvokeWithArguments(
+                    .Invoke(
                         IdentifierName(NodesParamName));
                 return CreateMutator(Names.Add, parameter, withArg);
             }
@@ -131,9 +131,9 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                     .AddBodyStatements(
                         ReturnStatement(
                             ThisParameterSyntax
-                            .MemberAccess(
+                            .Dot(
                                 IdentifierName(Names.WithPrefix + entry.Identifier))
-                            .InvokeWithArguments(nodesExpression)));
+                            .Invoke(nodesExpression)));
             }
         }
     }

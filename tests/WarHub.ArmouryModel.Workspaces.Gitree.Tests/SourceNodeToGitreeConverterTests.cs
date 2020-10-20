@@ -9,11 +9,11 @@ namespace WarHub.ArmouryModel.Workspaces.Gitree.Tests
         [Fact]
         public void AddingToEmptyBlob_AddsToCorrectList()
         {
-            var addedCore = new CharacteristicTypeCore.Builder
+            var addedCore = new CharacteristicTypeCore
             {
                 Id = "id",
                 Name = "name"
-            }.ToImmutable();
+            };
             var result = SourceNodeToGitreeConverter.DatablobRewriter.AddToEmpty(addedCore.ToNode());
             Assert.Collection(result.CharacteristicTypes,
                 x => Assert.Same(addedCore, ((INodeWithCore<CharacteristicTypeCore>)x).Core));
@@ -26,7 +26,7 @@ namespace WarHub.ArmouryModel.Workspaces.Gitree.Tests
             var profile = NodeFactory.ProfileType("name").AddCharacteristicTypes(characteristicType);
             var rewriter = new SourceNodeToGitreeConverter.SeparatableChildrenRemover();
             var result = (DatablobNode)NodeFactory.Datablob(
-                NodeFactory.Metadata(null, null, null),
+                NodeFactory.Metadata(null, null, 0),
                 characteristicTypes: NodeList.Create(characteristicType),
                 profileTypes: NodeList.Create(profile))
                 .Accept(rewriter);

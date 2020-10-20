@@ -65,7 +65,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                                 LiteralExpression(SyntaxKind.NullLiteralExpression))))
                     .MutateIf(
                         IsAbstract,
-                        x => x.WithSemicolonTokenDefault(),
+                        x => x.WithSemicolonToken(),
                         x => x
                         .WithExpressionBodyFull(
                             ObjectCreationExpression(nodeTypeIdentifierName)
@@ -87,7 +87,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                     .AddParameterListParameters(parentParameterBase)
                     .WithExpressionBodyFull(
                         IdentifierName(Names.ToNode)
-                        .InvokeWithArguments(
+                        .Invoke(
                             IdentifierName(ParentLocal)));
             }
         }

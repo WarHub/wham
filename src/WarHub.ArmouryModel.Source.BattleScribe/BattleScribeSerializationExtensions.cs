@@ -45,32 +45,13 @@ namespace WarHub.ArmouryModel.Source.BattleScribe
 
         public static void Serialize(this SourceNode node, Stream stream)
         {
-            Serializer.Serialize(node, new StreamWriter(stream));
+            using var writer = new StreamWriter(stream, leaveOpen: true);
+            Serializer.Serialize(node, writer);
         }
 
         public static void Serialize(this SourceNode node, TextWriter writer)
         {
             Serializer.Serialize(node, writer);
-        }
-
-        public static GamesystemCore.FastSerializationProxy GetSerializationProxy(this GamesystemNode node)
-        {
-            return node.Core.ToSerializationProxy();
-        }
-
-        public static CatalogueCore.FastSerializationProxy GetSerializationProxy(this CatalogueNode node)
-        {
-            return node.Core.ToSerializationProxy();
-        }
-
-        public static RosterCore.FastSerializationProxy GetSerializationProxy(this RosterNode node)
-        {
-            return node.Core.ToSerializationProxy();
-        }
-
-        public static DataIndexCore.FastSerializationProxy GetSerializationProxy(this DataIndexNode node)
-        {
-            return node.Core.ToSerializationProxy();
         }
     }
 }

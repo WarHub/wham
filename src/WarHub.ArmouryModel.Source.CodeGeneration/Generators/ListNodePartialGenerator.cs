@@ -81,9 +81,9 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                             IdentifierName(Parent))))
                 .AddBodyStatements(
                     IdentifierName(Cores)
-                        .MemberAccess(
+                        .Dot(
                             IdentifierName(Names.ToNodeList))
-                        .InvokeWithArguments(
+                        .Invoke(
                             ThisExpression())
                         .AssignTo(
                             IdentifierName(Names.NodeList))
@@ -100,7 +100,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                 .AddModifiers(SyntaxKind.PublicKeyword, SyntaxKind.OverrideKeyword)
                 .WithExpressionBodyFull(
                     IdentifierName(Names.SourceKind)
-                    .MemberAccess(
+                    .Dot(
                         IdentifierName(kindString)));
         }
 
@@ -114,7 +114,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                 .AddModifiers(SyntaxKind.PublicKeyword, SyntaxKind.OverrideKeyword)
                 .WithExpressionBodyFull(
                     IdentifierName(Names.SourceKind)
-                    .MemberAccess(
+                    .Dot(
                         IdentifierName(kindString)));
         }
 
@@ -129,7 +129,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                     .AddModifiers(SyntaxKind.PublicKeyword, SyntaxKind.OverrideKeyword)
                     .AddAccessorListAccessors(
                         AccessorDeclaration(SyntaxKind.GetAccessorDeclaration)
-                            .WithSemicolonTokenDefault());
+                            .WithSemicolonToken());
         }
 
         private MemberDeclarationSyntax AcceptMethod()
@@ -150,9 +150,9 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                 .AddBodyStatements(
                     ExpressionStatement(
                         IdentifierName(Visitor)
-                        .MemberAccess(
+                        .Dot(
                             IdentifierName(Names.Visit + Descriptor.RawModelName + Names.ListSuffix))
-                        .InvokeWithArguments(
+                        .Invoke(
                             ThisExpression())));
         }
 
@@ -179,9 +179,9 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                 .AddBodyStatements(
                     ReturnStatement(
                         IdentifierName(Visitor)
-                        .MemberAccess(
+                        .Dot(
                             IdentifierName(Names.Visit + Descriptor.RawModelName + Names.ListSuffix))
-                        .InvokeWithArguments(
+                        .Invoke(
                             ThisExpression())));
         }
 
@@ -207,13 +207,13 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                         ConditionalExpression(
                             BinaryExpression(
                                 SyntaxKind.EqualsExpression,
-                                ThisExpression().MemberAccess(IdentifierName(Names.NodeList)),
+                                ThisExpression().Dot(IdentifierName(Names.NodeList)),
                                 IdentifierName(NodesVarName)),
                             ThisExpression(),
                             IdentifierName(NodesVarName)
-                            .MemberAccess(
+                            .Dot(
                                 IdentifierName(Names.ToListNode))
-                            .InvokeWithArguments())));
+                            .Invoke())));
         }
     }
 }

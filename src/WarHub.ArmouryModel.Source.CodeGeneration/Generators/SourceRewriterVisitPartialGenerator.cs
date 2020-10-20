@@ -35,10 +35,10 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                     .AddBodyStatements(
                         ReturnStatement(
                             IdentifierName(Names.VisitListNode)
-                                .InvokeWithArguments(
+                                .Invoke(
                                     IdentifierName(Node))));
             // VisitXyz
-            var nonSimpleEntries = Descriptor.Entries.Where(x => !x.IsSimple).ToImmutableArray();
+            var nonSimpleEntries = Descriptor.Entries.Where(x => x is not CoreValueChild).ToImmutableArray();
             yield return
                 CreateVisitMethodBase(
                         Names.Visit + Descriptor.RawModelName,
@@ -71,44 +71,46 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                                 .WithType(type));
             }
 
-            static StatementSyntax CreateChildVisitStatement(CoreDescriptor.Entry entry)
+            static StatementSyntax CreateChildVisitStatement(CoreChildBase entry)
             {
                 var initializerExpression = entry switch
                 {
-                    CoreDescriptor.CollectionEntry collectionEntry =>
+                    CoreListChild collectionEntry =>
                         IdentifierName(Names.Visit)
-                        .InvokeWithArguments(
+                        .Invoke(
                             IdentifierName(Node)
-                            .MemberAccess(entry.IdentifierName))
+                            .Dot(entry.IdentifierName))
                         .Cast(
                             NullableType(
                                 collectionEntry.GetListNodeTypeIdentifierName()))
-                        .WrapInParentheses()
-                        .ConditionalMemberAccess(
+                        .WrapInParens()
+                        .QuestionDot(
                             IdentifierName(Names.NodeList))
-                        .Coalesce(
+                        .QuestionQuestion(
                             LiteralExpression(SyntaxKind.DefaultLiteralExpression)),
-                    CoreDescriptor.ComplexEntry complex =>
+                    CoreObjectChild complex =>
                         IdentifierName(Names.Visit)
-                        .InvokeWithArguments(
+                        .Invoke(
                             IdentifierName(Node)
-                            .MemberAccess(entry.IdentifierName))
+                            .Dot(entry.IdentifierName))
                         .Cast(
                             NullableType(
                                 complex.GetNodeTypeIdentifierName()))
-                        .WrapInParentheses()
-                        .Coalesce(
-                            IdentifierName(Names.NodeFactory)
-                            .MemberAccess(
-                                IdentifierName(
-                                    complex.NameSyntax.ToString().StripSuffixes()))
-                            .InvokeWithArguments()),
+                        .WrapInParens()
+                        .MutateIf(
+                            complex.Symbol.Type.NullableAnnotation != NullableAnnotation.Annotated,
+                            x => x.QuestionQuestion(
+                                IdentifierName(Names.NodeFactory)
+                                .Dot(
+                                    IdentifierName(
+                                        complex.NameSyntax.ToString().StripSuffixes()))
+                                .Invoke())),
                     _ => throw new NotSupportedException("Cannot visit child of simple type")
                 };
                 return CreateLocalDeclaration(entry, initializerExpression);
             }
 
-            static StatementSyntax CreateLocalDeclaration(CoreDescriptor.Entry entry, ExpressionSyntax initializerExpression)
+            static StatementSyntax CreateLocalDeclaration(CoreChildBase entry, ExpressionSyntax initializerExpression)
             {
                 return
                     LocalDeclarationStatement(
@@ -126,26 +128,30 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                 return
                     ReturnStatement(
                         IdentifierName(Node)
-                            .MemberAccess(
+                            .Dot(
                                 IdentifierName(Names.UpdateWith))
-                            .InvokeWithArguments(
+                            .Invoke(
                                 IdentifierName(Node)
-                                .MemberAccess(
+                                .Dot(
                                     IdentifierName(Names.Core))
                                 .With(
                                     nonSimpleEntries.Select(CreateAssignment))));
 
-                static ExpressionSyntax CreateAssignment(CoreDescriptor.Entry entry) => (entry switch
+                static ExpressionSyntax CreateAssignment(CoreChildBase entry) => (entry switch
                 {
-                    CoreDescriptor.ComplexEntry =>
+                    CoreObjectChild { Symbol: { Type: { NullableAnnotation: NullableAnnotation.Annotated } } } =>
                         entry.CamelCaseIdentifierName
-                        .MemberAccess(
+                        .QuestionDot(
                             IdentifierName(Names.Core)),
-                    CoreDescriptor.CollectionEntry =>
+                    CoreObjectChild =>
                         entry.CamelCaseIdentifierName
-                        .MemberAccess(
+                        .Dot(
+                            IdentifierName(Names.Core)),
+                    CoreListChild =>
+                        entry.CamelCaseIdentifierName
+                        .Dot(
                             IdentifierName(Names.ToCoreArray))
-                        .InvokeWithArguments(),
+                        .Invoke(),
                     _ => throw new InvalidOperationException("This only supports non-simple entries")
                 })
                 .AssignTo(entry.IdentifierName);

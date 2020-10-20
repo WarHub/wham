@@ -24,7 +24,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration.Tests
         [Fact]
         public void With_OnAbstract_ReturnsSameActualType()
         {
-            AbstractBaseCore abstractCore = new DerivedOnceCore.Builder().ToImmutable();
+            AbstractBaseCore abstractCore = new DerivedOnceCore();
             var subject = abstractCore with { BaseName = "a name" };
             subject.Should().BeOfType<DerivedOnceCore>();
         }
@@ -32,7 +32,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration.Tests
         [Fact]
         public void ToNode_OnAbstract_ReturnsCorrectType()
         {
-            AbstractBaseCore abstractCore = new DerivedOnceCore.Builder().ToImmutable();
+            AbstractBaseCore abstractCore = new DerivedOnceCore();
             var subject = abstractCore.ToNode();
             subject.Should().BeOfType<DerivedOnceNode>();
         }
