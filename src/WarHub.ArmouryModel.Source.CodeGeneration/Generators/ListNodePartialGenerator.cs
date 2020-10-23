@@ -187,33 +187,21 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
 
         private MemberDeclarationSyntax CreateWithNodesMethod()
         {
-            const string NodesVarName = "nodes";
+            var nodes = IdentifierName("nodes");
+            var nodeList = Descriptor.GetNodeTypeIdentifierName().ToNodeListType();
+            var listNode = IdentifierName(Descriptor.GetListNodeTypeName());
             return
-                MethodDeclaration(
-                    GenericName(Names.ListNode)
-                    .AddTypeArgumentListArguments(
-                        Descriptor.GetNodeTypeIdentifierName()),
-                    Names.WithNodes)
-                .AddModifiers(
-                    SyntaxKind.PublicKeyword,
-                    SyntaxKind.OverrideKeyword)
+                MethodDeclaration(listNode, Names.WithNodes)
+                .AddModifiers(SyntaxKind.PublicKeyword, SyntaxKind.OverrideKeyword)
                 .AddParameterListParameters(
-                    Parameter(
-                        Identifier(NodesVarName))
-                    .WithType(
-                        Descriptor.GetNodeTypeIdentifierName().ToNodeListType()))
+                    Parameter(nodes.Identifier)
+                    .WithType(nodeList))
                 .AddBodyStatements(
                     ReturnStatement(
                         ConditionalExpression(
-                            BinaryExpression(
-                                SyntaxKind.EqualsExpression,
-                                ThisExpression().Dot(IdentifierName(Names.NodeList)),
-                                IdentifierName(NodesVarName)),
+                            ThisExpression().Dot(IdentifierName(Names.NodeList)).OpEquals(nodes),
                             ThisExpression(),
-                            IdentifierName(NodesVarName)
-                            .Dot(
-                                IdentifierName(Names.ToListNode))
-                            .Invoke())));
+                            nodes.Dot(IdentifierName(Names.ToListNode)).Invoke())));
         }
     }
 }
