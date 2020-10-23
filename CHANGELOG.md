@@ -7,10 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Feat: Add support for roster migrations ([#131]).
+
 ### Changed
- - fixed RosterTag name in v2.03 XSD schema (was `tags`, is `tag`) ([#121]).
- - 
+- Fix: RosterTag name in v2.03 XSD schema (was `tags`, is `tag`) ([#121]).
+- Refactor: Core types are now C# 9 nominal records ([#125]).
+- Refactor: Xml serializers are now manually crafted using C# 9/.NET 5 Source Generators;
+  this allows Xml serialization to work with C#9 records and (primarily) ImmutableArrays,
+  as well as greatly reduce warmup-time in deployments like Blazor WASM, *and* remove
+  any Reflection from that process ([#130]).
+
 [#121]: https://github.com/WarHub/wham/pull/121
+[#125]: https://github.com/WarHub/wham/pull/125
+[#130]: https://github.com/WarHub/wham/pull/130
+[#131]: https://github.com/WarHub/wham/pull/131
 
 ## [0.11.0] - 2020-07-15
 

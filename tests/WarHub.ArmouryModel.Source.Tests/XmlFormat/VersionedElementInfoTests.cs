@@ -71,10 +71,9 @@ namespace WarHub.ArmouryModel.Source.Tests.XmlFormat
         public static IEnumerable<object[]> EmptyMigrationsVersionedElements()
         {
             return
-                (from root in RootElementInfo.AllElements.Except(new[] { RootElement.Roster })
+                (from root in RootElementInfo.AllElements
                  from version in new[] { null, root.Info().CurrentVersion }
                  select new VersionedElementInfo(root, version))
-                .Append(new VersionedElementInfo(RootElement.Roster, BattleScribeVersion.V1x15b))
                 .Select(x => new object[] { x });
         }
 

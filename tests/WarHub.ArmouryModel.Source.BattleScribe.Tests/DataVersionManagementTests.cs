@@ -32,13 +32,14 @@ namespace WarHub.ArmouryModel.Source.BattleScribe.Tests
             return
                 from version in BattleScribeVersion.WellKnownVersions.Where(x => x.IsStable)
                 from mode in new[] { MigrationMode.OnFailure, MigrationMode.Always }
-                from file in new[] { TestData.Gamesystem, TestData.Catalogue }
+                from file in new[] { TestData.Gamesystem, TestData.Catalogue, TestData.Roster }
                 select new object[] { version, mode, file };
         }
 
         [Theory]
         [InlineData(TestData.Gamesystem)]
         [InlineData(TestData.Catalogue)]
+        [InlineData(TestData.Roster)]
         public void ReadMigrated_on_old_files_succeeds(string datafile)
         {
             using var stream = datafile.GetDatafileStream(BattleScribeVersion.V1x15);
