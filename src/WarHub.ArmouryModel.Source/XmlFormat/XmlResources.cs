@@ -10,7 +10,7 @@ namespace WarHub.ArmouryModel.Source.XmlFormat
         private const string XsdResourceFormat = ThisAssembly.RootNamespace + ".DataFormat.xml.schema.latest.{0}.xsd";
         private const string XslTransformResourceFormat = ThisAssembly.RootNamespace + ".DataFormat.xml.transform.{0}_{1}.xsl";
 
-        private static readonly ImmutableArray<BattleScribeVersion> catAndGstMigrations =
+        private static ImmutableArray<BattleScribeVersion> CatGstRosMigrations { get; } =
             ImmutableArray.Create(
                 BattleScribeVersion.V1x15,
                 BattleScribeVersion.V2x00,
@@ -19,8 +19,8 @@ namespace WarHub.ArmouryModel.Source.XmlFormat
                 BattleScribeVersion.V2x03);
 
         public static ImmutableDictionary<RootElement, ImmutableSortedSet<VersionedElementInfo>> XslMigrations { get; }
-            = (from version in catAndGstMigrations
-               from element in new[] { RootElement.GameSystem, RootElement.Catalogue }
+            = (from version in CatGstRosMigrations
+               from element in new[] { RootElement.GameSystem, RootElement.Catalogue, RootElement.Roster }
                select new VersionedElementInfo(element, version))
             .Append(new VersionedElementInfo(RootElement.DataIndex, BattleScribeVersion.V2x02))
             .GroupBy(x => x.Element)
