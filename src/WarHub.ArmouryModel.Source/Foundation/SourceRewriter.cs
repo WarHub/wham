@@ -3,6 +3,7 @@ using System.Linq;
 
 namespace WarHub.ArmouryModel.Source
 {
+    /// <summary>
     /// Represents a <see cref="SourceVisitor{TResult}"/> which descends
     /// an entire <see cref="SourceNode"/> graph and may replace or remove
     /// visited SyntaxNodes in depth-first order. Adds three methods
@@ -10,6 +11,7 @@ namespace WarHub.ArmouryModel.Source
     /// <see cref="VisitListNode{TNode}(ListNode{TNode})"/>,
     /// <see cref="VisitNodeList{TNode}(NodeList{TNode})"/>
     /// and <see cref="VisitListElement{TNode}(TNode)"/>.
+    /// </summary>
     public abstract partial class SourceRewriter : SourceVisitor<SourceNode?>
     {
         /// <summary>

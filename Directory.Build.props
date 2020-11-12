@@ -40,10 +40,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <DotNetCliToolReference Include="dotnet-xunit" Version="2.3.1" />
-  </ItemGroup>
-
-  <ItemGroup>
     <None Include="$(MSBuildThisFileDirectory)LICENSE.md" Pack="true" PackagePath="/" Visible="false" />
     <None Include="$(PackageIconPath)" Pack="true" PackagePath="$(PackageIcon)" Visible="false" />
   </ItemGroup>

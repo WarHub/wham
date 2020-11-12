@@ -42,7 +42,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                 "CA1822", // Mark members as static
             }.ToImmutableArray();
 
-        private HashSet<INamedTypeSymbol> UsedEnumSymbols { get; } = new HashSet<INamedTypeSymbol>();
+        private HashSet<INamedTypeSymbol> UsedEnumSymbols { get; } = new HashSet<INamedTypeSymbol>(SymbolEqualityComparer.Default);
 
         private NameSyntax InvariantCulture { get; } =
             ParseName("System.Globalization.CultureInfo.InvariantCulture");
