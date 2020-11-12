@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Feat: Add support for roster migrations ([#131]).
 
 ### Changed
+- deps: Use .NET 5 SDK for build, target only .NET 5 with NuGet packages.
 - Fix: RosterTag name in v2.03 XSD schema (was `tags`, is `tag`) ([#121]).
 - Refactor: Core types are now C# 9 nominal records ([#125]).
 - Refactor: Xml serializers are now manually crafted using C# 9/.NET 5 Source Generators;

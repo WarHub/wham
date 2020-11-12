@@ -15,7 +15,7 @@ Foundational .NET library for wargame datafile tools, written in C#.
 This is the home of the `WarHub.ArmouryModel` library handling wargame roster and data files.
 It consists of:
 * `wham` - a CLI tool (Command Line) used to manage, convert and publish datafiles,
-  distributed as .NET Core Global Tool (.NET Core SDK v2.1+ required)
+  distributed as .NET Global Tool (.NET SDK v5+ required)
 * `WarHub.ArmouryModel.Source` library provides API to manage and interact
   with wargaming data files (game systems, catalogues) and rosters.
 * `WarHub.ArmouryModel.Source.BattleScribe` provides convenient methods to load and save
@@ -27,25 +27,24 @@ It consists of:
   directory and file structure is a part of datafile shape, building datafile from massive amounts
   of tiny files. It's mostly designed to work well with VCS (Version Control Systems) such as **git**.
 
-All libraries, unless otherwise specifed, target `NETStandard 2.0`.
+All libraries, unless otherwise specifed, target `.NET 5`.
 
 There are also test projects and `WarHub.ArmouryModel.Source.CodeGeneration` project which contains
-code generator used to build `.Source` library. This code generator uses
-[`CodeGeneration.Roslyn`][CodeGenRoslyn] tooling framework.
+code generator used to build `.Source` library. This code generator uses C# Source Generators.
 
 ## Usage
 
 ### `wham` installation
 
 To install `wham` command line tool:
-1. please install [`.NET Core SDK` v2.1 or higher](https://www.microsoft.com/net/download)
+1. please install [`.NET SDK` v5 or higher](https://www.microsoft.com/net/download)
   for your platform.
 2. In your shell/command line run
-  `dotnet tool install wham -g --version 0.7.0`
+  `dotnet tool install wham -g --version 0.11.0`
 3. You can check if the tool is available: `wham --version` should show what version exactly is running.
 
 This will install preview of `wham` CLI tool in your user-space (not system global),
-and so it doesn't require root/admin permissions. (Although installation of .NET Core SDK does).
+and so it doesn't require root/admin permissions. (Although installation of .NET SDK can).
 
 ### `wham` features
 
@@ -76,8 +75,3 @@ incomplete.
 The library is MIT licensed (license in repo root).
 Created by Amadeusz Sadowski ([**@amis92**](https://github.com/amis92)).
 [**BattleScribe**](https://battlescribe.net/) name is used without permission under fair-use laws.
-[`CodeGeneration.Roslyn`][CodeGenRoslyn] is created by Andrew Arnott. Thanks!
-Continuous integration is provided by Azure DevOps. Much appreciated!
-
-
-[CodeGenRoslyn]: https://github.com/AArnott/CodeGeneration.Roslyn
