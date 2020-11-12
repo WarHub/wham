@@ -18,7 +18,7 @@ jobs:
         uses: peter-evans/create-or-update-comment@v1
         with:
           comment-id: ${{ github.event.client_payload.github.payload.comment.id }}
-          body: '[Deployment run](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})'
+          body: "[Deployment run](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})"
       - uses: actions/checkout@v2
         with:
           fetch-depth: 0 # all history
@@ -46,7 +46,7 @@ jobs:
         uses: peter-evans/create-or-update-comment@v1
         with:
           comment-id: ${{ github.event.client_payload.github.payload.comment.id }}
-          body: 'Pushed tag `${{ steps.tagpush.outputs.tag }}`'
+          body: "Pushed tag `${{ steps.tagpush.outputs.tag }}`"
       - name: Upload nugets to workflow artifacts
         uses: actions/upload-artifact@v2
         with:
@@ -63,20 +63,15 @@ jobs:
         with:
           name: nugets
 
-      - name: Push to GitHub Packages
-        if: env.PUSH_TO == 'all' || env.PUSH_TO == 'github' || env.PUSH_TO == ''
-        shell: pwsh
-        run: |
-          $ghp = "https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json".ToLower()
-          dotnet nuget add source $ghp -n github -u ${{ github.actor }} -p ${{ github.token }} --store-password-in-clear-text
-          do {
-            dotnet nuget push '*.nupkg' -s github --skip-duplicate -k ${{ github.token }}
-            # GitHub Packages are currently very unstable and produce errors a lot of time, let's retry 10 times
-          } while ($LASTEXITCODE -ne 0 -and ++$count -lt 10 -and (Start-Sleep 5 && $true))
       - name: Push to nuget.org
         if: env.PUSH_TO == 'all' || env.PUSH_TO == 'nuget'
         shell: pwsh
         run: dotnet nuget push '*.nupkg' -s https://api.nuget.org/v3/index.json -k ${{ secrets.NUGET_APIKEY }} --skip-duplicate
+
+      - name: Push to GitHub Packages
+        if: env.PUSH_TO == 'all' || env.PUSH_TO == 'github' || env.PUSH_TO == ''
+        shell: pwsh
+        run: dotnet nuget push '*.nupkg' -s https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json -k ${{ github.token }} --skip-duplicate
 
       - name: Add reaction to command comment
         uses: peter-evans/create-or-update-comment@v1
