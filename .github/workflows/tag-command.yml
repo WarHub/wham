@@ -20,8 +20,7 @@ jobs:
         with:
           fetch-depth: 0 # all history
           ref: ${{ github.event.client_payload.slash_command.ref }}
-      # - uses: actions/setup-dotnet@v1
-      - uses: ./.github/actions/install-dotnet
+      - uses: actions/setup-dotnet@v1
       - run: dotnet --info
       - run: dotnet tool restore
       - name: Add and push version tag
