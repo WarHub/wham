@@ -13,7 +13,7 @@ namespace WarHub.ArmouryModel.SourceAnalysis
         private ImmutableArray<CatalogueBaseNode>? roots;
 
         private GamesystemContext(
-            GamesystemNode gamesystem,
+            GamesystemNode? gamesystem,
             ImmutableArray<CatalogueNode> catalogues,
             ImmutableDictionary<CatalogueBaseNode, RootNodeClosure> closures,
             ImmutableArray<Diagnostic> diagnostics)
@@ -25,10 +25,14 @@ namespace WarHub.ArmouryModel.SourceAnalysis
             ReferenceInfoProvider = new ReferenceInfoProvider(this);
         }
 
-        public GamesystemNode Gamesystem { get; }
+        public GamesystemNode? Gamesystem { get; }
 
-        public ImmutableArray<CatalogueBaseNode> Roots
-            => roots ??= Catalogues.Prepend<CatalogueBaseNode>(Gamesystem).ToImmutableArray();
+        private ImmutableArray<CatalogueBaseNode> RootsCalc =>
+            ImmutableArray<CatalogueBaseNode>.CastUp(Catalogues) is var bases && Gamesystem is null
+            ? bases
+            : bases.Prepend(Gamesystem).ToImmutableArray();
+
+        public ImmutableArray<CatalogueBaseNode> Roots => roots ??= RootsCalc;
 
         public ImmutableArray<CatalogueNode> Catalogues { get; }
 
@@ -90,7 +94,7 @@ namespace WarHub.ArmouryModel.SourceAnalysis
                     "This method accepts only rootNodes of a single gamesystem.",
                     nameof(rootNodes));
             }
-            var datafileIndex = rootNodes.ToImmutableDictionary(x => x.Id);
+            var datafileIndex = rootNodes.ToImmutableDictionary(x => x.Id ?? "");
             var closures = rootNodes.ToImmutableDictionary(x => x, CreateClosure);
             var gamesystems = rootNodes.OfType<GamesystemNode>().ToImmutableArray();
             var catalogues = rootNodes.OfType<CatalogueNode>().ToImmutableArray();
@@ -140,20 +144,20 @@ namespace WarHub.ArmouryModel.SourceAnalysis
             public override string GetMessage() => $"Couldn't find datafile with id='{DatafileId}'.";
         }
 
-        private class DuplicateIdDiagnostic : Diagnostic
-        {
-            public DuplicateIdDiagnostic(SourceNode root, IGrouping<string, IIdentifiableNode> group)
-            {
-                Root = root;
-                Group = group;
-            }
+        // private class DuplicateIdDiagnostic : Diagnostic
+        // {
+        //     public DuplicateIdDiagnostic(SourceNode root, IGrouping<string, IIdentifiableNode> group)
+        //     {
+        //         Root = root;
+        //         Group = group;
+        //     }
 
-            public SourceNode Root { get; }
+        //     public SourceNode Root { get; }
 
-            public IGrouping<string, IIdentifiableNode> Group { get; }
+        //     public IGrouping<string, IIdentifiableNode> Group { get; }
 
-            public override string GetMessage() => $"Duplicated ID '{Group.Key}' (found {Group.Count()} times).";
-        }
+        //     public override string GetMessage() => $"Duplicated ID '{Group.Key}' (found {Group.Count()} times).";
+        // }
 
         private class GamesystemCountDiagnostic : Diagnostic
         {

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using WarHub.ArmouryModel.Source;
 
@@ -26,7 +27,7 @@ namespace WarHub.ArmouryModel.SourceAnalysis
             }
             return CreateError(new SimpleReferenceErrorInfo($"Failed to resolve targetId '{targetId}'."));
 
-            bool TryGetTarget(CatalogueBaseNode root, out TNode target)
+            bool TryGetTarget(CatalogueBaseNode root, [NotNullWhen(true)] out TNode? target)
             {
                 var list = getList(root);
                 var targets = list.NodeList.Where(x => x.Id == targetId);
@@ -54,7 +55,7 @@ namespace WarHub.ArmouryModel.SourceAnalysis
             }
             return CreateError(new SimpleReferenceErrorInfo($"Failed to resolve targetId '{targetId}'."));
 
-            bool TryGetTarget(out TNode target)
+            bool TryGetTarget([NotNullWhen(true)] out TNode? target)
             {
                 var targets = list.Where(x => x.Id == targetId);
                 target = targets.FirstOrDefault();
