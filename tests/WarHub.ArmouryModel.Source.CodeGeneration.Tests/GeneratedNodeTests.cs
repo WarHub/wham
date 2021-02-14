@@ -449,5 +449,17 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration.Tests
             var result = subject.WithNodes(subject.NodeList);
             result.Should().BeSameAs(subject);
         }
+
+        [Theory]
+        [InlineData(typeof(ItemListNode))]
+        [InlineData(typeof(ContainerListNode))]
+        public void WithNodes_has_covariant_return_type(Type listNodeType)
+        {
+            var withNodes = listNodeType.GetMethod("WithNodes");
+
+            withNodes.Should().NotBeNull();
+
+            withNodes?.ReturnType.Should().Be(listNodeType);
+        }
     }
 }
