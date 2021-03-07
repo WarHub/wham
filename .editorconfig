@@ -188,6 +188,9 @@ csharp_preserve_single_line_statements = true
 
 # diagnostics
 
+# CA1014: Mark assemblies with CLSCompliant
+dotnet_diagnostic.CA1014.severity = none
+
 # CA1303: Do not pass literals as localized parameters
 dotnet_diagnostic.CA1303.severity = none
 
