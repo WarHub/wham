@@ -3,6 +3,7 @@
   <PropertyGroup>
     <LangVersion>9</LangVersion>
     <Nullable>enable</Nullable>
+    <AnalysisMode>AllEnabledByDefault</AnalysisMode>
     <Authors>Amadeusz Sadowski</Authors>
     <Company>WarHub</Company>
     <Copyright>Copyright © Amadeusz Sadowski</Copyright>

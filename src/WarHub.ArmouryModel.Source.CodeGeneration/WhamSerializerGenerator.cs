@@ -42,7 +42,9 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                 "CA1822", // Mark members as static
             }.ToImmutableArray();
 
+#pragma warning disable RS1024 // Compare symbols correctly
         private HashSet<INamedTypeSymbol> UsedEnumSymbols { get; } = new HashSet<INamedTypeSymbol>(SymbolEqualityComparer.Default);
+#pragma warning restore RS1024 // Compare symbols correctly
 
         private NameSyntax InvariantCulture { get; } =
             ParseName("System.Globalization.CultureInfo.InvariantCulture");
@@ -183,7 +185,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                 .AddModifiers(SyntaxKind.ProtectedKeyword, SyntaxKind.OverrideKeyword)
                 .AddParameterListParameters(
                     Parameter(
-                        Identifier("objectToSerialize"))
+                        Identifier("o"))
                     .WithType(Object.Nullable()),
                     Parameter(
                         Identifier("writer"))
@@ -197,7 +199,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                     .Dot(
                         WriteRootName(root))
                     .Invoke(
-                        IdentifierName("objectToSerialize")
+                        IdentifierName("o")
                         .Cast(
                             root.CoreType.Nullable()))
                     .AsStatement());
