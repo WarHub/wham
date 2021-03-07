@@ -20,7 +20,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
         private const string XmlTextAttributeMetadataName = "System.Xml.Serialization.XmlTextAttribute";
         private const string XmlTypeAttributeMetadataName = "System.Xml.Serialization.XmlTypeAttribute";
         private const string ImmutableArrayMetadataName = "System.Collections.Immutable.ImmutableArray`1";
-        private const string WhamNodeCoreAttributeMetadataName = "WarHub.ArmouryModel.Source.WhamNodeCoreAttribute";
+        public const string WhamNodeCoreAttributeMetadataName = "WarHub.ArmouryModel.Source.WhamNodeCoreAttribute";
 
         public CoreDescriptorBuilder(
             INamedTypeSymbol immutableArraySymbol,
@@ -147,7 +147,8 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                 if (info is { })
                     return info;
             }
-            return symbol switch {
+            return symbol switch
+            {
                 IPropertySymbol { Type: var type } when IsImmutableArray(type) => XmlResolvedInfo.CreateArray(symbol.Name),
                 _ => XmlResolvedInfo.CreateElement(symbol.Name)
             };
@@ -181,9 +182,9 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                 }
             }
         }
+
         private static bool IsNamed(AttributeSyntax attribute, string name) =>
             attribute.Name is IdentifierNameSyntax id && (id.Identifier.Text == name || id.Identifier.Text == name + "Attribute");
-
 
         private bool IsImmutableArray(ISymbol symbol)
             => SymbolEqualityComparer.Default.Equals(ImmutableArraySymbol, symbol.IsDefinition ? symbol : symbol.OriginalDefinition);
