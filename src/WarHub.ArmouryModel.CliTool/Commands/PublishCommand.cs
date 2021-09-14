@@ -143,10 +143,16 @@ namespace WarHub.ArmouryModel.CliTool.Commands
 
         private static async Task<string> GetRepoNameFallbackAsync(IWorkspace workspace)
         {
-            var gst = (GamesystemNode)await workspace.Datafiles
-                .FirstOrDefault(x => x.DataKind == SourceKind.Gamesystem)
-                ?.GetDataAsync();
-            return gst?.Name ?? new DirectoryInfo(workspace.RootPath).Name;
+            var gstDatafile = workspace.Datafiles
+                .FirstOrDefault(x => x.DataKind == SourceKind.Gamesystem);
+            if (gstDatafile is not null)
+            {
+                var gst = (GamesystemNode)await gstDatafile.GetDataAsync();
+                return gst?.Name ?? GetFallbackName();
+            }
+            return GetFallbackName();
+
+            string GetFallbackName() => new DirectoryInfo(workspace.RootPath).Name;
         }
 
         private async Task PublishArtifactRepoDistributionAsync(IWorkspace workspace, Options options)
