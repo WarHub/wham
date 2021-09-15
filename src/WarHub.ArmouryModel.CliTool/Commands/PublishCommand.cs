@@ -15,16 +15,16 @@ namespace WarHub.ArmouryModel.CliTool.Commands
     {
         internal static readonly string[] ArtifactNames = new[] { "xml", "zip", "index", "bsi", "bsr" };
 
-        private record Options
+        private record Options(DirectoryInfo Source, DirectoryInfo Output, string RepoName, string Filename)
         {
-            public ImmutableArray<ArtifactType> Artifacts { get; init; }
-            public DirectoryInfo Source { get; init; }
-            public DirectoryInfo Output { get; init; }
-            public Uri Url { get; init; }
-            public ImmutableArray<Uri> AdditionalUrls { get; init; }
+            public ImmutableArray<ArtifactType> Artifacts { get; init; } = ImmutableArray<ArtifactType>.Empty;
+            public DirectoryInfo Source { get; init; } = Source;
+            public DirectoryInfo Output { get; init; } = Output;
+            public Uri? Url { get; init; }
+            public ImmutableArray<Uri> AdditionalUrls { get; init; } = ImmutableArray<Uri>.Empty;
             public bool UrlOnlyIndex { get; init; }
-            public string RepoName { get; init; }
-            public string Filename { get; init; }
+            public string RepoName { get; init; } = RepoName;
+            public string Filename { get; init; } = Filename;
         }
 
         public enum ArtifactType
@@ -41,12 +41,12 @@ namespace WarHub.ArmouryModel.CliTool.Commands
             IEnumerable<string> artifacts,
             DirectoryInfo source,
             DirectoryInfo output,
-            Uri url,
+            Uri? url,
             IEnumerable<Uri> additionalUrls,
             bool urlOnlyIndex,
-            string repoName,
-            string filename,
-            string verbosity)
+            string? repoName,
+            string? filename,
+            string? verbosity)
         {
             SetupLogger(verbosity);
 
@@ -77,16 +77,12 @@ namespace WarHub.ArmouryModel.CliTool.Commands
 
             var resolvedFilename = string.IsNullOrWhiteSpace(filename) ? source.Name : filename;
 
-            var options = new Options
+            var options = new Options(source, output, resolvedRepoName, resolvedFilename)
             {
                 Artifacts = artifactTypes,
-                Source = source,
-                Output = output,
                 Url = url,
                 AdditionalUrls = additionalUrls?.ToImmutableArray() ?? ImmutableArray<Uri>.Empty,
-                RepoName = resolvedRepoName,
-                Filename = resolvedFilename,
-                UrlOnlyIndex = urlOnlyIndex
+                UrlOnlyIndex = urlOnlyIndex,
             };
 
             foreach (var artifactType in options.Artifacts)
@@ -147,7 +143,7 @@ namespace WarHub.ArmouryModel.CliTool.Commands
                 .FirstOrDefault(x => x.DataKind == SourceKind.Gamesystem);
             if (gstDatafile is not null)
             {
-                var gst = (GamesystemNode)await gstDatafile.GetDataAsync();
+                var gst = (GamesystemNode?)await gstDatafile.GetDataAsync();
                 return gst?.Name ?? GetFallbackName();
             }
             return GetFallbackName();

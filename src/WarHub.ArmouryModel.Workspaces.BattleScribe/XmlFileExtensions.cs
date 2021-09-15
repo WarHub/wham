@@ -197,7 +197,7 @@ namespace WarHub.ArmouryModel.Workspaces.BattleScribe
             data.Serialize(entryStream);
         }
 
-        public static Func<Stream, SourceNode>? GetLoadingMethod(this XmlDocumentKind kind)
+        public static Func<Stream, SourceNode?>? GetLoadingMethod(this XmlDocumentKind kind)
         {
             return kind switch
             {

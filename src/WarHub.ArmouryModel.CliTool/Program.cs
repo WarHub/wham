@@ -48,7 +48,7 @@ namespace WarHub.ArmouryModel.CliTool
                         CreateVerbosityOption()
                     }
                     .Hidden()
-                    .Runs(typeof(ConvertXmlCommand).GetMethod(nameof(ConvertXmlCommand.RunAsync))))
+                    .Runs(typeof(ConvertXmlCommand).GetMethod(nameof(ConvertXmlCommand.RunAsync))!))
                 .AddCommand(
                     new Command("convertgitree", "[WIP] Converts Gitree directory structure into BattleScribe XML files.")
                     {
@@ -63,7 +63,7 @@ namespace WarHub.ArmouryModel.CliTool
                         CreateVerbosityOption()
                     }
                     .Hidden()
-                    .Runs(typeof(ConvertGitreeCommand).GetMethod(nameof(ConvertGitreeCommand.RunAsync))))
+                    .Runs(typeof(ConvertGitreeCommand).GetMethod(nameof(ConvertGitreeCommand.RunAsync))!))
                 .AddCommand(
                     new Command("publish", "Publishes given workspace in selected formats, by default a .bsr file.")
                     {
@@ -118,39 +118,24 @@ namespace WarHub.ArmouryModel.CliTool
                         },
                         CreateVerbosityOption()
                     }
-                    .Runs(typeof(PublishCommand).GetMethod(nameof(PublishCommand.RunAsync))))
+                    .Runs(typeof(PublishCommand).GetMethod(nameof(PublishCommand.RunAsync))!))
                 .Build();
         }
 
-        internal static LogEventLevel GetLogLevel(string verbosity)
+        internal static LogEventLevel GetLogLevel(string? verbosity) => verbosity switch
         {
-            switch (verbosity)
-            {
-                case "q":
-                case "quiet":
-                    return LogEventLevel.Error;
-                case "m":
-                case "minimal":
-                    return LogEventLevel.Warning;
-                case "n":
-                case "normal":
-                    return LogEventLevel.Information;
-                case "d":
-                case "detailed":
-                    return LogEventLevel.Debug;
-                case "diag":
-                case "diagnostic":
-                case "Verbose": /* legacy option */
-                    return LogEventLevel.Verbose;
-                default:
-                    return LogEventLevel.Information;
-            }
-        }
+            "q" or "quiet" => LogEventLevel.Error,
+            "m" or "minimal" => LogEventLevel.Warning,
+            "n" or "normal" => LogEventLevel.Information,
+            "d" or "detailed" => LogEventLevel.Debug,
+            "diag" or "diagnostic" or "Verbose" => LogEventLevel.Verbose,
+            _ => LogEventLevel.Information,
+        };
 
-        private static DirectoryInfo GetCurrentDirectoryInfo() => new DirectoryInfo(".");
+        private static DirectoryInfo GetCurrentDirectoryInfo() => new(".");
 
         private static Option CreateVerbosityOption() =>
-            new Option(new[] { "-v", "--verbosity" }, "Set the verbosity level.")
+            new(new[] { "-v", "--verbosity" }, "Set the verbosity level.")
             {
                 Argument = new Argument<string>().FromAmong(verbosityLevels)
             };
