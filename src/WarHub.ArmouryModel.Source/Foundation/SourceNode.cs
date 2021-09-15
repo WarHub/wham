@@ -224,7 +224,7 @@ namespace WarHub.ArmouryModel.Source
             }
         }
 
-        int CalculateIndexInParent()
+        private int CalculateIndexInParent()
         {
             if (Parent == null)
             {

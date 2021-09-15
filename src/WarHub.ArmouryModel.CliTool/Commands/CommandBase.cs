@@ -9,11 +9,11 @@ namespace WarHub.ArmouryModel.CliTool.Commands
 {
     public abstract class CommandBase
     {
-        protected Logger Log { get; private set; }
+        protected ILogger Log { get; private set; } = Logger.None;
 
-        public IConsole Console { get; set; }
+        public IConsole Console { get; set; } = new TestConsole();
 
-        protected Logger SetupLogger(string verbosity)
+        protected ILogger SetupLogger(string? verbosity)
         {
             var baseConfig = new LoggerConfiguration()
                 .MinimumLevel.Is(Program.GetLogLevel(verbosity));

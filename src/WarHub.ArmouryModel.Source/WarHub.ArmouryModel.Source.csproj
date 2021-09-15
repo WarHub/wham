@@ -2,7 +2,7 @@
   <Sdk Name="Microsoft.Build.CentralPackageVersions" />
 
   <PropertyGroup>
-    <TargetFramework>net5</TargetFramework>
+    <TargetFramework>$(MainTargetFramework)</TargetFramework>
     <Description>Provides data model for wargaming datafiles, such as BattleScribe. wham core library.</Description>
     <PackageTags>warhub armoury armourymodel wham battlescribe roster catalogue gamesystem cat catz gst gstz ros rosz datafile wh40k 40k bsdata battle scribe</PackageTags>
     <CatalogueXsdPath>../dataformat/xml/schema/latest/Catalogue.xsd</CatalogueXsdPath>

@@ -47,8 +47,7 @@ namespace WarHub.ArmouryModel.Source.Tests.XmlFormat
             var xmlns = rootElement.Info().Namespace;
             var schema = ReadSchema(rootElement, IgnoreEvent);
             schema.TargetNamespace.Should().Be(xmlns);
-            //schema.
-            schema.Elements.Names.Should().Contain(new[]
+            schema.Elements.Names.Cast<XmlQualifiedName>().Should().Contain(new[]
             {
                 new XmlQualifiedName("gameSystem", xmlns),
                 new XmlQualifiedName("catalogue", xmlns),

@@ -21,14 +21,14 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
         public void Execute(GeneratorExecutionContext context)
         {
             //System.Diagnostics.Debugger.Launch();
-            if (context.SyntaxReceiver is not SyntaxReceiver syntaxReceiver)
+            if (context.SyntaxContextReceiver is not SyntaxReceiver syntaxReceiver)
                 return;
 
             var parseOptions = context.ParseOptions;
             var descriptorBuilder = CoreDescriptorBuilder.Create(context.Compilation);
-            var coreSymbols = GetNodeCoreSymbols().ToHashSet();
 
-            var descriptors = coreSymbols
+            var descriptors = syntaxReceiver.WhamNodeCoreRecords
+                .Where(x => x.GetAttributes().Any(IsWhamNodeCoreAttribute))
                 .Select(x => descriptorBuilder.CreateDescriptor(x))
                 .OrderBy(x => x.RawModelName)
                 .ToImmutableArray();
@@ -36,31 +36,17 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
             foreach (var descriptor in descriptors)
             {
                 var compilationUnit = CreateSource(descriptor);
-                var sourceText = SyntaxTree(compilationUnit, parseOptions, encoding: Encoding.UTF8).GetText();
-                context.AddSource(descriptor.RawModelName, sourceText);
+                AddSource(descriptor.RawModelName, compilationUnit);
             }
 
             var serializerRoot = WhamSerializerGenerator.Generate(context.Compilation, descriptors);
-            var serializerSource = SyntaxTree(serializerRoot, parseOptions, encoding: Encoding.UTF8).GetText();
-            //var serializerSourceFilePath = System.Environment.GetFolderPath(System.Environment.SpecialFolder.UserProfile) + "/serializer.cs";
-            //using (var serializerWriter = System.IO.File.CreateText(serializerSourceFilePath))
-            //    serializerSource.Write(serializerWriter);
-            context.AddSource("WhamCoreXmlSerializer", serializerSource);
+            AddSource("WhamCoreXmlSerializer", serializerRoot);
 
-            IEnumerable<INamedTypeSymbol> GetNodeCoreSymbols()
-            {
-                foreach (var candidate in syntaxReceiver.Candidates)
-                {
-                    var model = context.Compilation.GetSemanticModel(candidate.SyntaxTree);
-                    var classSymbol = model.GetDeclaredSymbol(candidate);
-                    if (classSymbol?.GetAttributes().Any(IsWhamNodeCoreAttribute) == true)
-                    {
-                        yield return classSymbol;
-                    }
-                }
-                bool IsWhamNodeCoreAttribute(AttributeData data) =>
-                    SymbolEqualityComparer.Default.Equals(descriptorBuilder.WhamNodeCoreAttributeSymbol, data.AttributeClass);
-            }
+            bool IsWhamNodeCoreAttribute(AttributeData data) =>
+                SymbolEqualityComparer.Default.Equals(descriptorBuilder.WhamNodeCoreAttributeSymbol, data.AttributeClass);
+
+            void AddSource(string hintName, CompilationUnitSyntax compilationUnit) =>
+                context.AddSource(hintName, SyntaxTree(compilationUnit, context.ParseOptions, encoding: Encoding.UTF8).GetText());
         }
 
         private static CompilationUnitSyntax CreateSource(CoreDescriptor descriptor)
@@ -163,17 +149,19 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
             yield return NodeFactoryPartialGenerator.Generate(descriptor, default);
         }
 
-        private class SyntaxReceiver : ISyntaxReceiver
+        private class SyntaxReceiver : ISyntaxContextReceiver
         {
-            public List<RecordDeclarationSyntax> Candidates { get; } = new List<RecordDeclarationSyntax>();
+            public List<INamedTypeSymbol> WhamNodeCoreRecords { get; } = new List<INamedTypeSymbol>();
 
-            public void OnVisitSyntaxNode(SyntaxNode syntaxNode)
+            public void OnVisitSyntaxNode(GeneratorSyntaxContext context)
             {
-                if (syntaxNode.IsKind(SyntaxKind.RecordDeclaration)
-                    && syntaxNode is RecordDeclarationSyntax record
-                    && record.AttributeLists.Count > 0)
+                if (context.Node.IsKind(SyntaxKind.RecordDeclaration)
+                    && context.Node is RecordDeclarationSyntax record
+                    && record.AttributeLists.Count > 0
+                    && context.SemanticModel.GetDeclaredSymbol(record) is { } recordSymbol
+                    && recordSymbol.GetAttributes().Any(ad => ad.AttributeClass?.ToDisplayString() == CoreDescriptorBuilder.WhamNodeCoreAttributeMetadataName))
                 {
-                    Candidates.Add(record);
+                    WhamNodeCoreRecords.Add(recordSymbol);
                 }
             }
         }

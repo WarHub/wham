@@ -40,27 +40,27 @@ namespace WarHub.ArmouryModel.CliTool
             return command;
         }
 
-        public static Argument WithDefaultValue(this Argument argument, object defaultValue)
+        public static TOption WithArity<TOption>(this TOption option, IArgumentArity arity) where TOption : Option
         {
-            argument.SetDefaultValue(defaultValue);
-            return argument;
+            option.Arity = arity;
+            return option;
         }
 
-        public static Argument WithValidator(this Argument argument, ValidateSymbol<ArgumentResult> validator)
+        public static Option<T> WithDefaultValue<T>(this Option<T> option, T defaultValue)
         {
-            argument.AddValidator(validator);
-            return argument;
+            option.SetDefaultValue(defaultValue);
+            return option;
         }
 
-        public static Argument RequireAbsoluteUrl(this Argument argument)
+        public static TOption RequireAbsoluteUrl<TOption>(this TOption option) where TOption : Option
         {
-            return argument
-                .WithValidator(symbol =>
+            option.AddValidator(symbol =>
                     (from token in symbol.Tokens
                      let value = token.Value
                      where !Uri.TryCreate(value, UriKind.Absolute, out var _)
                      select $"Invalid URI '{value}'.")
                     .FirstOrDefault());
+            return option;
         }
     }
 }

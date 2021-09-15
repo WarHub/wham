@@ -55,7 +55,7 @@ namespace WarHub.ArmouryModel.Source
             public TNode GetNodeSlot(int index)
             {
                 if (index != 0)
-                    throw new IndexOutOfRangeException("Index was outside the bounds of the array");
+                    throw new ArgumentOutOfRangeException(nameof(index));
                 if (node == null)
                 {
                     Interlocked.CompareExchange(ref node, Cores[0].ToNode(Parent), null);
@@ -88,7 +88,7 @@ namespace WarHub.ArmouryModel.Source
                 {
                     0 => GetNode(ref node0, 0),
                     1 => GetNode(ref node1, 1),
-                    _ => throw new IndexOutOfRangeException("Index was outside the bounds of the array"),
+                    _ => throw new ArgumentOutOfRangeException(nameof(index)),
                 };
             }
 
@@ -128,7 +128,7 @@ namespace WarHub.ArmouryModel.Source
                     0 => GetNode(ref node0, 0),
                     1 => GetNode(ref node1, 1),
                     2 => GetNode(ref node2, 2),
-                    _ => throw new IndexOutOfRangeException("Index was outside the bounds of the array"),
+                    _ => throw new ArgumentOutOfRangeException(nameof(index)),
                 };
             }
 
