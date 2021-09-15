@@ -1,0 +1,21 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": ".NET Core Launch (console)",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build",
+      "program": "${workspaceFolder}/bin/WarHub.ArmouryModel.CliTool/Debug/net5.0/wham.dll",
+      "args": [],
+      "cwd": "${workspaceFolder}/src/WarHub.ArmouryModel.CliTool",
+      "console": "internalConsole",
+      "stopAtEntry": false
+    },
+    {
+      "name": ".NET Core Attach",
+      "type": "coreclr",
+      "request": "attach"
+    }
+  ]
+}
