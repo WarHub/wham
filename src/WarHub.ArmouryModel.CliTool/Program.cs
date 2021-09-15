@@ -37,37 +37,41 @@ namespace WarHub.ArmouryModel.CliTool
                 .AddCommand(
                     new Command("convertxml", "[WIP] Converts BattleScribe XML files into Gitree directory structure.")
                     {
-                        new Option(new[] { "-s", "--source" }, "Directory in which to look for XML files.")
-                        {
-                            Argument = new Argument<DirectoryInfo>(GetCurrentDirectoryInfo).ExistingOnly()
-                        },
-                        new Option(new[] { "-o", "--output" }, "Root directory in which to save Gitree files and folders.")
-                        {
-                            Argument = new Argument<DirectoryInfo>(GetCurrentDirectoryInfo).LegalFilePathsOnly()
-                        },
-                        CreateVerbosityOption()
+                        new Option<DirectoryInfo>(
+                            new[] { "-s", "--source" },
+                            GetCurrentDirectoryInfo,
+                            "Directory in which to look for XML files.")
+                            .ExistingOnly(),
+                        new Option<DirectoryInfo>(
+                            new[] { "-o", "--output" },
+                            GetCurrentDirectoryInfo,
+                            "Root directory in which to save Gitree files and folders.")
+                            .LegalFilePathsOnly(),
+                        CreateVerbosityOption(),
                     }
                     .Hidden()
                     .Runs(typeof(ConvertXmlCommand).GetMethod(nameof(ConvertXmlCommand.RunAsync))!))
                 .AddCommand(
                     new Command("convertgitree", "[WIP] Converts Gitree directory structure into BattleScribe XML files.")
                     {
-                        new Option(new[] { "-s", "--source" }, "Root directory of Gitree to convert.")
-                        {
-                            Argument = new Argument<DirectoryInfo>(GetCurrentDirectoryInfo).ExistingOnly()
-                        },
-                        new Option(new[] { "-o", "--output" }, "Directory in which to save XML files.")
-                        {
-                            Argument = new Argument<DirectoryInfo>(GetCurrentDirectoryInfo).LegalFilePathsOnly()
-                        },
-                        CreateVerbosityOption()
+                        new Option<DirectoryInfo>(
+                            new[] { "-s", "--source" },
+                            GetCurrentDirectoryInfo,
+                            "Root directory of Gitree to convert.")
+                            .ExistingOnly(),
+                        new Option<DirectoryInfo>(
+                            new[] { "-o", "--output" },
+                            GetCurrentDirectoryInfo,
+                            "Directory in which to save XML files.")
+                            .LegalFilePathsOnly(),
+                        CreateVerbosityOption(),
                     }
                     .Hidden()
                     .Runs(typeof(ConvertGitreeCommand).GetMethod(nameof(ConvertGitreeCommand.RunAsync))!))
                 .AddCommand(
                     new Command("publish", "Publishes given workspace in selected formats, by default a .bsr file.")
                     {
-                        new Option(
+                        new Option<string>(
                             new[] { "-a", "--artifacts" },
                             "Kinds of artifacts to publish to output (multiple values allowed):" +
                             " XML - uncompressed cat/gst XML files;" +
@@ -75,48 +79,39 @@ namespace WarHub.ArmouryModel.CliTool
                             " INDEX - index.xml datafile index for hosting on the web;" +
                             " BSI - index.bsi zipped datafile index for hosting on the web;" +
                             " BSR - zipped cat/gst datafile container with index.")
-                        {
-                            Argument = new Argument<string>()
-                            {
-                                Arity = ArgumentArity.OneOrMore
-                            }
+                            .WithArity(ArgumentArity.OneOrMore)
                             .WithDefaultValue("bsr")
-                            .FromAmong(PublishCommand.ArtifactNames)
-                        },
-                        new Option(new[] { "-s", "--source" }, "Directory in which to look for datafiles.")
-                        {
-                            Argument = new Argument<DirectoryInfo>(GetCurrentDirectoryInfo).ExistingOnly()
-                        },
-                        new Option(new[] { "-o", "--output" }, "Directory to save artifacts to.")
-                        {
-                            Argument = new Argument<DirectoryInfo>(GetCurrentDirectoryInfo).LegalFilePathsOnly()
-                        },
-                        new Option("--url", "Url of the index that gets included in indexes and bsr.")
-                        {
-                            Argument = new Argument<Uri>().RequireAbsoluteUrl()
-                        },
-                        new Option(
+                            .FromAmong(PublishCommand.ArtifactNames),
+                        new Option<DirectoryInfo>(
+                            new[] { "-s", "--source" },
+                            GetCurrentDirectoryInfo,
+                            "Directory in which to look for datafiles.")
+                            .ExistingOnly(),
+                        new Option<DirectoryInfo>(
+                            new[] { "-o", "--output" },
+                            GetCurrentDirectoryInfo,
+                            "Directory to save artifacts to.")
+                            .LegalFilePathsOnly(),
+                        new Option<Uri>(
+                            "--url",
+                            "Url of the index that gets included in indexes and bsr.")
+                            .RequireAbsoluteUrl(),
+                        new Option<string>(
                             "--repo-name",
                             "Repository name used in published indexes (includes bsr)." +
-                            " Default is name of the game system, or <source> folder name if no game system included.")
-                        {
-                            Argument = new Argument<string>()
-                        },
-                        new Option(
+                            " Default is name of the game system, or <source> folder name if no game system included."),
+                        new Option<string>(
                             new[] { "-f", "--filename" },
                             "Filename (without extension) of the output artifacts. Default is <source> folder name.")
-                        {
-                            Argument = new Argument<string>().LegalFilePathsOnly()
-                        },
-                        new Option("--url-only-index", "Don't include data index entries in published indexes (doesn't impact bsr index).")
-                        {
-                            Argument = new Argument<bool>()
-                        },
-                        new Option("--additional-urls", "Additional urls of index/bsr included in published indexes (doesn't impact bsr index).")
-                        {
-                            Argument = new Argument<Uri[]>().RequireAbsoluteUrl()
-                        },
-                        CreateVerbosityOption()
+                            .LegalFilePathsOnly(),
+                        new Option<bool>(
+                            "--url-only-index",
+                            "Don't include data index entries in published indexes (doesn't impact bsr index)."),
+                        new Option<Uri[]>(
+                            "--additional-urls",
+                            "Additional urls of index/bsr included in published indexes (doesn't impact bsr index).")
+                            .RequireAbsoluteUrl(),
+                        CreateVerbosityOption(),
                     }
                     .Runs(typeof(PublishCommand).GetMethod(nameof(PublishCommand.RunAsync))!))
                 .Build();
@@ -135,9 +130,9 @@ namespace WarHub.ArmouryModel.CliTool
         private static DirectoryInfo GetCurrentDirectoryInfo() => new(".");
 
         private static Option CreateVerbosityOption() =>
-            new(new[] { "-v", "--verbosity" }, "Set the verbosity level.")
-            {
-                Argument = new Argument<string>().FromAmong(verbosityLevels)
-            };
+            new Option<string>(
+                new[] { "-v", "--verbosity" },
+                "Set the verbosity level.")
+                .FromAmong(verbosityLevels);
     }
 }
