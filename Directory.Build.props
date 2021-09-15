@@ -18,6 +18,7 @@
     <IncludeSymbols>true</IncludeSymbols>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <MainTargetFramework>net5.0</MainTargetFramework>
   </PropertyGroup>
 
   <PropertyGroup>

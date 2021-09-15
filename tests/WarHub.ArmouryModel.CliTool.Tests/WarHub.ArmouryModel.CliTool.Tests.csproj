@@ -3,7 +3,7 @@
 
   <PropertyGroup>
     <Nullable>disable</Nullable>
-    <TargetFramework>net5</TargetFramework>
+    <TargetFramework>$(MainTargetFramework)</TargetFramework>
   </PropertyGroup>
 
   <ItemGroup>

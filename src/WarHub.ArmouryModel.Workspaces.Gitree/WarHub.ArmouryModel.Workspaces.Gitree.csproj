@@ -3,7 +3,7 @@
 
   <PropertyGroup>
     <Nullable>disable</Nullable>
-    <TargetFramework>net5</TargetFramework>
+    <TargetFramework>$(MainTargetFramework)</TargetFramework>
     <IsPackable>false</IsPackable>
     <Description>Implementations of wham ProjectModel for gitree format where directory and file structure is a part of datafile content, building up final datafiles from tiny files. It's mostly designed to work well with VCS such as git.</Description>
   </PropertyGroup>

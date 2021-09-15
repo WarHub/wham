@@ -2,7 +2,7 @@
   <Sdk Name="Microsoft.Build.CentralPackageVersions" />
 
   <PropertyGroup>
-    <TargetFramework>net5</TargetFramework>
+    <TargetFramework>$(MainTargetFramework)</TargetFramework>
     <Description>This library provides abstract API to operate on wham workspaces and their configuration (.whamproj configuration files). Types provided:
 * IDatafileInfo (and DatafileInfo)
 * IProjectConfigurationProvider (and ProjectConfigurationProviderBase, and Extensions)

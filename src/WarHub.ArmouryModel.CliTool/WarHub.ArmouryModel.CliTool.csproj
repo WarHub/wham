@@ -3,7 +3,7 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net5.0</TargetFramework>
+    <TargetFramework>$(MainTargetFramework)</TargetFramework>
     <PackAsTool>true</PackAsTool>
     <AssemblyName>wham</AssemblyName>
     <!-- Run on future runtimes - as a CLI tool, let's be user friendly. -->
