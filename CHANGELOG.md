@@ -10,8 +10,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - `ListNode<T>`-derived classes (e.g. `ItemListNode`) now have covariant return with self type
   in `WithNodes` method override (e.g. `ItemListNode ItemListNode.WithNodes(nodes)`). ([#133])
+- `wham publish` fixed to work on repositories with no `gst` file. ([#135])
   
 [#133]: https://github.com/WarHub/wham/pull/133
+[#135]: https://github.com/WarHub/wham/pull/135
 
 ## [0.12.0] - 2020-11-12
 
