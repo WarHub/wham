@@ -46,7 +46,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                 SymbolEqualityComparer.Default.Equals(descriptorBuilder.WhamNodeCoreAttributeSymbol, data.AttributeClass);
 
             void AddSource(string hintName, CompilationUnitSyntax compilationUnit) =>
-                context.AddSource(hintName, SyntaxTree(compilationUnit, context.ParseOptions, encoding: Encoding.UTF8).GetText());
+                context.AddSource(hintName, compilationUnit.GetText(Encoding.UTF8));
         }
 
         private static CompilationUnitSyntax CreateSource(CoreDescriptor descriptor)
