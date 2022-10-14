@@ -1,5 +1,5 @@
 {
-  "$schema": "https://raw.githubusercontent.com/AArnott/Nerdbank.GitVersioning/master/src/NerdBank.GitVersioning/version.schema.json",
+  "$schema": "https://raw.githubusercontent.com/dotnet/Nerdbank.GitVersioning/main/src/NerdBank.GitVersioning/version.schema.json",
   "version": "0.14.0-alpha.{height}",
   "versionHeightOffset": -1,
   "nuGetPackageVersion": {
@@ -7,6 +7,7 @@
   },
   "publicReleaseRefSpec": [
     "^refs/heads/master$",
+    "^refs/heads/main$",
     "^refs/heads/releases/v\\d+",
     "^refs/tags/v\\d+"
   ],
