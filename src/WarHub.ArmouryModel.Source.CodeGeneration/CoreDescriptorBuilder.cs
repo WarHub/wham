@@ -25,7 +25,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
         public CoreDescriptorBuilder(
             INamedTypeSymbol immutableArraySymbol,
             INamedTypeSymbol whamNodeCoreAttributeSymbol,
-            ImmutableDictionary<INamedTypeSymbol, Type> xmlAttributeSymbols)
+            ImmutableDictionary<ISymbol, Type> xmlAttributeSymbols)
         {
             ImmutableArraySymbol = immutableArraySymbol ?? throw new ArgumentNullException(nameof(immutableArraySymbol));
             WhamNodeCoreAttributeSymbol = whamNodeCoreAttributeSymbol ?? throw new ArgumentNullException(nameof(whamNodeCoreAttributeSymbol));
@@ -36,7 +36,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
 
         public INamedTypeSymbol WhamNodeCoreAttributeSymbol { get; }
 
-        public ImmutableDictionary<INamedTypeSymbol, Type> XmlAttributeSymbols { get; }
+        public ImmutableDictionary<ISymbol, Type> XmlAttributeSymbols { get; }
 
         public static CoreDescriptorBuilder Create(Compilation compilation)
         {
@@ -53,7 +53,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                 (MetadataName: XmlTypeAttributeMetadataName, Type: typeof(XmlTypeAttribute))
             }
             .Select(x => (Symbol: compilation.GetTypeByMetadataNameOrThrow(x.MetadataName), x.Type))
-            .ToImmutableDictionary(x => x.Symbol, x => x.Type);
+            .ToImmutableDictionary(x => x.Symbol, x => x.Type, (IEqualityComparer<ISymbol>)SymbolEqualityComparer.Default);
             return new CoreDescriptorBuilder(immutableArraySymbol, attributeSymbol, xmlAttributeSymbols);
         }
 
