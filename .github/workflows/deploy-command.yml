@@ -12,18 +12,18 @@ jobs:
     env:
       DOTNET_NOLOGO: 1
       Configuration: Release
-      PUSH_TAG: ${{ github.event.client_payload.slash_command.arg1 == 'tag' }}
+      PUSH_TAG: ${{ github.event.client_payload.slash_command.args.unnamed.arg1 == 'tag' }}
     steps:
       - name: Add deployment run link to command comment
-        uses: peter-evans/create-or-update-comment@v1
+        uses: peter-evans/create-or-update-comment@v2
         with:
           comment-id: ${{ github.event.client_payload.github.payload.comment.id }}
           body: "[Deployment run](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})"
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           fetch-depth: 0 # all history
-          ref: ${{ github.event.client_payload.slash_command.ref }}
-      - uses: actions/setup-dotnet@v1
+          ref: ${{ github.event.client_payload.slash_command.args.named.ref }}
+      - uses: actions/setup-dotnet@v3
       - run: dotnet --info
       - run: dotnet tool restore
       - run: dotnet nbgv get-version
@@ -43,12 +43,12 @@ jobs:
           Write-Host "::set-output name=tag::$v"
       - name: Add tag info to command comment
         if: env.PUSH_TAG == 'true'
-        uses: peter-evans/create-or-update-comment@v1
+        uses: peter-evans/create-or-update-comment@v2
         with:
           comment-id: ${{ github.event.client_payload.github.payload.comment.id }}
           body: "Pushed tag `${{ steps.tagpush.outputs.tag }}`"
       - name: Upload nugets to workflow artifacts
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: nugets
           path: bin/Packages/${{ env.Configuration }}
@@ -57,9 +57,9 @@ jobs:
     needs: pack
     env:
       DOTNET_NOLOGO: 1
-      PUSH_TO: ${{ github.event.client_payload.slash_command.env }}
+      PUSH_TO: ${{ github.event.client_payload.slash_command.args.named.env }}
     steps:
-      - uses: actions/download-artifact@v2
+      - uses: actions/download-artifact@v3
         with:
           name: nugets
 
@@ -74,7 +74,7 @@ jobs:
         run: dotnet nuget push '*.nupkg' -s https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json -k ${{ github.token }} --skip-duplicate
 
       - name: Add reaction to command comment
-        uses: peter-evans/create-or-update-comment@v1
+        uses: peter-evans/create-or-update-comment@v2
         with:
           comment-id: ${{ github.event.client_payload.github.payload.comment.id }}
           reactions: hooray

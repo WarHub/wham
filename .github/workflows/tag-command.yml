@@ -12,15 +12,15 @@ jobs:
       Configuration: Release
     steps:
       - name: Add run link to command comment
-        uses: peter-evans/create-or-update-comment@v1
+        uses: peter-evans/create-or-update-comment@v2
         with:
           comment-id: ${{ github.event.client_payload.github.payload.comment.id }}
           body: '[Deployment run](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})'
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           fetch-depth: 0 # all history
-          ref: ${{ github.event.client_payload.slash_command.ref }}
-      - uses: actions/setup-dotnet@v1
+          ref: ${{ github.event.client_payload.slash_command.args.named.ref }}
+      - uses: actions/setup-dotnet@v3
       - run: dotnet --info
       - run: dotnet tool restore
       - name: Add and push version tag
@@ -33,7 +33,7 @@ jobs:
           git push origin $v
           Write-Host "::set-output name=tag::$v"
       - name: Add tag info and reaction to command comment
-        uses: peter-evans/create-or-update-comment@v1
+        uses: peter-evans/create-or-update-comment@v2
         with:
           comment-id: ${{ github.event.client_payload.github.payload.comment.id }}
           body: 'Pushed tag `${{ steps.tagpush.outputs.tag }}`'
