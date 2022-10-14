@@ -1,9 +1,9 @@
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
   <PropertyGroup>
-    <LangVersion>9</LangVersion>
+    <LangVersion>latest</LangVersion>
     <Nullable>enable</Nullable>
-    <AnalysisMode>AllEnabledByDefault</AnalysisMode>
+    <AnalysisMode>All</AnalysisMode>
     <Authors>Amadeusz Sadowski</Authors>
     <Company>WarHub</Company>
     <Copyright>Copyright © Amadeusz Sadowski</Copyright>
@@ -18,7 +18,7 @@
     <IncludeSymbols>true</IncludeSymbols>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <MainTargetFramework>net5.0</MainTargetFramework>
+    <MainTargetFramework>net6.0</MainTargetFramework>
   </PropertyGroup>
 
   <PropertyGroup>
