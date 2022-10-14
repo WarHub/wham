@@ -6,7 +6,7 @@
       "type": "coreclr",
       "request": "launch",
       "preLaunchTask": "build",
-      "program": "${workspaceFolder}/bin/WarHub.ArmouryModel.CliTool/Debug/net5.0/wham.dll",
+      "program": "${workspaceFolder}/bin/WarHub.ArmouryModel.CliTool/Debug/net6.0/wham.dll",
       "args": [],
       "cwd": "${workspaceFolder}/src/WarHub.ArmouryModel.CliTool",
       "console": "internalConsole",
