@@ -4,6 +4,6 @@
     "rollForward": "feature"
   },
   "msbuild-sdks": {
-    "Microsoft.Build.CentralPackageVersions": "2.0.79"
+    "Microsoft.Build.CentralPackageVersions": "2.1.3"
   }
 }
