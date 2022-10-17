@@ -1,5 +1,5 @@
 name: Deploy
-# trigger by chatops '/deploy ref=master env=all tag'
+# trigger by chatops '/deploy ref=main env=all tag'
 # ref defaults to default repo branch
 # env defaults to github (possible: github, nuget, all)
 # tag if provided tags the ref with version from nbgv

@@ -1,5 +1,5 @@
 name: Tag
-# trigger by chatops '/tag ref=master'
+# trigger by chatops '/tag ref=main'
 # ref defaults to default repo branch
 on:
   repository_dispatch:

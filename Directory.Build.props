@@ -10,7 +10,7 @@
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
     <PackageProjectUrl>https://github.com/WarHub/wham</PackageProjectUrl>
-    <PackageReleaseNotes>https://github.com/WarHub/wham/blob/master/CHANGELOG.md</PackageReleaseNotes>
+    <PackageReleaseNotes>https://github.com/WarHub/wham/blob/main/CHANGELOG.md</PackageReleaseNotes>
     <PackageIconPath>$(MSBuildThisFileDirectory)docs/images/WarHub-logo.png</PackageIconPath>
     <PackageIcon>icon.png</PackageIcon>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>

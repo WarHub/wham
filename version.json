@@ -6,7 +6,6 @@
     "semVer": 2.0
   },
   "publicReleaseRefSpec": [
-    "^refs/heads/master$",
     "^refs/heads/main$",
     "^refs/heads/releases/v\\d+",
     "^refs/tags/v\\d+"

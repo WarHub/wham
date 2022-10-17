@@ -1,10 +1,8 @@
 # wham
 
 [![NuGet packages](https://img.shields.io/nuget/v/WarHub.ArmouryModel.Source.svg?logo=nuget)](https://www.nuget.org/profiles/warhub)
-[![CI GitHub Action](https://github.com/WarHub/wham/workflows/CI/badge.svg)](https://github.com/WarHub/wham/actions?query=workflow%3ACI+branch%3Amaster)
-[![Build Status](https://dev.azure.com/warhub/wham/_apis/build/status/WarHub.wham?branchName=master)](https://dev.azure.com/warhub/wham/_build/latest?definitionId=1&branchName=master)
-[![Join the chat at gitter!](https://img.shields.io/gitter/room/WarHub/wham.svg)](https://gitter.im/WarHub/wham?utm_source=badge&utm_medium=badge&utm_content=badge)
-[![License](https://img.shields.io/github/license/WarHub/wham.svg)](https://github.com/WarHub/wham/blob/master/LICENSE.md)
+[![CI GitHub Action](https://github.com/WarHub/wham/workflows/CI/badge.svg)](https://github.com/WarHub/wham/actions?query=workflow%3ACI+branch%3Amain)
+[![License](https://img.shields.io/github/license/WarHub/wham.svg)](https://github.com/WarHub/wham/blob/main/LICENSE.md)
 
 > `WarHub.ArmouryModel` library and `wham` tool
 
@@ -65,7 +63,7 @@ You can always run `wham -?` or `wham -h` or `wham [action] -?` to get help abou
 
 ## Development
 
-The development branch is the `master` branch. Stable releases are marked via `vX.Y.Z` tags.
+The development branch is the `main` branch. Stable releases are marked via `vX.Y.Z` tags.
 This project uses `Nerdbank.GitVersioning` package that automatically generates version numbers
 for assemblies and packages from git tree. It won't work if the git clone is *shallow* or otherwise
 incomplete.
