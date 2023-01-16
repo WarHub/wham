@@ -13,7 +13,7 @@
   </ItemGroup>
   
   <ItemGroup Label="Tests">
-    <PackageReference Update="FluentAssertions"          Version="6.8.0" />
+    <PackageReference Update="FluentAssertions"          Version="6.9.0" />
     <PackageReference Update="Microsoft.NET.Test.Sdk"    Version="17.3.2" />
     <PackageReference Update="NSubstitute"               Version="4.4.0" />
     <PackageReference Update="NSubstitute.Analyzers.CSharp" Version="1.0.15" PrivateAssets="all" />
