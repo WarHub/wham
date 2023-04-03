@@ -4,7 +4,7 @@
   <ItemGroup>
     <PackageReference Update="Microsoft.CodeAnalysis.CSharp" Version="4.3.1" PrivateAssets="all" />
     <PackageReference Update="Microsoft.CodeAnalysis.Analyzers" Version="3.3.3" PrivateAssets="all" />
-    <PackageReference Update="morelinq"                        Version="3.4.1" />
+    <PackageReference Update="morelinq"                        Version="3.4.2" />
     <PackageReference Update="Newtonsoft.Json"                 Version="13.0.3" />
     <PackageReference Update="Optional"                        Version="4.0.0" />
     <PackageReference Update="Serilog"                         Version="2.12.0" />
