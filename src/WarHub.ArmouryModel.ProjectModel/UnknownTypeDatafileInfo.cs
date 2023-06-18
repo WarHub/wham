@@ -1,4 +1,5 @@
 ﻿using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 using WarHub.ArmouryModel.Source;
 
@@ -10,10 +11,18 @@ namespace WarHub.ArmouryModel.ProjectModel
 
         public SourceKind DataKind => SourceKind.Unknown;
 
-        public SourceNode? Data => null;
+        public SourceNode? Node => null;
 
-        public Task<SourceNode?> GetDataAsync() => nullTask;
+        public SourceNode? GetData(CancellationToken cancellationToken = default) => null;
+
+        public Task<SourceNode?> GetDataAsync(CancellationToken cancellationToken = default) => nullTask;
 
         public string GetStorageName() => Path.GetFileNameWithoutExtension(Filepath);
+
+        public bool TryGetData(out SourceNode? node)
+        {
+            node = null;
+            return true;
+        }
     }
 }

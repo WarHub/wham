@@ -4,6 +4,7 @@ using System.Collections.Immutable;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using WarHub.ArmouryModel.ProjectModel;
 using WarHub.ArmouryModel.Source;
@@ -124,7 +125,7 @@ namespace WarHub.ArmouryModel.Workspaces.BattleScribe
 
         public static IDatafileInfo GetDatafileInfo(this FileInfo file)
         {
-            return (file.GetXmlDocumentKind()) switch
+            return file.GetXmlDocumentKind() switch
             {
                 XmlDocumentKind.Gamesystem => new LazyWeakXmlDatafileInfo(file.FullName, SourceKind.Gamesystem),
                 XmlDocumentKind.Catalogue => new LazyWeakXmlDatafileInfo(file.FullName, SourceKind.Catalogue),
@@ -140,33 +141,36 @@ namespace WarHub.ArmouryModel.Workspaces.BattleScribe
         /// <param name="stream">Stream of the <c>.bsr</c> file.</param>
         public static RepoDistribution ReadRepoDistribution(this Stream stream)
         {
-            using (var zip = new ZipArchive(stream))
-            {
-                var entries = zip.Entries
-                    .Select(LoadEntry)
-                    .Where(x => x != null)
-                    .ToImmutableArray();
-                var index = entries.OfType<IDatafileInfo<DataIndexNode>>().Single();
-                var datafiles = entries.OfType<IDatafileInfo<CatalogueBaseNode>>().ToImmutableArray();
-                return new RepoDistribution(index, datafiles);
-            }
+            using var zip = new ZipArchive(stream);
+            var entries = zip.Entries
+                .Select(LoadEntry)
+                .Where(x => x != null)
+                .ToImmutableArray();
+            var index = entries.OfType<IDatafileInfo<DataIndexNode>>().Single();
+            var datafiles = entries.OfType<IDatafileInfo<CatalogueBaseNode>>().ToImmutableArray();
+            return new RepoDistribution(index, datafiles);
 
             static IDatafileInfo LoadEntry(ZipArchiveEntry entry)
             {
                 using var entryStream = entry.Open();
                 // TODO log invalid data type
-                return entryStream.LoadSourceAuto(entry.Name);
+                var node = entryStream.LoadSourceAuto(entry.Name);
+                return DatafileInfo.Create(entry.Name, node);
             }
         }
 
-        public static async Task<T> GetDataOrThrowAsync<T>(this IDatafileInfo datafile)
+        public static async Task<T> GetDataOrThrowAsync<T>(this IDatafileInfo datafile, CancellationToken cancellationToken = default)
             where T : SourceNode
         {
-            return (T)await datafile.GetDataOrThrowAsync();
+            var node = await datafile.GetDataOrThrowAsync(cancellationToken);
+            return node as T ?? throw new InvalidOperationException($"Datafile '{datafile.Filepath}' has no readable data of type '{typeof(T).Name}'.");
         }
 
-        public static async Task<SourceNode> GetDataOrThrowAsync(this IDatafileInfo datafile) =>
-            (await datafile.GetDataAsync()) ?? throw new InvalidOperationException("Datafile has no data.");
+        public static async Task<SourceNode> GetDataOrThrowAsync(this IDatafileInfo datafile, CancellationToken cancellationToken = default)
+        {
+            var node = await datafile.GetDataAsync(cancellationToken);
+            return node ?? throw new InvalidOperationException($"Datafile '{datafile.Filepath}' has no readable data.");
+        }
 
         public static async Task WriteToAsync(this RepoDistribution repoDistribution, Stream stream)
         {
@@ -209,28 +213,28 @@ namespace WarHub.ArmouryModel.Workspaces.BattleScribe
             };
         }
 
-        public static IDatafileInfo LoadSourceAuto(this Stream stream, string filename)
+        public static bool IsXmlZipped(this XmlDocument document) => document.Kind.IsXmlZipped();
+
+        public static bool IsXmlZipped(this XmlDocumentKind kind)
+            => ZippedExtensions.Contains(kind.GetXmlFileExtension());
+
+        public static SourceNode? LoadSourceAuto(this Stream stream, string filename, CancellationToken cancellationToken = default)
         {
             var kind = filename.GetXmlDocumentKind();
-            var data = ZippedExtensions.Contains(Path.GetExtension(filename))
-                ? stream.LoadSourceZipped(kind)
-                : stream.LoadSource(kind);
-            return DatafileInfo.Create(filename, data);
+            var data = kind.IsXmlZipped()
+                ? stream.LoadSourceZipped(cancellationToken)
+                : stream.LoadSource(cancellationToken);
+            return data;
         }
 
-        public static IDatafileInfo LoadSourceFileAuto(this string path)
+        private static SourceNode? LoadSource(this Stream stream, CancellationToken cancellationToken = default)
         {
-            using var stream = File.OpenRead(path);
-            return stream.LoadSourceAuto(path);
+            return BattleScribeXml.LoadAuto(stream, MigrationMode.OnFailure, cancellationToken);
         }
 
-        public static SourceNode? LoadSource(this Stream stream, XmlDocumentKind kind)
+        private static SourceNode? LoadSourceZipped(this Stream stream, CancellationToken cancellationToken = default)
         {
-            return kind.GetLoadingMethod()?.Invoke(stream);
-        }
-
-        public static SourceNode? LoadSourceZipped(this Stream stream, XmlDocumentKind kind)
-        {
+            cancellationToken.ThrowIfCancellationRequested();
             using var archive = new ZipArchive(stream, ZipArchiveMode.Read, leaveOpen: true);
             if (archive.Entries.Count != 1)
             {
@@ -238,8 +242,9 @@ namespace WarHub.ArmouryModel.Workspaces.BattleScribe
                     "File is not a correct BattleScribe ZIP archive," +
                     $" contains {archive.Entries.Count} entries, expected 1.");
             }
+            cancellationToken.ThrowIfCancellationRequested();
             using var entryStream = archive.Entries[0].Open();
-            return entryStream.LoadSource(kind);
+            return BattleScribeXml.LoadAuto(entryStream, MigrationMode.OnFailure, cancellationToken);
         }
 
         public static IEnumerable<XmlDocument> GetDocuments(this XmlWorkspace workspace, params SourceKind[] kinds)

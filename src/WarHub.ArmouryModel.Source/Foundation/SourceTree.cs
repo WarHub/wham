@@ -22,7 +22,7 @@ namespace WarHub.ArmouryModel.Source
 
         public SourceTree WithRoot(SourceNode root)
         {
-            if (!(root is INodeWithCore<NodeCore> rootWithCore))
+            if (root is not INodeWithCore<NodeCore> rootWithCore)
             {
                 throw new ArgumentException(
                     "Tree root must be an " + nameof(INodeWithCore<NodeCore>),

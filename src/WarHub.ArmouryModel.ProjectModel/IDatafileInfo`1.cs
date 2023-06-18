@@ -5,13 +5,13 @@ namespace WarHub.ArmouryModel.ProjectModel
     /// <summary>
     /// Strongly typed datafile info instance with data available synchronously.
     /// </summary>
-    /// <typeparam name="TData"></typeparam>
-    public interface IDatafileInfo<out TData> : IDatafileInfo where TData : SourceNode
+    /// <typeparam name="TNode">Type of SourceNode being stored in this file.</typeparam>
+    public interface IDatafileInfo<out TNode> : IDatafileInfo where TNode : SourceNode
     {
         /// <summary>
         /// Type-parametrized and synchronous version of <see cref="IDatafileInfo.GetDataAsync"/>.
         /// </summary>
         /// <returns>Retrieved root node.</returns>
-        TData? Data { get; }
+        TNode? Node { get; }
     }
 }

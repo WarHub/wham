@@ -5,14 +5,14 @@ namespace WarHub.ArmouryModel.ProjectModel
 {
     public static class DatafileInfo
     {
-        public static IDatafileInfo<TData> Create<TData>(string filepath, TData? node) where TData : SourceNode
+        public static IDatafileInfo<TNode> Create<TNode>(string filepath, TNode? node) where TNode : SourceNode
         {
             if (node is null)
             {
-                return (IDatafileInfo<TData>)(IDatafileInfo<SourceNode>)new UnknownTypeDatafileInfo(filepath);
+                return (IDatafileInfo<TNode>)(IDatafileInfo<SourceNode>)new UnknownTypeDatafileInfo(filepath);
             }
             var visitor = new Visitor(filepath);
-            return visitor.Visit(node) as IDatafileInfo<TData> ?? throw new NotSupportedException("Unsupported root node.");
+            return visitor.Visit(node) as IDatafileInfo<TNode> ?? throw new NotSupportedException("Unsupported root node.");
         }
 
         private class Visitor : SourceVisitor<IDatafileInfo<SourceNode>>
@@ -24,9 +24,9 @@ namespace WarHub.ArmouryModel.ProjectModel
 
             private string Filepath { get; }
 
-            private DatafileInfo<TData> Create<TData>(TData node) where TData : SourceNode
+            private DatafileInfo<TNode> Create<TNode>(TNode node) where TNode : SourceNode
             {
-                return new DatafileInfo<TData>(Filepath, node);
+                return new DatafileInfo<TNode>(Filepath, node);
             }
 
             public override IDatafileInfo<SourceNode> DefaultVisit(SourceNode node) => Create(node);
