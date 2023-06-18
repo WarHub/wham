@@ -1,5 +1,8 @@
 ﻿namespace WarHub.ArmouryModel.Source.BattleScribe
 {
+    /// <summary>
+    /// Contains modes of migration when loading/deserializing data from BattleScribe files.
+    /// </summary>
     public enum MigrationMode
     {
         /// <summary>

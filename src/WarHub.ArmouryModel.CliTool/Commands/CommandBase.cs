@@ -1,5 +1,6 @@
 ﻿using System.CommandLine;
 using System.CommandLine.IO;
+using System.Globalization;
 using Serilog;
 using Serilog.Core;
 using Serilog.Events;
@@ -19,7 +20,7 @@ namespace WarHub.ArmouryModel.CliTool.Commands
                 .MinimumLevel.Is(Program.GetLogLevel(verbosity));
 
             var config = Console is SystemConsole ?
-                baseConfig.WriteTo.Console(theme: AnsiConsoleTheme.Code)
+                baseConfig.WriteTo.Console(theme: AnsiConsoleTheme.Code, formatProvider: CultureInfo.InvariantCulture)
                 : baseConfig.WriteTo.Sink(new TestConsoleSink(Console));
 
             return Log = config.CreateLogger();
@@ -36,7 +37,7 @@ namespace WarHub.ArmouryModel.CliTool.Commands
 
             public void Emit(LogEvent logEvent)
             {
-                Console.Out.WriteLine(logEvent.RenderMessage());
+                Console.Out.WriteLine(logEvent.RenderMessage(CultureInfo.InvariantCulture));
             }
         }
     }

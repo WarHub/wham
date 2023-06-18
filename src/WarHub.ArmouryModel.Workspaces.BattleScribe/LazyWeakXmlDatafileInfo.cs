@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 using WarHub.ArmouryModel.ProjectModel;
 using WarHub.ArmouryModel.Source;
@@ -20,24 +21,38 @@ namespace WarHub.ArmouryModel.Workspaces.BattleScribe
 
         private WeakReference<SourceNode?> WeakData { get; } = new WeakReference<SourceNode?>(null);
 
-        public async Task<SourceNode?> GetDataAsync()
+        public SourceNode? GetData(CancellationToken cancellationToken = default)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<SourceNode?> GetDataAsync(CancellationToken cancellationToken = default)
         {
             if (WeakData.TryGetTarget(out var cached))
             {
-                return cached;
+                return Task.FromResult<SourceNode?>(cached);
             }
-            var data = await ReadFileAsync();
+            var data = ReadFile(cancellationToken);
             WeakData.SetTarget(data);
-            return data;
+            return Task.FromResult(data);
         }
 
         public string GetStorageName() => Path.GetFileNameWithoutExtension(Filepath);
 
-        private async Task<SourceNode?> ReadFileAsync()
+        public bool TryGetData(out SourceNode? node) => WeakData.TryGetTarget(out node);
+
+        private SourceNode? ReadFile(CancellationToken cancellationToken = default)
         {
-            using var filestream = File.OpenRead(Filepath);
-            var datafile = filestream.LoadSourceAuto(Filepath);
-            return datafile is null ? null : await datafile.GetDataAsync();
+            try
+            {
+                using var filestream = File.OpenRead(Filepath);
+                var data = filestream.LoadSourceAuto(Filepath, cancellationToken);
+                return data;
+            }
+            catch (Exception e)
+            {
+                throw new InvalidOperationException($"Failed to read file {Filepath}", e);
+            }
         }
     }
 }

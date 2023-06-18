@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Threading;
+using System.Threading.Tasks;
 using WarHub.ArmouryModel.Source;
 
 namespace WarHub.ArmouryModel.ProjectModel
@@ -23,7 +24,22 @@ namespace WarHub.ArmouryModel.ProjectModel
         /// Retrieves root <see cref="SourceNode"/> of the data file. May cause parsing.
         /// </summary>
         /// <returns>Retrieved root node.</returns>
-        Task<SourceNode?> GetDataAsync();
+        Task<SourceNode?> GetDataAsync(CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Retrieves root <see cref="SourceNode"/> of the data file. May cause parsing.
+        /// Blocking method.
+        /// </summary>
+        /// <returns>Retrieved root node.</returns>
+        SourceNode? GetData(CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Attempts to retrieve root <see cref="SourceNode"/> of the data file
+        /// without causing parsing. Returns true if successful.
+        /// </summary>
+        /// <param name="node">Retrieved node if method returned <see langword="true"/>, <see langword="null"/> otherwise.</param>
+        /// <returns> <see langword="true"/> when successful, false otherwise.</returns>
+        bool TryGetData(out SourceNode? node);
 
         /// <summary>
         /// Gets a name usable in file storage, with no extensions.

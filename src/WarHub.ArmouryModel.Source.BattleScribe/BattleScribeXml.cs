@@ -1,4 +1,5 @@
 ﻿using System.IO;
+using System.Threading;
 
 namespace WarHub.ArmouryModel.Source.BattleScribe
 {
@@ -90,6 +91,19 @@ namespace WarHub.ArmouryModel.Source.BattleScribe
         public static DataIndexNode? LoadDataIndex(Stream stream)
         {
             return stream.DeserializeDataIndex();
+        }
+
+        /// <summary>
+        /// Loads BattleScribe object from (unzipped) .xml file <paramref name="stream"/>.
+        /// </summary>
+        /// <param name="stream">Stream of XML object content.</param>
+        /// <param name="mode">Mode of migration.</param>
+        /// <param name="cancellationToken"></param>
+        /// <returns>Any node data model.</returns>
+        public static SourceNode? LoadAuto(Stream stream, MigrationMode mode = MigrationMode.None, CancellationToken cancellationToken = default)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            return DataVersionManagement.DeserializeAuto(stream, mode, cancellationToken);
         }
     }
 }

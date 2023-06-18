@@ -50,10 +50,10 @@ namespace WarHub.ArmouryModel.Workspaces.BattleScribe.Tests
             await original.WriteToAsync(memory);
             memory.Position = 0;
             var read = memory.ReadRepoDistribution();
-            Assert.Equal(DataIndexName, read.Index.Data!.Name);
+            Assert.Equal(DataIndexName, read.Index.Node!.Name);
             Assert.True(
                 read.Datafiles
-                .Select(x => x.Data!.Id)
+                .Select(x => x.Node!.Id)
                 .ToHashSet()
                 .SetEquals(new[] { gstId, catId1, catId2 }));
         }
