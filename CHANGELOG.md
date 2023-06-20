@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - deps: update dependencies and build tools. ([#140])
 - refactor: simplify getting `SourceText` in source generator. First-time contribution from [@Neme12](https://github.com/Neme12). Thanks you! ([#138])
 - rename default branch to `main`.
+- build: use .NET 7 SDK
 
 [#138]: https://github.com/WarHub/wham/pull/138
 [#140]: https://github.com/WarHub/wham/pull/140

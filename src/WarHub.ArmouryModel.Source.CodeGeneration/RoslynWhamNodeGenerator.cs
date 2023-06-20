@@ -53,7 +53,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
         {
             var declaredUsings = descriptor.TypeSymbol.DeclaringSyntaxReferences[0].GetSyntax().SyntaxTree.GetCompilationUnitRoot().Usings;
             var usings = RequiredUsings.AddRange(
-                declaredUsings.Where(x => !RequiredNamespaces.Contains(x.Name.ToString())));
+                declaredUsings.Where(x => x.Name is { } name && !RequiredNamespaces.Contains(name.ToString())));
             var generatedMembers = List<MemberDeclarationSyntax>();
             generatedMembers = generatedMembers.AddRange(GenerateCorePartials(descriptor));
             generatedMembers = generatedMembers.AddRange(GenerateNodePartials(descriptor));
