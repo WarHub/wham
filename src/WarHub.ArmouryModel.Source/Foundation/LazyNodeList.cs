@@ -36,7 +36,7 @@ namespace WarHub.ArmouryModel.Source
             return value;
         }
 
-        private class OneElementList : IContainer<TNode>, INodeListWithCoreArray<TNode, TCore>
+        private sealed class OneElementList : IContainer<TNode>, INodeListWithCoreArray<TNode, TCore>
         {
             public OneElementList(ImmutableArray<TCore> cores, SourceNode? parent)
             {
@@ -65,7 +65,7 @@ namespace WarHub.ArmouryModel.Source
             }
         }
 
-        private class TwoElementList : IContainer<TNode>, INodeListWithCoreArray<TNode, TCore>
+        private sealed class TwoElementList : IContainer<TNode>, INodeListWithCoreArray<TNode, TCore>
         {
             public TwoElementList(ImmutableArray<TCore> cores, SourceNode? parent)
             {
@@ -103,7 +103,7 @@ namespace WarHub.ArmouryModel.Source
             }
         }
 
-        private class ThreeElementList : IContainer<TNode>, INodeListWithCoreArray<TNode, TCore>
+        private sealed class ThreeElementList : IContainer<TNode>, INodeListWithCoreArray<TNode, TCore>
         {
             public ThreeElementList(ImmutableArray<TCore> cores, SourceNode? parent)
             {

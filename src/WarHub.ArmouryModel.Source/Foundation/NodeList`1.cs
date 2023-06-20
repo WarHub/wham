@@ -102,7 +102,7 @@ namespace WarHub.ArmouryModel.Source
             return new NodeList<SourceNode>(nodeList.Container);
         }
 
-        private class SliceContainerView : IContainer<TNode>
+        private sealed class SliceContainerView : IContainer<TNode>
         {
             public SliceContainerView(IContainer<TNode> container, int start, int count)
             {

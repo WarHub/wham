@@ -26,7 +26,7 @@ namespace WarHub.ArmouryModel.CliTool.Commands
             return Log = config.CreateLogger();
         }
 
-        private class TestConsoleSink : ILogEventSink
+        private sealed class TestConsoleSink : ILogEventSink
         {
             public TestConsoleSink(IConsole console)
             {

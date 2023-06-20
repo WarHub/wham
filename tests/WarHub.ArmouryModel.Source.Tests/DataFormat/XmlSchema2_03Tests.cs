@@ -196,7 +196,7 @@ spanning multiple lines</readme>
             messages.Should().BeEmpty();
         }
 
-        private class CommentRewriter : SourceRewriter
+        private sealed class CommentRewriter : SourceRewriter
         {
             public override SourceNode? Visit(SourceNode? node) =>
                 base.Visit(node is CommentableNode com ? com.WithComment("txt") : node);
