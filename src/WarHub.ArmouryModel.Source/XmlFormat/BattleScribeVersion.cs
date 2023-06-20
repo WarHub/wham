@@ -5,7 +5,7 @@ using System.Text.RegularExpressions;
 
 namespace WarHub.ArmouryModel.Source.XmlFormat
 {
-    public sealed class BattleScribeVersion : IComparable<BattleScribeVersion>, IEquatable<BattleScribeVersion>
+    public sealed partial class BattleScribeVersion : IComparable<BattleScribeVersion>, IEquatable<BattleScribeVersion>
     {
         private BattleScribeVersion(int major, int minor, string? suffix)
         {
@@ -57,7 +57,7 @@ namespace WarHub.ArmouryModel.Source.XmlFormat
 
         public static BattleScribeVersion Parse(string version)
         {
-            var match = Regex.Match(version, @"^(\d+)\.(\d+)(.*)$");
+            var match = BSVersionRegex().Match(version);
             if (match == null || match.Groups.Count != 4)
             {
                 throw new FormatException("Invalid BattleScribe data format");
@@ -97,17 +97,17 @@ namespace WarHub.ArmouryModel.Source.XmlFormat
         public override int GetHashCode()
         {
             var hashCode = -1092680650;
-            hashCode = (hashCode * -1521134295) + Major.GetHashCode();
-            hashCode = (hashCode * -1521134295) + Minor.GetHashCode();
+            hashCode = hashCode * -1521134295 + Major.GetHashCode();
+            hashCode = hashCode * -1521134295 + Minor.GetHashCode();
             // reason: this is analyzer bug, string.GetHashCode is invariant by default
 #pragma warning disable CA1307 // Specify StringComparison
-            hashCode = (hashCode * -1521134295) + Suffix?.GetHashCode() ?? 0;
+            hashCode = hashCode * -1521134295 + Suffix?.GetHashCode() ?? 0;
 #pragma warning restore CA1307 // Specify StringComparison
             return hashCode;
         }
 
         public static int Compare(BattleScribeVersion? left, BattleScribeVersion? right)
-            => left is null ? (right is null ? 0 : -1) : left.CompareTo(right);
+            => left is null ? right is null ? 0 : -1 : left.CompareTo(right);
 
         public static bool Equals(BattleScribeVersion? left, BattleScribeVersion? right)
             => left is null ? right is null : left.Equals(right);
@@ -129,5 +129,8 @@ namespace WarHub.ArmouryModel.Source.XmlFormat
 
         public static bool operator !=(BattleScribeVersion? left, BattleScribeVersion? right)
             => !(left == right);
+
+        [GeneratedRegex(@"^(\d+)\.(\d+)(.*)$")]
+        private static partial Regex BSVersionRegex();
     }
 }

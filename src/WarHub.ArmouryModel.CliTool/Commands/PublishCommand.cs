@@ -15,7 +15,7 @@ namespace WarHub.ArmouryModel.CliTool.Commands
     {
         internal static readonly string[] ArtifactNames = new[] { "xml", "zip", "index", "bsi", "bsr" };
 
-        private record Options(DirectoryInfo Source, DirectoryInfo Output, string RepoName, string Filename)
+        private sealed record Options(DirectoryInfo Source, DirectoryInfo Output, string RepoName, string Filename)
         {
             public ImmutableArray<ArtifactType> Artifacts { get; init; } = ImmutableArray<ArtifactType>.Empty;
             public DirectoryInfo Source { get; init; } = Source;

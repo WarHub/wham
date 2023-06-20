@@ -23,7 +23,7 @@ namespace WarHub.ArmouryModel.Source.BattleScribe
         /// </summary>
         public static BattleScribeXmlSerializer Instance => LazyInstance.Value;
 
-        private class ElementCache
+        private sealed class ElementCache
         {
             public XmlSerializer? Serializer;
             public XmlSerializerNamespaces? Namespaces;

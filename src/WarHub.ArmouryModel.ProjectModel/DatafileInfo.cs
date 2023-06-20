@@ -15,7 +15,7 @@ namespace WarHub.ArmouryModel.ProjectModel
             return visitor.Visit(node) as IDatafileInfo<TNode> ?? throw new NotSupportedException("Unsupported root node.");
         }
 
-        private class Visitor : SourceVisitor<IDatafileInfo<SourceNode>>
+        private sealed class Visitor : SourceVisitor<IDatafileInfo<SourceNode>>
         {
             public Visitor(string filepath)
             {

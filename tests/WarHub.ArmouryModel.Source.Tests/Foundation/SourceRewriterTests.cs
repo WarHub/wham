@@ -64,11 +64,11 @@ namespace WarHub.ArmouryModel.Source.Tests.Foundation
         }
     }
 
-    internal class IdentityRewriter : SourceRewriter
+    internal sealed class IdentityRewriter : SourceRewriter
     {
     }
 
-    internal class LambdaRewriter : SourceRewriter
+    internal sealed class LambdaRewriter : SourceRewriter
     {
         private readonly Func<SourceNode?, SourceNode?> selector;
 

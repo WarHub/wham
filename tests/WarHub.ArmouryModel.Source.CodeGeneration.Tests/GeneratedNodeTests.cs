@@ -233,7 +233,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration.Tests
             var root = EmptyRootNode
                 .AddLeftContainers(OneItemContainerPackage.CreateContainer().WithId(Container1Id))
                 .AddRightContainers(OneItemContainerPackage.CreateContainer().WithId(Container2Id));
-            var children = root.Children();
+            var children = root.Children().ToList();
 
             Assert.Collection(children,
                 x => Assert.IsType<ContainerListNode>(x),
