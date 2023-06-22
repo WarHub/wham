@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Threading;
 
 namespace WarHub.ArmouryModel.Source
 {
@@ -15,8 +16,10 @@ namespace WarHub.ArmouryModel.Source
         protected SourceNode(SourceNode? parent)
         {
             Parent = parent;
-            Tree = parent?.Tree;
+            treeCore = parent?.Tree;
         }
+
+        private SourceTree? treeCore;
 
         // this should be private but has to be also set in NodeList<TNode> when creating the node
         // TODO consider a better approach with either eager initialization in ctor
@@ -28,7 +31,46 @@ namespace WarHub.ArmouryModel.Source
         /// </summary>
         public SourceNode? Parent { get; }
 
-        internal SourceTree? Tree { get; set; }
+        /// <summary>
+        /// Gets the tree this node is associated with, if any.
+        /// </summary>
+        public SourceTree? Tree => treeCore ??= Parent?.Tree;
+
+        /// <summary>
+        /// Get a node associated with the given tree.
+        /// If this node cannot be associated (e.g. has a parent, is already associated),
+        /// node is cloned and the clone is associated with the tree.
+        /// The operation is thread-safe.
+        /// </summary>
+        /// <param name="tree">The tree to associated with this node.</param>
+        /// <returns>The node (original or cloned) that was associated with the <paramref name="tree"/>.</returns>
+        /// <exception cref="InvalidOperationException">When this node is not a core-backed node and cloning is required.</exception>
+        internal SourceNode WithTree(SourceTree tree)
+        {
+            var currentTree = Tree;
+            if (ReferenceEquals(currentTree, tree))
+            {
+                return this;
+            }
+            if (currentTree is null && Parent is null)
+            {
+                // it's root with no tree, we can assign
+                if (Interlocked.CompareExchange(ref treeCore, tree, null) is null)
+                {
+                    return this;
+                }
+            }
+            // wasn't already set, wasn't null and set, copy node and assign
+            if (this is not INodeWithCore<NodeCore> { Core: { } core })
+            {
+                throw new InvalidOperationException(
+                    "Tree root must be an " + nameof(INodeWithCore<NodeCore>));
+            }
+            var nodeClone = core.ToNode();
+            // this clone isn't yet accessible by outside world, so there's no need for interlocked
+            nodeClone.treeCore = tree;
+            return nodeClone;
+        }
 
         /// <summary>
         /// Gets the kind of this node.
