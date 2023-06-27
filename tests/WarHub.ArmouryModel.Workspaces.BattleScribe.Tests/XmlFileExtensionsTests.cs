@@ -18,7 +18,7 @@ namespace WarHub.ArmouryModel.Workspaces.BattleScribe.Tests
         {
             const string RepoFilename = "Files/repo.bsr";
             using var fileStream = File.OpenRead(RepoFilename);
-            var repo = fileStream.ReadRepoDistribution();
+            var repo = XmlFileExtensions.ReadRepoDistribution(fileStream);
             Assert.Equal(DataIndexFilename, repo.Index.Filepath);
             Assert.Equal(
                 "A_Song_Of_Ice_and_Fire_Miniatures_Game.gst",
@@ -49,7 +49,7 @@ namespace WarHub.ArmouryModel.Workspaces.BattleScribe.Tests
             using var memory = new MemoryStream();
             await original.WriteToAsync(memory);
             memory.Position = 0;
-            var read = memory.ReadRepoDistribution();
+            var read = XmlFileExtensions.ReadRepoDistribution(memory);
             Assert.Equal(DataIndexName, read.Index.Node!.Name);
             Assert.True(
                 read.Datafiles
