@@ -40,7 +40,7 @@ namespace WarHub.ArmouryModel.Workspaces.BattleScribe
 
         public static XmlDocument Create(IDatafileInfo datafileInfo, XmlWorkspace? workspace = null)
         {
-            return new XmlDocument(datafileInfo, datafileInfo.Filepath.GetXmlDocumentKind(), workspace);
+            return new XmlDocument(datafileInfo, datafileInfo.DataKind.GetXmlDocumentKindOrUnknown(), workspace);
         }
     }
 }

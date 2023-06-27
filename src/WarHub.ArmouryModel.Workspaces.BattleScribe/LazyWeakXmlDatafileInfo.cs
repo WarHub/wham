@@ -45,7 +45,7 @@ namespace WarHub.ArmouryModel.Workspaces.BattleScribe
             try
             {
                 using var filestream = File.OpenRead(Filepath);
-                var data = filestream.LoadSourceAuto(Filepath, cancellationToken);
+                var data = XmlFileExtensions.LoadSourceAuto(filestream, Filepath, cancellationToken);
                 return data ?? throw new InvalidOperationException($"Data is 'null' in file {Filepath}");
             }
             catch (Exception e)
