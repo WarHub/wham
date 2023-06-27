@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
 using WarHub.ArmouryModel.Source;
@@ -7,22 +8,22 @@ namespace WarHub.ArmouryModel.ProjectModel
 {
     public record UnknownTypeDatafileInfo(string Filepath) : IDatafileInfo, IDatafileInfo<SourceNode>
     {
-        private static readonly Task<SourceNode?> nullTask = Task.FromResult<SourceNode?>(null);
-
         public SourceKind DataKind => SourceKind.Unknown;
 
-        public SourceNode? Node => null;
+        public SourceNode Node => throw new InvalidOperationException("There is no data for Unknown datafile.");
 
-        public SourceNode? GetData(CancellationToken cancellationToken = default) => null;
+        public SourceNode GetData(CancellationToken cancellationToken = default) => Node;
 
-        public Task<SourceNode?> GetDataAsync(CancellationToken cancellationToken = default) => nullTask;
+        public Task<SourceNode> GetDataAsync(CancellationToken cancellationToken = default)
+        {
+            var node = Node;
+            return Task.FromResult(node);
+        }
 
-        public string GetStorageName() => Path.GetFileNameWithoutExtension(Filepath);
-
-        public bool TryGetData(out SourceNode? node)
+        public bool TryGetData([NotNullWhen(true)] out SourceNode? node)
         {
             node = null;
-            return true;
+            return false;
         }
     }
 }

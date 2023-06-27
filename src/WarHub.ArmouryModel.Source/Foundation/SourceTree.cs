@@ -1,4 +1,5 @@
-﻿using System.Threading;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace WarHub.ArmouryModel.Source
@@ -7,7 +8,7 @@ namespace WarHub.ArmouryModel.Source
     {
         public abstract string? FilePath { get; }
 
-        public virtual bool TryGetRoot(out SourceNode root)
+        public virtual bool TryGetRoot([NotNullWhen(true)] out SourceNode? root)
         {
             root = GetRoot();
             return true;
@@ -49,7 +50,7 @@ namespace WarHub.ArmouryModel.Source
 
             public override Location GetLocation(TextSpan span)
             {
-                return new SourceLocation(this, span);
+                return Location.Create(this, span);
             }
 
             public override SourceNode GetRoot(CancellationToken cancellationToken = default) => root;

@@ -1,13 +1,12 @@
-﻿using System.IO;
+﻿using System.Threading;
 using System.Threading.Tasks;
 using WarHub.ArmouryModel.ProjectModel;
 using WarHub.ArmouryModel.Source;
 
 namespace WarHub.ArmouryModel.Workspaces.BattleScribe
 {
-#pragma warning disable CS1587 // XML comment is not placed on a valid language element
-#pragma warning disable CA1801 // Parameter x of method .ctor is never used. Remove the parameter or use it in the method body.
     public record XmlDocument(
+#pragma warning disable CS1587 // XML comment is not placed on a valid language element
         /// <summary>
         /// Gets the kind of this document.
         /// </summary>
@@ -20,9 +19,8 @@ namespace WarHub.ArmouryModel.Workspaces.BattleScribe
         /// Gets the parent workspace of this document.
         /// </summary>
         XmlWorkspace? Workspace = null)
-    {
 #pragma warning restore CS1587
-#pragma warning restore CA1801
+    {
         /// <summary>
         /// Gets the filepath of this document.
         /// </summary>
@@ -31,13 +29,14 @@ namespace WarHub.ArmouryModel.Workspaces.BattleScribe
         /// <summary>
         /// Gets the filename without file extension.
         /// </summary>
-        public string Name => Path.GetFileNameWithoutExtension(Filepath);
+        public string Name => DatafileInfo.GetStorageName();
 
         /// <summary>
         /// Gets the root node of the document. May cause deserialization.
         /// </summary>
         /// <returns></returns>
-        public Task<SourceNode?> GetRootAsync() => DatafileInfo.GetDataAsync();
+        public Task<SourceNode> GetRootAsync(CancellationToken cancellationToken = default) =>
+            DatafileInfo.GetDataAsync(cancellationToken);
 
         public static XmlDocument Create(IDatafileInfo datafileInfo, XmlWorkspace? workspace = null)
         {
