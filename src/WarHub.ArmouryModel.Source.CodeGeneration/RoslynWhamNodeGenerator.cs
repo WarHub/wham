@@ -61,7 +61,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                CompilationUnit()
                .AddUsings(usings.ToArray())
                .AddMembers(
-                   NamespaceDeclaration(
+                   FileScopedNamespaceDeclaration(
                        ParseName(descriptor.TypeSymbol.ContainingNamespace.ToDisplayString()))
                    .WithMembers(generatedMembers))
                .WithLeadingTrivia(
@@ -138,11 +138,11 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
             yield return NodeExtensionsGenerator.Generate(descriptor, default);
             yield return CollectionConversionExtensionsPartialGenerator.Generate(descriptor, default);
             yield return NodeConvenienceMethodsGenerator.Generate(descriptor, default);
-            yield return NodeAcceptSourceVisitorPartialGenerator.Generate(descriptor, default);
             if (descriptor.TypeSymbol.IsAbstract)
             {
                 yield break;
             }
+            yield return NodeAcceptSourceVisitorPartialGenerator.Generate(descriptor, default);
             yield return ListNodePartialGenerator.Generate(descriptor, default);
             yield return SourceVisitorVisitPartialGenerator.Generate(descriptor, default);
             yield return SourceVisitorGenericVisitPartialGenerator.Generate(descriptor, default);

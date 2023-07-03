@@ -11,12 +11,12 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
     {
         protected CoreChildBase(
             IPropertySymbol symbol,
-            bool isInherited,
+            INamedTypeSymbol parent,
             ImmutableArray<AttributeListSyntax> xmlAttributeLists,
             XmlResolvedInfo xml)
         {
             Symbol = symbol;
-            IsInherited = isInherited;
+            Parent = parent;
             XmlAttributeLists = xmlAttributeLists;
             Xml = xml;
         }
@@ -24,14 +24,14 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
         public IPropertySymbol Symbol { get; }
 
         /// <summary>
-        /// Gets true if this property was declared in descriptor's type, not inherited.
+        /// Gets the Core type that this is a child of.
         /// </summary>
-        public bool IsDeclared => !IsInherited;
+        public INamedTypeSymbol Parent { get; }
 
         /// <summary>
-        /// Gets true if this property was inherited, not declared in descriptor's type.
+        /// Gets true if this property was declared in descriptor's type, not inherited.
         /// </summary>
-        public bool IsInherited { get; }
+        public bool IsDeclared => Symbol.ContainingType.Equals(Parent, SymbolEqualityComparer.Default);
 
         public ImmutableArray<AttributeListSyntax> XmlAttributeLists { get; }
 

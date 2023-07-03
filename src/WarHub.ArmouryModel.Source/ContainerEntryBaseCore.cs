@@ -7,18 +7,18 @@ namespace WarHub.ArmouryModel.Source
     public abstract partial record ContainerEntryBaseCore : EntryBaseCore
     {
         [XmlArray("constraints")]
-        public ImmutableArray<ConstraintCore> Constraints { get; init; } = ImmutableArray<ConstraintCore>.Empty;
+        public abstract ImmutableArray<ConstraintCore> Constraints { get; init; }
 
         [XmlArray("profiles")]
-        public ImmutableArray<ProfileCore> Profiles { get; init; } = ImmutableArray<ProfileCore>.Empty;
+        public abstract ImmutableArray<ProfileCore> Profiles { get; init; }
 
         [XmlArray("rules")]
-        public ImmutableArray<RuleCore> Rules { get; init; } = ImmutableArray<RuleCore>.Empty;
+        public abstract ImmutableArray<RuleCore> Rules { get; init; }
 
         [XmlArray("infoGroups")]
-        public ImmutableArray<InfoGroupCore> InfoGroups { get; init; } = ImmutableArray<InfoGroupCore>.Empty;
+        public abstract ImmutableArray<InfoGroupCore> InfoGroups { get; init; }
 
         [XmlArray("infoLinks")]
-        public ImmutableArray<InfoLinkCore> InfoLinks { get; init; } = ImmutableArray<InfoLinkCore>.Empty;
+        public abstract ImmutableArray<InfoLinkCore> InfoLinks { get; init; }
     }
 }

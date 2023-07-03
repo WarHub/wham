@@ -74,11 +74,13 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                 {
                     var x = p.DeclaringSyntaxReferences.FirstOrDefault();
                     var syntax = (PropertyDeclarationSyntax?)x?.GetSyntax();
-                    var auto = syntax?.AccessorList?.Accessors.All(ac => ac is { Body: null, ExpressionBody: null, Keyword: { ValueText: "get" or "init" } }) ?? false;
+                    var auto = syntax?.AccessorList?.Accessors.All(ac => ac is { Body: null, ExpressionBody: null, Keyword.ValueText: "get" or "init" }) ?? false;
                     return auto ? new { syntax = syntax!, symbol = p } : null;
                 })
                 .Where(x => x != null)
                 .Select(x => CreateCoreChild(x!.symbol, x.syntax, coreSymbol))
+                .GroupBy(x => x.Symbol.Name)
+                .Select(x => x.Last())
                 .ToImmutableArray();
             var descriptor = new CoreDescriptor(
                 coreSymbol,
@@ -110,14 +112,14 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
             {
                 if (namedType.Arity == 1 && ImmutableArraySymbol.Equals(namedType.OriginalDefinition, SymbolEqualityComparer.IncludeNullability))
                 {
-                    return new CoreListChild(symbol, isInherited, attributes, xml);
+                    return new CoreListChild(symbol, typeSymbol, attributes, xml);
                 }
                 if (namedType.GetAttributes().Any(a => a.AttributeClass?.Equals(WhamNodeCoreAttributeSymbol, SymbolEqualityComparer.Default) == true))
                 {
-                    return new CoreObjectChild(symbol, isInherited, attributes, xml);
+                    return new CoreObjectChild(symbol, typeSymbol, attributes, xml);
                 }
             }
-            return new CoreValueChild(symbol, isInherited, attributes, xml);
+            return new CoreValueChild(symbol, typeSymbol, attributes, xml);
         }
 
         private static IEnumerable<AttributeListSyntax> GetPropertyAttributeLists(PropertyDeclarationSyntax syntax)

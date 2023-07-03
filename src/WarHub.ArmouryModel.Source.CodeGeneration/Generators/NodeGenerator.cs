@@ -159,7 +159,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                             GetNodePropertyType(entry),
                             entry.Identifier)
                         .AddModifiers(SyntaxKind.PublicKeyword)
-                        .MutateIf(entry.IsInherited, x => x.AddModifiers(SyntaxKind.OverrideKeyword))
+                        .MutateIf(entry.Symbol.IsOverride || !entry.IsDeclared, x => x.AddModifiers(SyntaxKind.OverrideKeyword))
                         .Mutate(x => entry is CoreValueChild
                         ? x.WithExpressionBodyFull(
                             Core
@@ -272,7 +272,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                         Names.WithPrefix + entry.Identifier)
                     .AddModifiers(SyntaxKind.PublicKeyword)
                     .MutateIf(IsAbstract, x => x.AddModifiers(SyntaxKind.AbstractKeyword))
-                    .MutateIf(entry.IsInherited, x => x.AddModifiers(SyntaxKind.OverrideKeyword))
+                    .MutateIf(entry.Symbol.IsOverride || !entry.IsDeclared, x => x.AddModifiers(SyntaxKind.OverrideKeyword))
                     .AddParameterListParameters(
                         Parameter(ValueParamToken)
                         .WithType(GetNodePropertyType(entry)));

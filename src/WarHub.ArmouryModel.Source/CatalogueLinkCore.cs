@@ -20,5 +20,9 @@ namespace WarHub.ArmouryModel.Source
 
         [XmlAttribute("importRootEntries")]
         public bool ImportRootEntries { get; init; }
+
+        /// <inheritdoc />
+        [XmlElement("comment")]
+        public override string? Comment { get; init; }
     }
 }

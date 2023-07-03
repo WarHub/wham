@@ -7,12 +7,12 @@ namespace WarHub.ArmouryModel.Source
     public abstract partial record ModifierBaseCore : CommentableCore
     {
         [XmlArray("repeats")]
-        public ImmutableArray<RepeatCore> Repeats { get; init; } = ImmutableArray<RepeatCore>.Empty;
+        public abstract ImmutableArray<RepeatCore> Repeats { get; init; }
 
         [XmlArray("conditions")]
-        public ImmutableArray<ConditionCore> Conditions { get; init; } = ImmutableArray<ConditionCore>.Empty;
+        public abstract ImmutableArray<ConditionCore> Conditions { get; init; }
 
         [XmlArray("conditionGroups")]
-        public ImmutableArray<ConditionGroupCore> ConditionGroups { get; init; } = ImmutableArray<ConditionGroupCore>.Empty;
+        public abstract ImmutableArray<ConditionGroupCore> ConditionGroups { get; init; }
     }
 }

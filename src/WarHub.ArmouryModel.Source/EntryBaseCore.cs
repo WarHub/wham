@@ -7,24 +7,24 @@ namespace WarHub.ArmouryModel.Source
     public abstract partial record EntryBaseCore : CommentableCore
     {
         [XmlAttribute("id")]
-        public string? Id { get; init; }
+        public abstract string? Id { get; init; }
 
         [XmlAttribute("name")]
-        public string? Name { get; init; }
+        public abstract string? Name { get; init; }
 
         [XmlAttribute("publicationId")]
-        public string? PublicationId { get; init; }
+        public abstract string? PublicationId { get; init; }
 
         [XmlAttribute("page")]
-        public string? Page { get; init; }
+        public abstract string? Page { get; init; }
 
         [XmlAttribute("hidden")]
-        public bool Hidden { get; init; }
+        public abstract bool Hidden { get; init; }
 
         [XmlArray("modifiers")]
-        public ImmutableArray<ModifierCore> Modifiers { get; init; } = ImmutableArray<ModifierCore>.Empty;
+        public abstract ImmutableArray<ModifierCore> Modifiers { get; init; }
 
         [XmlArray("modifierGroups")]
-        public ImmutableArray<ModifierGroupCore> ModifierGroups { get; init; } = ImmutableArray<ModifierGroupCore>.Empty;
+        public abstract ImmutableArray<ModifierGroupCore> ModifierGroups { get; init; }
     }
 }

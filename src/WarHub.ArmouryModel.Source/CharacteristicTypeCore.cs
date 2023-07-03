@@ -11,5 +11,9 @@ namespace WarHub.ArmouryModel.Source
 
         [XmlAttribute("name")]
         public string? Name { get; init; }
+
+        /// <inheritdoc />
+        [XmlElement("comment")]
+        public override string? Comment { get; init; }
     }
 }

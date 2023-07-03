@@ -7,69 +7,69 @@ namespace WarHub.ArmouryModel.Source
     public abstract partial record CatalogueBaseCore : CommentableCore
     {
         [XmlAttribute("id")]
-        public string? Id { get; init; }
+        public abstract string? Id { get; init; }
 
         [XmlAttribute("name")]
-        public string? Name { get; init; }
+        public abstract string? Name { get; init; }
 
         [XmlAttribute("revision")]
-        public int Revision { get; init; }
+        public abstract int Revision { get; init; }
 
         [XmlAttribute("battleScribeVersion")]
-        public string? BattleScribeVersion { get; init; }
+        public abstract string? BattleScribeVersion { get; init; }
 
         [XmlAttribute("authorName")]
-        public string? AuthorName { get; init; }
+        public abstract string? AuthorName { get; init; }
 
         [XmlAttribute("authorContact")]
-        public string? AuthorContact { get; init; }
+        public abstract string? AuthorContact { get; init; }
 
         [XmlAttribute("authorUrl")]
-        public string? AuthorUrl { get; init; }
+        public abstract string? AuthorUrl { get; init; }
 
         [XmlElement("readme")]
-        public string? Readme { get; init; }
+        public abstract string? Readme { get; init; }
 
         [XmlArray("publications")]
-        public ImmutableArray<PublicationCore> Publications { get; init; } = ImmutableArray<PublicationCore>.Empty;
+        public abstract ImmutableArray<PublicationCore> Publications { get; init; }
 
         [XmlArray("costTypes")]
-        public ImmutableArray<CostTypeCore> CostTypes { get; init; } = ImmutableArray<CostTypeCore>.Empty;
+        public abstract ImmutableArray<CostTypeCore> CostTypes { get; init; }
 
         [XmlArray("profileTypes")]
-        public ImmutableArray<ProfileTypeCore> ProfileTypes { get; init; } = ImmutableArray<ProfileTypeCore>.Empty;
+        public abstract ImmutableArray<ProfileTypeCore> ProfileTypes { get; init; }
 
         [XmlArray("categoryEntries")]
-        public ImmutableArray<CategoryEntryCore> CategoryEntries { get; init; } = ImmutableArray<CategoryEntryCore>.Empty;
+        public abstract ImmutableArray<CategoryEntryCore> CategoryEntries { get; init; }
 
         [XmlArray("forceEntries")]
-        public ImmutableArray<ForceEntryCore> ForceEntries { get; init; } = ImmutableArray<ForceEntryCore>.Empty;
+        public abstract ImmutableArray<ForceEntryCore> ForceEntries { get; init; }
 
         [XmlArray("selectionEntries")]
-        public ImmutableArray<SelectionEntryCore> SelectionEntries { get; init; } = ImmutableArray<SelectionEntryCore>.Empty;
+        public abstract ImmutableArray<SelectionEntryCore> SelectionEntries { get; init; }
 
         [XmlArray("entryLinks")]
-        public ImmutableArray<EntryLinkCore> EntryLinks { get; init; } = ImmutableArray<EntryLinkCore>.Empty;
+        public abstract ImmutableArray<EntryLinkCore> EntryLinks { get; init; }
 
         [XmlArray("rules")]
-        public ImmutableArray<RuleCore> Rules { get; init; } = ImmutableArray<RuleCore>.Empty;
+        public abstract ImmutableArray<RuleCore> Rules { get; init; }
 
         [XmlArray("infoLinks")]
-        public ImmutableArray<InfoLinkCore> InfoLinks { get; init; } = ImmutableArray<InfoLinkCore>.Empty;
+        public abstract ImmutableArray<InfoLinkCore> InfoLinks { get; init; }
 
         [XmlArray("sharedSelectionEntries")]
-        public ImmutableArray<SelectionEntryCore> SharedSelectionEntries { get; init; } = ImmutableArray<SelectionEntryCore>.Empty;
+        public abstract ImmutableArray<SelectionEntryCore> SharedSelectionEntries { get; init; }
 
         [XmlArray("sharedSelectionEntryGroups")]
-        public ImmutableArray<SelectionEntryGroupCore> SharedSelectionEntryGroups { get; init; } = ImmutableArray<SelectionEntryGroupCore>.Empty;
+        public abstract ImmutableArray<SelectionEntryGroupCore> SharedSelectionEntryGroups { get; init; }
 
         [XmlArray("sharedRules")]
-        public ImmutableArray<RuleCore> SharedRules { get; init; } = ImmutableArray<RuleCore>.Empty;
+        public abstract ImmutableArray<RuleCore> SharedRules { get; init; }
 
         [XmlArray("sharedProfiles")]
-        public ImmutableArray<ProfileCore> SharedProfiles { get; init; } = ImmutableArray<ProfileCore>.Empty;
+        public abstract ImmutableArray<ProfileCore> SharedProfiles { get; init; }
 
         [XmlArray("sharedInfoGroups")]
-        public ImmutableArray<InfoGroupCore> SharedInfoGroups { get; init; } = ImmutableArray<InfoGroupCore>.Empty;
+        public abstract ImmutableArray<InfoGroupCore> SharedInfoGroups { get; init; }
     }
 }

@@ -13,6 +13,10 @@ namespace WarHub.ArmouryModel.Source
         [XmlAttribute("name")]
         public string? Name { get; init; }
 
+        /// <inheritdoc />
+        [XmlElement("comment")]
+        public override string? Comment { get; init; }
+
         [XmlArray("characteristicTypes")]
         public ImmutableArray<CharacteristicTypeCore> CharacteristicTypes { get; init; } = ImmutableArray<CharacteristicTypeCore>.Empty;
     }

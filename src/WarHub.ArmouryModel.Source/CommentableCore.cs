@@ -6,6 +6,6 @@ namespace WarHub.ArmouryModel.Source
     public abstract partial record CommentableCore
     {
         [XmlElement("comment")]
-        public string? Comment { get; init; }
+        public abstract string? Comment { get; init; }
     }
 }

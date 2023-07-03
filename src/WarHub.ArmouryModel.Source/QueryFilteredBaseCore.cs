@@ -9,6 +9,6 @@ namespace WarHub.ArmouryModel.Source
         /// Changes the query to filter by this value.
         /// </summary>
         [XmlAttribute("childId")]
-        public string? ChildId { get; init; }
+        public abstract string? ChildId { get; init; }
     }
 }

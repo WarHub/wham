@@ -1,4 +1,5 @@
-﻿using System.Xml.Serialization;
+﻿using System.Collections.Immutable;
+using System.Xml.Serialization;
 
 namespace WarHub.ArmouryModel.Source
 {
@@ -14,5 +15,21 @@ namespace WarHub.ArmouryModel.Source
 
         [XmlAttribute("value")]
         public string? Value { get; init; }
+
+        /// <inheritdoc />
+        [XmlElement("comment")]
+        public override string? Comment { get; init; }
+
+        /// <inheritdoc />
+        [XmlArray("repeats")]
+        public override ImmutableArray<RepeatCore> Repeats { get; init; } = ImmutableArray<RepeatCore>.Empty;
+
+        /// <inheritdoc />
+        [XmlArray("conditions")]
+        public override ImmutableArray<ConditionCore> Conditions { get; init; } = ImmutableArray<ConditionCore>.Empty;
+
+        /// <inheritdoc />
+        [XmlArray("conditionGroups")]
+        public override ImmutableArray<ConditionGroupCore> ConditionGroups { get; init; } = ImmutableArray<ConditionGroupCore>.Empty;
     }
 }

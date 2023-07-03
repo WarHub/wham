@@ -23,5 +23,9 @@ namespace WarHub.ArmouryModel.Source
 
         [XmlAttribute("publisherUrl")]
         public string? PublisherUrl { get; init; }
+
+        /// <inheritdoc />
+        [XmlElement("comment")]
+        public override string? Comment { get; init; }
     }
 }

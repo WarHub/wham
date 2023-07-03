@@ -17,5 +17,9 @@ namespace WarHub.ArmouryModel.Source
 
         [XmlAttribute("hidden")]
         public bool Hidden { get; init; }
+
+        /// <inheritdoc />
+        [XmlElement("comment")]
+        public override string? Comment { get; init; }
     }
 }

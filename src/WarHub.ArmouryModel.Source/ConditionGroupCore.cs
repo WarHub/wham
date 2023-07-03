@@ -10,6 +10,10 @@ namespace WarHub.ArmouryModel.Source
         [XmlAttribute("type")]
         public ConditionGroupKind Type { get; init; }
 
+        /// <inheritdoc />
+        [XmlElement("comment")]
+        public override string? Comment { get; init; }
+
         [XmlArray("conditions")]
         public ImmutableArray<ConditionCore> Conditions { get; init; } = ImmutableArray<ConditionCore>.Empty;
 
