@@ -29,17 +29,17 @@
 
   <Target Name="TransformXsdSchemas" BeforeTargets="BeforeBuild" Inputs="$(CatalogueXsdPath)" Outputs="@(EmbeddedXsdSchema->'$(IntermediateOutputPath)%(Identity)')">
     <ItemGroup>
-      <EmbeddedXsdSchema Update="@(EmbeddedXsdSchema)" ResourceOutputPath="$(IntermediateOutputPath)%(Identity)" />
+      <EmbeddedXsdSchemaOutput Include="@(EmbeddedXsdSchema->'$(IntermediateOutputPath)%(Identity)')" />
     </ItemGroup>
     <PropertyGroup>
       <CatalogueXsdContent>$([System.IO.File]::ReadAllText($(CatalogueXsdPath)))</CatalogueXsdContent>
     </PropertyGroup>
 
-    <WriteLinesToFile File="%(EmbeddedXsdSchema.ResourceOutputPath)" Lines="$(CatalogueXsdContent.Replace('$(CatXmlns)', '%(TargetXmlns)'))" Overwrite="true" />
+    <WriteLinesToFile File="@(EmbeddedXsdSchemaOutput)" Lines="$(CatalogueXsdContent.Replace('$(CatXmlns)', '%(TargetXmlns)'))" Overwrite="true" />
 
     <ItemGroup>
-      <EmbeddedResource Include="%(EmbeddedXsdSchema.ResourceOutputPath)" Link="DataFormat/xml/schema/latest/%(Filename)%(Extension)" />
-      <FileWrites Include="%(EmbeddedXsdSchema.ResourceOutputPath)" />
+      <EmbeddedResource Include="@(EmbeddedXsdSchemaOutput)" Link="DataFormat/xml/schema/latest/%(Filename)%(Extension)" />
+      <FileWrites Include="@(EmbeddedXsdSchemaOutput)" />
     </ItemGroup>
   </Target>
 
