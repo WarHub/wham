@@ -54,8 +54,7 @@ namespace WarHub.ArmouryModel.Source
 
             public TNode GetNodeSlot(int index)
             {
-                if (index != 0)
-                    throw new ArgumentOutOfRangeException(nameof(index));
+                ArgumentOutOfRangeException.ThrowIfNotEqual(index, 0);
                 if (node == null)
                 {
                     Interlocked.CompareExchange(ref node, Cores[0].ToNode(Parent), null);
