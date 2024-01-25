@@ -2,13 +2,16 @@
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Text;
 
 namespace WarHub.ArmouryModel.Source.XmlFormat
 {
     public static class XmlResources
     {
-        private const string XsdResourceFormat = ThisAssembly.RootNamespace + ".DataFormat.xml.schema.latest.{0}.xsd";
-        private const string XslTransformResourceFormat = ThisAssembly.RootNamespace + ".DataFormat.xml.transform.{0}_{1}.xsl";
+        private static CompositeFormat XsdResourceFormat { get; } =
+            CompositeFormat.Parse(ThisAssembly.RootNamespace + ".DataFormat.xml.schema.latest.{0}.xsd");
+        private static CompositeFormat XslTransformResourceFormat { get; } =
+            CompositeFormat.Parse(ThisAssembly.RootNamespace + ".DataFormat.xml.transform.{0}_{1}.xsl");
 
         private static ImmutableArray<BattleScribeVersion> CatGstRosMigrations { get; } =
             ImmutableArray.Create(

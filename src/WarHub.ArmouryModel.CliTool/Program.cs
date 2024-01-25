@@ -38,12 +38,12 @@ namespace WarHub.ArmouryModel.CliTool
                     new Command("convertxml", "[WIP] Converts BattleScribe XML files into Gitree directory structure.")
                     {
                         new Option<DirectoryInfo>(
-                            new[] { "-s", "--source" },
+                            [ "-s", "--source" ],
                             GetCurrentDirectoryInfo,
                             "Directory in which to look for XML files.")
                             .ExistingOnly(),
                         new Option<DirectoryInfo>(
-                            new[] { "-o", "--output" },
+                            [ "-o", "--output" ],
                             GetCurrentDirectoryInfo,
                             "Root directory in which to save Gitree files and folders.")
                             .LegalFilePathsOnly(),
@@ -55,12 +55,12 @@ namespace WarHub.ArmouryModel.CliTool
                     new Command("convertgitree", "[WIP] Converts Gitree directory structure into BattleScribe XML files.")
                     {
                         new Option<DirectoryInfo>(
-                            new[] { "-s", "--source" },
+                            [ "-s", "--source" ],
                             GetCurrentDirectoryInfo,
                             "Root directory of Gitree to convert.")
                             .ExistingOnly(),
                         new Option<DirectoryInfo>(
-                            new[] { "-o", "--output" },
+                            [ "-o", "--output" ],
                             GetCurrentDirectoryInfo,
                             "Directory in which to save XML files.")
                             .LegalFilePathsOnly(),
@@ -72,7 +72,7 @@ namespace WarHub.ArmouryModel.CliTool
                     new Command("publish", "Publishes given workspace in selected formats, by default a .bsr file.")
                     {
                         new Option<string>(
-                            new[] { "-a", "--artifacts" },
+                            [ "-a", "--artifacts" ],
                             "Kinds of artifacts to publish to output (multiple values allowed):" +
                             " XML - uncompressed cat/gst XML files;" +
                             " ZIP - zipped catz/gstz XML files;" +
@@ -83,12 +83,12 @@ namespace WarHub.ArmouryModel.CliTool
                             .WithDefaultValue("bsr")
                             .FromAmong(PublishCommand.ArtifactNames),
                         new Option<DirectoryInfo>(
-                            new[] { "-s", "--source" },
+                            [ "-s", "--source" ],
                             GetCurrentDirectoryInfo,
                             "Directory in which to look for datafiles.")
                             .ExistingOnly(),
                         new Option<DirectoryInfo>(
-                            new[] { "-o", "--output" },
+                            [ "-o", "--output" ],
                             GetCurrentDirectoryInfo,
                             "Directory to save artifacts to.")
                             .LegalFilePathsOnly(),
@@ -101,7 +101,7 @@ namespace WarHub.ArmouryModel.CliTool
                             "Repository name used in published indexes (includes bsr)." +
                             " Default is name of the game system, or <source> folder name if no game system included."),
                         new Option<string>(
-                            new[] { "-f", "--filename" },
+                            [ "-f", "--filename" ],
                             "Filename (without extension) of the output artifacts. Default is <source> folder name.")
                             .LegalFilePathsOnly(),
                         new Option<bool>(
@@ -129,9 +129,9 @@ namespace WarHub.ArmouryModel.CliTool
 
         private static DirectoryInfo GetCurrentDirectoryInfo() => new(".");
 
-        private static Option CreateVerbosityOption() =>
+        private static Option<string> CreateVerbosityOption() =>
             new Option<string>(
-                new[] { "-v", "--verbosity" },
+                [ "-v", "--verbosity" ],
                 "Set the verbosity level.")
                 .FromAmong(verbosityLevels);
     }

@@ -98,7 +98,7 @@ namespace WarHub.ArmouryModel.Source.BattleScribe.Tests
                 .Should().BeLessThan(xmlStream.Length, "because massive streams aren't read to the end.");
         }
 
-        private static Stream CreateEmptyElementStream(VersionedElementInfo elementInfo)
+        private static MemoryStream CreateEmptyElementStream(VersionedElementInfo elementInfo)
         {
             var xmlContent = string.Format(
                 CultureInfo.InvariantCulture,
