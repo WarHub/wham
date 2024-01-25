@@ -5,10 +5,8 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest]
-        BuildConfiguration: [Release]
     env:
       DOTNET_NOLOGO: 1
-      Configuration: ${{ matrix.BuildConfiguration }}
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
@@ -21,9 +19,9 @@ jobs:
       - run: dotnet restore -v m
       - run: dotnet build --no-restore
       - run: dotnet test --no-build
-      - run: dotnet pack --no-build
+      - run: dotnet pack
       - name: Publish NuGet artifacts
         uses: actions/upload-artifact@v4
         with:
           name: nugets-${{ runner.os }}
-          path: bin/Packages/${{ env.Configuration }}
+          path: artifacts/packages/release
