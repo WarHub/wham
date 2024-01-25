@@ -7,6 +7,7 @@
     <Authors>Amadeusz Sadowski</Authors>
     <Company>WarHub</Company>
     <Copyright>Copyright © Amadeusz Sadowski</Copyright>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
     <PackageProjectUrl>https://github.com/WarHub/wham</PackageProjectUrl>
@@ -34,7 +35,6 @@
   <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <MSBuildTreatWarningsAsErrors>true</MSBuildTreatWarningsAsErrors>
-    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
   </PropertyGroup>
 
   <PropertyGroup Condition=" $(IsTestingOnlyProject) ">
@@ -43,7 +43,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Include="$(MSBuildThisFileDirectory)LICENSE.md" Pack="true" PackagePath="/" Visible="false" />
+    <None Include="$(MSBuildThisFileDirectory)README.md" Pack="true" PackagePath="" Visible="false" />
+    <None Include="$(MSBuildThisFileDirectory)LICENSE.md" Pack="true" PackagePath="" Visible="false" />
     <None Include="$(PackageIconPath)" Pack="true" PackagePath="$(PackageIcon)" Visible="false" />
   </ItemGroup>
   
