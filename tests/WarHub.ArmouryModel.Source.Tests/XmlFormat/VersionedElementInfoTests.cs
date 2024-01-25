@@ -57,7 +57,7 @@ namespace WarHub.ArmouryModel.Source.Tests.XmlFormat
         [InlineData(RootElement.Catalogue, "2.1", RootElement.Catalogue, "2.0a", 1)]
         public void Compare_returns_expected_result(
             RootElement root1, string text1,
-            RootElement root2, string text2,
+            RootElement root2, string? text2,
             int expectedResult)
         {
             var element1 = CreateVersionedInfo(root1, text1);
@@ -77,7 +77,7 @@ namespace WarHub.ArmouryModel.Source.Tests.XmlFormat
                 .Select(x => new object[] { x });
         }
 
-        private static VersionedElementInfo CreateVersionedInfo(RootElement root, string versionText)
+        private static VersionedElementInfo CreateVersionedInfo(RootElement root, string? versionText)
         {
             var version = versionText is null ? null : BattleScribeVersion.Parse(versionText);
             return new VersionedElementInfo(root, version);
