@@ -15,12 +15,12 @@
     <PackageIconPath>$(MSBuildThisFileDirectory)docs/images/WarHub-logo.png</PackageIconPath>
     <PackageIcon>icon.png</PackageIcon>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
-    <EmbedUntrackedSources>true</EmbedUntrackedSources>
     <IncludeSymbols>true</IncludeSymbols>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <MainTargetFramework>net8.0</MainTargetFramework>
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+    <ContinuousIntegrationBuild Condition=" '$(ContinuousIntegrationBuild)' == '' and '$(CI)' == 'true' ">true</ContinuousIntegrationBuild>
   </PropertyGroup>
 
   <PropertyGroup>
