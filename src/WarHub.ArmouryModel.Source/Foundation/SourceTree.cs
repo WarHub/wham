@@ -1,39 +1,65 @@
-﻿using System;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace WarHub.ArmouryModel.Source
 {
-    internal abstract class SourceTree
+    public abstract class SourceTree
     {
-        public abstract string FilePath { get; }
+        public abstract string? FilePath { get; }
 
-        public bool TryGetRoot(out SourceNode root)
+        public virtual bool TryGetRoot([NotNullWhen(true)] out SourceNode? root)
         {
-            return TryGetRootCore(out root);
+            root = GetRoot();
+            return true;
         }
 
-        protected abstract bool TryGetRootCore(out SourceNode root);
+        public abstract SourceNode GetRoot(CancellationToken cancellationToken = default);
 
-        public SourceNode GetRoot()
+        public abstract Task<SourceNode> GetRootAsync(CancellationToken cancellationToken = default);
+
+        public abstract SourceTree WithRoot(SourceNode root);
+
+        public abstract FileLinePositionSpan GetLineSpan(TextSpan span);
+
+        public abstract Location GetLocation(TextSpan span);
+
+        public static SourceTree CreateForRoot(SourceNode rootNode, string? filepath = null) =>
+            new InMemoryTree(rootNode, filepath);
+
+        protected SourceNode NodeForThisTree(SourceNode node) =>
+            node.WithTree(this);
+
+        private sealed class InMemoryTree : SourceTree
         {
-            return GetRootCore();
-        }
+            private readonly SourceNode root;
+            private readonly string? filepath;
 
-        protected abstract SourceNode GetRootCore();
-
-        public SourceTree WithRoot(SourceNode root)
-        {
-            if (root is not INodeWithCore<NodeCore> rootWithCore)
+            public InMemoryTree(SourceNode root, string? filepath)
             {
-                throw new ArgumentException(
-                    "Tree root must be an " + nameof(INodeWithCore<NodeCore>),
-                    nameof(root));
+                this.filepath = filepath;
+                this.root = NodeForThisTree(root);
             }
-            var newNode = rootWithCore.Core.ToNode();
-            var newTree = WithRootCore(newNode);
-            newNode.Tree = newTree;
-            return newTree;
-        }
 
-        internal abstract SourceTree WithRootCore(SourceNode root);
+            public override string? FilePath => filepath;
+
+            public override FileLinePositionSpan GetLineSpan(TextSpan span)
+            {
+                return default; // TODO implement
+            }
+
+            public override Location GetLocation(TextSpan span)
+            {
+                return Location.Create(this, span);
+            }
+
+            public override SourceNode GetRoot(CancellationToken cancellationToken = default) => root;
+
+            public override Task<SourceNode> GetRootAsync(CancellationToken cancellationToken = default) =>
+                Task.FromResult(root);
+
+            public override InMemoryTree WithRoot(SourceNode newRootNode) =>
+                new(newRootNode, FilePath);
+        }
     }
 }

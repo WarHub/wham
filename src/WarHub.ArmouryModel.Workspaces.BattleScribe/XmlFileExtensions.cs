@@ -93,14 +93,8 @@ namespace WarHub.ArmouryModel.Workspaces.BattleScribe
 
         public static ImmutableDictionary<string, XmlDocumentKind> DocumentKindByExtensions { get; }
 
-        public static XmlDocumentKind GetXmlDocumentKind(this FileInfo file)
-            => GetKindOrUnknown(file.Extension);
-
-        public static XmlDocumentKind GetXmlDocumentKind(this string path)
-            => GetKindOrUnknown(Path.GetExtension(path));
-
-        public static XmlDocumentKind GetXmlDocumentKindOrUnknown(this SourceNode node)
-            => node.Kind.GetXmlDocumentKindOrUnknown();
+        public static XmlDocumentKind GetXmlDocumentKind(string path)
+            => DocumentKindByExtensions.TryGetValue(Path.GetExtension(path), out var kind) ? kind : XmlDocumentKind.Unknown;
 
         public static XmlDocumentKind GetXmlDocumentKindOrUnknown(this SourceKind sourceKind)
             => DocumentKinds.TryGetValue(sourceKind, out var kind) ? kind : XmlDocumentKind.Unknown;
@@ -120,26 +114,11 @@ namespace WarHub.ArmouryModel.Workspaces.BattleScribe
         public static string GetXmlZippedFilename(this IDatafileInfo datafile)
             => datafile.GetStorageName() + datafile.DataKind.GetXmlDocumentKindOrUnknown().GetXmlZippedFileExtension();
 
-        private static XmlDocumentKind GetKindOrUnknown(string extension)
-            => DocumentKindByExtensions.TryGetValue(extension, out var kind) ? kind : XmlDocumentKind.Unknown;
-
-        public static IDatafileInfo GetDatafileInfo(this FileInfo file)
-        {
-            return file.GetXmlDocumentKind() switch
-            {
-                XmlDocumentKind.Gamesystem => new LazyWeakXmlDatafileInfo(file.FullName, SourceKind.Gamesystem),
-                XmlDocumentKind.Catalogue => new LazyWeakXmlDatafileInfo(file.FullName, SourceKind.Catalogue),
-                XmlDocumentKind.Roster => new LazyWeakXmlDatafileInfo(file.FullName, SourceKind.Roster),
-                XmlDocumentKind.DataIndex => new LazyWeakXmlDatafileInfo(file.FullName, SourceKind.DataIndex),
-                _ => new UnknownTypeDatafileInfo(file.FullName),
-            };
-        }
-
         /// <summary>
         /// Reads <see cref="XmlDocumentKind.RepoDistribution"/> <c>.bsr</c> zipped file stream into object model.
         /// </summary>
         /// <param name="stream">Stream of the <c>.bsr</c> file.</param>
-        public static RepoDistribution ReadRepoDistribution(this Stream stream)
+        public static RepoDistribution ReadRepoDistribution(Stream stream)
         {
             using var zip = new ZipArchive(stream);
             var entries = zip.Entries
@@ -154,22 +133,9 @@ namespace WarHub.ArmouryModel.Workspaces.BattleScribe
             {
                 using var entryStream = entry.Open();
                 // TODO log invalid data type
-                var node = entryStream.LoadSourceAuto(entry.Name);
+                var node = LoadSourceAuto(entryStream, entry.Name);
                 return DatafileInfo.Create(entry.Name, node);
             }
-        }
-
-        public static async Task<T> GetDataOrThrowAsync<T>(this IDatafileInfo datafile, CancellationToken cancellationToken = default)
-            where T : SourceNode
-        {
-            var node = await datafile.GetDataOrThrowAsync(cancellationToken);
-            return node as T ?? throw new InvalidOperationException($"Datafile '{datafile.Filepath}' has no readable data of type '{typeof(T).Name}'.");
-        }
-
-        public static async Task<SourceNode> GetDataOrThrowAsync(this IDatafileInfo datafile, CancellationToken cancellationToken = default)
-        {
-            var node = await datafile.GetDataAsync(cancellationToken);
-            return node ?? throw new InvalidOperationException($"Datafile '{datafile.Filepath}' has no readable data.");
         }
 
         public static async Task WriteToAsync(this RepoDistribution repoDistribution, Stream stream)
@@ -180,7 +146,7 @@ namespace WarHub.ArmouryModel.Workspaces.BattleScribe
             {
                 var entry = zip.CreateEntry(datafile.Filepath);
                 using var entryStream = entry.Open();
-                var data = await datafile.GetDataOrThrowAsync();
+                var data = await datafile.GetDataAsync();
                 data.Serialize(entryStream);
             }
         }
@@ -188,7 +154,7 @@ namespace WarHub.ArmouryModel.Workspaces.BattleScribe
         public static async Task WriteXmlFileAsync(this IDatafileInfo datafile, string filepath)
         {
             using var stream = File.Create(filepath);
-            var data = await datafile.GetDataOrThrowAsync();
+            var data = await datafile.GetDataAsync();
             data.Serialize(stream);
         }
 
@@ -197,54 +163,16 @@ namespace WarHub.ArmouryModel.Workspaces.BattleScribe
             using var fileStream = File.Create(filepath);
             using var archive = new ZipArchive(fileStream, ZipArchiveMode.Create);
             using var entryStream = archive.CreateEntry(datafile.GetXmlFilename()).Open();
-            var data = await datafile.GetDataOrThrowAsync();
+            var data = await datafile.GetDataAsync();
             data.Serialize(entryStream);
         }
 
-        public static Func<Stream, SourceNode?>? GetLoadingMethod(this XmlDocumentKind kind)
+        public static SourceNode? LoadSourceAuto(Stream stream, string filename, CancellationToken cancellationToken = default)
         {
-            return kind switch
-            {
-                XmlDocumentKind.Gamesystem => BattleScribeXml.LoadGamesystem,
-                XmlDocumentKind.Catalogue => BattleScribeXml.LoadCatalogue,
-                XmlDocumentKind.Roster => BattleScribeXml.LoadRoster,
-                XmlDocumentKind.DataIndex => BattleScribeXml.LoadDataIndex,
-                _ => null,
-            };
-        }
-
-        public static bool IsXmlZipped(this XmlDocument document) => document.Kind.IsXmlZipped();
-
-        public static bool IsXmlZipped(this XmlDocumentKind kind)
-            => ZippedExtensions.Contains(kind.GetXmlFileExtension());
-
-        public static SourceNode? LoadSourceAuto(this Stream stream, string filename, CancellationToken cancellationToken = default)
-        {
-            var kind = filename.GetXmlDocumentKind();
-            var data = kind.IsXmlZipped()
-                ? stream.LoadSourceZipped(cancellationToken)
-                : stream.LoadSource(cancellationToken);
+            var data = ZippedExtensions.Contains(Path.GetExtension(filename))
+                ? LoadSourceZipped(stream, cancellationToken)
+                : LoadSource(stream, cancellationToken);
             return data;
-        }
-
-        private static SourceNode? LoadSource(this Stream stream, CancellationToken cancellationToken = default)
-        {
-            return BattleScribeXml.LoadAuto(stream, MigrationMode.OnFailure, cancellationToken);
-        }
-
-        private static SourceNode? LoadSourceZipped(this Stream stream, CancellationToken cancellationToken = default)
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-            using var archive = new ZipArchive(stream, ZipArchiveMode.Read, leaveOpen: true);
-            if (archive.Entries.Count != 1)
-            {
-                throw new InvalidOperationException(
-                    "File is not a correct BattleScribe ZIP archive," +
-                    $" contains {archive.Entries.Count} entries, expected 1.");
-            }
-            cancellationToken.ThrowIfCancellationRequested();
-            using var entryStream = archive.Entries[0].Open();
-            return BattleScribeXml.LoadAuto(entryStream, MigrationMode.OnFailure, cancellationToken);
         }
 
         public static IEnumerable<XmlDocument> GetDocuments(this XmlWorkspace workspace, params SourceKind[] kinds)
@@ -252,21 +180,8 @@ namespace WarHub.ArmouryModel.Workspaces.BattleScribe
 
         public static IEnumerable<XmlDocument> GetDocuments(this XmlWorkspace workspace, IEnumerable<SourceKind> kinds)
         {
-            var kindSet = kinds
-                .Select(x => x.GetXmlDocumentKindOrUnknown())
-                .ToImmutableHashSet();
+            var kindSet = kinds.Select(x => x.GetXmlDocumentKindOrUnknown()).ToArray();
             return workspace.Documents.Where(x => kindSet.Contains(x.Kind));
-        }
-
-        private static async Task<List<T>> ToListAsync<T>(this IEnumerable<Task<T>> collection)
-        {
-            var list = new List<T>();
-            foreach (var task in collection)
-            {
-                var result = await task;
-                list.Add(result);
-            }
-            return list;
         }
 
         public static async Task<DataIndexNode> CreateDataIndexAsync(this IWorkspace workspace,
@@ -299,10 +214,41 @@ namespace WarHub.ArmouryModel.Workspaces.BattleScribe
             var indexDatafile = DatafileInfo.Create(DataIndexFileName, indexNode);
             var datafiles = await workspace.Datafiles
                 .Where(x => x.DataKind.IsDataCatalogueKind())
-                .Select(async x => DatafileInfo.Create(x.GetXmlFilename(), await x.GetDataOrThrowAsync<CatalogueBaseNode>()))
+                .Select(async x => DatafileInfo.Create(x.GetXmlFilename(), (CatalogueBaseNode)await x.GetDataAsync()))
                 .ToListAsync();
             var repo = new RepoDistribution(indexDatafile, datafiles.ToImmutableArray());
             return repo;
+        }
+
+        private static SourceNode? LoadSource(Stream stream, CancellationToken cancellationToken = default)
+        {
+            return BattleScribeXml.LoadAuto(stream, MigrationMode.OnFailure, cancellationToken);
+        }
+
+        private static SourceNode? LoadSourceZipped(Stream stream, CancellationToken cancellationToken = default)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            using var archive = new ZipArchive(stream, ZipArchiveMode.Read, leaveOpen: true);
+            if (archive.Entries.Count != 1)
+            {
+                throw new InvalidOperationException(
+                    "File is not a correct BattleScribe ZIP archive," +
+                    $" contains {archive.Entries.Count} entries, expected 1.");
+            }
+            cancellationToken.ThrowIfCancellationRequested();
+            using var entryStream = archive.Entries[0].Open();
+            return BattleScribeXml.LoadAuto(entryStream, MigrationMode.OnFailure, cancellationToken);
+        }
+
+        private static async Task<List<T>> ToListAsync<T>(this IEnumerable<Task<T>> collection)
+        {
+            var list = new List<T>();
+            foreach (var task in collection)
+            {
+                var result = await task;
+                list.Add(result);
+            }
+            return list;
         }
     }
 }

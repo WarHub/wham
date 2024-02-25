@@ -12,6 +12,6 @@ namespace WarHub.ArmouryModel.ProjectModel
         /// Type-parametrized and synchronous version of <see cref="IDatafileInfo.GetDataAsync"/>.
         /// </summary>
         /// <returns>Retrieved root node.</returns>
-        TNode? Node { get; }
+        TNode Node { get; }
     }
 }

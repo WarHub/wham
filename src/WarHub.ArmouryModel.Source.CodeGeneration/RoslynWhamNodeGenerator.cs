@@ -127,6 +127,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                 yield break;
             }
             yield return CoreEmptyPropertyPartialGenerator.Generate(descriptor, default);
+            yield return CoreSpanCalculationPartialGenerator.Generate(descriptor, default);
         }
 
         private static IEnumerable<TypeDeclarationSyntax> GenerateNodePartials(CoreDescriptor descriptor)
