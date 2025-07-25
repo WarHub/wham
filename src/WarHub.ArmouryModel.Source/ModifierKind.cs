@@ -33,6 +33,13 @@ namespace WarHub.ArmouryModel.Source
         Append,
 
         /// <summary>
+        /// Modifies the target by prepending its value with Modifier's value.
+        /// Usable on String fields.
+        /// </summary>
+        [XmlEnum("prepend")]
+        Prepend,
+
+        /// <summary>
         /// Modifies the target by adding the category specified by Modifier's value.
         /// Usable on Category fields.
         /// </summary>
