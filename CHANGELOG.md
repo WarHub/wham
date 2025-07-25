@@ -18,6 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 [#138]: https://github.com/WarHub/wham/pull/138
 [#140]: https://github.com/WarHub/wham/pull/140
+[#221]: https://github.com/WarHub/wham/pull/221
 
 ## [0.13.0] - 2021-09-16
 
