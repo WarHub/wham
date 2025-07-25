@@ -15,7 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - rename default branch to `main`.
 - build: use .NET 7 SDK.
 - chore: Target `net7.0` TFM.
-- Refactor: Added NR "Prepend" modifer ([#221])
+- Refactor: Added NR "Prepend" modifer for better app support ([#221])
 
 [#138]: https://github.com/WarHub/wham/pull/138
 [#140]: https://github.com/WarHub/wham/pull/140
