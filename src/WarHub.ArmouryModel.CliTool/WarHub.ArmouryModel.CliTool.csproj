@@ -17,6 +17,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="morelinq" VersionOverride="4.4.0" />
     <ProjectReference Include="..\WarHub.ArmouryModel.ProjectModel\WarHub.ArmouryModel.ProjectModel.csproj" />
     <ProjectReference Include="..\WarHub.ArmouryModel.Source.BattleScribe\WarHub.ArmouryModel.Source.BattleScribe.csproj" />
     <ProjectReference Include="..\WarHub.ArmouryModel.Source\WarHub.ArmouryModel.Source.csproj" />
