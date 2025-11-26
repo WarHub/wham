@@ -18,11 +18,11 @@ jobs:
         with:
           comment-id: ${{ github.event.client_payload.github.payload.comment.id }}
           body: "[Deployment run](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})"
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           fetch-depth: 0 # all history
           ref: ${{ github.event.client_payload.slash_command.args.named.ref }}
-      - uses: actions/setup-dotnet@v4
+      - uses: actions/setup-dotnet@v5
       - run: dotnet --info
       - run: dotnet tool restore
       - run: dotnet nbgv get-version
@@ -59,7 +59,7 @@ jobs:
       DOTNET_NOLOGO: 1
       PUSH_TO: ${{ github.event.client_payload.slash_command.args.named.env }}
     steps:
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v5
         with:
           name: nugets
 

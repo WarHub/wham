@@ -9,10 +9,10 @@ jobs:
       DOTNET_NOLOGO: 1
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           fetch-depth: 0 # all history
-      - uses: actions/setup-dotnet@v4
+      - uses: actions/setup-dotnet@v5
       - run: dotnet --info
       - run: dotnet tool restore
       - run: dotnet nbgv get-version
