@@ -14,7 +14,7 @@ jobs:
       PUSH_TAG: ${{ github.event.client_payload.slash_command.args.unnamed.arg1 == 'tag' }}
     steps:
       - name: Add deployment run link to command comment
-        uses: peter-evans/create-or-update-comment@v4
+        uses: peter-evans/create-or-update-comment@v5
         with:
           comment-id: ${{ github.event.client_payload.github.payload.comment.id }}
           body: "[Deployment run](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})"
@@ -43,7 +43,7 @@ jobs:
           Write-Host "::set-output name=tag::$v"
       - name: Add tag info to command comment
         if: env.PUSH_TAG == 'true'
-        uses: peter-evans/create-or-update-comment@v4
+        uses: peter-evans/create-or-update-comment@v5
         with:
           comment-id: ${{ github.event.client_payload.github.payload.comment.id }}
           body: "Pushed tag `${{ steps.tagpush.outputs.tag }}`"
@@ -74,7 +74,7 @@ jobs:
         run: dotnet nuget push '*.nupkg' -s https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json -k ${{ github.token }} --skip-duplicate
 
       - name: Add reaction to command comment
-        uses: peter-evans/create-or-update-comment@v4
+        uses: peter-evans/create-or-update-comment@v5
         with:
           comment-id: ${{ github.event.client_payload.github.payload.comment.id }}
           reactions: hooray
