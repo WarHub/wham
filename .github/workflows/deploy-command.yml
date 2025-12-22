@@ -48,7 +48,7 @@ jobs:
           comment-id: ${{ github.event.client_payload.github.payload.comment.id }}
           body: "Pushed tag `${{ steps.tagpush.outputs.tag }}`"
       - name: Upload nugets to workflow artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: nugets
           path: artifacts/package/release
