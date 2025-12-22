@@ -59,7 +59,7 @@ jobs:
       DOTNET_NOLOGO: 1
       PUSH_TO: ${{ github.event.client_payload.slash_command.args.named.env }}
     steps:
-      - uses: actions/download-artifact@v5
+      - uses: actions/download-artifact@v7
         with:
           name: nugets
 
