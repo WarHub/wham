@@ -1,4 +1,6 @@
-﻿namespace WarHub.ArmouryModel.Source.CodeGeneration
+﻿using Microsoft.CodeAnalysis;
+
+namespace WarHub.ArmouryModel.Source.CodeGeneration
 {
     internal static class Names
     {
@@ -8,6 +10,8 @@
         public const string ListSuffix = "List";
         public const string CoreSuffix = "Core";
         public const string Empty = "Empty";
+        public const string CalculateDescendantSpanLength = "CalculateDescendantSpanLength";
+        public const string GetSpanLength = "GetSpanLength";
         public const string Add = nameof(System.Collections.IList.Add);
         public const string AddRange = nameof(System.Collections.Generic.List<int>.AddRange);
         public const string AddRangeAsBuilders = "AddRangeAsBuilders";

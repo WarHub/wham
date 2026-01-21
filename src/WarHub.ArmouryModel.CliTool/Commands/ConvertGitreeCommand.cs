@@ -28,7 +28,7 @@ namespace WarHub.ArmouryModel.CliTool.Commands
                 var node = await datafile.GetDataAsync()
                     ?? throw new NotSupportedException($"Failed to retrieve data node from {datafile.Filepath}");
                 Log.Verbose("- Loading finished. Saving XML file...");
-                var extension = node.GetXmlDocumentKindOrUnknown().GetXmlFileExtension();
+                var extension = node.Kind.GetXmlDocumentKindOrUnknown().GetXmlFileExtension();
                 var filename = Path.Combine(output.FullName, fileDir.Name + extension);
                 using (var fileStream = File.Create(filename))
                 {

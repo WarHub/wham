@@ -1,4 +1,5 @@
-﻿using System.Collections.Immutable;
+﻿using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
 using WarHub.ArmouryModel.ProjectModel;
@@ -53,10 +54,31 @@ namespace WarHub.ArmouryModel.Workspaces.BattleScribe
 
         public static XmlWorkspace Create(XmlWorkspaceOptions options)
         {
-            var files = new DirectoryInfo(options.SourceDirectory).EnumerateFiles();
-            var datafiles = files.Select(XmlFileExtensions.GetDatafileInfo).ToImmutableArray();
-            var documents = datafiles.Select(file => new XmlDocument(file, file.Filepath.GetXmlDocumentKind())).ToImmutableArray();
+            var documents = GetDocuments(options).ToImmutableArray();
             return new XmlWorkspace(options, documents);
+
+            static IEnumerable<XmlDocument> GetDocuments(XmlWorkspaceOptions options)
+            {
+                foreach (var filepath in Directory.EnumerateFiles(options.SourceDirectory))
+                {
+                    var xmlkind = XmlFileExtensions.GetXmlDocumentKind(filepath);
+                    IDatafileInfo? datafileInfo;
+                    if (xmlkind is XmlDocumentKind.Unknown)
+                    {
+                        if (!options.IncludeUnknown)
+                        {
+                            continue;
+                        }
+                        datafileInfo = new UnknownTypeDatafileInfo(filepath);
+                    }
+                    else
+                    {
+                        datafileInfo = new LazyWeakXmlDatafileInfo(filepath, xmlkind.GetSourceKindOrUnknown());
+                    }
+                    var xmlDocument = new XmlDocument(datafileInfo, xmlkind);
+                    yield return xmlDocument;
+                }
+            }
         }
     }
 }
