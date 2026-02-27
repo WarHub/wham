@@ -21,7 +21,7 @@ jobs:
       - run: dotnet test --no-build
       - run: dotnet pack
       - name: Publish NuGet artifacts
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: nugets-${{ runner.os }}
           path: artifacts/packages/release
