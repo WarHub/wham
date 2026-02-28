@@ -112,7 +112,7 @@ jobs:
         uses: NuGet/login@v1
         id: nuget-login
         with:
-          user: warhub
+          user: ${{ secrets.NUGET_USER_NAME }}
 
       - name: Push to nuget.org
         if: env.PUSH_TO == 'all' || env.PUSH_TO == 'nuget'

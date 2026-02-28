@@ -119,6 +119,9 @@ NuGet.org publishing uses [Trusted Publishing](https://learn.microsoft.com/en-us
 The `push` job in `publish.yml` uses `environment: package-release` which provides
 environment protection rules (e.g. required reviewers) as a gate before publishing.
 
+The NuGet profile name is configured via the `NUGET_USER_NAME` environment secret
+on the `package-release` environment.
+
 ### Tagging
 
 Tags can also be created via the **Tag** workflow:
