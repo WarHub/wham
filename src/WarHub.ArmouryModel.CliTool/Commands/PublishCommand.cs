@@ -92,7 +92,7 @@ namespace WarHub.ArmouryModel.CliTool.Commands
             Log.Verbose("All done.");
         }
 
-        private async Task CheckBattleScribeVersionCompatibilityAsync(IWorkspace workspace)
+        private async Task CheckBattleScribeVersionCompatibilityAsync(XmlWorkspace workspace)
         {
             foreach (var file in workspace.Datafiles)
             {
@@ -137,7 +137,7 @@ namespace WarHub.ArmouryModel.CliTool.Commands
             }
         }
 
-        private static async Task<string> GetRepoNameFallbackAsync(IWorkspace workspace)
+        private static async Task<string> GetRepoNameFallbackAsync(XmlWorkspace workspace)
         {
             var gstDatafile = workspace.Datafiles
                 .FirstOrDefault(x => x.DataKind == SourceKind.Gamesystem);

@@ -108,7 +108,7 @@ namespace WarHub.ArmouryModel.Source
             where TNode : SourceNode
             => new NodeList<TNode>(container);
 
-        private static IContainer<TNode> CreateContainerForNodeArray<TNode>(ImmutableArray<TNode> nodes)
+        private static NodeCollectionContainerProxy<TNode> CreateContainerForNodeArray<TNode>(ImmutableArray<TNode> nodes)
             where TNode : SourceNode
         {
             return new NodeCollectionContainerProxy<TNode>(nodes);
