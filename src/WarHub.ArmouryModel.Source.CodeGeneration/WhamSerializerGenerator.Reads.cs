@@ -7,9 +7,6 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
-using static MoreLinq.Extensions.AggregateRightExtension;
-using static MoreLinq.Extensions.IndexExtension;
-using static MoreLinq.Extensions.TagFirstLastExtension;
 
 namespace WarHub.ArmouryModel.Source.CodeGeneration
 {

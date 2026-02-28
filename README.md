@@ -14,7 +14,7 @@ This is the home of the `WarHub.ArmouryModel` library handling wargame roster an
 It consists of:
 
 * `wham` - a CLI tool (Command Line) used to manage, convert and publish datafiles,
-  distributed as .NET Global Tool (.NET SDK v7+ required)
+  distributed as .NET Global Tool (.NET SDK v10+ required)
 * `WarHub.ArmouryModel.Source` library provides API to manage and interact
   with wargaming data files (game systems, catalogues) and rosters.
 * `WarHub.ArmouryModel.Source.BattleScribe` provides convenient methods to load and save
@@ -26,7 +26,7 @@ It consists of:
   directory and file structure is a part of datafile shape, building datafile from massive amounts
   of tiny files. It's mostly designed to work well with VCS (Version Control Systems) such as **git**.
 
-All libraries, unless otherwise specifed, target `.NET 6`.
+All libraries, unless otherwise specifed, target `.NET 10`.
 
 There are also test projects and `WarHub.ArmouryModel.Source.CodeGeneration` project which contains
 code generator used to build `.Source` library. This code generator uses C# Source Generators.
@@ -37,7 +37,7 @@ code generator used to build `.Source` library. This code generator uses C# Sour
 
 To install `wham` command line tool:
 
-1. please install [`.NET SDK` v7](https://www.microsoft.com/net/download)
+1. please install [`.NET SDK` v10](https://dotnet.microsoft.com/download)
   for your platform.
 1. In your shell/command line run `dotnet tool install wham -g`
 1. You can check if the tool is available: `wham --version` should show what version exactly is running.

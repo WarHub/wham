@@ -5,24 +5,17 @@ using WarHub.ArmouryModel.Source;
 
 namespace WarHub.ArmouryModel.Workspaces.BattleScribe
 {
-#pragma warning disable CS1587 // XML comment is not placed on a valid language element
-#pragma warning disable CA1801 // Parameter x of method .ctor is never used. Remove the parameter or use it in the method body.
+    /// <summary>
+    /// Represents a BattleScribe XML document.
+    /// </summary>
+    /// <param name="DatafileInfo">Gets the underlying datafile info.</param>
+    /// <param name="Kind">Gets the kind of this document.</param>
+    /// <param name="Workspace">Gets the parent workspace of this document.</param>
     public record XmlDocument(
-        /// <summary>
-        /// Gets the kind of this document.
-        /// </summary>
         IDatafileInfo DatafileInfo,
-        /// <summary>
-        /// Gets the underlying datafile info.
-        /// </summary>
         XmlDocumentKind Kind,
-        /// <summary>
-        /// Gets the parent workspace of this document.
-        /// </summary>
         XmlWorkspace? Workspace = null)
     {
-#pragma warning restore CS1587
-#pragma warning restore CA1801
         /// <summary>
         /// Gets the filepath of this document.
         /// </summary>

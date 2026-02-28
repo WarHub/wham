@@ -3,10 +3,7 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
-using MoreLinq;
 using Newtonsoft.Json;
-using Optional;
-using Optional.Collections;
 using WarHub.ArmouryModel.ProjectModel;
 using WarHub.ArmouryModel.Workspaces.Gitree.Serialization;
 
@@ -83,9 +80,9 @@ namespace WarHub.ArmouryModel.Workspaces.Gitree
                 var initialFolder = new GitreeStorageFolderNode(initialDir, null, Workspace);
 
                 FoldersToVisit.Enqueue(initialFolder);
-                return GetCore().Values();
+                return GetCore().Where(x => x != null);
 
-                IEnumerable<Option<GitreeStorageFileNode>> GetCore()
+                IEnumerable<GitreeStorageFileNode> GetCore()
                 {
                     while (FoldersToVisit.Count > 0)
                     {
@@ -95,15 +92,19 @@ namespace WarHub.ArmouryModel.Workspaces.Gitree
                 }
             }
 
-            private Option<GitreeStorageFileNode> VisitFolder(GitreeStorageFolderNode folder)
+            private GitreeStorageFileNode VisitFolder(GitreeStorageFolderNode folder)
             {
                 if (folder.GetDocuments().SingleOrDefault() is GitreeStorageFileNode doc)
                 {
-                    return doc.Some();
+                    return doc;
                 }
-                folder.GetFolders().ForEach(FoldersToVisit.Enqueue);
+                foreach (var subfolder in folder.GetFolders())
+                {
+                    FoldersToVisit.Enqueue(subfolder);
+                }
                 return default;
             }
         }
     }
 }
+

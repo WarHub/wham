@@ -60,10 +60,7 @@ namespace WarHub.ArmouryModel.Workspaces.Gitree.Serialization
         public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
         {
             var text = value.ToString()!; // null is handled by a different method
-            // CA1307 here is invalid - IndexOf is by default doing Ordinary comparison
-#pragma warning disable CA1307 // Specify StringComparison
-            if (text.IndexOf(LF) < 0)
-#pragma warning restore CA1307 // Specify StringComparison
+            if (text.IndexOf(LF, StringComparison.Ordinal) < 0)
             {
                 writer.WriteValue(text);
                 return;

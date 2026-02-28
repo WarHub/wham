@@ -9,15 +9,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- ~~chore: Target `net6.0` TFM. ([#140])~~
-- deps: update dependencies and build tools. ([#140])
-- refactor: simplify getting `SourceText` in source generator. First-time contribution from [@Neme12](https://github.com/Neme12). Thanks you! ([#138])
-- rename default branch to `main`.
-- build: use .NET 7 SDK.
-- chore: Target `net7.0` TFM.
+- chore: Target `net10.0` TFM. ([#259])
+- deps: update dependencies and build tools. ([#259])
+- deps: update System.CommandLine to 2.0.x. ([#259])
+- deps: update Serilog to 4.x, Serilog.Sinks.Console to 6.x.
+- deps: update Microsoft.CodeAnalysis.CSharp to 5.0.0. ([#259])
+- refactor: migrate source generator to IIncrementalGenerator. ([#260])
+- refactor: remove morelinq dependency, replace with local implementations.
+- refactor: remove Optional dependency, replace with nullable references.
+- refactor: code cleanup — remove warning suppressions, fix sync-over-async,
+  move InternalsVisibleTo to csproj.
 
-[#138]: https://github.com/WarHub/wham/pull/138
-[#140]: https://github.com/WarHub/wham/pull/140
+[#259]: https://github.com/WarHub/wham/pull/259
+[#260]: https://github.com/WarHub/wham/pull/260
 
 ## [0.13.0] - 2021-09-16
 

@@ -94,17 +94,7 @@ namespace WarHub.ArmouryModel.Source.XmlFormat
 
         public override string ToString() => BattleScribeString;
 
-        public override int GetHashCode()
-        {
-            var hashCode = -1092680650;
-            hashCode = hashCode * -1521134295 + Major.GetHashCode();
-            hashCode = hashCode * -1521134295 + Minor.GetHashCode();
-            // reason: this is analyzer bug, string.GetHashCode is invariant by default
-#pragma warning disable CA1307 // Specify StringComparison
-            hashCode = hashCode * -1521134295 + Suffix?.GetHashCode() ?? 0;
-#pragma warning restore CA1307 // Specify StringComparison
-            return hashCode;
-        }
+        public override int GetHashCode() => HashCode.Combine(Major, Minor, Suffix);
 
         public static int Compare(BattleScribeVersion? left, BattleScribeVersion? right)
             => left is null ? right is null ? 0 : -1 : left.CompareTo(right);
