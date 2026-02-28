@@ -26,4 +26,4 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: nugets-${{ runner.os }}
-          path: artifacts/packages/release
+          path: artifacts/package/release

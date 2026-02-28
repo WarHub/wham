@@ -6,14 +6,35 @@ name: Deploy
 on:
   repository_dispatch:
     types: [deploy-command]
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: 'Git ref to deploy (branch, tag, or SHA)'
+        required: false
+        default: 'main'
+      env:
+        description: 'Target environment (github, nuget, all)'
+        required: false
+        default: 'github'
+        type: choice
+        options:
+          - github
+          - nuget
+          - all
+      tag:
+        description: 'Tag the ref with version from nbgv'
+        required: false
+        default: false
+        type: boolean
 jobs:
   pack:
     runs-on: ubuntu-latest
     env:
       DOTNET_NOLOGO: 1
-      PUSH_TAG: ${{ github.event.client_payload.slash_command.args.unnamed.arg1 == 'tag' }}
+      PUSH_TAG: ${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.event.client_payload.slash_command.args.unnamed.arg1 == 'tag' }}
     steps:
       - name: Add deployment run link to command comment
+        if: github.event_name == 'repository_dispatch'
         uses: peter-evans/create-or-update-comment@v5
         with:
           comment-id: ${{ github.event.client_payload.github.payload.comment.id }}
@@ -21,7 +42,7 @@ jobs:
       - uses: actions/checkout@v6
         with:
           fetch-depth: 0 # all history
-          ref: ${{ github.event.client_payload.slash_command.args.named.ref }}
+          ref: ${{ github.event_name == 'workflow_dispatch' && inputs.ref || github.event.client_payload.slash_command.args.named.ref }}
       - uses: actions/setup-dotnet@v5
         with:
           dotnet-version: '10.0.x'
@@ -44,7 +65,7 @@ jobs:
           git push origin $v
           Write-Host "::set-output name=tag::$v"
       - name: Add tag info to command comment
-        if: env.PUSH_TAG == 'true'
+        if: env.PUSH_TAG == 'true' && github.event_name == 'repository_dispatch'
         uses: peter-evans/create-or-update-comment@v5
         with:
           comment-id: ${{ github.event.client_payload.github.payload.comment.id }}
@@ -59,7 +80,7 @@ jobs:
     needs: pack
     env:
       DOTNET_NOLOGO: 1
-      PUSH_TO: ${{ github.event.client_payload.slash_command.args.named.env }}
+      PUSH_TO: ${{ github.event_name == 'workflow_dispatch' && inputs.env || github.event.client_payload.slash_command.args.named.env }}
     steps:
       - uses: actions/download-artifact@v8
         with:
@@ -76,6 +97,7 @@ jobs:
         run: dotnet nuget push '*.nupkg' -s https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json -k ${{ github.token }} --skip-duplicate
 
       - name: Add reaction to command comment
+        if: github.event_name == 'repository_dispatch'
         uses: peter-evans/create-or-update-comment@v5
         with:
           comment-id: ${{ github.event.client_payload.github.payload.comment.id }}
