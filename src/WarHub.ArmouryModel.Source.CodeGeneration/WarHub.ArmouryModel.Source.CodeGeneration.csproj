@@ -4,8 +4,6 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <IsPackable>false</IsPackable>
     <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
-    <!-- Suppress non-incremental source generator warnings; migration to IIncrementalGenerator is a separate effort -->
-    <NoWarn>$(NoWarn);RS1035;RS1042</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
