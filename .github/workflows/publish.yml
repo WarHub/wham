@@ -1,0 +1,132 @@
+name: Publish
+
+on:
+  workflow_call:
+    inputs:
+      ref:
+        description: 'Git ref to build and publish (branch, tag, or SHA)'
+        type: string
+        default: ''
+      push-to:
+        description: 'Package registries to push to: github, nuget, or all'
+        type: string
+        default: 'github'
+      tag:
+        description: 'Tag the ref with nbgv version before publishing'
+        type: boolean
+        default: false
+      comment-id:
+        description: 'GitHub comment ID for status updates (optional)'
+        type: string
+        default: ''
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: 'Git ref to build and publish (branch, tag, or SHA)'
+        required: false
+        default: ''
+      push-to:
+        description: 'Package registries to push to'
+        required: false
+        default: 'github'
+        type: choice
+        options:
+          - github
+          - nuget
+          - all
+      tag:
+        description: 'Tag the ref with nbgv version before publishing'
+        required: false
+        default: false
+        type: boolean
+
+permissions:
+  contents: write
+  packages: write
+  id-token: write
+  issues: write
+  pull-requests: write
+
+jobs:
+  pack:
+    runs-on: ubuntu-latest
+    env:
+      DOTNET_NOLOGO: 1
+    steps:
+      - name: Link run to comment
+        if: inputs.comment-id != ''
+        uses: peter-evans/create-or-update-comment@v5
+        with:
+          comment-id: ${{ inputs.comment-id }}
+          body: "[Publish run](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})"
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0 # all history
+          ref: ${{ inputs.ref || '' }}
+      - uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: '10.0.x'
+      - run: dotnet --info
+      - run: dotnet tool restore
+      - run: dotnet nbgv get-version
+      - run: dotnet restore -v m
+      - run: dotnet build --no-restore
+      - run: dotnet test --no-build
+      - run: dotnet pack
+      - name: Add and push version tag
+        if: inputs.tag
+        id: tagpush
+        shell: pwsh
+        run: |
+          $env:PublicRelease = $true
+          $v = "v$(dotnet nbgv get-version -v SemVer2)"
+          git tag $v
+          git push origin $v
+          "tag=$v" >> $env:GITHUB_OUTPUT
+      - name: Update comment with tag
+        if: inputs.tag && inputs.comment-id != ''
+        uses: peter-evans/create-or-update-comment@v5
+        with:
+          comment-id: ${{ inputs.comment-id }}
+          body: "Pushed tag `${{ steps.tagpush.outputs.tag }}`"
+      - name: Upload nugets
+        uses: actions/upload-artifact@v7
+        with:
+          name: nugets
+          path: artifacts/package/release
+
+  push:
+    runs-on: ubuntu-latest
+    needs: pack
+    environment: package-release
+    env:
+      DOTNET_NOLOGO: 1
+      PUSH_TO: ${{ inputs.push-to }}
+    steps:
+      - uses: actions/download-artifact@v8
+        with:
+          name: nugets
+
+      - name: NuGet login (trusted publishing)
+        if: env.PUSH_TO == 'all' || env.PUSH_TO == 'nuget'
+        uses: NuGet/login@v1
+        id: nuget-login
+        with:
+          user: warhub
+
+      - name: Push to nuget.org
+        if: env.PUSH_TO == 'all' || env.PUSH_TO == 'nuget'
+        shell: pwsh
+        run: dotnet nuget push '*.nupkg' -s https://api.nuget.org/v3/index.json -k ${{ steps.nuget-login.outputs.NUGET_API_KEY }} --skip-duplicate
+
+      - name: Push to GitHub Packages
+        if: env.PUSH_TO == 'all' || env.PUSH_TO == 'github' || env.PUSH_TO == ''
+        shell: pwsh
+        run: dotnet nuget push '*.nupkg' -s https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json -k ${{ github.token }} --skip-duplicate
+
+      - name: React to comment
+        if: inputs.comment-id != ''
+        uses: peter-evans/create-or-update-comment@v5
+        with:
+          comment-id: ${{ inputs.comment-id }}
+          reactions: hooray
