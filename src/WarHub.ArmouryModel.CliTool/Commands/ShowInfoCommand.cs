@@ -1,16 +1,15 @@
-﻿using System.CommandLine;
-using System.CommandLine.IO;
+﻿using System.IO;
 
 namespace WarHub.ArmouryModel.CliTool.Commands
 {
     public static class ShowInfoCommand
     {
-        public static void Run(IConsole console)
+        public static void Run(TextWriter output)
         {
-            console.Out.WriteLine($"Product: {ThisAssembly.AssemblyName} {ThisAssembly.AssemblyInformationalVersion}");
-            console.Out.WriteLine($"Configuration: {ThisAssembly.AssemblyConfiguration}");
-            console.Out.WriteLine($"File version: {ThisAssembly.AssemblyFileVersion}");
-            console.Out.WriteLine($"Assembly version: {ThisAssembly.AssemblyVersion}");
+            output.WriteLine($"Product: {ThisAssembly.AssemblyName} {ThisAssembly.AssemblyInformationalVersion}");
+            output.WriteLine($"Configuration: {ThisAssembly.AssemblyConfiguration}");
+            output.WriteLine($"File version: {ThisAssembly.AssemblyFileVersion}");
+            output.WriteLine($"Assembly version: {ThisAssembly.AssemblyVersion}");
         }
     }
 }
