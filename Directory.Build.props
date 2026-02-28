@@ -18,7 +18,7 @@
     <IncludeSymbols>true</IncludeSymbols>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <MainTargetFramework>net8.0</MainTargetFramework>
+    <MainTargetFramework>net10.0</MainTargetFramework>
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
     <ContinuousIntegrationBuild Condition=" '$(ContinuousIntegrationBuild)' == '' and '$(CI)' == 'true' ">true</ContinuousIntegrationBuild>
     <UseArtifactsOutput>true</UseArtifactsOutput>
