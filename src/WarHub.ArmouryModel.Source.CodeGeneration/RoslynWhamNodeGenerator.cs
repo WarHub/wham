@@ -2,6 +2,7 @@
 using System.Collections.Immutable;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -11,24 +12,40 @@ using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 namespace WarHub.ArmouryModel.Source.CodeGeneration
 {
     [Generator]
-    public class RoslynWhamNodeGenerator : ISourceGenerator
+    public class RoslynWhamNodeGenerator : IIncrementalGenerator
     {
-        public void Initialize(GeneratorInitializationContext context)
+        public void Initialize(IncrementalGeneratorInitializationContext context)
         {
-            context.RegisterForSyntaxNotifications(() => new SyntaxReceiver());
+            // Collect all record declarations annotated with [WhamNodeCore]
+            var recordSymbols = context.SyntaxProvider
+                .ForAttributeWithMetadataName(
+                    CoreDescriptorBuilder.WhamNodeCoreAttributeMetadataName,
+                    predicate: static (node, _) => node is RecordDeclarationSyntax,
+                    transform: static (ctx, _) => (INamedTypeSymbol)ctx.TargetSymbol)
+                .Collect();
+
+            var compilationAndSymbols = context.CompilationProvider.Combine(recordSymbols);
+
+            context.RegisterSourceOutput(compilationAndSymbols, static (spc, source) =>
+            {
+                var (compilation, symbols) = source;
+                Execute(spc, compilation, symbols);
+            });
         }
 
-        public void Execute(GeneratorExecutionContext context)
+        private static void Execute(
+            SourceProductionContext context,
+            Compilation compilation,
+            ImmutableArray<INamedTypeSymbol> symbols)
         {
-            //System.Diagnostics.Debugger.Launch();
-            if (context.SyntaxContextReceiver is not SyntaxReceiver syntaxReceiver)
+            if (symbols.IsDefaultOrEmpty)
                 return;
 
-            var parseOptions = context.ParseOptions;
-            var descriptorBuilder = CoreDescriptorBuilder.Create(context.Compilation);
+            var descriptorBuilder = CoreDescriptorBuilder.Create(compilation);
 
-            var descriptors = syntaxReceiver.WhamNodeCoreRecords
-                .Where(x => x.GetAttributes().Any(IsWhamNodeCoreAttribute))
+            var descriptors = symbols
+                .Where(x => x.GetAttributes().Any(a =>
+                    SymbolEqualityComparer.Default.Equals(descriptorBuilder.WhamNodeCoreAttributeSymbol, a.AttributeClass)))
                 .Select(x => descriptorBuilder.CreateDescriptor(x))
                 .OrderBy(x => x.RawModelName)
                 .ToImmutableArray();
@@ -36,17 +53,11 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
             foreach (var descriptor in descriptors)
             {
                 var compilationUnit = CreateSource(descriptor);
-                AddSource(descriptor.RawModelName, compilationUnit);
+                context.AddSource(descriptor.RawModelName, compilationUnit.GetText(Encoding.UTF8));
             }
 
-            var serializerRoot = WhamSerializerGenerator.Generate(context.Compilation, descriptors);
-            AddSource("WhamCoreXmlSerializer", serializerRoot);
-
-            bool IsWhamNodeCoreAttribute(AttributeData data) =>
-                SymbolEqualityComparer.Default.Equals(descriptorBuilder.WhamNodeCoreAttributeSymbol, data.AttributeClass);
-
-            void AddSource(string hintName, CompilationUnitSyntax compilationUnit) =>
-                context.AddSource(hintName, compilationUnit.GetText(Encoding.UTF8));
+            var serializerRoot = WhamSerializerGenerator.Generate(compilation, descriptors);
+            context.AddSource("WhamCoreXmlSerializer", serializerRoot.GetText(Encoding.UTF8));
         }
 
         private static CompilationUnitSyntax CreateSource(CoreDescriptor descriptor)
@@ -149,21 +160,5 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
             yield return NodeFactoryPartialGenerator.Generate(descriptor, default);
         }
 
-        private class SyntaxReceiver : ISyntaxContextReceiver
-        {
-            public List<INamedTypeSymbol> WhamNodeCoreRecords { get; } = new List<INamedTypeSymbol>();
-
-            public void OnVisitSyntaxNode(GeneratorSyntaxContext context)
-            {
-                if (context.Node.IsKind(SyntaxKind.RecordDeclaration)
-                    && context.Node is RecordDeclarationSyntax record
-                    && record.AttributeLists.Count > 0
-                    && context.SemanticModel.GetDeclaredSymbol(record) is { } recordSymbol
-                    && recordSymbol.GetAttributes().Any(ad => ad.AttributeClass?.ToDisplayString() == CoreDescriptorBuilder.WhamNodeCoreAttributeMetadataName))
-                {
-                    WhamNodeCoreRecords.Add(recordSymbol);
-                }
-            }
-        }
     }
 }
