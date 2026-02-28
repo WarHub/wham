@@ -5,6 +5,12 @@ using WarHub.ArmouryModel.Source;
 
 namespace WarHub.ArmouryModel.Workspaces.BattleScribe
 {
+    /// <summary>
+    /// Represents a BattleScribe XML document.
+    /// </summary>
+    /// <param name="DatafileInfo">Gets the underlying datafile info.</param>
+    /// <param name="Kind">Gets the kind of this document.</param>
+    /// <param name="Workspace">Gets the parent workspace of this document.</param>
     public record XmlDocument(
         IDatafileInfo DatafileInfo,
         XmlDocumentKind Kind,
