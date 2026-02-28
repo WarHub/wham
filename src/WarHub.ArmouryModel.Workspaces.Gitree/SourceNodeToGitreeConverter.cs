@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Immutable;
 using System.Linq;
-using Optional;
-using Optional.Collections;
 using WarHub.ArmouryModel.Source;
 
 namespace WarHub.ArmouryModel.Workspaces.Gitree
@@ -28,10 +26,10 @@ namespace WarHub.ArmouryModel.Workspaces.Gitree
             return node
                 .ChildrenInfos()
                 .Select(CreateListOption)
-                .Values()
+                .Where(x => x != null)
                 .ToImmutableArray();
 
-            Option<GitreeListNode> CreateListOption(ChildInfo info)
+            GitreeListNode CreateListOption(ChildInfo info)
             {
                 if (info.IsList
                     && Gitree.SeparatableKinds.Contains(info.Node.Kind)
@@ -40,9 +38,9 @@ namespace WarHub.ArmouryModel.Workspaces.Gitree
                     var treeNodes = CreateList(list.NodeList);
                     var name = Gitree.ChildListAliases.TryGetValue(info.Name, out var alias)
                         ? alias : info.Name;
-                    return new GitreeListNode(name) { Items = treeNodes }.Some();
+                    return new GitreeListNode(name) { Items = treeNodes };
                 }
-                return default;
+                return null;
             }
         }
 

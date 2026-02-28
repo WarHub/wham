@@ -2,7 +2,6 @@
 using System.IO;
 using System.Linq;
 using Newtonsoft.Json;
-using Optional;
 using WarHub.ArmouryModel.Source;
 using WarHub.ArmouryModel.Workspaces.Gitree.Serialization;
 
@@ -36,17 +35,20 @@ namespace WarHub.ArmouryModel.Workspaces.Gitree
             foreach (var childList in blobItem.Lists)
             {
                 var dirName = WriteList(childList, directory);
-                dirName.MatchSome(x => usedNames.Add(x));
+                if (dirName != null)
+                {
+                    usedNames.Add(dirName);
+                }
             }
             PruneUnusedDirectories(directory, usedNames);
             return filename;
         }
 
-        private Option<string> WriteList(GitreeListNode blobList, DirectoryInfo directory)
+        private string WriteList(GitreeListNode blobList, DirectoryInfo directory)
         {
             if (blobList.Items.Length == 0)
             {
-                return default;
+                return null;
             }
             var listDirName = blobList.Name.FilenameSanitize();
             var listDir = directory.CreateSubdirectory(listDirName);
@@ -71,7 +73,7 @@ namespace WarHub.ArmouryModel.Workspaces.Gitree
                 }
                 PruneUnusedDirectories(listDir, usedNames);
             }
-            return listDir.Name.Some();
+            return listDir.Name;
         }
 
         private static void PruneUnusedFiles(DirectoryInfo directory, HashSet<string> usedNames)
