@@ -69,6 +69,66 @@ This project uses `Nerdbank.GitVersioning` package that automatically generates 
 for assemblies and packages from git tree. It won't work if the git clone is *shallow* or otherwise
 incomplete.
 
+## Release Process
+
+### Preparing a release
+
+1. Create a PR that sets `version.json` to the stable version (e.g. `"0.14"`) and updates
+   `CHANGELOG.md` with the release date. Merge the PR.
+2. Tag the merged commit: `git tag vX.Y.Z && git push origin vX.Y.Z`
+3. After tagging, create a PR to bump `version.json` to the next alpha version
+   (e.g. `"0.15.0-alpha.{height}"`) and add an `[Unreleased]` section to `CHANGELOG.md`.
+
+### Publishing packages
+
+Packages are published via the **Publish** workflow (`.github/workflows/publish.yml`).
+
+**Via GitHub CLI or Actions UI** (recommended):
+
+```bash
+# Publish to GitHub Packages only
+gh workflow run publish.yml -f ref=vX.Y.Z -f push-to=github
+
+# Publish to nuget.org only
+gh workflow run publish.yml -f ref=vX.Y.Z -f push-to=nuget
+
+# Publish to both registries
+gh workflow run publish.yml -f ref=vX.Y.Z -f push-to=all
+```
+
+**Via ChatOps** (requires `SLASH_COMMAND_DISPATCH_TOKEN` secret):
+
+Comment on any issue or PR:
+```
+/deploy ref=vX.Y.Z env=all
+```
+
+### NuGet trusted publishing
+
+NuGet.org publishing uses [Trusted Publishing](https://learn.microsoft.com/en-us/nuget/nuget-org/trusted-publishing)
+(OIDC) instead of long-lived API keys. The trusted publishing policy is configured on nuget.org for:
+
+| Field              | Value              |
+|--------------------|--------------------|
+| Package Owner      | `warhub`           |
+| Repository Owner   | `WarHub`           |
+| Repository         | `wham`             |
+| Workflow           | `publish.yml`      |
+| Environment        | `package-release`  |
+
+The `push` job in `publish.yml` uses `environment: package-release` which provides
+environment protection rules (e.g. required reviewers) as a gate before publishing.
+
+### Tagging
+
+Tags can also be created via the **Tag** workflow:
+
+```bash
+gh workflow run tag-command.yml -f ref=main
+```
+
+Or via ChatOps: `/tag ref=main`
+
 ## Credits
 
 The library is MIT licensed (license in repo root).
