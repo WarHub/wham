@@ -5,7 +5,6 @@ using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using MoreLinq.Extensions;
 using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
 namespace WarHub.ArmouryModel.Source.CodeGeneration

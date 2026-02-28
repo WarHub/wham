@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
-using MoreLinq;
 using Newtonsoft.Json;
 using Optional;
 using Optional.Collections;
@@ -101,7 +100,10 @@ namespace WarHub.ArmouryModel.Workspaces.Gitree
                 {
                     return doc.Some();
                 }
-                folder.GetFolders().ForEach(FoldersToVisit.Enqueue);
+                foreach (var subfolder in folder.GetFolders())
+                {
+                    FoldersToVisit.Enqueue(subfolder);
+                }
                 return default;
             }
         }

@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Immutable;
 using System.Linq;
-using MoreLinq;
 using Optional;
 using Optional.Collections;
 using WarHub.ArmouryModel.Source;
@@ -53,12 +52,15 @@ namespace WarHub.ArmouryModel.Workspaces.Gitree
             var nameCounts = names.Values
                 .Distinct(StringComparer.OrdinalIgnoreCase)
                 .ToDictionary(x => x, _ => 0, StringComparer.OrdinalIgnoreCase);
-            return nodes
-                .Select(Visit)
-                .Scan(default(GitreeNode), AssignIdentifiers)
-                // skip seed
-                .Skip(1)
-                .ToImmutableArray();
+            var visited = nodes.Select(Visit).ToList();
+            var result = ImmutableArray.CreateBuilder<GitreeNode>(visited.Count);
+            GitreeNode prev = default;
+            foreach (var node in visited)
+            {
+                prev = AssignIdentifiers(prev, node);
+                result.Add(prev);
+            }
+            return result.MoveToImmutable();
 
             GitreeNode AssignIdentifiers(GitreeNode prevTreeNode, GitreeNode treeNode)
             {
