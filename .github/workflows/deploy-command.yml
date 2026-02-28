@@ -21,3 +21,4 @@ jobs:
       push-to: ${{ github.event.client_payload.slash_command.args.named.env || 'github' }}
       tag: ${{ github.event.client_payload.slash_command.args.unnamed.arg1 == 'tag' }}
       comment-id: ${{ github.event.client_payload.github.payload.comment.id }}
+    secrets: inherit
