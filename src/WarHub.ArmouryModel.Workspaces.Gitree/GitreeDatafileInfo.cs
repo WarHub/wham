@@ -19,7 +19,6 @@ namespace WarHub.ArmouryModel.Workspaces.Gitree
         public GitreeStorageFileNode RootDocument { get; }
 
         // TODO should be optimized to read data type from single "root" file
-        // TODO shouldn't block
         public SourceKind DataKind => GetData().Kind;
 
         private WeakReference<SourceNode> WeakData { get; } = new WeakReference<SourceNode>(null);
@@ -30,29 +29,28 @@ namespace WarHub.ArmouryModel.Workspaces.Gitree
             {
                 return cached;
             }
-            return GetDataAsync(cancellationToken).GetAwaiter().GetResult();
+            return ReadAndCacheData();
         }
 
-        public async Task<SourceNode> GetDataAsync(CancellationToken cancellationToken = default)
+        public Task<SourceNode> GetDataAsync(CancellationToken cancellationToken = default)
         {
             if (WeakData.TryGetTarget(out var cached))
             {
-                return cached;
+                return Task.FromResult(cached);
             }
-            var data = await ReadDataAsync();
-            WeakData.SetTarget(data);
-            return data;
+            return Task.FromResult(ReadAndCacheData());
         }
 
         public string GetStorageName() => new FileInfo(Filepath).Directory.Name;
 
         public bool TryGetData(out SourceNode node) => WeakData.TryGetTarget(out node);
 
-        private Task<SourceNode> ReadDataAsync()
+        private SourceNode ReadAndCacheData()
         {
             var rootItem = new GitreeReader().ReadItemFolder(RootDocument.Parent);
             var node = new GitreeToSourceNodeConverter().ParseNode(rootItem);
-            return Task.FromResult(node);
+            WeakData.SetTarget(node);
+            return node;
         }
     }
 }

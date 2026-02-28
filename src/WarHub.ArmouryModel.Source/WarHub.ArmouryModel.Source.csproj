@@ -10,6 +10,11 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <InternalsVisibleTo Include="WarHub.ArmouryModel.Source.BattleScribe" />
+    <InternalsVisibleTo Include="WarHub.ArmouryModel.Source.Tests" />
+  </ItemGroup>
+
+  <ItemGroup>
     <None Include="$(CatalogueXsdPath)" Link="DataFormat/xml/schema/latest/%(Filename)%(Extension)" />
     <EmbeddedResource Include="../dataformat/**/*" Exclude="$(CatalogueXsdPath)" Link="DataFormat/%(RecursiveDir)%(Filename)%(Extension)" />
   </ItemGroup>
