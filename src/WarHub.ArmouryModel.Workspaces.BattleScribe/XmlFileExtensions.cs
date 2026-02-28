@@ -179,7 +179,9 @@ namespace WarHub.ArmouryModel.Workspaces.BattleScribe
             foreach (var datafile in datafiles)
             {
                 var entry = zip.CreateEntry(datafile.Filepath);
+#pragma warning disable CA1849 // ZipArchiveEntry.Open is appropriate here since Serialize is synchronous
                 using var entryStream = entry.Open();
+#pragma warning restore CA1849
                 var data = await datafile.GetDataOrThrowAsync();
                 data.Serialize(entryStream);
             }
@@ -196,7 +198,9 @@ namespace WarHub.ArmouryModel.Workspaces.BattleScribe
         {
             using var fileStream = File.Create(filepath);
             using var archive = new ZipArchive(fileStream, ZipArchiveMode.Create);
+#pragma warning disable CA1849 // ZipArchiveEntry.Open is appropriate here since Serialize is synchronous
             using var entryStream = archive.CreateEntry(datafile.GetXmlFilename()).Open();
+#pragma warning restore CA1849
             var data = await datafile.GetDataOrThrowAsync();
             data.Serialize(entryStream);
         }

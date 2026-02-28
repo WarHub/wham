@@ -23,6 +23,8 @@ jobs:
           fetch-depth: 0 # all history
           ref: ${{ github.event.client_payload.slash_command.args.named.ref }}
       - uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: '10.0.x'
       - run: dotnet --info
       - run: dotnet tool restore
       - run: dotnet nbgv get-version
@@ -48,7 +50,7 @@ jobs:
           comment-id: ${{ github.event.client_payload.github.payload.comment.id }}
           body: "Pushed tag `${{ steps.tagpush.outputs.tag }}`"
       - name: Upload nugets to workflow artifacts
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: nugets
           path: artifacts/package/release
@@ -59,7 +61,7 @@ jobs:
       DOTNET_NOLOGO: 1
       PUSH_TO: ${{ github.event.client_payload.slash_command.args.named.env }}
     steps:
-      - uses: actions/download-artifact@v7
+      - uses: actions/download-artifact@v8
         with:
           name: nugets
 

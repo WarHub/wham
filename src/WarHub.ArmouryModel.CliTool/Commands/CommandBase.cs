@@ -1,6 +1,6 @@
-﻿using System.CommandLine;
-using System.CommandLine.IO;
+﻿using System;
 using System.Globalization;
+using System.IO;
 using Serilog;
 using Serilog.Core;
 using Serilog.Events;
@@ -12,32 +12,32 @@ namespace WarHub.ArmouryModel.CliTool.Commands
     {
         protected ILogger Log { get; private set; } = Logger.None;
 
-        public IConsole Console { get; set; } = new TestConsole();
+        public TextWriter Output { get; set; } = Console.Out;
 
         protected ILogger SetupLogger(string? verbosity)
         {
             var baseConfig = new LoggerConfiguration()
                 .MinimumLevel.Is(Program.GetLogLevel(verbosity));
 
-            var config = Console is SystemConsole ?
-                baseConfig.WriteTo.Console(theme: AnsiConsoleTheme.Code, formatProvider: CultureInfo.InvariantCulture)
-                : baseConfig.WriteTo.Sink(new TestConsoleSink(Console));
+            var config = Output == Console.Out
+                ? baseConfig.WriteTo.Console(theme: AnsiConsoleTheme.Code, formatProvider: CultureInfo.InvariantCulture)
+                : baseConfig.WriteTo.Sink(new TextWriterSink(Output));
 
             return Log = config.CreateLogger();
         }
 
-        private sealed class TestConsoleSink : ILogEventSink
+        private sealed class TextWriterSink : ILogEventSink
         {
-            public TestConsoleSink(IConsole console)
+            public TextWriterSink(TextWriter writer)
             {
-                Console = console;
+                Writer = writer;
             }
 
-            public IConsole Console { get; }
+            public TextWriter Writer { get; }
 
             public void Emit(LogEvent logEvent)
             {
-                Console.Out.WriteLine(logEvent.RenderMessage(CultureInfo.InvariantCulture));
+                Writer.WriteLine(logEvent.RenderMessage(CultureInfo.InvariantCulture));
             }
         }
     }

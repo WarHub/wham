@@ -13,6 +13,8 @@ jobs:
         with:
           fetch-depth: 0 # all history
       - uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: '10.0.x'
       - run: dotnet --info
       - run: dotnet tool restore
       - run: dotnet nbgv get-version
@@ -21,7 +23,7 @@ jobs:
       - run: dotnet test --no-build
       - run: dotnet pack
       - name: Publish NuGet artifacts
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: nugets-${{ runner.os }}
           path: artifacts/packages/release

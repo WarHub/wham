@@ -21,7 +21,7 @@ namespace WarHub.ArmouryModel.Workspaces.Gitree
 
         public string WriteItem(GitreeNode blobItem, DirectoryInfo directory)
         {
-            INodeWithCore<NodeCore> node = blobItem.Datablob;
+            DatablobNode node = blobItem.Datablob;
             var filename = GetFilename(blobItem);
             using (var fileStream = File.CreateText(Path.Combine(directory.FullName, filename)))
             {

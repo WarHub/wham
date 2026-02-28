@@ -1,7 +1,5 @@
 ﻿using System;
 using System.CommandLine;
-using System.CommandLine.IO;
-using System.CommandLine.Parsing;
 using System.IO;
 using System.Threading.Tasks;
 using FluentAssertions;
@@ -19,7 +17,7 @@ namespace WarHub.ArmouryModel.CliTool.Tests.Publish
         [Fact]
         public async Task When_file_version_is_higher_than_supported_then_logs_warning()
         {
-            var console = new TestConsole();
+            var output = new StringWriter();
             using var tmpContainer = TempDir.Create();
             var tmp = tmpContainer.TemporaryDir;
             var currentV = RootElement.GameSystem.Info().CurrentVersion;
@@ -30,16 +28,16 @@ namespace WarHub.ArmouryModel.CliTool.Tests.Publish
                 gst.Serialize(gstFileStream);
             }
 
-            await Program.CreateParser().InvokeAsync($"publish -s \"{tmp}\" -o \"{tmp}\"", console);
+            await Program.CreateCommand().Parse($"publish -s \"{tmp}\" -o \"{tmp}\"").InvokeAsync(new() { Output = output });
 
-            console.Out.ToString()
+            output.ToString()
                 .Should().Contain(WarningMessage);
         }
 
         [Fact]
         public async Task When_file_version_is_lower_than_current_then_doesnt_log_warning()
         {
-            var console = new TestConsole();
+            var output = new StringWriter();
             using var tmpContainer = TempDir.Create();
             var tmp = tmpContainer.TemporaryDir;
             var currentV = RootElement.GameSystem.Info().CurrentVersion;
@@ -50,9 +48,9 @@ namespace WarHub.ArmouryModel.CliTool.Tests.Publish
                 gst.Serialize(gstFileStream);
             }
 
-            await Program.CreateParser().InvokeAsync($"publish -s \"{tmp}\" -o \"{tmp}\"", console);
+            await Program.CreateCommand().Parse($"publish -s \"{tmp}\" -o \"{tmp}\"").InvokeAsync(new() { Output = output });
 
-            console.Out.ToString()
+            output.ToString()
                 .Should().NotContain(WarningMessage);
         }
 
