@@ -170,15 +170,29 @@ internal sealed class ConstraintValidator
                     continue;
                 }
 
-                // Non-forces constraints: validate all entries
-                // (BattleScribe has a bug skipping uncategorized entries; we validate them)
+                // Determine which entryId to use for this constraint's error
+                // Entry link constraints use the link's ID, shared entry constraints use target ID
+                bool isLinkConstraint = avail.SourceLink?.Constraints?.Any(c => c.Id == constraint.Id) == true;
+                string constraintEntryId = isLinkConstraint ? avail.SourceLink!.Id : entryId;
 
                 // Shared constraint: validate once per (constraintId, entryId)
                 if (constraint.Shared)
                 {
                     if (!sharedChecked.Add((constraint.Id, entryId))) continue;
-                    ValidateSharedConstraint(constraint, entry, modified, force, errors);
+                    // For merged entries with both shared and link constraints,
+                    // use the most restrictive value (BattleScribe behavior)
+                    ValidateSharedConstraint(constraint, entry, modified, force, errors,
+                        avail.SourceLink?.Constraints);
                     continue;
+                }
+
+                // Skip link constraints that have a matching shared constraint on the same entry
+                // (the shared constraint handler absorbs the link's more restrictive value)
+                if (isLinkConstraint)
+                {
+                    bool hasMatchingShared = entry.Constraints.Any(c =>
+                        c.Shared && c.Field == constraint.Field && c.Type == constraint.Type);
+                    if (hasMatchingShared) continue;
                 }
 
                 // Regular constraint
@@ -203,8 +217,10 @@ internal sealed class ConstraintValidator
                     effectiveConstraintValue = total * constraintVal / 100.0;
                 }
 
-                var (ot, oeid) = GetOwnerForConstraint(constraint, entry, entryId);
-                CheckConstraint(constraint, effectiveConstraintValue, count, entryId,
+                var (ot, oeid) = isLinkConstraint
+                    ? ("selection", (string?)entryId)
+                    : GetOwnerForConstraint(constraint, entry, entryId);
+                CheckConstraint(constraint, effectiveConstraintValue, count, constraintEntryId,
                     ot, oeid, errors, modified.Hidden);
             }
         }
@@ -224,11 +240,28 @@ internal sealed class ConstraintValidator
         ProtocolSelectionEntry sharedEntry,
         ModifiedProperties modified,
         RosterForce force,
-        List<ValidationErrorState> errors)
+        List<ValidationErrorState> errors,
+        List<ProtocolConstraint>? linkConstraints = null)
     {
         // Count by shared entry ID (Entry.Id), not by effectiveId (link ID)
         string sharedEntryId = sharedEntry.Id;
         var constraintVal = modified.ConstraintValues.GetValueOrDefault(constraint.Id, constraint.Value);
+
+        // For merged entries, absorb the most restrictive link constraint value
+        // BattleScribe attributes error to the shared constraint but uses the more restrictive value
+        if (linkConstraints is { Count: > 0 })
+        {
+            foreach (var lc in linkConstraints)
+            {
+                if (lc.Field == constraint.Field && lc.Type == constraint.Type)
+                {
+                    if (constraint.Type == "max" && lc.Value < constraintVal)
+                        constraintVal = lc.Value;
+                    else if (constraint.Type == "min" && lc.Value > constraintVal)
+                        constraintVal = lc.Value;
+                }
+            }
+        }
 
         double count;
         if (constraint.Field == "selections")
@@ -358,8 +391,8 @@ internal sealed class ConstraintValidator
     private static (string ownerType, string? ownerEntryId) GetOwnerForConstraint(
         ProtocolConstraint constraint, ProtocolSelectionEntry entry, string entryId)
     {
-        // scope=force → force owner
-        if (constraint.Scope == "force")
+        // scope=force + type=min → force owner (force-level minimum requirement)
+        if (constraint.Scope == "force" && constraint.Type == "min")
             return ("force", null);
 
         // min constraints with primary category → category owner
@@ -374,7 +407,7 @@ internal sealed class ConstraintValidator
             }
         }
 
-        // max constraints and all others → selection owner using entry.Id
+        // All other selection entry constraints → selection owner
         return ("selection", entryId);
     }
 

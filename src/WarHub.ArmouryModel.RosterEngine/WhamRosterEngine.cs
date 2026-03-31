@@ -226,9 +226,36 @@ public sealed class WhamRosterEngine : IRosterEngine
     {
         if (avail.Entry is { } entry)
         {
+            // If entry comes from a group with categoryLinks, inherit them
+            var effectiveEntry = entry;
+            if (avail.SourceGroup?.CategoryLinks is { Count: > 0 } groupCatLinks)
+            {
+                effectiveEntry = new ProtocolSelectionEntry
+                {
+                    Id = entry.Id,
+                    Name = entry.Name,
+                    Type = entry.Type,
+                    Hidden = entry.Hidden,
+                    Collective = entry.Collective,
+                    Costs = entry.Costs,
+                    Constraints = entry.Constraints,
+                    Modifiers = entry.Modifiers,
+                    ModifierGroups = entry.ModifierGroups,
+                    SelectionEntries = entry.SelectionEntries,
+                    SelectionEntryGroups = entry.SelectionEntryGroups,
+                    EntryLinks = entry.EntryLinks,
+                    CategoryLinks = MergeCategoryLinks(entry.CategoryLinks, groupCatLinks),
+                    Profiles = entry.Profiles,
+                    Rules = entry.Rules,
+                    InfoGroups = entry.InfoGroups,
+                    InfoLinks = entry.InfoLinks,
+                    Page = entry.Page,
+                    PublicationId = entry.PublicationId,
+                };
+            }
             return new RosterSelection
             {
-                Entry = entry,
+                Entry = effectiveEntry,
                 SourceLink = avail.SourceLink,
                 Number = 1
             };
@@ -475,16 +502,27 @@ public sealed class WhamRosterEngine : IRosterEngine
         RosterSelection? selection, RosterForce? force)
     {
         var categories = new List<CategoryState>();
-        if (entry.CategoryLinks is not { } links) return categories;
 
-        foreach (var link in links)
+        // Include categoryLinks from entry itself
+        if (entry.CategoryLinks is { } links)
         {
-            var primary = link.Primary;
+            foreach (var link in links)
+            {
+                var primary = link.Primary;
+                primary = EvaluateCategoryLinkPrimary(link, primary, entry, evaluator, selection, force);
+                categories.Add(new CategoryState(Name: link.Name, EntryId: link.TargetId, Primary: primary));
+            }
+        }
 
-            // Process categoryLink-level modifiers (field=primary)
-            primary = EvaluateCategoryLinkPrimary(link, primary, entry, evaluator, selection, force);
-
-            categories.Add(new CategoryState(Name: link.Name, EntryId: link.TargetId, Primary: primary));
+        // Inherit categoryLinks from the source group (selectionEntryGroup)
+        if (selection?.SourceGroup?.CategoryLinks is { } groupCatLinks)
+        {
+            var existingIds = new HashSet<string>(categories.Select(c => c.EntryId), StringComparer.Ordinal);
+            foreach (var gcl in groupCatLinks)
+            {
+                if (!existingIds.Contains(gcl.TargetId))
+                    categories.Add(new CategoryState(Name: gcl.Name, EntryId: gcl.TargetId, Primary: gcl.Primary));
+            }
         }
 
         // Apply entry-level category modifiers (set-primary, unset-primary)
@@ -612,17 +650,8 @@ public sealed class WhamRosterEngine : IRosterEngine
         var totals = new Dictionary<string, double>(StringComparer.Ordinal);
         var referencedTypes = new HashSet<string>(StringComparer.Ordinal);
 
-        // Track cost types referenced by any available entry (not just selected)
-        foreach (var force in _forces)
-        {
-            var available = _resolver.GetAvailableEntries(force.Catalogue);
-            foreach (var avail in available)
-            {
-                if (avail.Entry?.Costs is { } entryCosts)
-                    foreach (var c in entryCosts)
-                        referencedTypes.Add(c.TypeId);
-            }
-        }
+        // Track cost types referenced by any entry (root or child, direct or shared)
+        CollectReferencedCostTypes(referencedTypes);
 
         foreach (var force in _forces)
         {
@@ -648,6 +677,30 @@ public sealed class WhamRosterEngine : IRosterEngine
         }
 
         return result;
+    }
+
+    private void CollectReferencedCostTypes(HashSet<string> referencedTypes)
+    {
+        // Scan all available entries and their children
+        foreach (var force in _forces)
+        {
+            var available = _resolver.GetAvailableEntries(force.Catalogue);
+            foreach (var avail in available)
+            {
+                if (avail.Entry is { } entry)
+                    CollectCostTypesRecursive(entry, referencedTypes);
+            }
+        }
+    }
+
+    private static void CollectCostTypesRecursive(ProtocolSelectionEntry entry, HashSet<string> types)
+    {
+        if (entry.Costs is { } costs)
+            foreach (var c in costs)
+                types.Add(c.TypeId);
+        if (entry.SelectionEntries is { } children)
+            foreach (var child in children)
+                CollectCostTypesRecursive(child, types);
     }
 
     private static void AggregateCostsRecursive(RosterSelection sel, Dictionary<string, double> totals,
@@ -710,6 +763,13 @@ public sealed class WhamRosterEngine : IRosterEngine
             CopyChildren(child.Children, copy.Children);
             target.Add(copy);
         }
+    }
+
+    private static List<ProtocolCategoryLink>? MergeCategoryLinks(
+        List<ProtocolCategoryLink>? first, List<ProtocolCategoryLink> second)
+    {
+        if (first is null or { Count: 0 }) return second;
+        return [.. first, .. second];
     }
 
     public void Dispose()
