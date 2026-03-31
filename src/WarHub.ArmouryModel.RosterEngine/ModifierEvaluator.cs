@@ -297,11 +297,18 @@ internal sealed class ModifierEvaluator
 
     private static bool EvaluateCondition(ProtocolCondition cond, EvalContext ctx)
     {
-        // instanceOf/notInstanceOf with scope=self checks type or category matching
-        if (cond.Scope == "self" && (cond.Type == "instanceOf" || cond.Type == "notInstanceOf"))
+        // instanceOf/notInstanceOf
+        if (cond.Type == "instanceOf" || cond.Type == "notInstanceOf")
         {
-            bool matched = CheckInstanceOf(cond.ChildId, ctx);
-            return cond.Type == "instanceOf" ? matched : !matched;
+            if (cond.Scope == "self")
+            {
+                bool matched = CheckInstanceOf(cond.ChildId, ctx);
+                return cond.Type == "instanceOf" ? matched : !matched;
+            }
+            // Non-self scopes: BattleScribe checks the scope element itself (force, roster),
+            // not selections within it. These elements are never instances of selection entries,
+            // so instanceOf always returns false (notInstanceOf always true).
+            return cond.Type == "notInstanceOf";
         }
 
         // Scope=self for non-instanceOf: BattleScribe returns 0 (doesn't count the selection itself)
@@ -325,16 +332,23 @@ internal sealed class ModifierEvaluator
             return false;
 
         double count = CountInScope(cond.Field, cond.Scope, cond.ChildId, cond.IncludeChildSelections, ctx);
+
+        // percentValue: threshold = totalSelectionsInScope * value / 100
+        double threshold = cond.Value;
+        if (cond.PercentValue)
+        {
+            var total = CountTotalSelectionsInScope(cond.Scope, cond.IncludeChildSelections, ctx);
+            threshold = total * cond.Value / 100.0;
+        }
+
         return cond.Type switch
         {
-            "atLeast" => count >= cond.Value,
-            "atMost" => count <= cond.Value,
-            "greaterThan" => count > cond.Value,
-            "lessThan" => count < cond.Value,
-            "equalTo" => Math.Abs(count - cond.Value) < 1e-9,
-            "notEqualTo" => Math.Abs(count - cond.Value) >= 1e-9,
-            "instanceOf" => count > 0,
-            "notInstanceOf" => count < 1e-9,
+            "atLeast" => count >= threshold,
+            "atMost" => count <= threshold,
+            "greaterThan" => count > threshold,
+            "lessThan" => count < threshold,
+            "equalTo" => Math.Abs(count - threshold) < 1e-9,
+            "notEqualTo" => Math.Abs(count - threshold) >= 1e-9,
             _ => true,
         };
     }
@@ -343,6 +357,7 @@ internal sealed class ModifierEvaluator
     {
         if (ctx.Selection is null) return false;
 
+        if (ctx.Selection.Entry.Id == childId) return true;
         if (ctx.Selection.Entry.Type == childId) return true;
 
         if (ctx.Selection.Entry.CategoryLinks is { Count: > 0 })
@@ -411,6 +426,12 @@ internal sealed class ModifierEvaluator
     {
         return ctx.AllForces.SelectMany(f =>
             includeChildren ? f.Selections.SelectMany(Flatten) : f.Selections);
+    }
+
+    private static double CountTotalSelectionsInScope(string scope, bool includeChildren, EvalContext ctx)
+    {
+        var selections = GetSelectionsInScope(scope, includeChildren, ctx);
+        return selections.Sum(s => (double)s.Number);
     }
 
     internal static IEnumerable<RosterSelection> Flatten(RosterSelection sel)

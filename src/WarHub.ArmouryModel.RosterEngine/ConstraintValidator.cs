@@ -37,6 +37,9 @@ internal sealed class ConstraintValidator
             ValidateForceSelections(force, errors);
         }
 
+        // Validate force entry constraints (field=forces)
+        ValidateForceEntryConstraints(errors);
+
         // Cost limit validation
         var totalCosts = AggregateTotalCosts();
         foreach (var (typeId, limit) in _costLimits)
@@ -55,6 +58,31 @@ internal sealed class ConstraintValidator
         }
 
         return errors;
+    }
+
+    private void ValidateForceEntryConstraints(List<ValidationErrorState> errors)
+    {
+        // Count forces per force entry type
+        var forceCounts = new Dictionary<string, int>(StringComparer.Ordinal);
+        foreach (var force in _forces)
+        {
+            forceCounts[force.ForceEntry.Id] = forceCounts.GetValueOrDefault(force.ForceEntry.Id) + 1;
+        }
+
+        // Each force validates its own ForceEntry's constraints
+        foreach (var force in _forces)
+        {
+            if (force.ForceEntry.Constraints is not { } constraints) continue;
+            foreach (var constraint in constraints)
+            {
+                if (constraint.Field != "forces") continue;
+                var count = constraint.Scope == "roster"
+                    ? forceCounts.GetValueOrDefault(force.ForceEntry.Id)
+                    : 1;
+                ValidateConstraint(constraint, constraint.Value, count, force.ForceEntry.Id,
+                    "roster", null, errors, false);
+            }
+        }
     }
 
     private Dictionary<string, double> AggregateTotalCosts()
@@ -127,9 +155,13 @@ internal sealed class ConstraintValidator
 
                 if (constraint.Field == "forces")
                 {
-                    double forceCount = constraint.Scope == "roster"
-                        ? _forces.Count
-                        : 1;
+                    // field=forces on SelectionEntry: count matching forces by the entry's ID
+                    // Since SelectionEntry IDs never match ForceEntry IDs, this is always 0
+                    double forceCount = 0;
+                    if (constraint.Scope == "roster")
+                    {
+                        forceCount = _forces.Count(f => f.ForceEntry.Id == effectiveId);
+                    }
                     string fOwner = constraint.Scope == "roster" ? "roster" : "force";
                     string? fOwnerId = constraint.Scope == "roster" ? null : null;
                     ValidateConstraint(constraint, constraintValue, forceCount, effectiveId,

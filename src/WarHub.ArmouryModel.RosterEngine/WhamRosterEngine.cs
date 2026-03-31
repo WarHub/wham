@@ -174,17 +174,14 @@ public sealed class WhamRosterEngine : IRosterEngine
 
             foreach (var constraint in constraints)
             {
-                if (constraint.Type != "min" || constraint.Field != "selections" || constraint.Scope != "parent")
-                    continue;
+                if (constraint.Type != "min" || constraint.Field != "selections") continue;
+                if (constraint.Scope != "parent" && constraint.Scope != "force") continue;
 
                 var effectiveValue = evaluator.GetEffectiveConstraintValue(constraint, entry, null, force);
                 if (effectiveValue < 1) continue;
                 if (constraint.PercentValue) continue;
 
-                var hidden = evaluator.GetEffectiveHidden(entry, null, force);
-                if (hidden) continue;
-
-                // Create N separate selections for root entries
+                // Hidden entries ARE auto-selected (constraints enforced)
                 for (int i = 0; i < (int)effectiveValue; i++)
                 {
                     var selection = CreateSelection(avail);
@@ -215,9 +212,7 @@ public sealed class WhamRosterEngine : IRosterEngine
                 if (effectiveValue < 1) continue;
                 if (constraint.PercentValue) continue;
 
-                var hidden = evaluator.GetEffectiveHidden(entry, null, force);
-                if (hidden) continue;
-
+                // Hidden entries ARE auto-selected (constraints enforced)
                 var childSel = CreateSelection(avail);
                 childSel.Number = (int)effectiveValue;
                 AutoSelectChildren(childSel, force);
