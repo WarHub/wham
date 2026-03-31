@@ -623,7 +623,7 @@ public sealed class WhamRosterEngine : IRosterEngine
         return type switch
         {
             "set" => value,
-            "append" => current + " " + value,
+            "append" => AppendRepeated(current, value, repeatCount),
             "increment" when double.TryParse(current, System.Globalization.NumberStyles.Any,
                     System.Globalization.CultureInfo.InvariantCulture, out var curNum)
                 && double.TryParse(value, System.Globalization.NumberStyles.Any,
@@ -636,6 +636,13 @@ public sealed class WhamRosterEngine : IRosterEngine
                 => FormatNumber(curNum2 - decVal * repeatCount),
             _ => current
         };
+
+        static string AppendRepeated(string current, string value, int count)
+        {
+            for (int i = 0; i < count; i++)
+                current = current + " " + value;
+            return current;
+        }
     }
 
     internal static string FormatNumber(double value)

@@ -178,8 +178,12 @@ internal sealed class EntryResolver
     /// <summary>
     /// Flatten a group's entries, resolving nested groups recursively.
     /// </summary>
-    private void FlattenGroupChildren(ProtocolSelectionEntryGroup group, List<AvailableEntry> result)
+    private void FlattenGroupChildren(ProtocolSelectionEntryGroup group, List<AvailableEntry> result,
+        HashSet<string>? visited = null)
     {
+        visited ??= [];
+        if (!visited.Add(group.Id)) return; // cycle detected
+
         if (group.SelectionEntries is { } entries)
         {
             foreach (var entry in entries)
@@ -193,14 +197,14 @@ internal sealed class EntryResolver
                 if (link.Type == "selectionEntry" && _sharedEntries.TryGetValue(link.TargetId, out var target))
                     result.Add(new AvailableEntry { Entry = MergeEntryLink(link, target), SourceLink = link, SourceGroup = group });
                 else if (link.Type == "selectionEntryGroup" && _sharedGroups.TryGetValue(link.TargetId, out var groupTarget))
-                    FlattenGroupChildren(groupTarget, result);
+                    FlattenGroupChildren(groupTarget, result, visited);
             }
         }
 
         if (group.SelectionEntryGroups is { } subGroups)
         {
             foreach (var subGroup in subGroups)
-                FlattenGroupChildren(subGroup, result);
+                FlattenGroupChildren(subGroup, result, visited);
         }
     }
 
@@ -326,8 +330,12 @@ internal sealed class EntryResolver
         return result;
     }
 
-    private void CollectInfoGroupProfiles(ProtocolInfoGroup group, List<ProtocolProfile> result)
+    private void CollectInfoGroupProfiles(ProtocolInfoGroup group, List<ProtocolProfile> result,
+        HashSet<string>? visited = null)
     {
+        visited ??= [];
+        if (!visited.Add(group.Id)) return; // cycle detected
+
         if (group.Profiles is { } profiles)
         {
             foreach (var profile in profiles)
@@ -363,19 +371,23 @@ internal sealed class EntryResolver
                 if (link.Type == "profile" && _sharedProfiles.TryGetValue(link.TargetId, out var target))
                     result.Add(CloneProfileWithOverrides(target, link));
                 else if (link.Type == "infoGroup" && _sharedInfoGroups.TryGetValue(link.TargetId, out var group2))
-                    CollectInfoGroupProfiles(group2, result);
+                    CollectInfoGroupProfiles(group2, result, visited);
             }
         }
 
         if (group.InfoGroups is { } nestedGroups)
         {
             foreach (var nested in nestedGroups)
-                CollectInfoGroupProfiles(nested, result);
+                CollectInfoGroupProfiles(nested, result, visited);
         }
     }
 
-    private void CollectInfoGroupRules(ProtocolInfoGroup group, List<ProtocolRule> result)
+    private void CollectInfoGroupRules(ProtocolInfoGroup group, List<ProtocolRule> result,
+        HashSet<string>? visited = null)
     {
+        visited ??= [];
+        if (!visited.Add(group.Id)) return; // cycle detected
+
         if (group.Rules is { } rules)
         {
             foreach (var rule in rules)
@@ -408,14 +420,14 @@ internal sealed class EntryResolver
                 if (link.Type == "rule" && _sharedRules.TryGetValue(link.TargetId, out var target))
                     result.Add(CloneRuleWithOverrides(target, link));
                 else if (link.Type == "infoGroup" && _sharedInfoGroups.TryGetValue(link.TargetId, out var group2))
-                    CollectInfoGroupRules(group2, result);
+                    CollectInfoGroupRules(group2, result, visited);
             }
         }
 
         if (group.InfoGroups is { } nestedGroups)
         {
             foreach (var nested in nestedGroups)
-                CollectInfoGroupRules(nested, result);
+                CollectInfoGroupRules(nested, result, visited);
         }
     }
 
