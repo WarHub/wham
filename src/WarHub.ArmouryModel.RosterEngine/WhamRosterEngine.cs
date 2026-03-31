@@ -23,7 +23,6 @@ public sealed class WhamRosterEngine : IRosterEngine
         _costLimits.Clear();
         _resolver = new EntryResolver(gameSystem, catalogues);
 
-        // Initialize cost limits from cost types
         if (gameSystem.CostTypes is { } costTypes)
         {
             foreach (var ct in costTypes)
@@ -38,8 +37,8 @@ public sealed class WhamRosterEngine : IRosterEngine
 
     public void AddForce(int forceEntryIndex, int catalogueIndex = 0)
     {
-        var forceEntry = _gameSystem.ForceEntries![forceEntryIndex];
         var catalogue = _catalogues[catalogueIndex];
+        var forceEntry = _resolver.GetForceEntry(forceEntryIndex, catalogue);
 
         var force = new RosterForce
         {
@@ -48,8 +47,6 @@ public sealed class WhamRosterEngine : IRosterEngine
         };
 
         _forces.Add(force);
-
-        // Auto-select entries with min constraints
         AutoSelectEntries(force);
     }
 
@@ -65,6 +62,7 @@ public sealed class WhamRosterEngine : IRosterEngine
         var avail = available[entryIndex];
 
         var selection = CreateSelection(avail);
+        AutoSelectChildren(selection, force);
         force.Selections.Add(selection);
     }
 
@@ -87,8 +85,8 @@ public sealed class WhamRosterEngine : IRosterEngine
 
     public void SetSelectionCount(int forceIndex, int entryIndex, int count)
     {
-        var force = _forces[forceIndex];
-        force.Selections[entryIndex].Number = count;
+        // No-op for root/force-level entries.
+        // Root entries create new selections via selectEntry, not via count.
     }
 
     public void DuplicateSelection(int forceIndex, int selectionIndex)
@@ -104,9 +102,7 @@ public sealed class WhamRosterEngine : IRosterEngine
             Number = 1
         };
 
-        // Deep copy children
         CopyChildren(original.Children, duplicate.Children);
-
         force.Selections.Add(duplicate);
     }
 
@@ -128,6 +124,9 @@ public sealed class WhamRosterEngine : IRosterEngine
                 selections.Add(BuildSelectionState(sel, force, evaluator));
             }
 
+            var forceProfiles = BuildForceProfiles(force.ForceEntry);
+            var forceRules = BuildForceRules(force.ForceEntry);
+
             forces.Add(new ForceState(
                 Name: force.ForceEntry.Name,
                 CatalogueId: force.Catalogue.Id,
@@ -135,7 +134,11 @@ public sealed class WhamRosterEngine : IRosterEngine
                 AvailableEntryCount: _resolver.GetAvailableEntries(force.Catalogue).Count,
                 PublicationId: force.ForceEntry.PublicationId,
                 Page: force.ForceEntry.Page
-            ));
+            )
+            {
+                Profiles = forceProfiles.Count > 0 ? forceProfiles : [],
+                Rules = forceRules.Count > 0 ? forceRules : [],
+            });
         }
 
         var costs = AggregateTotalCosts(evaluator);
@@ -157,8 +160,6 @@ public sealed class WhamRosterEngine : IRosterEngine
         return validator.Validate();
     }
 
-    // ===== Private helpers =====
-
     private ModifierEvaluator CreateEvaluator() => new(_gameSystem, _forces);
 
     private void AutoSelectEntries(RosterForce force)
@@ -169,8 +170,6 @@ public sealed class WhamRosterEngine : IRosterEngine
         foreach (var avail in available)
         {
             if (avail.Entry is not { } entry) continue;
-
-            // Check if entry has a min constraint with field=selections and scope=parent
             if (entry.Constraints is not { } constraints) continue;
 
             foreach (var constraint in constraints)
@@ -182,14 +181,44 @@ public sealed class WhamRosterEngine : IRosterEngine
                 if (effectiveValue < 1) continue;
                 if (constraint.PercentValue) continue;
 
-                // Check if entry is hidden (don't auto-select hidden entries)
                 var hidden = evaluator.GetEffectiveHidden(entry, null, force);
                 if (hidden) continue;
 
-                // Auto-select
                 var selection = CreateSelection(avail);
+                AutoSelectChildren(selection, force);
                 force.Selections.Add(selection);
-                break; // Only auto-select once per entry
+                break;
+            }
+        }
+    }
+
+    private void AutoSelectChildren(RosterSelection selection, RosterForce force)
+    {
+        var childEntries = _resolver.GetChildEntries(selection.Entry);
+        var evaluator = CreateEvaluator();
+
+        foreach (var avail in childEntries)
+        {
+            if (avail.Entry is not { } entry) continue;
+            if (entry.Constraints is not { } constraints) continue;
+
+            foreach (var constraint in constraints)
+            {
+                if (constraint.Type != "min" || constraint.Field != "selections" || constraint.Scope != "parent")
+                    continue;
+
+                var effectiveValue = evaluator.GetEffectiveConstraintValue(constraint, entry, null, force);
+                if (effectiveValue < 1) continue;
+                if (constraint.PercentValue) continue;
+
+                var hidden = evaluator.GetEffectiveHidden(entry, null, force);
+                if (hidden) continue;
+
+                var childSel = CreateSelection(avail);
+                childSel.Number = (int)effectiveValue;
+                AutoSelectChildren(childSel, force);
+                selection.Children.Add(childSel);
+                break;
             }
         }
     }
@@ -208,7 +237,6 @@ public sealed class WhamRosterEngine : IRosterEngine
 
         if (avail.Group is { } group)
         {
-            // For groups, create a placeholder selection
             var groupEntry = new ProtocolSelectionEntry
             {
                 Id = group.Id,
@@ -249,6 +277,7 @@ public sealed class WhamRosterEngine : IRosterEngine
         var effectiveName = evaluator.GetEffectiveName(sel.Entry, sel, force);
         var effectiveHidden = evaluator.GetEffectiveHidden(sel.Entry, sel, force);
         var effectiveCosts = evaluator.GetEffectiveCosts(sel.Entry, sel, force);
+        var effectivePage = evaluator.GetEffectivePage(sel.Entry, sel, force);
 
         var children = new List<SelectionState>();
         foreach (var child in sel.Children)
@@ -262,14 +291,12 @@ public sealed class WhamRosterEngine : IRosterEngine
             Value: c.Value * (sel.Entry.Collective ? 1 : sel.Number)
         )).ToList();
 
-        // Build profiles
         var profiles = BuildProfiles(sel.Entry, evaluator, sel, force);
-
-        // Build rules
         var rules = BuildRules(sel.Entry, evaluator, sel, force);
+        var categories = BuildCategories(sel.Entry, evaluator, sel, force);
 
-        // Build categories
-        var categories = BuildCategories(sel.Entry);
+        var publicationId = sel.Entry.PublicationId;
+        var publicationName = ResolvePublicationName(publicationId);
 
         return new SelectionState(
             Name: effectiveName,
@@ -282,131 +309,251 @@ public sealed class WhamRosterEngine : IRosterEngine
             Profiles: profiles.Count > 0 ? profiles : null,
             Rules: rules.Count > 0 ? rules : null,
             Categories: categories.Count > 0 ? categories : null,
-            Page: sel.Entry.Page,
-            PublicationId: sel.Entry.PublicationId
+            Page: effectivePage,
+            PublicationId: publicationId,
+            PublicationName: publicationName
         );
     }
 
-    private static List<ProfileState> BuildProfiles(ProtocolSelectionEntry entry, ModifierEvaluator evaluator,
+    private List<ProfileState> BuildProfiles(ProtocolSelectionEntry entry, ModifierEvaluator evaluator,
         RosterSelection? selection, RosterForce? force)
     {
         var profiles = new List<ProfileState>();
-        if (entry.Profiles is not { } entryProfiles) return profiles;
+        var allProfiles = _resolver.ResolveAllProfiles(entry);
+        if (allProfiles.Count == 0) return profiles;
 
-        foreach (var profile in entryProfiles)
+        foreach (var profile in allProfiles)
         {
             var characteristics = new List<CharacteristicState>();
             if (profile.Characteristics is { } chars)
             {
                 foreach (var ch in chars)
                 {
-                    // Apply modifiers to characteristic values
                     var value = ch.Value;
-                    if (entry.Modifiers is { } mods)
+
+                    // Apply PROFILE-level modifiers
+                    if (profile.Modifiers is { } profileMods)
                     {
-                        foreach (var mod in mods)
+                        foreach (var mod in profileMods)
                         {
                             if (mod.Field == ch.TypeId && evaluator.EvaluateConditions(mod, entry, selection, force))
                             {
                                 var repeatCount = evaluator.GetRepeatCount(mod.Repeats, entry, selection, force);
-                                value = mod.Type switch
-                                {
-                                    "set" => mod.Value,
-                                    "append" => value + " " + mod.Value,
-                                    _ => value
-                                };
+                                if (repeatCount <= 0) continue;
+                                value = ApplyCharacteristicModifier(mod.Type, value, mod.Value, repeatCount);
                             }
                         }
                     }
 
-                    characteristics.Add(new CharacteristicState(
-                        Name: ch.Name,
-                        TypeId: ch.TypeId,
-                        Value: value
-                    ));
+                    // Apply entry-level modifiers that target characteristic typeIds
+                    if (entry.Modifiers is { } entryMods)
+                    {
+                        foreach (var mod in entryMods)
+                        {
+                            if (mod.Field == ch.TypeId && evaluator.EvaluateConditions(mod, entry, selection, force))
+                            {
+                                var repeatCount = evaluator.GetRepeatCount(mod.Repeats, entry, selection, force);
+                                if (repeatCount <= 0) continue;
+                                value = ApplyCharacteristicModifier(mod.Type, value, mod.Value, repeatCount);
+                            }
+                        }
+                    }
+
+                    characteristics.Add(new CharacteristicState(Name: ch.Name, TypeId: ch.TypeId, Value: value));
                 }
             }
 
             profiles.Add(new ProfileState(
-                Name: profile.Name,
-                TypeId: profile.TypeId,
-                TypeName: profile.TypeName,
-                Hidden: profile.Hidden,
-                Characteristics: characteristics,
-                Page: profile.Page,
-                PublicationId: profile.PublicationId
-            ));
+                Name: profile.Name, TypeId: profile.TypeId, TypeName: profile.TypeName,
+                Hidden: profile.Hidden, Characteristics: characteristics,
+                Page: profile.Page, PublicationId: profile.PublicationId));
         }
 
         return profiles;
     }
 
-    private static List<RuleState> BuildRules(ProtocolSelectionEntry entry, ModifierEvaluator evaluator,
+    private List<RuleState> BuildRules(ProtocolSelectionEntry entry, ModifierEvaluator evaluator,
         RosterSelection? selection, RosterForce? force)
     {
         var rules = new List<RuleState>();
-        if (entry.Rules is not { } entryRules) return rules;
+        var allRules = _resolver.ResolveAllRules(entry);
+        if (allRules.Count == 0) return rules;
 
-        foreach (var rule in entryRules)
+        foreach (var rule in allRules)
         {
             var description = rule.Description ?? "";
 
-            // Apply modifiers to description
-            if (entry.Modifiers is { } mods)
+            // Apply RULE-level modifiers
+            if (rule.Modifiers is { } ruleMods)
             {
-                foreach (var mod in mods)
+                foreach (var mod in ruleMods)
                 {
                     if (mod.Field == "description" && evaluator.EvaluateConditions(mod, entry, selection, force))
                     {
-                        description = mod.Type switch
-                        {
-                            "set" => mod.Value,
-                            "append" => description + " " + mod.Value,
-                            _ => description
-                        };
+                        var repeatCount = evaluator.GetRepeatCount(mod.Repeats, entry, selection, force);
+                        if (repeatCount <= 0) continue;
+                        description = ModifierEvaluator.ApplyStringModifierStatic(mod.Type, description, mod.Value, repeatCount);
+                    }
+                }
+            }
+
+            // Apply entry-level modifiers targeting description
+            if (entry.Modifiers is { } entryMods)
+            {
+                foreach (var mod in entryMods)
+                {
+                    if (mod.Field == "description" && evaluator.EvaluateConditions(mod, entry, selection, force))
+                    {
+                        var repeatCount = evaluator.GetRepeatCount(mod.Repeats, entry, selection, force);
+                        if (repeatCount <= 0) continue;
+                        description = ModifierEvaluator.ApplyStringModifierStatic(mod.Type, description, mod.Value, repeatCount);
                     }
                 }
             }
 
             rules.Add(new RuleState(
-                Name: rule.Name,
-                Description: description,
-                Hidden: rule.Hidden,
-                Page: rule.Page,
-                PublicationId: rule.PublicationId
-            ));
+                Name: rule.Name, Description: description, Hidden: rule.Hidden,
+                Page: rule.Page, PublicationId: rule.PublicationId));
         }
 
         return rules;
     }
 
-    private static List<CategoryState> BuildCategories(ProtocolSelectionEntry entry)
+    private List<ProfileState> BuildForceProfiles(ProtocolForceEntry forceEntry)
+    {
+        var result = new List<ProfileState>();
+        var allProfiles = _resolver.ResolveForceEntryProfiles(forceEntry);
+
+        foreach (var profile in allProfiles)
+        {
+            var characteristics = new List<CharacteristicState>();
+            if (profile.Characteristics is { } chars)
+            {
+                foreach (var ch in chars)
+                    characteristics.Add(new CharacteristicState(Name: ch.Name, TypeId: ch.TypeId, Value: ch.Value));
+            }
+
+            result.Add(new ProfileState(
+                Name: profile.Name, TypeId: profile.TypeId, TypeName: profile.TypeName,
+                Hidden: profile.Hidden, Characteristics: characteristics,
+                Page: profile.Page, PublicationId: profile.PublicationId));
+        }
+
+        return result;
+    }
+
+    private List<RuleState> BuildForceRules(ProtocolForceEntry forceEntry)
+    {
+        var result = new List<RuleState>();
+        var allRules = _resolver.ResolveForceEntryRules(forceEntry);
+
+        foreach (var rule in allRules)
+        {
+            result.Add(new RuleState(
+                Name: rule.Name, Description: rule.Description ?? "",
+                Hidden: rule.Hidden, Page: rule.Page, PublicationId: rule.PublicationId));
+        }
+
+        return result;
+    }
+
+    private List<CategoryState> BuildCategories(ProtocolSelectionEntry entry, ModifierEvaluator evaluator,
+        RosterSelection? selection, RosterForce? force)
     {
         var categories = new List<CategoryState>();
         if (entry.CategoryLinks is not { } links) return categories;
 
         foreach (var link in links)
         {
-            categories.Add(new CategoryState(
-                Name: link.Name,
-                EntryId: link.TargetId,
-                Primary: link.Primary
-            ));
+            categories.Add(new CategoryState(Name: link.Name, EntryId: link.TargetId, Primary: link.Primary));
         }
 
+        ApplyCategoryModifiers(entry.Modifiers, entry.ModifierGroups, categories, entry, evaluator, selection, force);
+
         return categories;
+    }
+
+    private void ApplyCategoryModifiers(List<ProtocolModifier>? modifiers, List<ProtocolModifierGroup>? groups,
+        List<CategoryState> categories, ProtocolSelectionEntry entry, ModifierEvaluator evaluator,
+        RosterSelection? selection, RosterForce? force)
+    {
+        if (modifiers is { } mods)
+        {
+            foreach (var mod in mods)
+            {
+                if (mod.Field != "category") continue;
+                if (!evaluator.EvaluateConditions(mod, entry, selection, force)) continue;
+
+                if (mod.Type == "set-primary")
+                {
+                    for (int i = 0; i < categories.Count; i++)
+                        categories[i] = categories[i] with { Primary = categories[i].EntryId == mod.Value };
+                }
+                else if (mod.Type == "unset-primary")
+                {
+                    for (int i = 0; i < categories.Count; i++)
+                    {
+                        if (categories[i].EntryId == mod.Value)
+                            categories[i] = categories[i] with { Primary = false };
+                    }
+                }
+            }
+        }
+
+        if (groups is { } grps)
+        {
+            foreach (var group in grps)
+            {
+                if (!evaluator.EvaluateGroupConditions(group, entry, selection, force)) continue;
+                ApplyCategoryModifiers(group.Modifiers, group.ModifierGroups, categories, entry, evaluator, selection, force);
+            }
+        }
+    }
+
+    private static string ApplyCharacteristicModifier(string type, string current, string value, int repeatCount)
+    {
+        if (repeatCount <= 0) repeatCount = 1;
+
+        return type switch
+        {
+            "set" => value,
+            "append" => current + " " + value,
+            "increment" when double.TryParse(current, System.Globalization.NumberStyles.Any,
+                    System.Globalization.CultureInfo.InvariantCulture, out var curNum)
+                && double.TryParse(value, System.Globalization.NumberStyles.Any,
+                    System.Globalization.CultureInfo.InvariantCulture, out var incVal)
+                => FormatNumber(curNum + incVal * repeatCount),
+            "decrement" when double.TryParse(current, System.Globalization.NumberStyles.Any,
+                    System.Globalization.CultureInfo.InvariantCulture, out var curNum2)
+                && double.TryParse(value, System.Globalization.NumberStyles.Any,
+                    System.Globalization.CultureInfo.InvariantCulture, out var decVal)
+                => FormatNumber(curNum2 - decVal * repeatCount),
+            _ => current
+        };
+    }
+
+    internal static string FormatNumber(double value)
+    {
+        if (value == Math.Floor(value) && !double.IsInfinity(value))
+            return ((long)value).ToString();
+        return value.ToString(System.Globalization.CultureInfo.InvariantCulture);
     }
 
     private List<CostState> AggregateTotalCosts(ModifierEvaluator evaluator)
     {
         var totals = new Dictionary<string, double>(StringComparer.Ordinal);
 
+        // Initialize all cost types to 0 so they always appear
+        if (_gameSystem.CostTypes is { } costTypes)
+        {
+            foreach (var ct in costTypes)
+                totals[ct.Id] = 0;
+        }
+
         foreach (var force in _forces)
         {
             foreach (var sel in force.Selections)
-            {
                 AggregateCostsRecursive(sel, totals, force, evaluator);
-            }
         }
 
         return totals.Select(kvp => new CostState(
@@ -427,9 +574,29 @@ public sealed class WhamRosterEngine : IRosterEngine
         }
 
         foreach (var child in sel.Children)
-        {
             AggregateCostsRecursive(child, totals, force, evaluator);
+    }
+
+    private string? ResolvePublicationName(string? publicationId)
+    {
+        if (publicationId is null) return null;
+
+        if (_gameSystem.Publications is { } gsPubs)
+        {
+            var pub = gsPubs.FirstOrDefault(p => p.Id == publicationId);
+            if (pub is not null) return pub.Name;
         }
+
+        foreach (var cat in _catalogues)
+        {
+            if (cat.Publications is { } catPubs)
+            {
+                var pub = catPubs.FirstOrDefault(p => p.Id == publicationId);
+                if (pub is not null) return pub.Name;
+            }
+        }
+
+        return null;
     }
 
     private static void CopyChildren(List<RosterSelection> source, List<RosterSelection> target)

@@ -3,7 +3,8 @@ using BattleScribeSpec.Protocol;
 namespace WarHub.ArmouryModel.RosterEngine;
 
 /// <summary>
-/// Evaluates modifiers and conditions against current roster state.
+/// Evaluates modifiers and conditions against the current roster state.
+/// Instantiated with game system + forces to provide context for evaluation.
 /// </summary>
 internal sealed class ModifierEvaluator
 {
@@ -16,478 +17,471 @@ internal sealed class ModifierEvaluator
         _forces = forces;
     }
 
-    /// <summary>
-    /// Get the effective name of an entry after applying modifiers.
-    /// </summary>
-    public string GetEffectiveName(ProtocolSelectionEntry entry, RosterSelection? selection, RosterForce? force)
+    // ===== Instance wrapper methods for WhamRosterEngine =====
+
+    private EvalContext CreateContext(ProtocolSelectionEntry entry, RosterSelection? selection, RosterForce? force)
     {
-        var name = entry.Name;
-        if (entry.Modifiers is not { Count: > 0 } && entry.ModifierGroups is not { Count: > 0 })
-            return name;
-
-        name = ApplyModifiersToField(entry.Modifiers, entry.ModifierGroups, "name", name, entry, selection, force);
-        return name;
-    }
-
-    /// <summary>
-    /// Get the effective hidden state after applying modifiers.
-    /// </summary>
-    public bool GetEffectiveHidden(ProtocolSelectionEntry entry, RosterSelection? selection, RosterForce? force)
-    {
-        var hidden = entry.Hidden;
-        var result = ApplyModifiersToField(entry.Modifiers, entry.ModifierGroups, "hidden",
-            hidden.ToString().ToLowerInvariant(), entry, selection, force);
-        return string.Equals(result, "true", StringComparison.OrdinalIgnoreCase);
-    }
-
-    /// <summary>
-    /// Get effective costs after applying modifiers.
-    /// </summary>
-    public List<ProtocolCostValue> GetEffectiveCosts(ProtocolSelectionEntry entry, RosterSelection? selection, RosterForce? force)
-    {
-        var costs = new Dictionary<string, double>(StringComparer.Ordinal);
-
-        // Start with base costs
-        if (entry.Costs is { } baseCosts)
+        var effectiveId = selection?.SourceLink?.Id ?? selection?.Entry.Id ?? entry.Id;
+        return new EvalContext
         {
-            foreach (var cost in baseCosts)
-                costs[cost.TypeId] = cost.Value;
-        }
-
-        // Apply modifiers that target cost type IDs
-        ApplyCostModifiers(entry.Modifiers, entry.ModifierGroups, costs, entry, selection, force);
-
-        return costs.Select(kvp => new ProtocolCostValue
-        {
-            TypeId = kvp.Key,
-            Name = GetCostTypeName(kvp.Key),
-            Value = kvp.Value
-        }).ToList();
+            AllForces = _forces,
+            Force = force ?? (_forces.Count > 0 ? _forces[0] : null!),
+            Selection = selection,
+            ParentSelection = null,
+            OwnerEntryId = effectiveId,
+        };
     }
 
-    /// <summary>
-    /// Get the effective value of a constraint after applying modifiers.
-    /// </summary>
     public double GetEffectiveConstraintValue(ProtocolConstraint constraint, ProtocolSelectionEntry entry,
         RosterSelection? selection, RosterForce? force)
     {
-        var value = constraint.Value;
-
-        // Modifiers can target constraint fields by constraint ID
-        if (entry.Modifiers is { } modifiers)
-        {
-            foreach (var mod in modifiers)
-            {
-                if (mod.Field == constraint.Id && EvaluateConditions(mod, entry, selection, force))
-                {
-                    var repeatCount = GetRepeatCount(mod.Repeats, entry, selection, force);
-                    value = ApplyModifierValue(mod.Type, value, mod.Value, repeatCount);
-                }
-            }
-        }
-
-        if (entry.ModifierGroups is { } groups)
-        {
-            foreach (var group in groups)
-            {
-                if (!EvaluateGroupConditions(group, entry, selection, force)) continue;
-                var groupRepeatCount = GetRepeatCount(group.Repeats, entry, selection, force);
-                if (group.Modifiers is { } groupMods)
-                {
-                    foreach (var mod in groupMods)
-                    {
-                        if (mod.Field == constraint.Id && EvaluateConditions(mod, entry, selection, force))
-                        {
-                            var repeatCount = GetRepeatCount(mod.Repeats, entry, selection, force) * groupRepeatCount;
-                            if (repeatCount == 0) repeatCount = 1;
-                            value = ApplyModifierValue(mod.Type, value, mod.Value, repeatCount);
-                        }
-                    }
-                }
-            }
-        }
-
-        return value;
+        var ctx = CreateContext(entry, selection, force);
+        var modified = Apply(entry, ctx);
+        return modified.ConstraintValues.GetValueOrDefault(constraint.Id, constraint.Value);
     }
 
-    private string ApplyModifiersToField(List<ProtocolModifier>? modifiers, List<ProtocolModifierGroup>? groups,
-        string targetField, string currentValue, ProtocolSelectionEntry entry, RosterSelection? selection, RosterForce? force)
+    public bool GetEffectiveHidden(ProtocolSelectionEntry entry, RosterSelection? selection, RosterForce? force)
     {
-        if (modifiers is { } mods)
-        {
-            foreach (var mod in mods)
-            {
-                if (mod.Field != targetField) continue;
-                if (!EvaluateConditions(mod, entry, selection, force)) continue;
-                var repeatCount = GetRepeatCount(mod.Repeats, entry, selection, force);
-                currentValue = ApplyStringModifier(mod.Type, currentValue, mod.Value, repeatCount);
-            }
-        }
-
-        if (groups is { } grps)
-        {
-            foreach (var group in grps)
-            {
-                if (!EvaluateGroupConditions(group, entry, selection, force)) continue;
-                var groupRepeatCount = GetRepeatCount(group.Repeats, entry, selection, force);
-                currentValue = ApplyModifiersToField(group.Modifiers, group.ModifierGroups, targetField,
-                    currentValue, entry, selection, force);
-            }
-        }
-
-        return currentValue;
+        var ctx = CreateContext(entry, selection, force);
+        return Apply(entry, ctx).Hidden;
     }
 
-    private void ApplyCostModifiers(List<ProtocolModifier>? modifiers, List<ProtocolModifierGroup>? groups,
-        Dictionary<string, double> costs, ProtocolSelectionEntry entry, RosterSelection? selection, RosterForce? force)
+    public string GetEffectiveName(ProtocolSelectionEntry entry, RosterSelection? selection, RosterForce? force)
     {
-        if (modifiers is { } mods)
-        {
-            foreach (var mod in mods)
-            {
-                // Cost modifier: field is a cost type ID
-                if (!IsCostField(mod.Field)) continue;
-                if (!EvaluateConditions(mod, entry, selection, force)) continue;
-                var repeatCount = GetRepeatCount(mod.Repeats, entry, selection, force);
-                costs.TryGetValue(mod.Field, out var current);
-                costs[mod.Field] = ApplyModifierValue(mod.Type, current, mod.Value, repeatCount);
-            }
-        }
-
-        if (groups is { } grps)
-        {
-            foreach (var group in grps)
-            {
-                if (!EvaluateGroupConditions(group, entry, selection, force)) continue;
-                ApplyCostModifiers(group.Modifiers, group.ModifierGroups, costs, entry, selection, force);
-            }
-        }
+        var ctx = CreateContext(entry, selection, force);
+        return Apply(entry, ctx).Name;
     }
 
-    private bool IsCostField(string field)
+    public List<CostValue> GetEffectiveCosts(ProtocolSelectionEntry entry, RosterSelection? selection, RosterForce? force)
     {
-        return field != "name" && field != "hidden" && field != "description" && field != "page"
-            && field != "publicationId" && field != "category"
-            && _gameSystem.CostTypes?.Any(ct => ct.Id == field) == true;
+        var ctx = CreateContext(entry, selection, force);
+        return Apply(entry, ctx).Costs;
+    }
+
+    public string? GetEffectivePage(ProtocolSelectionEntry entry, RosterSelection? selection, RosterForce? force)
+    {
+        var ctx = CreateContext(entry, selection, force);
+        return Apply(entry, ctx).Page;
     }
 
     public bool EvaluateConditions(ProtocolModifier mod, ProtocolSelectionEntry entry,
         RosterSelection? selection, RosterForce? force)
     {
-        // All conditions must be true (AND)
-        if (mod.Conditions is { Count: > 0 } conditions)
+        var ctx = CreateContext(entry, selection, force);
+        return EvaluateAllConditions(mod.Conditions, mod.ConditionGroups, ctx);
+    }
+
+    public bool EvaluateGroupConditions(ProtocolModifierGroup group, ProtocolSelectionEntry entry,
+        RosterSelection? selection, RosterForce? force)
+    {
+        var ctx = CreateContext(entry, selection, force);
+        return EvaluateAllConditions(group.Conditions, group.ConditionGroups, ctx);
+    }
+
+    public int GetRepeatCount(List<ProtocolRepeat>? repeats, ProtocolSelectionEntry entry,
+        RosterSelection? selection, RosterForce? force)
+    {
+        var ctx = CreateContext(entry, selection, force);
+        return CalculateRepeatCount(repeats, ctx);
+    }
+
+    public static string ApplyStringModifierStatic(string type, string current, string value, int repeatCount)
+    {
+        var result = current;
+        for (int i = 0; i < repeatCount; i++)
         {
+            result = type switch
+            {
+                "set" => value,
+                "append" => string.IsNullOrEmpty(result) ? value : result + " " + value,
+                "increment" when double.TryParse(result, System.Globalization.NumberStyles.Any,
+                        System.Globalization.CultureInfo.InvariantCulture, out var incBase)
+                    && double.TryParse(value, System.Globalization.NumberStyles.Any,
+                        System.Globalization.CultureInfo.InvariantCulture, out var incVal)
+                    => FormatNumber(incBase + incVal),
+                "decrement" when double.TryParse(result, System.Globalization.NumberStyles.Any,
+                        System.Globalization.CultureInfo.InvariantCulture, out var decBase)
+                    && double.TryParse(value, System.Globalization.NumberStyles.Any,
+                        System.Globalization.CultureInfo.InvariantCulture, out var decVal)
+                    => FormatNumber(decBase - decVal),
+                _ => result,
+            };
+        }
+        return result;
+    }
+
+    // ===== Core static evaluation logic =====
+
+    public static ModifiedProperties Apply(ProtocolSelectionEntry entry, EvalContext ctx)
+    {
+        var props = new ModifiedProperties
+        {
+            Name = entry.Name,
+            Hidden = entry.Hidden,
+            Page = entry.Page,
+        };
+        if (entry.Costs is { Count: > 0 })
+            props.Costs = entry.Costs.Select(c => new CostValue(c.Name, c.TypeId, c.Value)).ToList();
+        if (entry.Constraints is { Count: > 0 })
+            foreach (var c in entry.Constraints)
+                props.ConstraintValues[c.Id] = c.Value;
+
+        ApplyModifiers(entry.Modifiers, props, ctx);
+        ApplyModifierGroups(entry.ModifierGroups, props, ctx);
+        return props;
+    }
+
+    public static bool IsHidden(ProtocolSelectionEntry entry, EvalContext ctx) =>
+        Apply(entry, ctx).Hidden;
+
+    private static void ApplyModifiers(List<ProtocolModifier>? modifiers, ModifiedProperties props, EvalContext ctx)
+    {
+        if (modifiers is null) return;
+        foreach (var mod in modifiers)
+        {
+            if (!EvaluateAllConditions(mod.Conditions, mod.ConditionGroups, ctx))
+                continue;
+            int repeatCount = mod.Repeats is { Count: > 0 }
+                ? CalculateRepeatCount(mod.Repeats, ctx) : 1;
+            for (int i = 0; i < repeatCount; i++)
+                ApplySingleModifier(mod, props);
+        }
+    }
+
+    private static void ApplyModifierGroups(List<ProtocolModifierGroup>? groups, ModifiedProperties props, EvalContext ctx)
+    {
+        if (groups is null) return;
+        foreach (var group in groups)
+        {
+            if (!EvaluateAllConditions(group.Conditions, group.ConditionGroups, ctx))
+                continue;
+            int repeatCount = group.Repeats is { Count: > 0 }
+                ? CalculateRepeatCount(group.Repeats, ctx) : 1;
+            for (int i = 0; i < repeatCount; i++)
+            {
+                ApplyModifiers(group.Modifiers, props, ctx);
+                ApplyModifierGroups(group.ModifierGroups, props, ctx);
+            }
+        }
+    }
+
+    private static void ApplySingleModifier(ProtocolModifier mod, ModifiedProperties props)
+    {
+        switch (mod.Field)
+        {
+            case "name":
+                ApplyStringModifier(mod, s => props.Name = s, () => props.Name);
+                break;
+            case "hidden":
+                if (mod.Type == "set")
+                    props.Hidden = string.Equals(mod.Value, "true", StringComparison.OrdinalIgnoreCase);
+                break;
+            case "page":
+                ApplyStringModifier(mod, s => props.Page = s, () => props.Page ?? "");
+                break;
+            default:
+                // Cost type ID
+                for (int i = 0; i < props.Costs.Count; i++)
+                {
+                    if (props.Costs[i].TypeId == mod.Field)
+                    {
+                        var cost = props.Costs[i];
+                        if (double.TryParse(mod.Value, System.Globalization.NumberStyles.Any,
+                            System.Globalization.CultureInfo.InvariantCulture, out var val))
+                        {
+                            props.Costs[i] = mod.Type switch
+                            {
+                                "set" => cost with { Value = val },
+                                "increment" => cost with { Value = cost.Value + val },
+                                "decrement" => cost with { Value = cost.Value - val },
+                                _ => cost,
+                            };
+                        }
+                        return;
+                    }
+                }
+                // Constraint ID
+                if (props.ConstraintValues.TryGetValue(mod.Field, out var existingVal) &&
+                    double.TryParse(mod.Value, System.Globalization.NumberStyles.Any,
+                        System.Globalization.CultureInfo.InvariantCulture, out var cval))
+                {
+                    props.ConstraintValues[mod.Field] = mod.Type switch
+                    {
+                        "set" => cval,
+                        "increment" => existingVal + cval,
+                        "decrement" => existingVal - cval,
+                        _ => existingVal,
+                    };
+                }
+                break;
+        }
+    }
+
+    private static void ApplyStringModifier(ProtocolModifier mod, Action<string> setter, Func<string> getter)
+    {
+        switch (mod.Type)
+        {
+            case "set":
+                setter(mod.Value);
+                break;
+            case "append":
+                var current = getter();
+                setter(string.IsNullOrEmpty(current) ? mod.Value : current + " " + mod.Value);
+                break;
+            case "increment":
+                if (double.TryParse(getter(), System.Globalization.NumberStyles.Any,
+                    System.Globalization.CultureInfo.InvariantCulture, out var incBase) &&
+                    double.TryParse(mod.Value, System.Globalization.NumberStyles.Any,
+                    System.Globalization.CultureInfo.InvariantCulture, out var incVal))
+                    setter(FormatNumber(incBase + incVal));
+                break;
+            case "decrement":
+                if (double.TryParse(getter(), System.Globalization.NumberStyles.Any,
+                    System.Globalization.CultureInfo.InvariantCulture, out var decBase) &&
+                    double.TryParse(mod.Value, System.Globalization.NumberStyles.Any,
+                    System.Globalization.CultureInfo.InvariantCulture, out var decVal))
+                    setter(FormatNumber(decBase - decVal));
+                break;
+        }
+    }
+
+    internal static string FormatNumber(double value) =>
+        value == Math.Floor(value)
+            ? ((long)value).ToString(System.Globalization.CultureInfo.InvariantCulture)
+            : value.ToString(System.Globalization.CultureInfo.InvariantCulture);
+
+    // ===== Condition evaluation =====
+
+    internal static bool EvaluateAllConditions(
+        List<ProtocolCondition>? conditions,
+        List<ProtocolConditionGroup>? groups,
+        EvalContext ctx)
+    {
+        if ((conditions is null or { Count: 0 }) && (groups is null or { Count: 0 }))
+            return true;
+        if (conditions is not null)
             foreach (var cond in conditions)
-            {
-                if (!EvaluateCondition(cond, entry, selection, force))
+                if (!EvaluateCondition(cond, ctx))
                     return false;
-            }
-        }
-
-        // Condition groups
-        if (mod.ConditionGroups is { Count: > 0 } condGroups)
-        {
-            foreach (var group in condGroups)
-            {
-                if (!EvaluateConditionGroup(group, entry, selection, force))
+        if (groups is not null)
+            foreach (var group in groups)
+                if (!EvaluateConditionGroup(group, ctx))
                     return false;
-            }
-        }
-
         return true;
     }
 
-    private bool EvaluateGroupConditions(ProtocolModifierGroup group, ProtocolSelectionEntry entry,
-        RosterSelection? selection, RosterForce? force)
+    private static bool EvaluateConditionGroup(ProtocolConditionGroup group, EvalContext ctx)
     {
-        if (group.Conditions is { Count: > 0 } conditions)
+        if (group.Type == "or")
         {
-            foreach (var cond in conditions)
-            {
-                if (!EvaluateCondition(cond, entry, selection, force))
-                    return false;
-            }
+            bool any = false;
+            if (group.Conditions is { Count: > 0 })
+                foreach (var c in group.Conditions)
+                    if (EvaluateCondition(c, ctx)) { any = true; break; }
+            if (!any && group.ConditionGroups is { Count: > 0 })
+                foreach (var cg in group.ConditionGroups)
+                    if (EvaluateConditionGroup(cg, ctx)) { any = true; break; }
+            return any || (group.Conditions is null or { Count: 0 }) && (group.ConditionGroups is null or { Count: 0 });
         }
-
-        if (group.ConditionGroups is { Count: > 0 } condGroups)
-        {
-            foreach (var cg in condGroups)
-            {
-                if (!EvaluateConditionGroup(cg, entry, selection, force))
+        // AND (default)
+        if (group.Conditions is not null)
+            foreach (var c in group.Conditions)
+                if (!EvaluateCondition(c, ctx))
                     return false;
-            }
-        }
-
+        if (group.ConditionGroups is not null)
+            foreach (var cg in group.ConditionGroups)
+                if (!EvaluateConditionGroup(cg, ctx))
+                    return false;
         return true;
     }
 
-    internal bool EvaluateConditionGroup(ProtocolConditionGroup group, ProtocolSelectionEntry entry,
-        RosterSelection? selection, RosterForce? force)
+    private static bool EvaluateCondition(ProtocolCondition cond, EvalContext ctx)
     {
-        var isOr = string.Equals(group.Type, "or", StringComparison.OrdinalIgnoreCase);
-
-        if (group.Conditions is { } conditions)
+        // instanceOf/notInstanceOf with scope=self checks type or category matching
+        if (cond.Scope == "self" && (cond.Type == "instanceOf" || cond.Type == "notInstanceOf"))
         {
-            foreach (var cond in conditions)
-            {
-                var result = EvaluateCondition(cond, entry, selection, force);
-                if (isOr && result) return true;
-                if (!isOr && !result) return false;
-            }
+            bool matched = CheckInstanceOf(cond.ChildId, ctx);
+            return cond.Type == "instanceOf" ? matched : !matched;
         }
 
-        if (group.ConditionGroups is { } subGroups)
+        // Scope=self for non-instanceOf: BattleScribe returns 0 (doesn't count the selection itself)
+        if (cond.Scope == "self" && cond.Field == "selections")
         {
-            foreach (var subGroup in subGroups)
+            return cond.Type switch
             {
-                var result = EvaluateConditionGroup(subGroup, entry, selection, force);
-                if (isOr && result) return true;
-                if (!isOr && !result) return false;
-            }
+                "atLeast" => 0 >= cond.Value,
+                "atMost" => true,
+                "greaterThan" => false,
+                "lessThan" => 0 < cond.Value,
+                "equalTo" => Math.Abs(cond.Value) < 1e-9,
+                "notEqualTo" => Math.Abs(cond.Value) >= 1e-9,
+                _ => true,
+            };
         }
 
-        // AND with no failing = true, OR with no passing = false
-        return !isOr;
-    }
-
-    internal bool EvaluateCondition(ProtocolCondition condition, ProtocolSelectionEntry entry,
-        RosterSelection? selection, RosterForce? force)
-    {
-        var count = CountInScope(condition, entry, selection, force);
-        var value = condition.Value;
-
-        return condition.Type switch
+        // Null childId with non-self scope: use ownerEntryId as fallback, or return false
+        if (string.IsNullOrEmpty(cond.ChildId) && cond.Scope != "self")
         {
-            "atLeast" => count >= value,
-            "atMost" => count <= value,
-            "greaterThan" => count > value,
-            "lessThan" => count < value,
-            "equalTo" => Math.Abs(count - value) < 0.0001,
-            "notEqualTo" => Math.Abs(count - value) >= 0.0001,
-            "instanceOf" => count >= 1,
-            "notInstanceOf" => count < 1,
-            _ => true
+            if (string.IsNullOrEmpty(ctx.OwnerEntryId))
+                return false;
+        }
+
+        double count = CountInScope(cond.Field, cond.Scope, cond.ChildId, cond.IncludeChildSelections, ctx);
+        return cond.Type switch
+        {
+            "atLeast" => count >= cond.Value,
+            "atMost" => count <= cond.Value,
+            "greaterThan" => count > cond.Value,
+            "lessThan" => count < cond.Value,
+            "equalTo" => Math.Abs(count - cond.Value) < 1e-9,
+            "notEqualTo" => Math.Abs(count - cond.Value) >= 1e-9,
+            "instanceOf" => count > 0,
+            "notInstanceOf" => count < 1e-9,
+            _ => true,
         };
     }
 
-    internal double CountInScope(ProtocolCondition condition, ProtocolSelectionEntry entry,
-        RosterSelection? selection, RosterForce? force)
+    private static bool CheckInstanceOf(string childId, EvalContext ctx)
     {
-        var scope = condition.Scope;
-        var field = condition.Field;
-        var childId = condition.ChildId;
-        var includeChildSelections = condition.IncludeChildSelections;
+        if (ctx.Selection is null) return false;
 
+        if (ctx.Selection.Entry.Type == childId) return true;
+
+        if (ctx.Selection.Entry.CategoryLinks is { Count: > 0 })
+            foreach (var cl in ctx.Selection.Entry.CategoryLinks)
+                if (cl.TargetId == childId) return true;
+
+        return false;
+    }
+
+    internal static double CountInScope(string field, string scope, string childId, bool includeChildren, EvalContext ctx)
+    {
+        string targetId = string.IsNullOrEmpty(childId) ? ctx.OwnerEntryId : childId;
+
+        if (field == "forces")
+        {
+            if (string.IsNullOrEmpty(childId))
+                return ctx.AllForces.Count;
+            return ctx.AllForces.Count(f => f.ForceEntry.Id == targetId);
+        }
+
+        var selections = GetSelectionsInScope(scope, includeChildren, ctx);
+
+        if (field == "selections")
+            return selections.Where(s => GetEffectiveId(s) == targetId).Sum(s => s.Number);
+
+        // Cost type ID: sum cost values
+        return selections
+            .Where(s => string.IsNullOrEmpty(childId) || GetEffectiveId(s) == targetId)
+            .Sum(s => GetSelectionCostValue(s, field));
+    }
+
+    private static IEnumerable<RosterSelection> GetSelectionsInScope(string scope, bool includeChildren, EvalContext ctx)
+    {
         return scope switch
         {
-            "self" => CountSelfScope(field, childId, entry, selection, includeChildSelections),
-            "parent" => CountParentScope(field, childId, selection, force, includeChildSelections),
-            "force" => CountForceScope(field, childId, force, includeChildSelections),
-            "roster" => CountRosterScope(field, childId, includeChildSelections),
-            "primary-catalogue" => CountRosterScope(field, childId, includeChildSelections),
-            "primary-category" => CountPrimaryCategoryScope(field, childId, entry, selection, force, includeChildSelections),
-            "ancestor" => CountParentScope(field, childId, selection, force, includeChildSelections),
-            _ => 0
+            "self" => ctx.Selection != null ? [ctx.Selection] : [],
+            "parent" => GetParentScope(includeChildren, ctx),
+            "force" => GetForceScope(includeChildren, ctx),
+            "roster" => GetRosterScope(includeChildren, ctx),
+            "primary-catalogue" => GetForceScope(true, ctx),
+            _ => GetRosterScope(true, ctx),
         };
     }
 
-    private double CountSelfScope(string field, string? childId, ProtocolSelectionEntry entry,
-        RosterSelection? selection, bool includeChildren)
+    private static IEnumerable<RosterSelection> GetParentScope(bool includeChildren, EvalContext ctx)
     {
-        if (field == "selections")
-        {
-            if (selection is null) return 0;
-            // Count among siblings that match childId
-            return CountSelectionsMatching(selection.Children, childId, includeChildren);
-        }
-        if (field == "forces") return 0;
-        // Cost type field
-        return SumCostsInSelections(selection is null ? [] : [selection], field, childId, includeChildren);
+        IEnumerable<RosterSelection> items;
+        if (ctx.ParentSelection != null)
+            items = ctx.ParentSelection.Children;
+        else if (ctx.Force != null)
+            items = ctx.Force.Selections;
+        else
+            return [];
+        return includeChildren ? items.SelectMany(Flatten) : items;
     }
 
-    private double CountParentScope(string field, string? childId, RosterSelection? selection,
-        RosterForce? force, bool includeChildren)
+    private static IEnumerable<RosterSelection> GetForceScope(bool includeChildren, EvalContext ctx)
     {
-        if (field == "selections")
-        {
-            if (selection?.Children is { } children && children.Count > 0)
-            {
-                // If this is a parent with children, count children
-                // But if we're evaluating from a child, count siblings
-            }
-
-            if (force is not null)
-            {
-                return CountSelectionsMatching(force.Selections, childId, includeChildren);
-            }
-            return 0;
-        }
-        if (field == "forces") return _forces.Count;
-        return SumCostsInSelections(force?.Selections ?? [], field, childId, includeChildren);
+        if (ctx.Force is null) return [];
+        return includeChildren
+            ? ctx.Force.Selections.SelectMany(Flatten)
+            : ctx.Force.Selections;
     }
 
-    private double CountForceScope(string field, string? childId, RosterForce? force, bool includeChildren)
+    private static IEnumerable<RosterSelection> GetRosterScope(bool includeChildren, EvalContext ctx)
     {
-        if (force is null) return 0;
-        if (field == "selections")
-            return CountSelectionsMatching(force.Selections, childId, includeChildren || true);
-        if (field == "forces") return 1;
-        return SumCostsInSelections(force.Selections, field, childId, true);
+        return ctx.AllForces.SelectMany(f =>
+            includeChildren ? f.Selections.SelectMany(Flatten) : f.Selections);
     }
 
-    private double CountRosterScope(string field, string? childId, bool includeChildren)
+    internal static IEnumerable<RosterSelection> Flatten(RosterSelection sel)
     {
-        if (field == "forces") return _forces.Count;
-        if (field == "selections")
-        {
-            double total = 0;
-            foreach (var f in _forces)
-                total += CountSelectionsMatching(f.Selections, childId, true);
-            return total;
-        }
-        // Cost field
-        double costTotal = 0;
-        foreach (var f in _forces)
-            costTotal += SumCostsInSelections(f.Selections, field, childId, true);
-        return costTotal;
+        yield return sel;
+        foreach (var child in sel.Children)
+            foreach (var desc in Flatten(child))
+                yield return desc;
     }
 
-    private double CountPrimaryCategoryScope(string field, string? childId, ProtocolSelectionEntry entry,
-        RosterSelection? selection, RosterForce? force, bool includeChildren)
-    {
-        // Find the primary category of this entry
-        var primaryCatId = GetPrimaryCategory(entry);
-        if (primaryCatId is null) return 0;
+    internal static string GetEffectiveId(RosterSelection sel) =>
+        sel.SourceLink?.Id ?? sel.Entry.Id;
 
-        // Count all selections in the force that share this primary category
-        if (force is null) return 0;
-        if (field == "selections")
-        {
-            double count = 0;
-            foreach (var sel in force.Selections)
-            {
-                if (HasPrimaryCategory(sel.Entry, primaryCatId))
-                {
-                    if (childId is null || sel.Entry.Id == childId)
-                        count += sel.Number;
-                    if (includeChildren)
-                        count += CountSelectionsMatching(sel.Children, childId, true);
-                }
-            }
-            return count;
-        }
-        return 0;
+    private static double GetSelectionCostValue(RosterSelection sel, string costTypeId)
+    {
+        if (sel.Entry.Costs is null) return 0;
+        var cost = sel.Entry.Costs.FirstOrDefault(c => c.TypeId == costTypeId);
+        if (cost is null) return 0;
+        return sel.Entry.Collective ? cost.Value : cost.Value * sel.Number;
     }
 
-    private static double CountSelectionsMatching(List<RosterSelection> selections, string? childId, bool includeChildren)
+    private static int CalculateRepeatCount(List<ProtocolRepeat>? repeats, EvalContext ctx)
     {
-        double count = 0;
-        foreach (var sel in selections)
-        {
-            if (childId is null || sel.Entry.Id == childId)
-                count += sel.Number;
-            if (includeChildren)
-                count += CountSelectionsMatching(sel.Children, childId, includeChildren);
-        }
-        return count;
-    }
-
-    private double SumCostsInSelections(List<RosterSelection> selections, string costTypeId, string? childId, bool includeChildren)
-    {
-        double total = 0;
-        foreach (var sel in selections)
-        {
-            if (childId is null || sel.Entry.Id == childId)
-            {
-                var costs = GetEffectiveCosts(sel.Entry, sel, null);
-                var cost = costs.FirstOrDefault(c => c.TypeId == costTypeId);
-                if (cost is not null)
-                {
-                    total += cost.Value * (sel.Entry.Collective ? 1 : sel.Number);
-                }
-            }
-            if (includeChildren)
-            {
-                total += SumCostsInSelections(sel.Children, costTypeId, childId, true);
-            }
-        }
-        return total;
-    }
-
-    internal int GetRepeatCount(List<ProtocolRepeat>? repeats, ProtocolSelectionEntry entry,
-        RosterSelection? selection, RosterForce? force)
-    {
-        if (repeats is not { Count: > 0 }) return 1;
-
-        var totalRepeats = 0;
+        if (repeats is null or { Count: 0 }) return 1;
+        int total = 0;
         foreach (var repeat in repeats)
         {
-            var condition = new ProtocolCondition
+            double count = CountInScope(repeat.Field, repeat.Scope, repeat.ChildId, repeat.IncludeChildSelections, ctx);
+            if (repeat.Value > 0)
             {
-                Field = repeat.Field,
-                Scope = repeat.Scope,
-                ChildId = repeat.ChildId,
-                IncludeChildSelections = repeat.IncludeChildSelections,
-                IncludeChildForces = repeat.IncludeChildForces,
-                Shared = repeat.Shared,
-                PercentValue = repeat.PercentValue
-            };
-
-            var count = CountInScope(condition, entry, selection, force);
-            var repeatsFromThis = count * repeat.Repeats;
-
-            if (repeat.RoundUp)
-                totalRepeats += (int)Math.Ceiling(repeatsFromThis);
-            else
-                totalRepeats += (int)Math.Floor(repeatsFromThis);
+                double raw = count / repeat.Value;
+                int times = repeat.RoundUp ? (int)Math.Ceiling(raw) : (int)Math.Floor(raw);
+                total += Math.Max(0, times) * repeat.Repeats;
+            }
         }
-
-        return Math.Max(totalRepeats, 0);
+        return total > 0 ? total : 0;
     }
+}
 
-    private static double ApplyModifierValue(string type, double current, string valueStr, int repeatCount)
-    {
-        if (!double.TryParse(valueStr, System.Globalization.NumberStyles.Any,
-                System.Globalization.CultureInfo.InvariantCulture, out var value))
-            return current;
+internal sealed class ModifiedProperties
+{
+    public string Name { get; set; } = "";
+    public bool Hidden { get; set; }
+    public string? Page { get; set; }
+    public List<CostValue> Costs { get; set; } = [];
+    public Dictionary<string, double> ConstraintValues { get; set; } = new();
+}
 
-        if (repeatCount <= 0) repeatCount = 1;
+internal sealed class ModifiedProfileProperties
+{
+    public string Name { get; set; } = "";
+    public bool Hidden { get; set; }
+    public Dictionary<string, string> CharacteristicValues { get; set; } = new();
+}
 
-        return type switch
-        {
-            "set" => value,
-            "increment" => current + (value * repeatCount),
-            "decrement" => current - (value * repeatCount),
-            _ => current
-        };
-    }
+internal sealed class ModifiedRuleProperties
+{
+    public string Name { get; set; } = "";
+    public string Description { get; set; } = "";
+    public bool Hidden { get; set; }
+}
 
-    private static string ApplyStringModifier(string type, string current, string value, int repeatCount)
-    {
-        if (repeatCount <= 0) repeatCount = 1;
+internal record struct CostValue(string Name, string TypeId, double Value);
 
-        return type switch
-        {
-            "set" => value,
-            "append" => current + " " + value,
-            _ => current
-        };
-    }
-
-    private string GetCostTypeName(string typeId)
-    {
-        return _gameSystem.CostTypes?.FirstOrDefault(ct => ct.Id == typeId)?.Name ?? typeId;
-    }
-
-    internal static string? GetPrimaryCategory(ProtocolSelectionEntry entry)
-    {
-        if (entry.CategoryLinks is not { } links) return null;
-        return links.FirstOrDefault(cl => cl.Primary)?.TargetId;
-    }
-
-    internal static bool HasPrimaryCategory(ProtocolSelectionEntry entry, string categoryId)
-    {
-        if (entry.CategoryLinks is not { } links) return false;
-        return links.Any(cl => cl.Primary && cl.TargetId == categoryId);
-    }
+internal sealed class EvalContext
+{
+    public required List<RosterForce> AllForces { get; init; }
+    public required RosterForce Force { get; init; }
+    public RosterSelection? Selection { get; init; }
+    public RosterSelection? ParentSelection { get; init; }
+    public required string OwnerEntryId { get; init; }
 }
