@@ -37,10 +37,14 @@ internal sealed class ConstraintValidator
             ValidateForceSelections(force, errors);
         }
 
-        // Validate force entry constraints (field=forces)
         ValidateForceEntryConstraints(errors);
+        ValidateCostLimits(errors);
 
-        // Cost limit validation
+        return errors;
+    }
+
+    private void ValidateCostLimits(List<ValidationErrorState> errors)
+    {
         var totalCosts = AggregateTotalCosts();
         foreach (var (typeId, limit) in _costLimits)
         {
@@ -56,8 +60,6 @@ internal sealed class ConstraintValidator
                     ConstraintId: typeId));
             }
         }
-
-        return errors;
     }
 
     private void ValidateForceEntryConstraints(List<ValidationErrorState> errors)
@@ -79,7 +81,7 @@ internal sealed class ConstraintValidator
                 var count = constraint.Scope == "roster"
                     ? forceCounts.GetValueOrDefault(force.ForceEntry.Id)
                     : 1;
-                ValidateConstraint(constraint, constraint.Value, count, force.ForceEntry.Id,
+                CheckConstraint(constraint, constraint.Value, count, force.ForceEntry.Id,
                     "roster", null, errors, false);
             }
         }
@@ -113,25 +115,19 @@ internal sealed class ConstraintValidator
 
     private void ValidateForceSelections(RosterForce force, List<ValidationErrorState> errors)
     {
-        // Build a map of entryId -> total count in this force
-        var forceCounts = new Dictionary<string, int>();
-        foreach (var sel in force.Selections)
-        {
-            var id = ModifierEvaluator.GetEffectiveId(sel);
-            forceCounts[id] = forceCounts.GetValueOrDefault(id) + sel.Number;
-        }
-
-        // Check constraints on all available entries (not just selected ones)
         var available = _resolver.GetAvailableEntries(force.Catalogue);
-        var sharedChecked = new HashSet<string>();
+        var sharedChecked = new HashSet<(string constraintId, string entryId)>();
 
         foreach (var avail in available)
         {
             if (avail.IsGroup) continue;
             var entry = avail.Entry!;
-            var effectiveId = avail.SourceLink?.Id ?? entry.Id;
+            // Use entry.Id (target ID for entry links) for counting and errors
+            var entryId = entry.Id;
 
-            if (entry.Constraints is null) continue;
+            if (entry.Constraints is null && !entry.Hidden) continue;
+
+            bool hasCategoryLinks = entry.CategoryLinks is { Count: > 0 };
 
             var ctx = new EvalContext
             {
@@ -139,40 +135,76 @@ internal sealed class ConstraintValidator
                 Force = force,
                 Selection = null,
                 ParentSelection = null,
-                OwnerEntryId = effectiveId,
+                OwnerEntryId = entryId,
             };
             var modified = ModifierEvaluator.Apply(entry, ctx);
 
+            // Hidden entry error: if entry is hidden and has selections + categoryLinks
+            if (hasCategoryLinks && modified.Hidden)
+            {
+                var hiddenCount = CountSelectionsInScope("selections", "parent", entryId, false, force, true);
+                if (hiddenCount > 0)
+                {
+                    errors.Add(new ValidationErrorState(
+                        Message: $"Entry {entryId} is hidden but has {hiddenCount} selection(s)",
+                        OwnerType: "selection",
+                        OwnerEntryId: entryId,
+                        EntryId: entryId,
+                        ConstraintId: "hidden"));
+                }
+            }
+
+            if (entry.Constraints is null) continue;
+
             foreach (var constraint in entry.Constraints)
             {
-                if (constraint.Field != "selections" && constraint.Field != "forces") continue;
-
-                // Handle shared constraints: only validate once per constraint ID
-                if (constraint.Shared && !sharedChecked.Add(constraint.Id))
-                    continue;
-
-                var constraintValue = modified.ConstraintValues.GetValueOrDefault(constraint.Id, constraint.Value);
-
+                // field=forces on selection entry: always validate with roster owner
                 if (constraint.Field == "forces")
                 {
-                    // field=forces on SelectionEntry: count matching forces by the entry's ID
-                    // Since SelectionEntry IDs never match ForceEntry IDs, this is always 0
                     double forceCount = 0;
                     if (constraint.Scope == "roster")
-                    {
-                        forceCount = _forces.Count(f => f.ForceEntry.Id == effectiveId);
-                    }
-                    string fOwner = constraint.Scope == "roster" ? "roster" : "force";
-                    string? fOwnerId = constraint.Scope == "roster" ? null : null;
-                    ValidateConstraint(constraint, constraintValue, forceCount, effectiveId,
-                        fOwner, fOwnerId, errors, modified.Hidden);
+                        forceCount = _forces.Count(f => f.ForceEntry.Id == entryId);
+                    var constraintValue = modified.ConstraintValues.GetValueOrDefault(constraint.Id, constraint.Value);
+                    CheckConstraint(constraint, constraintValue, forceCount, entryId,
+                        "roster", null, errors, modified.Hidden);
                     continue;
                 }
 
-                var count = GetCountInScope(constraint, effectiveId, force);
+                // Non-forces constraints: validate all entries
+                // (BattleScribe has a bug skipping uncategorized entries; we validate them)
 
-                var (ot, oeid) = GetOwnerForEntry(entry, force);
-                ValidateConstraint(constraint, constraintValue, count, effectiveId,
+                // Shared constraint: validate once per (constraintId, entryId)
+                if (constraint.Shared)
+                {
+                    if (!sharedChecked.Add((constraint.Id, entryId))) continue;
+                    ValidateSharedConstraint(constraint, entry, modified, force, errors);
+                    continue;
+                }
+
+                // Regular constraint
+                var constraintVal = modified.ConstraintValues.GetValueOrDefault(constraint.Id, constraint.Value);
+                double count;
+                if (constraint.Field == "selections")
+                {
+                    count = CountSelectionsInScope(constraint.Field, constraint.Scope, entryId,
+                        constraint.IncludeChildSelections, force, true);
+                }
+                else
+                {
+                    // Cost field
+                    count = CountCostInScope(constraint.Field, constraint.Scope, entryId,
+                        constraint.IncludeChildSelections, force, true);
+                }
+
+                double effectiveConstraintValue = constraintVal;
+                if (constraint.PercentValue)
+                {
+                    var total = CountTotalSelectionsInScope(constraint.Scope, constraint.IncludeChildSelections, force);
+                    effectiveConstraintValue = total * constraintVal / 100.0;
+                }
+
+                var (ot, oeid) = GetOwnerForConstraint(constraint, entry, entryId);
+                CheckConstraint(constraint, effectiveConstraintValue, count, entryId,
                     ot, oeid, errors, modified.Hidden);
             }
         }
@@ -183,8 +215,43 @@ internal sealed class ConstraintValidator
             ValidateChildConstraints(sel, force, errors);
         }
 
-        // Validate category constraints
+        // Validate category constraints (from force entry's category links)
         ValidateCategoryConstraints(force, errors);
+    }
+
+    private void ValidateSharedConstraint(
+        ProtocolConstraint constraint,
+        ProtocolSelectionEntry sharedEntry,
+        ModifiedProperties modified,
+        RosterForce force,
+        List<ValidationErrorState> errors)
+    {
+        // Count by shared entry ID (Entry.Id), not by effectiveId (link ID)
+        string sharedEntryId = sharedEntry.Id;
+        var constraintVal = modified.ConstraintValues.GetValueOrDefault(constraint.Id, constraint.Value);
+
+        double count;
+        if (constraint.Field == "selections")
+        {
+            count = CountSelectionsInScope(constraint.Field, constraint.Scope, sharedEntryId,
+                constraint.IncludeChildSelections, force, true);
+        }
+        else
+        {
+            count = CountCostInScope(constraint.Field, constraint.Scope, sharedEntryId,
+                constraint.IncludeChildSelections, force, true);
+        }
+
+        double effectiveConstraintValue = constraintVal;
+        if (constraint.PercentValue)
+        {
+            var total = CountTotalSelectionsInScope(constraint.Scope, constraint.IncludeChildSelections, force);
+            effectiveConstraintValue = total * constraintVal / 100.0;
+        }
+
+        var (ot, oeid) = GetOwnerForConstraint(constraint, sharedEntry, sharedEntryId);
+        CheckConstraint(constraint, effectiveConstraintValue, count, sharedEntryId,
+            ot, oeid, errors, modified.Hidden);
     }
 
     private void ValidateChildConstraints(
@@ -230,7 +297,7 @@ internal sealed class ConstraintValidator
                 var constraintValue = modified.ConstraintValues.GetValueOrDefault(constraint.Id, constraint.Value);
                 var count = childCounts.GetValueOrDefault(effectiveId);
 
-                ValidateConstraint(constraint, constraintValue, count, effectiveId,
+                CheckConstraint(constraint, constraintValue, count, effectiveId,
                     "selection", ModifierEvaluator.GetEffectiveId(parent), errors, modified.Hidden);
             }
         }
@@ -288,42 +355,87 @@ internal sealed class ConstraintValidator
         }
     }
 
-    private static (string ownerType, string? ownerEntryId) GetOwnerForEntry(
-        ProtocolSelectionEntry entry, RosterForce force)
+    private static (string ownerType, string? ownerEntryId) GetOwnerForConstraint(
+        ProtocolConstraint constraint, ProtocolSelectionEntry entry, string entryId)
     {
-        if (entry.CategoryLinks is { Count: > 0 })
+        // scope=force → force owner
+        if (constraint.Scope == "force")
+            return ("force", null);
+
+        // min constraints with primary category → category owner
+        if (constraint.Type == "min")
         {
-            var primary = entry.CategoryLinks.FirstOrDefault(cl => cl.Primary);
-            if (primary != null)
-                return ("category", primary.TargetId);
-            return ("category", entry.CategoryLinks[0].TargetId);
+            if (entry.CategoryLinks is { Count: > 0 })
+            {
+                var primary = entry.CategoryLinks.FirstOrDefault(cl => cl.Primary);
+                if (primary != null)
+                    return ("category", primary.TargetId);
+                return ("category", entry.CategoryLinks[0].TargetId);
+            }
         }
-        return ("selection", entry.Id);
+
+        // max constraints and all others → selection owner using entry.Id
+        return ("selection", entryId);
     }
 
-    private double GetCountInScope(
-        ProtocolConstraint constraint,
-        string effectiveId,
-        RosterForce force)
+    private double CountSelectionsInScope(
+        string field,
+        string scope,
+        string targetId,
+        bool includeChildren,
+        RosterForce force,
+        bool matchByEntryId)
     {
-        string targetId = effectiveId;
+        var selections = GetSelectionsInScope(scope, includeChildren, force);
+        return selections
+            .Where(s => matchByEntryId ? s.Entry.Id == targetId : ModifierEvaluator.GetEffectiveId(s) == targetId)
+            .Sum(s => (double)s.Number);
+    }
 
-        IEnumerable<RosterSelection> selections = constraint.Scope switch
+    private double CountCostInScope(
+        string costField,
+        string scope,
+        string targetId,
+        bool includeChildren,
+        RosterForce force,
+        bool matchByEntryId)
+    {
+        var selections = GetSelectionsInScope(scope, includeChildren, force);
+        return selections
+            .Where(s => matchByEntryId ? s.Entry.Id == targetId : ModifierEvaluator.GetEffectiveId(s) == targetId)
+            .Sum(s => GetSelectionCostValue(s, costField));
+    }
+
+    private double CountTotalSelectionsInScope(string scope, bool includeChildren, RosterForce force)
+    {
+        var selections = GetSelectionsInScope(scope, includeChildren, force);
+        return selections.Sum(s => (double)s.Number);
+    }
+
+    private IEnumerable<RosterSelection> GetSelectionsInScope(string scope, bool includeChildren, RosterForce force)
+    {
+        return scope switch
         {
-            "parent" or "force" => constraint.IncludeChildSelections
+            "parent" or "force" => includeChildren
                 ? force.Selections.SelectMany(ModifierEvaluator.Flatten)
                 : force.Selections,
             "roster" => _forces.SelectMany(f =>
-                constraint.IncludeChildSelections
+                includeChildren
                     ? f.Selections.SelectMany(ModifierEvaluator.Flatten)
                     : f.Selections),
             _ => force.Selections,
         };
-
-        return selections.Where(s => ModifierEvaluator.GetEffectiveId(s) == targetId).Sum(s => s.Number);
     }
 
-    private static void ValidateConstraint(
+    private static double GetSelectionCostValue(RosterSelection sel, string costTypeId)
+    {
+        if (sel.Entry.Costs is null) return 0;
+        var cost = sel.Entry.Costs.FirstOrDefault(c => c.TypeId == costTypeId);
+        if (cost is null) return 0;
+        return sel.Entry.Collective ? cost.Value : cost.Value * sel.Number;
+    }
+
+    private static void CheckConstraint(
         ProtocolConstraint constraint,
         double constraintValue,
         double count,
@@ -333,17 +445,6 @@ internal sealed class ConstraintValidator
         List<ValidationErrorState> errors,
         bool isHidden)
     {
-        // Hidden entries that are selected generate a hidden error
-        if (isHidden && count > 0)
-        {
-            errors.Add(new ValidationErrorState(
-                Message: $"Entry {entryId} is hidden but has {count} selection(s)",
-                OwnerType: ownerType,
-                OwnerEntryId: ownerEntryId,
-                EntryId: entryId,
-                ConstraintId: "hidden"));
-        }
-
         if (constraint.Type == "min" && count < constraintValue - 1e-9)
         {
             errors.Add(new ValidationErrorState(

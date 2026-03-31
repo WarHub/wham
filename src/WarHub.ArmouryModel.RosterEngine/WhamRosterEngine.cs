@@ -271,17 +271,18 @@ public sealed class WhamRosterEngine : IRosterEngine
         throw new InvalidOperationException("AvailableEntry must have either Entry or Group");
     }
 
-    private SelectionState BuildSelectionState(RosterSelection sel, RosterForce force, ModifierEvaluator evaluator)
+    private SelectionState BuildSelectionState(RosterSelection sel, RosterForce force, ModifierEvaluator evaluator,
+        RosterSelection? parentSel = null)
     {
-        var effectiveName = evaluator.GetEffectiveName(sel.Entry, sel, force);
+        var effectiveName = evaluator.GetEffectiveName(sel.Entry, sel, force, parentSel);
         var effectiveHidden = evaluator.GetEffectiveHidden(sel.Entry, sel, force);
-        var effectiveCosts = evaluator.GetEffectiveCosts(sel.Entry, sel, force);
-        var effectivePage = evaluator.GetEffectivePage(sel.Entry, sel, force);
+        var effectiveCosts = evaluator.GetEffectiveCosts(sel.Entry, sel, force, parentSel);
+        var effectivePage = evaluator.GetEffectivePage(sel.Entry, sel, force, parentSel);
 
         var children = new List<SelectionState>();
         foreach (var child in sel.Children)
         {
-            children.Add(BuildSelectionState(child, force, evaluator));
+            children.Add(BuildSelectionState(child, force, evaluator, sel));
         }
 
         var costs = effectiveCosts.Select(c => new CostState(
@@ -478,12 +479,56 @@ public sealed class WhamRosterEngine : IRosterEngine
 
         foreach (var link in links)
         {
-            categories.Add(new CategoryState(Name: link.Name, EntryId: link.TargetId, Primary: link.Primary));
+            var primary = link.Primary;
+
+            // Process categoryLink-level modifiers (field=primary)
+            primary = EvaluateCategoryLinkPrimary(link, primary, entry, evaluator, selection, force);
+
+            categories.Add(new CategoryState(Name: link.Name, EntryId: link.TargetId, Primary: primary));
         }
 
+        // Apply entry-level category modifiers (set-primary, unset-primary)
         ApplyCategoryModifiers(entry.Modifiers, entry.ModifierGroups, categories, entry, evaluator, selection, force);
 
         return categories;
+    }
+
+    private bool EvaluateCategoryLinkPrimary(ProtocolCategoryLink link, bool initial,
+        ProtocolSelectionEntry entry, ModifierEvaluator evaluator,
+        RosterSelection? selection, RosterForce? force)
+    {
+        var primary = initial;
+
+        if (link.Modifiers is { } mods)
+        {
+            foreach (var mod in mods)
+            {
+                if (mod.Field != "primary") continue;
+                if (!evaluator.EvaluateConditions(mod, entry, selection, force)) continue;
+                if (mod.Type == "set")
+                    primary = string.Equals(mod.Value, "true", StringComparison.OrdinalIgnoreCase);
+            }
+        }
+
+        if (link.ModifierGroups is { } groups)
+        {
+            foreach (var group in groups)
+            {
+                if (!evaluator.EvaluateGroupConditions(group, entry, selection, force)) continue;
+                if (group.Modifiers is { } grpMods)
+                {
+                    foreach (var mod in grpMods)
+                    {
+                        if (mod.Field != "primary") continue;
+                        if (!evaluator.EvaluateConditions(mod, entry, selection, force)) continue;
+                        if (mod.Type == "set")
+                            primary = string.Equals(mod.Value, "true", StringComparison.OrdinalIgnoreCase);
+                    }
+                }
+            }
+        }
+
+        return primary;
     }
 
     private void ApplyCategoryModifiers(List<ProtocolModifier>? modifiers, List<ProtocolModifierGroup>? groups,
@@ -499,8 +544,18 @@ public sealed class WhamRosterEngine : IRosterEngine
 
                 if (mod.Type == "set-primary")
                 {
+                    // If the target category is not present, add it
+                    bool found = false;
                     for (int i = 0; i < categories.Count; i++)
+                    {
+                        if (categories[i].EntryId == mod.Value) found = true;
                         categories[i] = categories[i] with { Primary = categories[i].EntryId == mod.Value };
+                    }
+                    if (!found)
+                    {
+                        var catName = ResolveCategoryName(mod.Value);
+                        categories.Add(new CategoryState(Name: catName, EntryId: mod.Value, Primary: true));
+                    }
                 }
                 else if (mod.Type == "unset-primary")
                 {
@@ -555,12 +610,18 @@ public sealed class WhamRosterEngine : IRosterEngine
     private List<CostState> AggregateTotalCosts(ModifierEvaluator evaluator)
     {
         var totals = new Dictionary<string, double>(StringComparer.Ordinal);
+        var referencedTypes = new HashSet<string>(StringComparer.Ordinal);
 
-        // Initialize all cost types to 0 so they always appear
-        if (_gameSystem.CostTypes is { } costTypes)
+        // Track cost types referenced by any available entry (not just selected)
+        foreach (var force in _forces)
         {
-            foreach (var ct in costTypes)
-                totals[ct.Id] = 0;
+            var available = _resolver.GetAvailableEntries(force.Catalogue);
+            foreach (var avail in available)
+            {
+                if (avail.Entry?.Costs is { } entryCosts)
+                    foreach (var c in entryCosts)
+                        referencedTypes.Add(c.TypeId);
+            }
         }
 
         foreach (var force in _forces)
@@ -569,11 +630,24 @@ public sealed class WhamRosterEngine : IRosterEngine
                 AggregateCostsRecursive(sel, totals, force, evaluator);
         }
 
-        return totals.Select(kvp => new CostState(
-            Name: _gameSystem.CostTypes?.FirstOrDefault(ct => ct.Id == kvp.Key)?.Name ?? kvp.Key,
-            TypeId: kvp.Key,
-            Value: kvp.Value
-        )).ToList();
+        // Only include cost types that are referenced by available entries
+        var result = new List<CostState>();
+        if (_gameSystem.CostTypes is { } costTypes)
+        {
+            foreach (var ct in costTypes)
+            {
+                if (referencedTypes.Contains(ct.Id))
+                {
+                    result.Add(new CostState(
+                        Name: ct.Name,
+                        TypeId: ct.Id,
+                        Value: totals.GetValueOrDefault(ct.Id, 0)
+                    ));
+                }
+            }
+        }
+
+        return result;
     }
 
     private static void AggregateCostsRecursive(RosterSelection sel, Dictionary<string, double> totals,
@@ -610,6 +684,16 @@ public sealed class WhamRosterEngine : IRosterEngine
         }
 
         return null;
+    }
+
+    private string ResolveCategoryName(string categoryId)
+    {
+        if (_gameSystem.CategoryEntries is { } cats)
+        {
+            var cat = cats.FirstOrDefault(c => c.Id == categoryId);
+            if (cat is not null) return cat.Name;
+        }
+        return categoryId;
     }
 
     private static void CopyChildren(List<RosterSelection> source, List<RosterSelection> target)

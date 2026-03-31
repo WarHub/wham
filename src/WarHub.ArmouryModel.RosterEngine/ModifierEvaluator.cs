@@ -19,15 +19,16 @@ internal sealed class ModifierEvaluator
 
     // ===== Instance wrapper methods for WhamRosterEngine =====
 
-    private EvalContext CreateContext(ProtocolSelectionEntry entry, RosterSelection? selection, RosterForce? force)
+    private EvalContext CreateContext(ProtocolSelectionEntry entry, RosterSelection? selection, RosterForce? force,
+        RosterSelection? parent = null)
     {
-        var effectiveId = selection?.SourceLink?.Id ?? selection?.Entry.Id ?? entry.Id;
+        var effectiveId = selection?.Entry.Id ?? entry.Id;
         return new EvalContext
         {
             AllForces = _forces,
             Force = force ?? (_forces.Count > 0 ? _forces[0] : null!),
             Selection = selection,
-            ParentSelection = null,
+            ParentSelection = parent,
             OwnerEntryId = effectiveId,
         };
     }
@@ -46,42 +47,45 @@ internal sealed class ModifierEvaluator
         return Apply(entry, ctx).Hidden;
     }
 
-    public string GetEffectiveName(ProtocolSelectionEntry entry, RosterSelection? selection, RosterForce? force)
+    public string GetEffectiveName(ProtocolSelectionEntry entry, RosterSelection? selection, RosterForce? force,
+        RosterSelection? parent = null)
     {
-        var ctx = CreateContext(entry, selection, force);
+        var ctx = CreateContext(entry, selection, force, parent);
         return Apply(entry, ctx).Name;
     }
 
-    public List<CostValue> GetEffectiveCosts(ProtocolSelectionEntry entry, RosterSelection? selection, RosterForce? force)
+    public List<CostValue> GetEffectiveCosts(ProtocolSelectionEntry entry, RosterSelection? selection, RosterForce? force,
+        RosterSelection? parent = null)
     {
-        var ctx = CreateContext(entry, selection, force);
+        var ctx = CreateContext(entry, selection, force, parent);
         return Apply(entry, ctx).Costs;
     }
 
-    public string? GetEffectivePage(ProtocolSelectionEntry entry, RosterSelection? selection, RosterForce? force)
+    public string? GetEffectivePage(ProtocolSelectionEntry entry, RosterSelection? selection, RosterForce? force,
+        RosterSelection? parent = null)
     {
-        var ctx = CreateContext(entry, selection, force);
+        var ctx = CreateContext(entry, selection, force, parent);
         return Apply(entry, ctx).Page;
     }
 
     public bool EvaluateConditions(ProtocolModifier mod, ProtocolSelectionEntry entry,
-        RosterSelection? selection, RosterForce? force)
+        RosterSelection? selection, RosterForce? force, RosterSelection? parent = null)
     {
-        var ctx = CreateContext(entry, selection, force);
+        var ctx = CreateContext(entry, selection, force, parent);
         return EvaluateAllConditions(mod.Conditions, mod.ConditionGroups, ctx);
     }
 
     public bool EvaluateGroupConditions(ProtocolModifierGroup group, ProtocolSelectionEntry entry,
-        RosterSelection? selection, RosterForce? force)
+        RosterSelection? selection, RosterForce? force, RosterSelection? parent = null)
     {
-        var ctx = CreateContext(entry, selection, force);
+        var ctx = CreateContext(entry, selection, force, parent);
         return EvaluateAllConditions(group.Conditions, group.ConditionGroups, ctx);
     }
 
     public int GetRepeatCount(List<ProtocolRepeat>? repeats, ProtocolSelectionEntry entry,
-        RosterSelection? selection, RosterForce? force)
+        RosterSelection? selection, RosterForce? force, RosterSelection? parent = null)
     {
-        var ctx = CreateContext(entry, selection, force);
+        var ctx = CreateContext(entry, selection, force, parent);
         return CalculateRepeatCount(repeats, ctx);
     }
 
@@ -305,8 +309,14 @@ internal sealed class ModifierEvaluator
                 bool matched = CheckInstanceOf(cond.ChildId, ctx);
                 return cond.Type == "instanceOf" ? matched : !matched;
             }
-            // Non-self scopes: BattleScribe checks the scope element itself (force, roster),
-            // not selections within it. These elements are never instances of selection entries,
+            if (cond.Scope == "ancestor")
+            {
+                // Walk up the parent chain to check if any ancestor matches
+                bool matched = CheckAncestorInstanceOf(cond.ChildId, ctx);
+                return cond.Type == "instanceOf" ? matched : !matched;
+            }
+            // Non-self, non-ancestor scopes: BattleScribe checks the scope element itself
+            // (force, roster). These are never instances of selection entries,
             // so instanceOf always returns false (notInstanceOf always true).
             return cond.Type == "notInstanceOf";
         }
@@ -327,7 +337,8 @@ internal sealed class ModifierEvaluator
         }
 
         // BattleScribe behavior: null/empty childId with non-self scope returns NaN → false
-        if (string.IsNullOrEmpty(cond.ChildId) && cond.Scope != "self"
+        // Exception: scope=ancestor should still work with empty childId
+        if (string.IsNullOrEmpty(cond.ChildId) && cond.Scope != "self" && cond.Scope != "ancestor"
             && cond.Type != "instanceOf" && cond.Type != "notInstanceOf")
             return false;
 
@@ -367,6 +378,20 @@ internal sealed class ModifierEvaluator
         return false;
     }
 
+    private static bool CheckAncestorInstanceOf(string childId, EvalContext ctx)
+    {
+        // Check if any ancestor (parent, grandparent, etc.) is an instance of childId
+        if (ctx.ParentSelection is not null)
+        {
+            if (ctx.ParentSelection.Entry.Id == childId) return true;
+            if (ctx.ParentSelection.Entry.Type == childId) return true;
+            if (ctx.ParentSelection.Entry.CategoryLinks is { Count: > 0 })
+                foreach (var cl in ctx.ParentSelection.Entry.CategoryLinks)
+                    if (cl.TargetId == childId) return true;
+        }
+        return false;
+    }
+
     internal static double CountInScope(string field, string scope, string childId, bool includeChildren, EvalContext ctx)
     {
         string targetId = string.IsNullOrEmpty(childId) ? ctx.OwnerEntryId : childId;
@@ -381,7 +406,12 @@ internal sealed class ModifierEvaluator
         var selections = GetSelectionsInScope(scope, includeChildren, ctx);
 
         if (field == "selections")
+        {
+            // For ancestor scope with empty childId, count all selections (not filtered by ID)
+            if (scope == "ancestor" && string.IsNullOrEmpty(childId))
+                return selections.Sum(s => (double)s.Number);
             return selections.Where(s => GetEffectiveId(s) == targetId).Sum(s => s.Number);
+        }
 
         // Cost type ID: sum cost values
         return selections
@@ -395,11 +425,27 @@ internal sealed class ModifierEvaluator
         {
             "self" => ctx.Selection != null ? [ctx.Selection] : [],
             "parent" => GetParentScope(includeChildren, ctx),
+            "ancestor" => GetAncestorScope(ctx),
             "force" => GetForceScope(includeChildren, ctx),
             "roster" => GetRosterScope(includeChildren, ctx),
             "primary-catalogue" => GetForceScope(true, ctx),
             _ => GetRosterScope(true, ctx),
         };
+    }
+
+    private static IEnumerable<RosterSelection> GetAncestorScope(EvalContext ctx)
+    {
+        // Walk up the parent chain; each ancestor is a single selection
+        if (ctx.ParentSelection != null)
+        {
+            yield return ctx.ParentSelection;
+        }
+        else if (ctx.Force != null)
+        {
+            // At root level, ancestor scope includes force selections
+            foreach (var sel in ctx.Force.Selections)
+                yield return sel;
+        }
     }
 
     private static IEnumerable<RosterSelection> GetParentScope(bool includeChildren, EvalContext ctx)
@@ -443,7 +489,7 @@ internal sealed class ModifierEvaluator
     }
 
     internal static string GetEffectiveId(RosterSelection sel) =>
-        sel.SourceLink?.Id ?? sel.Entry.Id;
+        sel.Entry.Id;
 
     private static double GetSelectionCostValue(RosterSelection sel, string costTypeId)
     {
