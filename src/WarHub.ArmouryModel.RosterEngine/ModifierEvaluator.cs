@@ -319,12 +319,10 @@ internal sealed class ModifierEvaluator
             };
         }
 
-        // Null childId with non-self scope: use ownerEntryId as fallback, or return false
-        if (string.IsNullOrEmpty(cond.ChildId) && cond.Scope != "self")
-        {
-            if (string.IsNullOrEmpty(ctx.OwnerEntryId))
-                return false;
-        }
+        // BattleScribe behavior: null/empty childId with non-self scope returns NaN → false
+        if (string.IsNullOrEmpty(cond.ChildId) && cond.Scope != "self"
+            && cond.Type != "instanceOf" && cond.Type != "notInstanceOf")
+            return false;
 
         double count = CountInScope(cond.Field, cond.Scope, cond.ChildId, cond.IncludeChildSelections, ctx);
         return cond.Type switch

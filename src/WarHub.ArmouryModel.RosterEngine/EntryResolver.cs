@@ -329,7 +329,32 @@ internal sealed class EntryResolver
     private void CollectInfoGroupProfiles(ProtocolInfoGroup group, List<ProtocolProfile> result)
     {
         if (group.Profiles is { } profiles)
-            result.AddRange(profiles);
+        {
+            foreach (var profile in profiles)
+            {
+                // Merge infoGroup's modifiers into each profile
+                if (group.Modifiers is { Count: > 0 } || group.ModifierGroups is { Count: > 0 })
+                {
+                    result.Add(new ProtocolProfile
+                    {
+                        Id = profile.Id,
+                        Name = profile.Name,
+                        TypeId = profile.TypeId,
+                        TypeName = profile.TypeName,
+                        Hidden = profile.Hidden,
+                        Page = profile.Page,
+                        PublicationId = profile.PublicationId,
+                        Characteristics = profile.Characteristics,
+                        Modifiers = MergeLists(profile.Modifiers, group.Modifiers),
+                        ModifierGroups = MergeLists(profile.ModifierGroups, group.ModifierGroups),
+                    });
+                }
+                else
+                {
+                    result.Add(profile);
+                }
+            }
+        }
 
         if (group.InfoLinks is { } infoLinks)
         {
@@ -352,7 +377,29 @@ internal sealed class EntryResolver
     private void CollectInfoGroupRules(ProtocolInfoGroup group, List<ProtocolRule> result)
     {
         if (group.Rules is { } rules)
-            result.AddRange(rules);
+        {
+            foreach (var rule in rules)
+            {
+                if (group.Modifiers is { Count: > 0 } || group.ModifierGroups is { Count: > 0 })
+                {
+                    result.Add(new ProtocolRule
+                    {
+                        Id = rule.Id,
+                        Name = rule.Name,
+                        Description = rule.Description,
+                        Hidden = rule.Hidden,
+                        Page = rule.Page,
+                        PublicationId = rule.PublicationId,
+                        Modifiers = MergeLists(rule.Modifiers, group.Modifiers),
+                        ModifierGroups = MergeLists(rule.ModifierGroups, group.ModifierGroups),
+                    });
+                }
+                else
+                {
+                    result.Add(rule);
+                }
+            }
+        }
 
         if (group.InfoLinks is { } infoLinks)
         {
@@ -381,8 +428,8 @@ internal sealed class EntryResolver
             TypeId = target.TypeId,
             TypeName = target.TypeName,
             Hidden = link.Hidden || target.Hidden,
-            Page = link.Page ?? target.Page,
-            PublicationId = link.PublicationId ?? target.PublicationId,
+                        Page = target.Page,
+            PublicationId = target.PublicationId,
             Characteristics = target.Characteristics,
             Modifiers = MergeLists(target.Modifiers, link.Modifiers),
             ModifierGroups = MergeLists(target.ModifierGroups, link.ModifierGroups),
@@ -397,8 +444,8 @@ internal sealed class EntryResolver
             Name = !string.IsNullOrEmpty(link.Name) ? link.Name : target.Name,
             Description = target.Description,
             Hidden = link.Hidden || target.Hidden,
-            Page = link.Page ?? target.Page,
-            PublicationId = link.PublicationId ?? target.PublicationId,
+                        Page = target.Page,
+            PublicationId = target.PublicationId,
             Modifiers = MergeLists(target.Modifiers, link.Modifiers),
             ModifierGroups = MergeLists(target.ModifierGroups, link.ModifierGroups),
         };
@@ -478,3 +525,4 @@ internal sealed class AvailableEntry
     public string Name => Entry?.Name ?? Group?.Name ?? "";
     public string Id => Entry?.Id ?? Group?.Id ?? "";
 }
+

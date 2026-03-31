@@ -184,9 +184,13 @@ public sealed class WhamRosterEngine : IRosterEngine
                 var hidden = evaluator.GetEffectiveHidden(entry, null, force);
                 if (hidden) continue;
 
-                var selection = CreateSelection(avail);
-                AutoSelectChildren(selection, force);
-                force.Selections.Add(selection);
+                // Create N separate selections for root entries
+                for (int i = 0; i < (int)effectiveValue; i++)
+                {
+                    var selection = CreateSelection(avail);
+                    AutoSelectChildren(selection, force);
+                    force.Selections.Add(selection);
+                }
                 break;
             }
         }
@@ -345,16 +349,23 @@ public sealed class WhamRosterEngine : IRosterEngine
                         }
                     }
 
-                    // Apply entry-level modifiers that target characteristic typeIds
-                    if (entry.Modifiers is { } entryMods)
+                    // Apply PROFILE-level modifier groups
+                    if (profile.ModifierGroups is { } profileModGroups)
                     {
-                        foreach (var mod in entryMods)
+                        foreach (var group in profileModGroups)
                         {
-                            if (mod.Field == ch.TypeId && evaluator.EvaluateConditions(mod, entry, selection, force))
+                            if (!evaluator.EvaluateGroupConditions(group, entry, selection, force)) continue;
+                            if (group.Modifiers is { } grpMods)
                             {
-                                var repeatCount = evaluator.GetRepeatCount(mod.Repeats, entry, selection, force);
-                                if (repeatCount <= 0) continue;
-                                value = ApplyCharacteristicModifier(mod.Type, value, mod.Value, repeatCount);
+                                foreach (var mod in grpMods)
+                                {
+                                    if (mod.Field == ch.TypeId && evaluator.EvaluateConditions(mod, entry, selection, force))
+                                    {
+                                        var repeatCount = evaluator.GetRepeatCount(mod.Repeats, entry, selection, force);
+                                        if (repeatCount <= 0) continue;
+                                        value = ApplyCharacteristicModifier(mod.Type, value, mod.Value, repeatCount);
+                                    }
+                                }
                             }
                         }
                     }
@@ -397,16 +408,23 @@ public sealed class WhamRosterEngine : IRosterEngine
                 }
             }
 
-            // Apply entry-level modifiers targeting description
-            if (entry.Modifiers is { } entryMods)
+            // Apply RULE-level modifier groups
+            if (rule.ModifierGroups is { } ruleModGroups)
             {
-                foreach (var mod in entryMods)
+                foreach (var group in ruleModGroups)
                 {
-                    if (mod.Field == "description" && evaluator.EvaluateConditions(mod, entry, selection, force))
+                    if (!evaluator.EvaluateGroupConditions(group, entry, selection, force)) continue;
+                    if (group.Modifiers is { } grpMods)
                     {
-                        var repeatCount = evaluator.GetRepeatCount(mod.Repeats, entry, selection, force);
-                        if (repeatCount <= 0) continue;
-                        description = ModifierEvaluator.ApplyStringModifierStatic(mod.Type, description, mod.Value, repeatCount);
+                        foreach (var mod in grpMods)
+                        {
+                            if (mod.Field == "description" && evaluator.EvaluateConditions(mod, entry, selection, force))
+                            {
+                                var repeatCount = evaluator.GetRepeatCount(mod.Repeats, entry, selection, force);
+                                if (repeatCount <= 0) continue;
+                                description = ModifierEvaluator.ApplyStringModifierStatic(mod.Type, description, mod.Value, repeatCount);
+                            }
+                        }
                     }
                 }
             }
