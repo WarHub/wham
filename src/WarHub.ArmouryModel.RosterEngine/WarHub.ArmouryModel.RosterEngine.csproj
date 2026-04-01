@@ -4,6 +4,7 @@
     <TargetFramework>$(CommonTargetFramework)</TargetFramework>
     <RootNamespace>WarHub.ArmouryModel.RosterEngine</RootNamespace>
     <ImplicitUsings>enable</ImplicitUsings>
+    <IsPackable>false</IsPackable>
   </PropertyGroup>
 
   <ItemGroup>
