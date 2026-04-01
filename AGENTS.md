@@ -1,5 +1,13 @@
 # AGENTS.md
 
+> **Keeping docs current**: If you discover that information in this file,
+> in `docs/`, or in `docs/adrs/` is outdated, incomplete, or contradicts
+> the actual codebase, **propose updates** as part of your changeset.
+> This applies to file paths, project lists, build commands, conventions,
+> architecture descriptions, and any other factual claims. Documentation
+> should stay in sync with the code — treat it as a living reference,
+> not a frozen snapshot.
+
 wham — foundational .NET library (`WarHub.ArmouryModel`) and CLI tool for wargame
 datafile management, with a BattleScribe-spec conformant roster engine (303/303 specs).
 
