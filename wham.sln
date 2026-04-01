@@ -70,7 +70,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WarHub.ArmouryModel.EditorS
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WarHub.ArmouryModel.RosterEngine", "src\WarHub.ArmouryModel.RosterEngine\WarHub.ArmouryModel.RosterEngine.csproj", "{4ACE8227-9C2D-4364-8F85-85D008B24317}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BattleScribeSpec.TestKit", "..\battlescribe-spec\src\BattleScribeSpec.TestKit\BattleScribeSpec.TestKit.csproj", "{747AFCE0-46D1-4D78-984D-3710FA87CA0C}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BattleScribeSpec.TestKit", "lib\battlescribe-spec\src\BattleScribeSpec.TestKit\BattleScribeSpec.TestKit.csproj", "{747AFCE0-46D1-4D78-984D-3710FA87CA0C}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WarHub.ArmouryModel.RosterEngine.Tests", "tests\WarHub.ArmouryModel.RosterEngine.Tests\WarHub.ArmouryModel.RosterEngine.Tests.csproj", "{4E62337F-2B8F-4918-9286-463A5DA3F39E}"
 EndProject
