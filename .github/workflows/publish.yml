@@ -63,6 +63,7 @@ jobs:
         with:
           fetch-depth: 0 # all history
           ref: ${{ inputs.ref || '' }}
+          token: ${{ secrets.GH_PAT || github.token }}
           submodules: true
       - uses: actions/setup-dotnet@v5
         with:

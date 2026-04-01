@@ -12,6 +12,9 @@ jobs:
       - uses: actions/checkout@v6
         with:
           fetch-depth: 0 # all history
+          # GH_PAT needed for private battlescribe-spec submodule.
+          # If battlescribe-spec is made public, this can revert to github.token.
+          token: ${{ secrets.GH_PAT || github.token }}
           submodules: true
       - uses: actions/setup-dotnet@v5
         with:
