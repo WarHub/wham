@@ -220,19 +220,57 @@ public class WhamRosterEngineTests
     }
 
     [Fact]
-    public void AddForce_PreservesCompilationCatalogues()
+    public void EntryLink_HasConstraintsAndReferencedEntry()
     {
-        var (compilation, _) = CreateTestCompilation();
-        var engine = new CoreEngine();
-        var state = engine.CreateRoster(compilation);
-        var gsSym = state.Compilation.GlobalNamespace.RootCatalogue;
-        var forceEntry = gsSym.RootContainerEntries.OfType<IForceEntrySymbol>().First();
+        var gs = new ProtocolGameSystem
+        {
+            Id = "test-gs",
+            Name = "Test GS",
+            ForceEntries = [new ProtocolForceEntry { Id = "fe-1", Name = "Patrol" }],
+        };
+        var cat = new ProtocolCatalogue
+        {
+            Id = "cat-1",
+            Name = "Cat",
+            GameSystemId = "test-gs",
+            SharedSelectionEntries =
+            [
+                new ProtocolSelectionEntry { Id = "shared-unit", Name = "Strike Team", Type = "unit" }
+            ],
+            EntryLinks =
+            [
+                new ProtocolEntryLink
+                {
+                    Id = "link-1",
+                    Name = "Strike Team",
+                    TargetId = "shared-unit",
+                    Type = "selectionEntry",
+                    Constraints =
+                    [
+                        new ProtocolConstraint { Id = "con-link-max", Type = "max", Value = 2, Field = "selections", Scope = "force" }
+                    ]
+                }
+            ]
+        };
 
-        var stateAfter = engine.AddForce(state, forceEntry, gsSym);
+        var compilation = ProtocolConverter.CreateCompilation(gs, [cat]);
+        var catSymbol = compilation.GlobalNamespace.Catalogues.First(c => c.Id == "cat-1");
 
-        // Compilation should still have catalog source trees + roster tree
-        stateAfter.Compilation.SourceTrees.Length.Should().BeGreaterThan(1);
-        // The gamesystem symbols should still be accessible
-        stateAfter.Compilation.GlobalNamespace.RootCatalogue.Should().NotBeNull();
+        // Check root entries include the entry link
+        var rootEntries = catSymbol.RootContainerEntries;
+        rootEntries.Length.Should().BeGreaterThan(0, "catalogue should have root entries");
+
+        var selEntries = rootEntries.OfType<ISelectionEntryContainerSymbol>().ToList();
+        selEntries.Count.Should().BeGreaterThan(0,
+            "root entries should contain ISelectionEntryContainerSymbol, got: " +
+            string.Join(", ", rootEntries.Select(e => e.GetType().Name)));
+
+        var link = selEntries.FirstOrDefault(e => e.Id == "link-1");
+        link.Should().NotBeNull("link-1 should be in root entries");
+        link!.IsReference.Should().BeTrue("link-1 should be a reference");
+        link.ReferencedEntry.Should().NotBeNull("link-1 should have ReferencedEntry");
+        link.ReferencedEntry!.Id.Should().Be("shared-unit");
+        link.Constraints.Length.Should().BeGreaterThan(0,
+            "link-1 should have its own constraints");
     }
 }

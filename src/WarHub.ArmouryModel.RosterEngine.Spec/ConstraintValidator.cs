@@ -159,47 +159,75 @@ internal sealed class ConstraintValidator
         // Descendants' constraints are checked in ValidateChildConstraints
         foreach (var entry in GetRootEntries(catalogue))
         {
-            var entryId = GetTargetEntryId(entry);
-            if (entryId is null) continue;
+            var targetId = GetTargetEntryId(entry);
+            if (targetId is null) continue;
+            var isLink = entry.IsReference && entry.ReferencedEntry is not null;
+            var linkId = entry.Id; // link's own ID (same as targetId if not a link)
 
-            var constraints = entry.Constraints;
-            if (constraints.IsEmpty) continue;
+            // Hidden entry validation: if entry is hidden but has selections, error
+            if (IsEffectivelyHidden(entry))
+            {
+                var cats = entry.Categories;
+                if (cats.IsEmpty && entry.ReferencedEntry is { } r)
+                    cats = r.Categories;
+                if (!cats.IsEmpty)
+                {
+                    var hiddenCountId = isLink ? linkId! : targetId;
+                    var selCount = CountSelectionsInForce(hiddenCountId, force);
+                    if (selCount > 0)
+                    {
+                        errors.Add(new ValidationErrorState(
+                            Message: $"Entry {targetId} is hidden but has {selCount} selection(s)",
+                            OwnerType: "selection",
+                            OwnerEntryId: targetId,
+                            EntryId: targetId,
+                            ConstraintId: "hidden"));
+                    }
+                }
+            }
 
-            bool hasCategoryLinks = !entry.Categories.IsEmpty;
-            if (hasCategoryLinks && entry.ReferencedEntry is { } referenced && entry.Categories.IsEmpty)
-                hasCategoryLinks = !referenced.Categories.IsEmpty;
+            // Collect all constraints: link's own + shared target's
+            var constraintSources = new List<(IConstraintSymbol constraint, string sourceEntryId)>();
+            foreach (var c in entry.Constraints)
+                constraintSources.Add((c, linkId ?? targetId));
+            if (isLink && entry.ReferencedEntry is ISelectionEntryContainerSymbol target)
+            {
+                foreach (var c in target.Constraints)
+                    constraintSources.Add((c, targetId));
+            }
 
-            foreach (var constraint in constraints)
+            if (constraintSources.Count == 0) continue;
+
+            foreach (var (constraint, sourceEntryId) in constraintSources)
             {
                 var query = constraint.Query;
                 var constraintId = constraint.Id ?? "";
 
-                // field=forces on selection entry: validate with roster owner
+                // field=forces on selection entry: BS always counts 0 forces
                 if (query.ValueKind == QueryValueKind.ForceCount)
                 {
-                    decimal forceCount = query.ScopeKind == QueryScopeKind.ContainingRoster
-                        ? _roster.Forces.Count
-                        : 0;
-                    CheckConstraint(query.Comparison, query.ReferenceValue ?? 0m, forceCount,
-                        entryId, "roster", null, constraintId, errors);
+                    CheckConstraint(query.Comparison, query.ReferenceValue ?? 0m, 0,
+                        sourceEntryId, "roster", null, constraintId, errors);
                     continue;
                 }
 
                 // Shared constraint: validate once per (constraintId, entryId)
                 if (query.Options.HasFlag(QueryOptions.SharedConstraint))
                 {
-                    if (!sharedChecked.Add((constraintId, entryId))) continue;
+                    if (!sharedChecked.Add((constraintId, targetId))) continue;
                 }
 
                 // Count selections or costs in scope
+                // Use link ID for counting because selections store the link's entry ID
+                var countId = isLink ? linkId! : targetId;
                 decimal count;
                 if (query.ValueKind == QueryValueKind.SelectionCount)
                 {
-                    count = CountSelectionsInScope(query, entryId, force);
+                    count = CountSelectionsInScope(query, countId, force);
                 }
                 else if (query.ValueKind == QueryValueKind.MemberValue)
                 {
-                    count = CountCostInScope(query, entryId, force);
+                    count = CountCostInScope(query, countId, force);
                 }
                 else
                 {
@@ -218,10 +246,10 @@ internal sealed class ConstraintValidator
                 }
 
                 var (ownerType, ownerEntryId) = GetOwnerForConstraint(
-                    query.Comparison, query.ScopeKind, entry, entryId);
+                    query.Comparison, query.ScopeKind, entry, targetId);
 
                 CheckConstraint(query.Comparison, constraintValue, count,
-                    entryId, ownerType, ownerEntryId, constraintId, errors);
+                    sourceEntryId, ownerType, ownerEntryId, constraintId, errors);
             }
         }
 
@@ -434,6 +462,24 @@ internal sealed class ConstraintValidator
 
     private IEnumerable<SelectionNode> AllSelectionsFlattened() =>
         _roster.Forces.SelectMany(f => FlattenSelections(f.Selections));
+
+    private static int CountSelectionsInForce(string entryId, ForceNode force)
+    {
+        int count = 0;
+        foreach (var sel in FlattenSelections(force.Selections))
+        {
+            if (sel.EntryId == entryId)
+                count += sel.Number;
+        }
+        return count;
+    }
+
+    private static bool IsEffectivelyHidden(ISelectionEntryContainerSymbol entry)
+    {
+        if (entry.IsHidden) return true;
+        if (entry.ReferencedEntry is { IsHidden: true }) return true;
+        return false;
+    }
 
     private static IEnumerable<SelectionNode> FlattenSelections(IReadOnlyList<SelectionNode> selections)
     {
