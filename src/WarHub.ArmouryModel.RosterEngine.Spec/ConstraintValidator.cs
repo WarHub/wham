@@ -213,7 +213,8 @@ internal sealed class ConstraintValidator
             }
 
             // For shared constraints, merge link constraints of the same type
-            // and use the most restrictive value
+            // and use the most restrictive value.
+            // Key by (comparison direction, value kind, scope) to avoid merging unrelated constraints.
             var mergedShared = new Dictionary<string, (decimal value, string constraintId, QueryComparisonType comparison)>(StringComparer.Ordinal);
             foreach (var (constraint, _, isShared) in constraintSources)
             {
@@ -221,36 +222,36 @@ internal sealed class ConstraintValidator
                 var query = constraint.Query;
                 var cid = constraint.Id ?? "";
                 var val = effectiveValues.GetValueOrDefault(cid, query.ReferenceValue ?? 0m);
-                var key = query.Comparison == QueryComparisonType.GreaterThanOrEqual ? "min" : "max";
+                var direction = query.Comparison == QueryComparisonType.GreaterThanOrEqual ? "min" : "max";
+                var key = $"{direction}:{query.ValueKind}";
                 if (!mergedShared.TryGetValue(key, out var existing))
                 {
                     mergedShared[key] = (val, cid, query.Comparison);
                 }
                 else
                 {
-                    // For max: use minimum value (most restrictive). For min: use maximum value.
-                    if (key == "max" && val < existing.value)
+                    if (direction == "max" && val < existing.value)
                         mergedShared[key] = (val, existing.constraintId, existing.comparison);
-                    else if (key == "min" && val > existing.value)
+                    else if (direction == "min" && val > existing.value)
                         mergedShared[key] = (val, existing.constraintId, existing.comparison);
                 }
             }
-            // Also merge link constraints into shared if both exist
+            // Also merge link constraints into shared if both exist with same type
             if (mergedShared.Count > 0)
             {
                 foreach (var (constraint, _, isShared) in constraintSources)
                 {
-                    if (isShared) continue; // already handled
+                    if (isShared) continue;
                     var query = constraint.Query;
                     var cid = constraint.Id ?? "";
                     var val = effectiveValues.GetValueOrDefault(cid, query.ReferenceValue ?? 0m);
-                    var key = query.Comparison == QueryComparisonType.GreaterThanOrEqual ? "min" : "max";
+                    var direction = query.Comparison == QueryComparisonType.GreaterThanOrEqual ? "min" : "max";
+                    var key = $"{direction}:{query.ValueKind}";
                     if (mergedShared.TryGetValue(key, out var existing))
                     {
-                        // Merge link constraint into shared: use most restrictive
-                        if (key == "max" && val < existing.value)
+                        if (direction == "max" && val < existing.value)
                             mergedShared[key] = (val, existing.constraintId, existing.comparison);
-                        else if (key == "min" && val > existing.value)
+                        else if (direction == "min" && val > existing.value)
                             mergedShared[key] = (val, existing.constraintId, existing.comparison);
                     }
                 }
@@ -263,7 +264,8 @@ internal sealed class ConstraintValidator
                 {
                     if (isShared) continue;
                     var query = constraint.Query;
-                    var key = query.Comparison == QueryComparisonType.GreaterThanOrEqual ? "min" : "max";
+                    var direction = query.Comparison == QueryComparisonType.GreaterThanOrEqual ? "min" : "max";
+                    var key = $"{direction}:{query.ValueKind}";
                     if (mergedShared.ContainsKey(key) && constraint.Id is not null)
                         mergedLinkConstraintIds.Add(constraint.Id);
                 }
@@ -274,15 +276,6 @@ internal sealed class ConstraintValidator
                 var query = constraint.Query;
                 var constraintId = constraint.Id ?? "";
 
-                // field=forces on selection entry: BS always counts 0 forces
-                if (query.ValueKind == QueryValueKind.ForceCount)
-                {
-                    var forceConstraintValue = effectiveValues.GetValueOrDefault(constraintId, query.ReferenceValue ?? 0m);
-                    CheckConstraint(query.Comparison, forceConstraintValue, 0,
-                        sourceEntryId, "roster", null, constraintId, errors);
-                    continue;
-                }
-
                 // Skip link constraints that were merged into shared
                 if (!isShared && mergedLinkConstraintIds.Contains(constraintId))
                     continue;
@@ -291,6 +284,15 @@ internal sealed class ConstraintValidator
                 if (isShared || query.Options.HasFlag(QueryOptions.SharedConstraint))
                 {
                     if (!sharedChecked.Add((constraintId, targetId))) continue;
+                }
+
+                // field=forces on selection entry: BS always counts 0 forces
+                if (query.ValueKind == QueryValueKind.ForceCount)
+                {
+                    var forceConstraintValue = effectiveValues.GetValueOrDefault(constraintId, query.ReferenceValue ?? 0m);
+                    CheckConstraint(query.Comparison, forceConstraintValue, 0,
+                        sourceEntryId, "roster", null, constraintId, errors);
+                    continue;
                 }
 
                 // Count selections or costs in scope
@@ -317,8 +319,9 @@ internal sealed class ConstraintValidator
                 decimal constraintValue;
                 if (isShared)
                 {
-                    var key = query.Comparison == QueryComparisonType.GreaterThanOrEqual ? "min" : "max";
-                    constraintValue = mergedShared.TryGetValue(key, out var m)
+                    var direction = query.Comparison == QueryComparisonType.GreaterThanOrEqual ? "min" : "max";
+                    var mergeKey = $"{direction}:{query.ValueKind}";
+                    constraintValue = mergedShared.TryGetValue(mergeKey, out var m)
                         ? m.value
                         : effectiveValues.GetValueOrDefault(constraintId, query.ReferenceValue ?? 0m);
                 }
@@ -344,8 +347,9 @@ internal sealed class ConstraintValidator
                 var errorConstraintId = constraintId;
                 if (isShared)
                 {
-                    var key = query.Comparison == QueryComparisonType.GreaterThanOrEqual ? "min" : "max";
-                    if (mergedShared.TryGetValue(key, out var m))
+                    var direction = query.Comparison == QueryComparisonType.GreaterThanOrEqual ? "min" : "max";
+                    var mergeKey = $"{direction}:{query.ValueKind}";
+                    if (mergedShared.TryGetValue(mergeKey, out var m))
                         errorConstraintId = m.constraintId;
                 }
 
@@ -383,19 +387,22 @@ internal sealed class ConstraintValidator
             if (!_entryIndex.TryGetValue(child.EntryId, out var childEntry))
                 continue;
 
+            var effectiveChildValues = _modifierEvaluator.GetEffectiveConstraintValues(childEntry, child, force);
+
             foreach (var constraint in childEntry.Constraints)
             {
                 var query = constraint.Query;
                 if (query.ValueKind != QueryValueKind.SelectionCount) continue;
                 if (query.ScopeKind != QueryScopeKind.Parent) continue;
 
-                var constraintValue = query.ReferenceValue ?? 0m;
+                var constraintId = constraint.Id ?? "";
+                var constraintValue = effectiveChildValues.GetValueOrDefault(constraintId, query.ReferenceValue ?? 0m);
                 var count = childCounts.GetValueOrDefault(child.EntryId);
 
                 var parentEntryId = parent.EntryId;
                 CheckConstraint(query.Comparison, constraintValue, count,
                     child.EntryId, "selection", parentEntryId,
-                    constraint.Id ?? "", errors);
+                    constraintId, errors);
             }
         }
 
@@ -409,16 +416,19 @@ internal sealed class ConstraintValidator
                 if (childCounts.ContainsKey(childId)) continue; // already counted above
 
                 var targetEntry = childEntrySymbol.ReferencedEntry ?? childEntrySymbol;
+                var effectiveAvailValues = _modifierEvaluator.GetEffectiveConstraintValues(targetEntry, null, force);
+
                 foreach (var constraint in targetEntry.Constraints)
                 {
                     var query = constraint.Query;
                     if (query.ValueKind != QueryValueKind.SelectionCount) continue;
                     if (query.ScopeKind != QueryScopeKind.Parent) continue;
 
-                    var constraintValue = query.ReferenceValue ?? 0m;
+                    var constraintId = constraint.Id ?? "";
+                    var constraintValue = effectiveAvailValues.GetValueOrDefault(constraintId, query.ReferenceValue ?? 0m);
                     CheckConstraint(query.Comparison, constraintValue, 0,
                         childId, "selection", parent.EntryId,
-                        constraint.Id ?? "", errors);
+                        constraintId, errors);
                 }
             }
         }
@@ -769,7 +779,8 @@ internal sealed class ConstraintValidator
             return referenced.Id;
         return entry.Id;
     }
-
+
+
     private static IEnumerable<ISelectionEntryContainerSymbol> GetRootEntries(ICatalogueSymbol catalogue)
     {
         foreach (var entry in catalogue.RootContainerEntries)

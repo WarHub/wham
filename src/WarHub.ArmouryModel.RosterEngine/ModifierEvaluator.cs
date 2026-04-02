@@ -707,7 +707,9 @@ public sealed class ModifierEvaluator
                 var parent = FindParentSelection(rootSel, context.Selection);
                 if (parent is not null)
                 {
-                    yield return parent;
+                    // Return the parent's children (siblings of current selection)
+                    foreach (var s in parent.Selections)
+                        yield return s;
                     yield break;
                 }
             }
