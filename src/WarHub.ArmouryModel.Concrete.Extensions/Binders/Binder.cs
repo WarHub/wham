@@ -145,7 +145,8 @@ internal class Binder
         => scopeKind switch
         {
             QueryScopeKind.PrimaryCatalogue => BindCatalogueSymbol(node, symbolId, diagnostics),
-            QueryScopeKind.PrimaryCategory => BindCategoryEntrySymbol(node, symbolId, diagnostics),
+            // PrimaryCategory scope defines the scope (look in selections sharing the same primary category),
+            // but the childId/filter still references any container entry (typically a selection entry).
             _ => BindSimple<IContainerEntrySymbol, ErrorSymbols.ErrorContainerEntrySymbol>(node, diagnostics, symbolId, LookupOptions.ContainerEntryOnly)
         };
 

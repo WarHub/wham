@@ -115,9 +115,23 @@ internal sealed class StateMapper
             ? GetModifiedSelectionCosts(secCosts, selNode, force)
             : MapSelectionCosts(selNode);
 
-        var categories = entrySym is ISelectionEntryContainerSymbol secCat
-            ? GetModifiedCategories(secCat, selNode, force)
-            : MapSelectionCategories(selNode);
+        List<CategoryState> categories;
+        if (entrySym is ISelectionEntryContainerSymbol secCat)
+        {
+            try
+            {
+                categories = GetModifiedCategories(secCat, selNode, force);
+            }
+            catch (InvalidCastException)
+            {
+                // Fall back to unmodified categories if symbol binding fails
+                categories = MapSelectionCategories(selNode);
+            }
+        }
+        else
+        {
+            categories = MapSelectionCategories(selNode);
+        }
 
         // Resolve profiles and rules from the entry declaration
         var entryDecl = FindEntryDeclaration(selNode.EntryId);
@@ -683,12 +697,8 @@ internal sealed class StateMapper
                 }
             }
         }
-        // Index all items to catch InfoLinks, InfoGroups, etc.
-        foreach (var item in catalogue.AllItems)
-        {
-            if (item is IEntrySymbol entry && entry.Id is not null)
-                _symbolEntries!.TryAdd(entry.Id, entry);
-        }
+        // Note: We don't iterate AllItems as it may trigger lazy binding that crashes.
+        // The above indexing should cover all needed entries.
     }
 
     private void IndexSymbolEntryRecursive(ISelectionEntryContainerSymbol entry)

@@ -459,6 +459,22 @@ public sealed class ModifierEvaluator
         if (query.Comparison == QueryComparisonType.NotInstanceOf)
             return !EvaluateInstanceOf(query, context);
 
+        // BattleScribe behavior: scope=self with field=selections always returns count 0
+        // (the current selection doesn't count itself for non-instanceOf conditions)
+        if (query.ScopeKind == QueryScopeKind.Self && query.ValueKind == QueryValueKind.SelectionCount)
+        {
+            var referenceValue0 = query.ReferenceValue ?? 0m;
+            return CompareValues(query.Comparison, 0m, referenceValue0);
+        }
+
+        // BattleScribe behavior: null/empty childId returns NaN → condition false
+        // Exception: scope=ancestor still works with null childId (counts self entry)
+        if (query.ValueFilterKind == QueryFilterKind.Unknown
+            && query.ScopeKind != QueryScopeKind.ContainingAncestor)
+        {
+            return false;
+        }
+
         // Calculate query value
         var resultValue = CalculateQueryValue(query, context);
 
@@ -476,35 +492,95 @@ public sealed class ModifierEvaluator
 
     private bool EvaluateInstanceOf(IQuerySymbol query, EvalContext context)
     {
-        // "instanceOf" checks whether the selection in the current scope
-        // matches a specific entry or category
-        var filterSymbol = query.FilterSymbol;
-        if (filterSymbol is null)
-            return false;
+        // "instanceOf" is a boolean type check, NOT a count.
+        // It checks if the current selection (or ancestor) matches a specific entry/category.
+        // Only scope=self and scope=ancestor work; all other scopes return false
+        // (force, roster, primary-category etc. are not selection entries).
 
-        var selection = context.Selection;
+        if (query.ScopeKind == QueryScopeKind.Self)
+        {
+            return CheckInstanceOf(query, context.Selection);
+        }
+
+        if (query.ScopeKind == QueryScopeKind.ContainingAncestor)
+        {
+            return CheckAncestorInstanceOf(query, context);
+        }
+
+        // Non-self, non-ancestor scopes: the scope element (force, roster, etc.)
+        // is never an instance of a selection entry, so instanceOf always returns false.
+        return false;
+    }
+
+    private static bool CheckInstanceOf(IQuerySymbol query, SelectionNode? selection)
+    {
         if (selection is null)
             return false;
 
+        // Check by entry type (unit/model/upgrade) — childId was "unit"/"model"/"upgrade"
+        if (query.ValueFilterKind is QueryFilterKind.UnitEntry)
+            return selection.Type == SelectionEntryKind.Unit;
+        if (query.ValueFilterKind is QueryFilterKind.ModelEntry)
+            return selection.Type == SelectionEntryKind.Model;
+        if (query.ValueFilterKind is QueryFilterKind.UpgradeEntry)
+            return selection.Type == SelectionEntryKind.Upgrade;
+
+        // Check by specific entry/category ID
+        var filterId = query.FilterSymbol?.Id;
+        if (filterId is null)
+            return false;
+
         // Check by entry ID
-        if (filterSymbol is ISelectionEntryContainerSymbol entrySymbol)
-        {
-            return MatchesEntry(selection, entrySymbol.Id);
-        }
+        if (selection.EntryId == filterId)
+            return true;
 
         // Check by category
-        if (filterSymbol is ICategoryEntrySymbol catSymbol)
+        foreach (var cat in selection.Categories)
         {
-            return SelectionHasCategory(selection, catSymbol.Id);
-        }
-
-        // Check by entry type (unit/model/upgrade)
-        if (query.ValueFilterKind != QueryFilterKind.Anything && query.ValueFilterKind != QueryFilterKind.Unknown)
-        {
-            return MatchesEntryType(selection, query.ValueFilterKind);
+            if (cat.EntryId == filterId)
+                return true;
         }
 
         return false;
+    }
+
+    private bool CheckAncestorInstanceOf(IQuerySymbol query, EvalContext context)
+    {
+        // Walk up parent chain: check if any ancestor matches
+        // Find parent selection from force's selection tree
+        if (context.Selection is not null && context.Force is not null)
+        {
+            var parent = FindParentSelection(context.Force, context.Selection);
+            while (parent is not null)
+            {
+                if (CheckInstanceOf(query, parent))
+                    return true;
+                parent = FindParentSelection(context.Force, parent);
+            }
+        }
+        return false;
+    }
+
+    private static SelectionNode? FindParentSelection(ForceNode force, SelectionNode child)
+    {
+        foreach (var rootSel in force.Selections)
+        {
+            if (rootSel == child) return null; // root-level, parent is force
+            var found = FindParentInTree(rootSel, child);
+            if (found is not null) return found;
+        }
+        return null;
+    }
+
+    private static SelectionNode? FindParentInTree(SelectionNode parent, SelectionNode target)
+    {
+        foreach (var child in parent.Selections)
+        {
+            if (child == target) return parent;
+            var found = FindParentInTree(child, target);
+            if (found is not null) return found;
+        }
+        return null;
     }
 
     private decimal CalculateQueryValue(IQuerySymbol query, EvalContext context)
