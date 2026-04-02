@@ -1,6 +1,6 @@
 using BattleScribeSpec.Protocol;
 
-namespace WarHub.ArmouryModel.RosterEngine;
+namespace WarHub.ArmouryModel.RosterEngine.Spec.Legacy;
 
 /// <summary>
 /// Resolves entry references, flattens available entries, and merges entry links with targets.

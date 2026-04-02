@@ -1,7 +1,7 @@
 using BattleScribeSpec;
 using BattleScribeSpec.Protocol;
 
-namespace WarHub.ArmouryModel.RosterEngine;
+namespace WarHub.ArmouryModel.RosterEngine.Spec.Legacy;
 
 /// <summary>
 /// BattleScribe-spec conformant roster engine implementation.

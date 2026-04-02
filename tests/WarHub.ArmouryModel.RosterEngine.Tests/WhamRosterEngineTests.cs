@@ -1,5 +1,6 @@
 using BattleScribeSpec;
 using BattleScribeSpec.Protocol;
+using WarHub.ArmouryModel.RosterEngine.Spec;
 using Xunit;
 
 namespace WarHub.ArmouryModel.RosterEngine.Tests;
@@ -41,10 +42,13 @@ public class WhamRosterEngineTests
         return (gs, [cat]);
     }
 
+    private static SpecRosterEngineAdapter CreateEngine()
+        => new();
+
     [Fact]
     public void Setup_ReturnsNoErrors()
     {
-        using var engine = new WhamRosterEngine();
+        using var engine = CreateEngine();
         var (gs, cats) = CreateBasicSetup();
         var errors = engine.Setup(gs, cats);
         Assert.Empty(errors);
@@ -53,7 +57,7 @@ public class WhamRosterEngineTests
     [Fact]
     public void AddForce_CreatesEmptyForce()
     {
-        using var engine = new WhamRosterEngine();
+        using var engine = CreateEngine();
         var (gs, cats) = CreateBasicSetup();
         engine.Setup(gs, cats);
         engine.AddForce(0);
@@ -66,7 +70,7 @@ public class WhamRosterEngineTests
     [Fact]
     public void SelectEntry_AddsSelection()
     {
-        using var engine = new WhamRosterEngine();
+        using var engine = CreateEngine();
         var (gs, cats) = CreateBasicSetup();
         engine.Setup(gs, cats);
         engine.AddForce(0);
@@ -80,7 +84,7 @@ public class WhamRosterEngineTests
     [Fact]
     public void Costs_CalculatedCorrectly()
     {
-        using var engine = new WhamRosterEngine();
+        using var engine = CreateEngine();
         var (gs, cats) = CreateBasicSetup();
         engine.Setup(gs, cats);
         engine.AddForce(0);
@@ -122,7 +126,7 @@ public class WhamRosterEngineTests
             ],
         };
 
-        using var engine = new WhamRosterEngine();
+        using var engine = CreateEngine();
         engine.Setup(gs, [cat]);
         engine.AddForce(0);
         var state = engine.GetRosterState();
@@ -133,7 +137,7 @@ public class WhamRosterEngineTests
     [Fact]
     public void DeselectSelection_RemovesSelection()
     {
-        using var engine = new WhamRosterEngine();
+        using var engine = CreateEngine();
         var (gs, cats) = CreateBasicSetup();
         engine.Setup(gs, cats);
         engine.AddForce(0);
@@ -146,7 +150,7 @@ public class WhamRosterEngineTests
     [Fact]
     public void DuplicateSelection_CreatesClone()
     {
-        using var engine = new WhamRosterEngine();
+        using var engine = CreateEngine();
         var (gs, cats) = CreateBasicSetup();
         engine.Setup(gs, cats);
         engine.AddForce(0);
@@ -160,7 +164,7 @@ public class WhamRosterEngineTests
     [Fact]
     public void SetSelectionCount_IsNoOpForRootEntries()
     {
-        using var engine = new WhamRosterEngine();
+        using var engine = CreateEngine();
         var (gs, cats) = CreateBasicSetup();
         engine.Setup(gs, cats);
         engine.AddForce(0);
@@ -176,7 +180,7 @@ public class WhamRosterEngineTests
     [Fact]
     public void RemoveForce_RemovesForce()
     {
-        using var engine = new WhamRosterEngine();
+        using var engine = CreateEngine();
         var (gs, cats) = CreateBasicSetup();
         engine.Setup(gs, cats);
         engine.AddForce(0);
@@ -188,7 +192,7 @@ public class WhamRosterEngineTests
     [Fact]
     public void CostLimit_GeneratesError()
     {
-        using var engine = new WhamRosterEngine();
+        using var engine = CreateEngine();
         var (gs, cats) = CreateBasicSetup();
         engine.Setup(gs, cats);
         engine.SetCostLimit("pts", 75);

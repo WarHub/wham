@@ -1,6 +1,6 @@
 using BattleScribeSpec.Protocol;
 
-namespace WarHub.ArmouryModel.RosterEngine;
+namespace WarHub.ArmouryModel.RosterEngine.Spec.Legacy;
 
 /// <summary>
 /// Mutable state for a force within the roster.

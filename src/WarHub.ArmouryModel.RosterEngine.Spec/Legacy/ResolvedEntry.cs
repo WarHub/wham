@@ -1,6 +1,6 @@
 using BattleScribeSpec.Protocol;
 
-namespace WarHub.ArmouryModel.RosterEngine;
+namespace WarHub.ArmouryModel.RosterEngine.Spec.Legacy;
 
 /// <summary>
 /// An entry with link overrides applied but before modifier evaluation.

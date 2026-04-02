@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>$(CommonTargetFramework)</TargetFramework>
-    <RootNamespace>WarHub.ArmouryModel.RosterEngine.Tests</RootNamespace>
+    <RootNamespace>WarHub.ArmouryModel.RosterEngine.Spec.Tests</RootNamespace>
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
 
@@ -19,7 +19,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\WarHub.ArmouryModel.RosterEngine\WarHub.ArmouryModel.RosterEngine.csproj" />
     <ProjectReference Include="..\..\src\WarHub.ArmouryModel.RosterEngine.Spec\WarHub.ArmouryModel.RosterEngine.Spec.csproj" />
   </ItemGroup>
 
