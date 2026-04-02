@@ -478,11 +478,12 @@ public sealed class ModifierEvaluator
         // Calculate query value
         var resultValue = CalculateQueryValue(query, context);
 
-        // Apply percent if needed
         var referenceValue = query.ReferenceValue ?? 0m;
+        // Apply percent if needed: threshold = totalInScope * value / 100
         if (query.Options.HasFlag(QueryOptions.ValuePercentage))
         {
-            referenceValue = resultValue * referenceValue / 100m;
+            var totalInScope = CountTotalSelectionsInScope(query, context);
+            referenceValue = totalInScope * referenceValue / 100m;
             if (query.Options.HasFlag(QueryOptions.ValueRoundUp))
                 referenceValue = Math.Ceiling(referenceValue);
         }
@@ -779,6 +780,18 @@ public sealed class ModifierEvaluator
         return count;
     }
 
+    private decimal CountTotalSelectionsInScope(IQuerySymbol query, EvalContext context)
+    {
+        // Count ALL selections in scope (no filter applied) for percentValue threshold
+        var selections = GetSelectionsInScope(query, context);
+        decimal count = 0;
+        foreach (var sel in selections)
+        {
+            count += sel.Number;
+        }
+        return count;
+    }
+
     private decimal CountForces(IQuerySymbol query, EvalContext context)
     {
         decimal count = 0;
@@ -843,9 +856,13 @@ public sealed class ModifierEvaluator
 
     private static bool MatchesSpecifiedEntry(SelectionNode sel, IQuerySymbol query)
     {
-        var filterId = query.FilterSymbol?.Id;
+        var filterSymbol = query.FilterSymbol;
+        // Error symbols (binding failures) or null → don't match anything
+        if (filterSymbol is null || filterSymbol.Kind == SymbolKind.Error)
+            return false;
+        var filterId = filterSymbol.Id;
         if (filterId is null)
-            return true;
+            return false;
 
         // Check if selection's entry matches
         if (sel.EntryId == filterId || sel.EntryGroupId == filterId)
