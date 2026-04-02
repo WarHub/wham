@@ -1,123 +1,101 @@
 # Roster Engine Architecture
 
 The wham roster engine is a BattleScribe-spec conformant implementation that
-passes all 303 conformance specs. It implements the `IRosterEngine` interface
-from the BattleScribeSpec TestKit.
+passes 291/293 conformance specs (99.3%). It operates on ISymbol/WhamCompilation
+types from the Roslyn-inspired compilation model.
+
+See [ADR-0006](adrs/0006-isymbol-based-roster-engine.md) for the architectural
+decision record.
 
 ## Overview
 
 ```
-┌─────────────────────────────────────────────────┐
-│              WhamRosterEngine                    │
-│  (IRosterEngine: Setup, AddForce, SelectEntry,  │
-│   GetRosterState, etc.)                         │
-├─────────────┬───────────────┬───────────────────┤
-│ EntryResolver│ModifierEvaluator│ConstraintValidator│
-│ - Entry/link │- Modifier apply│- Min/max checks  │
-│   resolution │- Condition eval│- Error generation │
-│ - Merging    │- Scope resolve │- Shared constraints│
-│ - Flattening │- Repeat count  │- Category checks  │
-├──────────────┴───────────────┴───────────────────┤
-│  RosterForce / RosterSelection (internal state)  │
-└──────────────────────────────────────────────────┘
-         ↑ Protocol types from TestKit ↑
+┌─────────────────────────────────────────────────────────┐
+│         BattleScribeSpec.TestKit (Protocol types)        │
+└──────────────────────┬──────────────────────────────────┘
+                       ↓
+┌──────────────────────────────────────────────────────────┐
+│         RosterEngine.Spec (adapter layer)                │
+│  ProtocolConverter → SpecRosterEngineAdapter → StateMapper│
+└──────────────────────┬──────────────────────────────────┘
+                       ↓
+┌──────────────────────────────────────────────────────────┐
+│            RosterEngine (core, ISymbol-based)             │
+│  WhamRosterEngine + ModifierEvaluator + ConstraintValidator│
+└──────────────────────┬──────────────────────────────────┘
+                       ↓
+┌──────────────────────────────────────────────────────────┐
+│   Concrete.Extensions / Extensions / Source (symbols)     │
+└──────────────────────────────────────────────────────────┘
 ```
+
+## Projects
+
+### WarHub.ArmouryModel.RosterEngine
+
+Core engine with zero TestKit dependency. Key classes:
+
+- **WhamRosterEngine**: Functional API — takes `RosterNode` + `Compilation`,
+  returns modified `RosterNode`. Operations: CreateRoster, AddForce,
+  RemoveForce, SelectEntry, SelectChildEntry, DeselectSelection, etc.
+- **ModifierEvaluator**: Evaluates `IEffectSymbol` effects with
+  `EvalContext(Selection?, Force?, EntrySymbol)`.
+- Entry resolution leverages the Compilation's Binder for link targets.
+
+### WarHub.ArmouryModel.RosterEngine.Spec
+
+Adapter bridging TestKit's `IRosterEngine` to the ISymbol engine:
+
+- **ProtocolConverter**: Protocol* → SourceNode trees → WhamCompilation
+- **SpecRosterEngineAdapter**: `IRosterEngine` impl maintaining current state
+- **StateMapper**: Maps ISymbol roster tree to Protocol `RosterState`
+- **ConstraintValidator**: Validates constraints using ISymbol types
 
 ## Components
 
-### WhamRosterEngine (`WhamRosterEngine.cs`)
+### ModifierEvaluator (~1100 lines)
 
-The main engine implementing `IRosterEngine`. Manages roster lifecycle:
+Evaluates modifiers and conditions using IEffectSymbol/IConditionSymbol:
 
-- **Setup**: Loads game system and catalogues, builds resolver index
-- **AddForce/RemoveForce**: Creates force state with auto-selections
-- **SelectEntry/SelectChildEntry**: Creates selections, resolves entries
-- **GetRosterState**: Builds complete roster state with profiles, rules,
-  categories, costs, and validation errors
+- **Effect types**: set, increment, decrement, append, add/remove category
+- **Target kinds**: name, hidden, costs, characteristics, constraint values,
+  categories, page, rule description
+- **Condition evaluation**: IQuerySymbol comparison with scope resolution
+- **Scopes**: self, parent, force, roster, primary-category, ancestor
+- **Repeat handling**: Multiplicative repeat counts based on queries
 
-Key behaviors:
-- Auto-select entries with `min > 0` constraints
-- Category modifier application (set-primary, add, remove)
-- Group categoryLink inheritance to child selections
-- Recursive cost type collection from child entries
-- Collective cost handling
+### ConstraintValidator (~700 lines)
 
-### EntryResolver (`EntryResolver.cs`)
+Validates IConstraintSymbol constraints:
 
-Resolves entries from catalogues and handles link merging:
-
-- **Available entries**: Flattens root entries from catalogue and game system
-- **Child entries**: Flattens children of a selection entry
-- **EntryLink merging**: Merges link with target (`merged.Id = target.Id`),
-  concatenating constraints, modifiers, and children from both
-- **InfoLink resolution**: Resolves profile/rule links to shared definitions
-- **InfoGroup collection**: Recursively collects profiles and rules from
-  nested info groups (with cycle detection)
-- **Group flattening**: Recursively flattens group children (with cycle
-  detection)
-
-### ModifierEvaluator (`ModifierEvaluator.cs`)
-
-Evaluates modifiers and conditions using a static `EvalContext`:
-
-- **Modifier types**: set, increment, decrement, append, add, remove
-- **Condition types**: atLeast, atMost, equalTo, greaterThan, lessThan,
-  instanceOf
-- **Scopes**: self, parent, force, roster, primary-category,
-  primary-catalogue, ancestor
-- **Condition groups**: AND/OR logic with nested conditions
-- **Modifier groups**: Shared conditions applied to grouped modifiers
-- **Repeat handling**: Multiplicative repeat counts based on conditions
-- **Profile/rule modification**: Applies modifiers to characteristic values
-
-### ConstraintValidator (`ConstraintValidator.cs`)
-
-Validates constraints and generates structured error messages:
-
-- **Force-level validation**: Entry constraints scoped to force
+- **Force-level validation**: Root entry constraints (scope=force/roster)
 - **Child validation**: Parent-scoped constraints on child selections
-- **Category validation**: Min/max constraints on category links
-- **Shared constraints**: Deduplicated validation across multiple selections
-- **Constraint merging**: Absorbs link constraint values into shared
-  constraints (uses most restrictive value)
+- **Category validation**: Min/max on category links
+- **Shared constraint counting**: Counts across ALL entry links to same
+  shared entry using link ID → shared entry mapping
+- **Constraint merging**: Link + shared constraints merged, most restrictive
+  wins. Merge key: `direction:valueKind` (not scope)
+- **Modifier integration**: Uses `GetEffectiveConstraintValues` for
+  modifier-adjusted boundary values
 - **Error format**: `on='ownerType ownerEntryId', from='entryId/constraintId'`
 
-### State Types
-
-- **RosterForce**: Force state with selections and available entries
-- **RosterSelection**: Selection state with entry, children, source link/group
-
 ## BattleScribe Behavioral Alignment
-
-The engine aims to match BattleScribe behavior with documented deviations:
 
 | Behavior | BattleScribe | wham | Notes |
 |----------|-------------|------|-------|
 | scope=parent on uncategorised entries | No error | Error (correct) | `scope-parent` spec has wham override |
-| Null childId + non-self scope | NaN → false | false | Matches BS |
-| Shared constraint + link constraint | Absorbs most restrictive | Same | Implemented |
-| EntryLink merge ID | target.Id | Same | `merged.Id = target.Id` |
+| Shared constraint counting | Counts across all links | Same | via `_sharedEntryLinkIds` index |
+| Constraint merging (link+shared) | Most restrictive wins | Same | Keys by direction+valueKind |
+| Modifier on constraint value | Modifies boundary | Same | `GetEffectiveConstraintValues` |
 | Auto-select on min constraint | Yes | Yes | On addForce |
-| scope=force min constraint owner | "force" | "force" | Correct |
-| scope=force max constraint owner | varies | "selection" | Matches BS |
+| field=forces on SelectionEntry | Always 0 | Same | Child filter never matches |
+| Hidden entry + selections | Error with constraintId="hidden" | Same | Checks `IsEffectivelyHidden` |
 
-## Known Limitations (Latent)
+## Expected Failures
 
-These are not triggered by current conformance specs but were identified
-during code review:
-
-1. **Ancestor scope depth**: Only checks immediate parent, not full ancestor
-   chain. Would need parent references on `RosterSelection`.
-
-2. **Child constraint parent context**: `ValidateChildConstraints` evaluates
-   modifiers without parent context, so parent/ancestor-scoped conditions
-   on child constraints may resolve incorrectly.
-
-3. **Cost conditions use raw costs**: Conditions/constraints that count cost
-   fields use `Entry.Costs` directly, not the effective (modified) costs.
-
-4. **Linked child selection identity**: Child selections from entry links may
-   be counted under the target entry ID instead of the link ID.
+2 specs tagged `undefined-behavior` that all engines fail:
+- `modifier-group-on-infogroup` — ModifierGroup on infoGroup
+- `modifier-group-on-category-link` — ModifierGroup on categoryLink
 
 ## File Layout
 

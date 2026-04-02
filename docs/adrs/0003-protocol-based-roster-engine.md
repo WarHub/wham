@@ -1,6 +1,6 @@
 # ADR-0003: Protocol-based roster engine (direct TestKit types)
 
-**Status**: Accepted
+**Status**: Superseded by [ADR-0006](0006-isymbol-based-roster-engine.md)
 
 ## Context
 
@@ -18,6 +18,8 @@ wham's internal types, or work with protocol types directly?
 ## Decision
 
 **Work directly with protocol types** from `BattleScribeSpec.TestKit`.
+
+*This decision was later reversed — see [ADR-0006](0006-isymbol-based-roster-engine.md).*
 
 The roster engine (`WhamRosterEngine`) accepts `ProtocolGameSystem` and
 `ProtocolCatalogue` objects, builds internal state (`RosterForce`,
