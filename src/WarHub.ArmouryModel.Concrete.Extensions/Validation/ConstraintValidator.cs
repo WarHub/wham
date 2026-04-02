@@ -73,6 +73,10 @@ internal sealed class ConstraintValidator
                     }
                 }
             }
+            // Fallback to gamesystem (RootCatalogue). This is correct because
+            // ForceNode.CatalogueId typically points to the gamesystem where force
+            // entries are defined, and the gamesystem is always indexed for constraints.
+            // When the adapter provides explicit forceCatalogues, this fallback is not used.
             result.Add(matched ?? globalNamespace.RootCatalogue);
         }
 

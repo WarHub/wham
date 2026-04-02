@@ -1,6 +1,6 @@
 # ADR-0006: ISymbol-based roster engine (replacing Protocol-based)
 
-**Status**: Accepted
+**Status**: Accepted (updated with compilation-integrated validation)
 
 **Supersedes**: [ADR-0003](0003-protocol-based-roster-engine.md)
 
@@ -31,18 +31,29 @@ BattleScribeSpec.TestKit (Protocol types, IRosterEngine interface)
 WarHub.ArmouryModel.RosterEngine.Spec (adapter project)
   ├── ProtocolConverter         Protocol* → SourceNode trees → WhamCompilation
   ├── SpecRosterEngineAdapter   IRosterEngine impl, delegates to core
-  └── StateMapper               ISymbol roster state → Protocol RosterState
+  ├── StateMapper               ISymbol roster state → Protocol RosterState
+  └── DiagnosticMapper          Diagnostic → ValidationErrorState
         │
 WarHub.ArmouryModel.RosterEngine (core engine)
   ├── WhamRosterEngine          Functional API: operations on RosterNode
-  ├── ModifierEvaluator         IEffectSymbol eval with runtime context
-  └── ConstraintValidator       IConstraintSymbol/IQuerySymbol validation
+  └── (ModifierEvaluator)       → moved to Concrete.Extensions
+        │
+WarHub.ArmouryModel.Concrete.Extensions (compilation + symbols + validation)
+  ├── WhamCompilation           Compilation with GetDiagnostics()/GetValidationDiagnostics()
+  ├── Symbols/RosterSymbol      ForceComplete with EvaluateModifiers/Validate phases
+  ├── Validation/               Constraint and modifier evaluation
+  │   ├── ModifierEvaluator     IEffectSymbol eval with runtime context
+  │   └── ConstraintValidator   IConstraintSymbol validation → Diagnostic objects
+  └── Diagnostics/              Diagnostic infrastructure
+      ├── ErrorCode             WRN_ codes for constraint violations
+      ├── ValidationDiagnostic  Diagnostic with constraint metadata
+      └── DiagnosticBag         Collection and dedup of diagnostics
         │
 WarHub.ArmouryModel.EditorServices (existing)
   ├── RosterState               Wraps Compilation (roster + catalogs)
   └── RosterEditor              Undo/redo stack (future integration)
         │
-Concrete.Extensions + Extensions + Source (existing symbol/node layers)
+Extensions + Source (existing node layers)
 ```
 
 ### Key Design Choices
@@ -54,17 +65,38 @@ Concrete.Extensions + Extensions + Source (existing symbol/node layers)
    provides symbol resolution, entry link targets, and catalogue closure.
    No manual index-building needed for entry resolution.
 
-3. **ModifierEvaluator**: Evaluates `IEffectSymbol` effects with an
-   `EvalContext(Selection?, Force?, EntrySymbol)`. Handles name, hidden,
-   costs, characteristics, categories, pages, rule descriptions, and
-   constraint values.
+3. **ModifierEvaluator in Concrete.Extensions**: Evaluates `IEffectSymbol`
+   effects with an `EvalContext(Selection?, Force?, EntrySymbol)`. Handles
+   name, hidden, costs, characteristics, categories, pages, rule
+   descriptions, and constraint values. Moved from RosterEngine to be a
+   compilation-internal service.
 
-4. **ConstraintValidator**: Validates `IConstraintSymbol` constraints with
-   shared counting across entry links, constraint merging (most restrictive
-   wins), and modifier-constraint interaction.
+4. **ConstraintValidator in Concrete.Extensions**: Validates constraints and
+   produces `Diagnostic` objects with structured metadata (ownerType,
+   ownerId, ownerEntryId, entryId, constraintId). Supports shared counting
+   across entry links, constraint merging, and modifier-constraint
+   interaction.
 
-5. **Adapter isolation**: TestKit dependency is confined to `RosterEngine.Spec`.
-   The core `RosterEngine` project has zero TestKit dependency.
+5. **Validation via GetValidationDiagnostics()**: Constraint validation
+   runs on-demand through `WhamCompilation.GetValidationDiagnostics()`,
+   separate from the ForceComplete symbol completion pipeline. The
+   `RosterSymbol.Validate` CompletionPart is reserved for future lazy
+   validation integration.
+
+   > **Design note**: Initially attempted to integrate validation into
+   > `ForceComplete()` phases, but this caused process hang issues due to
+   > SpinWait contention in the completion state machine during test host
+   > shutdown. The current approach keeps validation explicit and avoids
+   > these threading issues.
+
+6. **DiagnosticMapper in Spec adapter**: Translates `Diagnostic` objects
+   back to `ValidationErrorState` for the BattleScribeSpec test kit.
+   Uses `ValidationDiagnostic` type check (not ID-based filtering) to
+   identify constraint violations.
+
+7. **Adapter isolation**: TestKit dependency is confined to `RosterEngine.Spec`.
+   The core `RosterEngine` and `Concrete.Extensions` projects have zero
+   TestKit dependency.
 
 ## Consequences
 
@@ -77,13 +109,18 @@ Concrete.Extensions + Extensions + Source (existing symbol/node layers)
   be wrapped in `RosterState` for editor integration
 - **Better parent tracking** — ISymbol parent chain enables correct scope
   resolution for ancestor/parent queries
+- **Validation as diagnostics** — constraint violations are first-class
+  `Diagnostic` objects, same infrastructure as binding errors
+- **Clean separation** — validation logic in Concrete.Extensions, spec
+  mapping in Spec adapter, engine operations in RosterEngine
 
 ### Negative
 - **Conversion overhead** — Protocol types must be converted to SourceNode
   trees (one-time cost per setup, not per operation)
-- **Two engines coexist temporarily** — legacy Protocol engine kept in
-  `Legacy/` namespace for reference until fully retired
+- **Validation not lazy** — GetValidationDiagnostics() recomputes on each
+  call rather than caching via ForceComplete. Acceptable for current use
+  but may need caching for editor scenarios.
 
 ### Conformance Results
-- 291/293 passing (99.3%)
-- 2 expected failures (`undefined-behavior` specs that all engines fail)
+- 304/304 passing (100%)
+- 0 expected failures

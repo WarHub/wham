@@ -35,6 +35,12 @@ public class WhamCompilation : Compilation
         throw new NotImplementedException();
     }
 
+    /// <summary>
+    /// Returns binding and declaration diagnostics. Does not include constraint
+    /// validation diagnostics — use <see cref="GetValidationDiagnostics"/> for those.
+    /// Validation is kept separate to avoid process hang issues with SpinWait
+    /// contention when validation runs inside ForceComplete phases.
+    /// </summary>
     public override ImmutableArray<Diagnostic> GetDiagnostics(CancellationToken cancellationToken = default)
     {
         var namespaceDiagnostics = SourceGlobalNamespace.DeclarationDiagnostics;
@@ -58,6 +64,11 @@ public class WhamCompilation : Compilation
     /// This is needed because force entries often live in the gamesystem while
     /// selection entries live in separate catalogues.
     /// </param>
+    /// <remarks>
+    /// Currently assumes a single roster per compilation. The <paramref name="forceCatalogues"/>
+    /// override applies to all rosters equally, which is incorrect for multi-roster
+    /// compilations. This will need refactoring if multi-roster support is added.
+    /// </remarks>
     public ImmutableArray<Diagnostic> GetValidationDiagnostics(
         IReadOnlyList<ICatalogueSymbol>? forceCatalogues = null)
     {
