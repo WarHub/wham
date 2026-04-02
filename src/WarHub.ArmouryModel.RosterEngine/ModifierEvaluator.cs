@@ -90,18 +90,38 @@ public sealed class ModifierEvaluator
     }
 
     /// <summary>
-    /// Gets the effective page for an entry after applying modifiers.
+    /// Gets the effective page for an entry after applying page modifiers.
+    /// Returns null if no page modifiers fired and no page was set.
     /// </summary>
     public string? GetEffectivePage(IEntrySymbol entry, SelectionNode? selection, ForceNode? force)
     {
-        var page = (entry.PublicationReference as ISymbol)?.Name; // TODO: get actual page
+        string? page = null;
         var context = new EvalContext(selection, force, entry);
-        // Page modifiers use EffectTargetKind.PublicationPage
         foreach (var effect in entry.Effects)
         {
-            if (effect.TargetKind == EffectTargetKind.PublicationPage)
+            page = ApplyPageEffect(effect, page, context);
+        }
+        return page;
+    }
+
+    private string? ApplyPageEffect(IEffectSymbol effect, string? page, EvalContext context)
+    {
+        if (effect.TargetKind == EffectTargetKind.PublicationPage && EvaluateEffectCondition(effect, context))
+        {
+            page = ApplyStringEffect(effect, page ?? "", context);
+        }
+        // Process children
+        if (effect.ChildrenWhenSatisfied.Length > 0 || effect.ChildrenWhenUnsatisfied.Length > 0)
+        {
+            var satisfied = EvaluateCondition(effect.Condition, context);
+            var children = satisfied ? effect.ChildrenWhenSatisfied : effect.ChildrenWhenUnsatisfied;
+            var repeatCount = satisfied ? GetRepeatCount(effect, context) : 1;
+            for (int r = 0; r < repeatCount; r++)
             {
-                page = ApplyStringEffect(effect, page ?? "", context);
+                foreach (var child in children)
+                {
+                    page = ApplyPageEffect(child, page, context);
+                }
             }
         }
         return page;
@@ -130,6 +150,7 @@ public sealed class ModifierEvaluator
 
     /// <summary>
     /// Gets effective categories for a selection entry, applying add/remove/set-primary/unset-primary modifiers.
+    /// Uses the entry's declared categories as starting point.
     /// </summary>
     public (List<string> CategoryIds, string? PrimaryCategoryId) GetEffectiveCategories(
         ISelectionEntryContainerSymbol entry,
@@ -147,6 +168,28 @@ public sealed class ModifierEvaluator
         }
         if (entry.PrimaryCategory?.Id is { } primId)
             primaryId = primId;
+
+        var context = new EvalContext(selection, force, entry);
+        foreach (var effect in entry.Effects)
+        {
+            ApplyCategoryEffect(effect, categories, ref primaryId, context);
+        }
+        return (categories, primaryId);
+    }
+
+    /// <summary>
+    /// Gets effective categories starting from a provided initial category list.
+    /// Used when runtime categories differ from declared categories (e.g., inherited from groups).
+    /// </summary>
+    public (List<string> CategoryIds, string? PrimaryCategoryId) GetEffectiveCategoriesFrom(
+        ISelectionEntryContainerSymbol entry,
+        List<string> initialCategoryIds,
+        string? initialPrimaryId,
+        SelectionNode? selection,
+        ForceNode? force)
+    {
+        var categories = new List<string>(initialCategoryIds);
+        string? primaryId = initialPrimaryId;
 
         var context = new EvalContext(selection, force, entry);
         foreach (var effect in entry.Effects)
