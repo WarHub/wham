@@ -12,9 +12,12 @@ internal sealed class ConstraintValidator
     private readonly RosterNode _roster;
     private readonly Compilation _compilation;
     private readonly IReadOnlyList<ICatalogueSymbol> _forceCatalogues;
+    private readonly ModifierEvaluator _modifierEvaluator;
     private readonly Dictionary<string, ISelectionEntryContainerSymbol> _entryIndex;
     private readonly Dictionary<string, ICategoryEntrySymbol> _categoryIndex;
     private readonly Dictionary<string, IForceEntrySymbol> _forceEntryIndex;
+    // Maps shared entry target ID → set of link IDs that reference it
+    private readonly Dictionary<string, HashSet<string>> _sharedEntryLinkIds;
 
     private ConstraintValidator(
         RosterNode roster,
@@ -24,9 +27,11 @@ internal sealed class ConstraintValidator
         _roster = roster;
         _compilation = compilation;
         _forceCatalogues = forceCatalogues;
+        _modifierEvaluator = new ModifierEvaluator(roster, compilation);
         _entryIndex = new Dictionary<string, ISelectionEntryContainerSymbol>(StringComparer.Ordinal);
         _categoryIndex = new Dictionary<string, ICategoryEntrySymbol>(StringComparer.Ordinal);
         _forceEntryIndex = new Dictionary<string, IForceEntrySymbol>(StringComparer.Ordinal);
+        _sharedEntryLinkIds = new Dictionary<string, HashSet<string>>(StringComparer.Ordinal);
         BuildIndex();
     }
 
@@ -187,18 +192,84 @@ internal sealed class ConstraintValidator
             }
 
             // Collect all constraints: link's own + shared target's
-            var constraintSources = new List<(IConstraintSymbol constraint, string sourceEntryId)>();
+            var constraintSources = new List<(IConstraintSymbol constraint, string sourceEntryId, bool isShared)>();
             foreach (var c in entry.Constraints)
-                constraintSources.Add((c, linkId ?? targetId));
+                constraintSources.Add((c, linkId ?? targetId, false));
             if (isLink && entry.ReferencedEntry is ISelectionEntryContainerSymbol target)
             {
                 foreach (var c in target.Constraints)
-                    constraintSources.Add((c, targetId));
+                    constraintSources.Add((c, targetId, c.Query.Options.HasFlag(QueryOptions.SharedConstraint)));
             }
 
             if (constraintSources.Count == 0) continue;
 
-            foreach (var (constraint, sourceEntryId) in constraintSources)
+            // Compute effective constraint values (modifiers can change constraint boundaries)
+            var effectiveValues = _modifierEvaluator.GetEffectiveConstraintValues(entry, null, force);
+            if (isLink && entry.ReferencedEntry is IContainerEntrySymbol refEntry)
+            {
+                var refValues = _modifierEvaluator.GetEffectiveConstraintValues(refEntry, null, force);
+                foreach (var (k, v) in refValues)
+                    effectiveValues.TryAdd(k, v);
+            }
+
+            // For shared constraints, merge link constraints of the same type
+            // and use the most restrictive value
+            var mergedShared = new Dictionary<string, (decimal value, string constraintId, QueryComparisonType comparison)>(StringComparer.Ordinal);
+            foreach (var (constraint, _, isShared) in constraintSources)
+            {
+                if (!isShared) continue;
+                var query = constraint.Query;
+                var cid = constraint.Id ?? "";
+                var val = effectiveValues.GetValueOrDefault(cid, query.ReferenceValue ?? 0m);
+                var key = query.Comparison == QueryComparisonType.GreaterThanOrEqual ? "min" : "max";
+                if (!mergedShared.TryGetValue(key, out var existing))
+                {
+                    mergedShared[key] = (val, cid, query.Comparison);
+                }
+                else
+                {
+                    // For max: use minimum value (most restrictive). For min: use maximum value.
+                    if (key == "max" && val < existing.value)
+                        mergedShared[key] = (val, existing.constraintId, existing.comparison);
+                    else if (key == "min" && val > existing.value)
+                        mergedShared[key] = (val, existing.constraintId, existing.comparison);
+                }
+            }
+            // Also merge link constraints into shared if both exist
+            if (mergedShared.Count > 0)
+            {
+                foreach (var (constraint, _, isShared) in constraintSources)
+                {
+                    if (isShared) continue; // already handled
+                    var query = constraint.Query;
+                    var cid = constraint.Id ?? "";
+                    var val = effectiveValues.GetValueOrDefault(cid, query.ReferenceValue ?? 0m);
+                    var key = query.Comparison == QueryComparisonType.GreaterThanOrEqual ? "min" : "max";
+                    if (mergedShared.TryGetValue(key, out var existing))
+                    {
+                        // Merge link constraint into shared: use most restrictive
+                        if (key == "max" && val < existing.value)
+                            mergedShared[key] = (val, existing.constraintId, existing.comparison);
+                        else if (key == "min" && val > existing.value)
+                            mergedShared[key] = (val, existing.constraintId, existing.comparison);
+                    }
+                }
+            }
+            // Track which link constraint IDs were merged into shared
+            var mergedLinkConstraintIds = new HashSet<string>(StringComparer.Ordinal);
+            if (mergedShared.Count > 0)
+            {
+                foreach (var (constraint, _, isShared) in constraintSources)
+                {
+                    if (isShared) continue;
+                    var query = constraint.Query;
+                    var key = query.Comparison == QueryComparisonType.GreaterThanOrEqual ? "min" : "max";
+                    if (mergedShared.ContainsKey(key) && constraint.Id is not null)
+                        mergedLinkConstraintIds.Add(constraint.Id);
+                }
+            }
+
+            foreach (var (constraint, sourceEntryId, isShared) in constraintSources)
             {
                 var query = constraint.Query;
                 var constraintId = constraint.Id ?? "";
@@ -206,24 +277,32 @@ internal sealed class ConstraintValidator
                 // field=forces on selection entry: BS always counts 0 forces
                 if (query.ValueKind == QueryValueKind.ForceCount)
                 {
-                    CheckConstraint(query.Comparison, query.ReferenceValue ?? 0m, 0,
+                    var forceConstraintValue = effectiveValues.GetValueOrDefault(constraintId, query.ReferenceValue ?? 0m);
+                    CheckConstraint(query.Comparison, forceConstraintValue, 0,
                         sourceEntryId, "roster", null, constraintId, errors);
                     continue;
                 }
 
+                // Skip link constraints that were merged into shared
+                if (!isShared && mergedLinkConstraintIds.Contains(constraintId))
+                    continue;
+
                 // Shared constraint: validate once per (constraintId, entryId)
-                if (query.Options.HasFlag(QueryOptions.SharedConstraint))
+                if (isShared || query.Options.HasFlag(QueryOptions.SharedConstraint))
                 {
                     if (!sharedChecked.Add((constraintId, targetId))) continue;
                 }
 
                 // Count selections or costs in scope
-                // Use link ID for counting because selections store the link's entry ID
+                // For shared constraints, count across ALL links to same shared entry
                 var countId = isLink ? linkId! : targetId;
+                var useSharedCounting = isShared || query.Options.HasFlag(QueryOptions.SharedConstraint);
                 decimal count;
                 if (query.ValueKind == QueryValueKind.SelectionCount)
                 {
-                    count = CountSelectionsInScope(query, countId, force);
+                    count = useSharedCounting
+                        ? CountSharedSelectionsInScope(query, targetId, force)
+                        : CountSelectionsInScope(query, countId, force);
                 }
                 else if (query.ValueKind == QueryValueKind.MemberValue)
                 {
@@ -234,7 +313,19 @@ internal sealed class ConstraintValidator
                     continue;
                 }
 
-                var constraintValue = query.ReferenceValue ?? 0m;
+                // Use merged value for shared constraints, raw value otherwise
+                decimal constraintValue;
+                if (isShared)
+                {
+                    var key = query.Comparison == QueryComparisonType.GreaterThanOrEqual ? "min" : "max";
+                    constraintValue = mergedShared.TryGetValue(key, out var m)
+                        ? m.value
+                        : effectiveValues.GetValueOrDefault(constraintId, query.ReferenceValue ?? 0m);
+                }
+                else
+                {
+                    constraintValue = effectiveValues.GetValueOrDefault(constraintId, query.ReferenceValue ?? 0m);
+                }
 
                 // Percent value support
                 if (query.Options.HasFlag(QueryOptions.ValuePercentage))
@@ -248,8 +339,18 @@ internal sealed class ConstraintValidator
                 var (ownerType, ownerEntryId) = GetOwnerForConstraint(
                     query.Comparison, query.ScopeKind, entry, targetId);
 
+                // For shared constraints, attribute error to shared entry
+                var errorEntryId = isShared ? targetId : sourceEntryId;
+                var errorConstraintId = constraintId;
+                if (isShared)
+                {
+                    var key = query.Comparison == QueryComparisonType.GreaterThanOrEqual ? "min" : "max";
+                    if (mergedShared.TryGetValue(key, out var m))
+                        errorConstraintId = m.constraintId;
+                }
+
                 CheckConstraint(query.Comparison, constraintValue, count,
-                    sourceEntryId, ownerType, ownerEntryId, constraintId, errors);
+                    errorEntryId, ownerType, ownerEntryId, errorConstraintId, errors);
             }
         }
 
@@ -404,6 +505,39 @@ internal sealed class ConstraintValidator
         foreach (var sel in selections)
         {
             if (sel.EntryId == targetId)
+                count += sel.Number;
+        }
+        return count;
+    }
+
+    /// <summary>
+    /// Counts selections for shared constraints: sums across ALL entry links
+    /// pointing to the same shared entry.
+    /// </summary>
+    private decimal CountSharedSelectionsInScope(IQuerySymbol query, string sharedEntryId, ForceNode force)
+    {
+        // Collect all IDs that map to this shared entry
+        var matchIds = new HashSet<string>(StringComparer.Ordinal) { sharedEntryId };
+        if (_sharedEntryLinkIds.TryGetValue(sharedEntryId, out var linkIds))
+        {
+            foreach (var lid in linkIds)
+                matchIds.Add(lid);
+        }
+
+        bool includeChildren = query.Options.HasFlag(QueryOptions.IncludeDescendantSelections);
+        var selections = query.ScopeKind switch
+        {
+            QueryScopeKind.Parent or QueryScopeKind.ContainingForce =>
+                includeChildren ? FlattenSelections(force.Selections) : TopLevelSelections(force),
+            QueryScopeKind.ContainingRoster =>
+                includeChildren ? AllSelectionsFlattened() : AllTopLevelSelections(),
+            _ => includeChildren ? FlattenSelections(force.Selections) : TopLevelSelections(force),
+        };
+
+        decimal count = 0;
+        foreach (var sel in selections)
+        {
+            if (matchIds.Contains(sel.EntryId))
                 count += sel.Number;
         }
         return count;
@@ -601,7 +735,19 @@ internal sealed class ConstraintValidator
 
         // Also index by link ID if different
         if (entry.Id != targetId && entry.Id is not null)
+        {
             _entryIndex.TryAdd(entry.Id, entry);
+            // Track link → shared entry mapping for shared constraint counting
+            if (targetId is not null)
+            {
+                if (!_sharedEntryLinkIds.TryGetValue(targetId, out var linkIds))
+                {
+                    linkIds = new HashSet<string>(StringComparer.Ordinal);
+                    _sharedEntryLinkIds[targetId] = linkIds;
+                }
+                linkIds.Add(entry.Id);
+            }
+        }
 
         // Index category entries
         foreach (var cat in entry.Categories)

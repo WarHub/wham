@@ -46,6 +46,29 @@ public sealed class ModifierEvaluator
     }
 
     /// <summary>
+    /// Gets the effective constraint reference values after applying modifiers.
+    /// Returns a dictionary of constraintId -> effective value.
+    /// </summary>
+    public Dictionary<string, decimal> GetEffectiveConstraintValues(
+        IContainerEntrySymbol entry,
+        SelectionNode? selection,
+        ForceNode? force)
+    {
+        var values = new Dictionary<string, decimal>(StringComparer.Ordinal);
+        foreach (var constraint in entry.Constraints)
+        {
+            if (constraint.Id is not null)
+                values[constraint.Id] = constraint.Query.ReferenceValue ?? 0m;
+        }
+        var context = new EvalContext(selection, force, entry);
+        foreach (var effect in entry.Effects)
+        {
+            ApplyConstraintEffect(effect, values, context);
+        }
+        return values;
+    }
+
+    /// <summary>
     /// Gets the effective costs for a selection entry after applying modifiers.
     /// Returns a dictionary of costTypeId -> value.
     /// </summary>
@@ -267,6 +290,41 @@ public sealed class ModifierEvaluator
             }
         }
         return hidden;
+    }
+
+    private void ApplyConstraintEffect(
+        IEffectSymbol effect, Dictionary<string, decimal> constraintValues, EvalContext context)
+    {
+        if (effect.TargetKind == EffectTargetKind.Member && effect.TargetMember is IConstraintSymbol targetConstraint)
+        {
+            var constraintId = targetConstraint.Id;
+            if (constraintId is not null && constraintValues.ContainsKey(constraintId))
+            {
+                if (EvaluateEffectCondition(effect, context))
+                {
+                    var repeatCount = GetRepeatCount(effect, context);
+                    var current = constraintValues[constraintId];
+                    for (int r = 0; r < repeatCount; r++)
+                    {
+                        current = ApplyNumericOperation(effect.FunctionKind, current, ParseDecimal(effect.OperandValue));
+                    }
+                    constraintValues[constraintId] = current;
+                }
+            }
+        }
+        if (effect.ChildrenWhenSatisfied.Length > 0 || effect.ChildrenWhenUnsatisfied.Length > 0)
+        {
+            var satisfied = EvaluateCondition(effect.Condition, context);
+            var children = satisfied ? effect.ChildrenWhenSatisfied : effect.ChildrenWhenUnsatisfied;
+            var repeatCount = satisfied ? GetRepeatCount(effect, context) : 1;
+            for (int r = 0; r < repeatCount; r++)
+            {
+                foreach (var child in children)
+                {
+                    ApplyConstraintEffect(child, constraintValues, context);
+                }
+            }
+        }
     }
 
     /// <summary>
@@ -622,9 +680,17 @@ public sealed class ModifierEvaluator
 
     private IEnumerable<SelectionNode> GetParentSelections(EvalContext context)
     {
-        // Parent is the containing selection (not the entry symbol parent)
+        // When no specific selection context but force exists,
+        // "parent" of a root entry is the force — return force-level selections
         if (context.Selection is null)
+        {
+            if (context.Force is not null)
+            {
+                foreach (var s in context.Force.Selections)
+                    yield return s;
+            }
             yield break;
+        }
 
         // Find the parent selection in the roster tree
         if (context.Force is not null)

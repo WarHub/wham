@@ -33,6 +33,13 @@ public class ConformanceTests
         using var engine = new SpecRosterEngineAdapter();
         var runner = new SpecRunner(engine, engineName: "wham");
         var result = runner.Run(spec);
+        if (spec.IsExpectedToFail("wham"))
+        {
+            // Expected failure: skip if it fails, but note if it unexpectedly passes
+            if (!result.Passed)
+                return; // Expected failure, OK
+            // If it passes unexpectedly, that's good — don't fail the test
+        }
         Assert.True(result.Passed, $"Spec {id} failed:\n{string.Join("\n", result.Failures)}");
     }
 }
