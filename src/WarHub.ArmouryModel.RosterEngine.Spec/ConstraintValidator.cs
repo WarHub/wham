@@ -1,4 +1,5 @@
 using BattleScribeSpec;
+using WarHub.ArmouryModel.Concrete;
 using WarHub.ArmouryModel.Source;
 
 namespace WarHub.ArmouryModel.RosterEngine.Spec;
