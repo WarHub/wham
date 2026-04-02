@@ -64,8 +64,15 @@ internal sealed class StateMapper
         }
 
         var availableEntries = _resolver.GetAvailableEntries(catalogue);
-        var profiles = MapNodeProfiles(forceNode.Profiles);
-        var rules = MapNodeRules(forceNode.Rules);
+
+        // Resolve profiles and rules from the force entry declaration
+        var forceEntryDecl = FindForceEntryDeclaration(forceNode.EntryId);
+        var profiles = forceEntryDecl is not null
+            ? ResolveSelectionProfiles(forceEntryDecl)
+            : MapNodeProfiles(forceNode.Profiles);
+        var rules = forceEntryDecl is not null
+            ? ResolveSelectionRules(forceEntryDecl)
+            : MapNodeRules(forceNode.Rules);
 
         return new ForceState(
             Name: forceNode.Name ?? "",
@@ -313,19 +320,19 @@ internal sealed class StateMapper
                 Value: ch.Value ?? ""));
         }
 
-        // InfoLink overrides: hidden, publicationId, page take precedence when set
+        // InfoLink overrides: hidden (OR'd), name overrides target if non-empty.
+        // Page and publicationId always come from the TARGET, never the InfoLink.
         var hidden = link.Hidden || (group?.Hidden ?? target.Hidden);
-        var pubId = !string.IsNullOrEmpty(link.PublicationId) ? link.PublicationId : target.PublicationId;
-        var page = !string.IsNullOrEmpty(link.Page) ? link.Page : target.Page;
+        var name = !string.IsNullOrEmpty(link.Name) ? link.Name : target.Name ?? "";
 
         return new ProfileState(
-            Name: link.Name ?? target.Name ?? "",
+            Name: name,
             TypeId: target.TypeId,
             TypeName: target.TypeName,
             Hidden: hidden,
             Characteristics: chars,
-            Page: page,
-            PublicationId: pubId);
+            Page: target.Page,
+            PublicationId: target.PublicationId);
     }
 
     private static RuleState MapRuleNode(RuleNode r, InfoGroupNode? group = null)
@@ -340,16 +347,17 @@ internal sealed class StateMapper
 
     private static RuleState MapRuleNodeWithOverrides(RuleNode target, InfoLinkNode link, InfoGroupNode? group = null)
     {
+        // InfoLink overrides: hidden (OR'd), name overrides target if non-empty.
+        // Page and publicationId always come from the TARGET, never the InfoLink.
         var hidden = link.Hidden || (group?.Hidden ?? target.Hidden);
-        var pubId = !string.IsNullOrEmpty(link.PublicationId) ? link.PublicationId : target.PublicationId;
-        var page = !string.IsNullOrEmpty(link.Page) ? link.Page : target.Page;
+        var name = !string.IsNullOrEmpty(link.Name) ? link.Name : target.Name ?? "";
 
         return new RuleState(
-            Name: link.Name ?? target.Name ?? "",
+            Name: name,
             Description: target.Description ?? "",
             Hidden: hidden,
-            Page: page,
-            PublicationId: pubId);
+            Page: target.Page,
+            PublicationId: target.PublicationId);
     }
 
     private static List<ProfileState> MapNodeProfiles(ListNode<ProfileNode> profiles)
@@ -423,17 +431,44 @@ internal sealed class StateMapper
         return categories;
     }
 
-    private static List<CostState> MapRosterCosts(RosterNode roster)
+    private List<CostState> MapRosterCosts(RosterNode roster)
     {
+        // Collect cost types referenced by any available entry in any force's catalogue
+        var referencedTypes = new HashSet<string>(StringComparer.Ordinal);
+        foreach (var catalogue in _forceCatalogues)
+        {
+            var entries = _resolver.GetAvailableEntries(catalogue);
+            foreach (var entry in entries)
+            {
+                CollectReferencedCostTypes(entry.Symbol, referencedTypes);
+            }
+        }
+
         var result = new List<CostState>();
         foreach (var cost in roster.Costs)
         {
-            result.Add(new CostState(
-                Name: cost.Name ?? "",
-                TypeId: cost.TypeId ?? "",
-                Value: (double)cost.Value));
+            if (referencedTypes.Contains(cost.TypeId ?? ""))
+            {
+                result.Add(new CostState(
+                    Name: cost.Name ?? "",
+                    TypeId: cost.TypeId ?? "",
+                    Value: (double)cost.Value));
+            }
         }
         return result;
+    }
+
+    private static void CollectReferencedCostTypes(ISelectionEntryContainerSymbol symbol, HashSet<string> types)
+    {
+        foreach (var cost in symbol.Costs)
+        {
+            if (cost.Type?.Id is { } typeId)
+                types.Add(typeId);
+        }
+        foreach (var child in symbol.ChildSelectionEntries)
+        {
+            CollectReferencedCostTypes(child, types);
+        }
     }
 
     // ──────────────────────────────────────────────────────────────────
@@ -475,10 +510,14 @@ internal sealed class StateMapper
             if (root is GamesystemNode gs)
             {
                 IndexSharedItems(gs.SharedProfiles, gs.SharedRules, gs.SharedInfoGroups);
+                // Root-level rules can also be InfoLink targets
+                IndexRootRules(gs.Rules);
             }
             else if (root is CatalogueNode cat)
             {
                 IndexSharedItems(cat.SharedProfiles, cat.SharedRules, cat.SharedInfoGroups);
+                // Root-level rules can also be InfoLink targets
+                IndexRootRules(cat.Rules);
             }
         }
     }
@@ -501,6 +540,15 @@ internal sealed class StateMapper
         foreach (var g in infoGroups)
         {
             IndexInfoGroupRecursive(g);
+        }
+    }
+
+    private void IndexRootRules(ListNode<RuleNode> rules)
+    {
+        foreach (var r in rules)
+        {
+            if (r.Id is not null)
+                _sharedRules![r.Id] = r;
         }
     }
 
@@ -554,11 +602,15 @@ internal sealed class StateMapper
 
     private void IndexEntryDeclarations(CatalogueBaseNode catBase)
     {
-        // Root selection entries (CatalogueBaseNode has SelectionEntries and EntryLinks, but not SelectionEntryGroups)
+        // Root selection entries
         foreach (var e in catBase.SelectionEntries)
             IndexEntryRecursive(e);
         foreach (var l in catBase.EntryLinks)
             IndexLinkAndTarget(l);
+
+        // Force entries (they also inherit from ContainerEntryBase and can have profiles/rules)
+        foreach (var fe in catBase.ForceEntries)
+            IndexForceEntryRecursive(fe);
 
         // Shared entries
         foreach (var e in catBase.SharedSelectionEntries)
@@ -597,6 +649,21 @@ internal sealed class StateMapper
     {
         if (link.Id is not null)
             _entryDeclarations![link.Id] = link;
+    }
+
+    private void IndexForceEntryRecursive(ForceEntryNode fe)
+    {
+        if (fe.Id is not null)
+            _entryDeclarations![fe.Id] = fe;
+
+        foreach (var child in fe.ForceEntries)
+            IndexForceEntryRecursive(child);
+    }
+
+    private ContainerEntryBaseNode? FindForceEntryDeclaration(string? entryId)
+    {
+        // Force entry declarations are indexed in the same dictionary
+        return FindEntryDeclaration(entryId);
     }
 
     // ──────────────────────────────────────────────────────────────────
