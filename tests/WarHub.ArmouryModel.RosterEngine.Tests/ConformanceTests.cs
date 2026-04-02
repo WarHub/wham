@@ -35,10 +35,10 @@ public class ConformanceTests
         var result = runner.Run(spec);
         if (spec.IsExpectedToFail("wham"))
         {
-            // Expected failure: skip if it fails, but note if it unexpectedly passes
-            if (!result.Passed)
-                return; // Expected failure, OK
-            // If it passes unexpectedly, that's good — don't fail the test
+            Assert.False(result.Passed,
+                $"Spec {id} is marked as expected-to-fail for wham but now passes. " +
+                "Update the spec to remove the 'wham: fail' expectation.");
+            return;
         }
         Assert.True(result.Passed, $"Spec {id} failed:\n{string.Join("\n", result.Failures)}");
     }
