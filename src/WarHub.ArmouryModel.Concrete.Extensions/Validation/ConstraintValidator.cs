@@ -37,9 +37,10 @@ internal sealed class ConstraintValidator
     public static void Validate(
         RosterNode roster,
         WhamCompilation compilation,
-        DiagnosticBag diagnostics)
+        DiagnosticBag diagnostics,
+        IReadOnlyList<ICatalogueSymbol>? forceCatalogues = null)
     {
-        var forceCatalogues = ResolveForceCatalogues(roster, compilation);
+        forceCatalogues ??= ResolveForceCatalogues(roster, compilation);
         var validator = new ConstraintValidator(roster, compilation, forceCatalogues);
         validator.Run(diagnostics);
     }
@@ -110,7 +111,8 @@ internal sealed class ConstraintValidator
             if (actual > limit.Value + 0.001m)
             {
                 var costName = GetCostTypeName(limit.TypeId);
-                diagnostics.Add(ErrorCode.WRN_CostLimitExceeded, Location.None,
+                AddValidationDiagnostic(diagnostics, ErrorCode.WRN_CostLimitExceeded,
+                    "roster", null, null, "costLimits", limit.TypeId,
                     costName, actual, limit.Value);
             }
         }
@@ -154,6 +156,8 @@ internal sealed class ConstraintValidator
             forceCounts[force.EntryId] = forceCounts.GetValueOrDefault(force.EntryId) + 1;
         }
 
+        // Each force instance evaluates its constraints independently,
+        // producing one error per force instance (not deduplicated per entry type).
         foreach (var force in _roster.Forces)
         {
             if (!_forceEntryIndex.TryGetValue(force.EntryId, out var forceEntry))
@@ -172,14 +176,17 @@ internal sealed class ConstraintValidator
                 bool isMin = query.Comparison == QueryComparisonType.GreaterThanOrEqual;
                 bool isMax = query.Comparison == QueryComparisonType.LessThanOrEqual;
 
+                // Force count constraints are roster-level (the roster owns the force count)
                 if (isMin && count < constraintValue - 0.001m)
                 {
-                    diagnostics.Add(ErrorCode.WRN_ForceCountViolation, Location.None,
+                    AddValidationDiagnostic(diagnostics, ErrorCode.WRN_ForceCountViolation,
+                        "roster", null, null, force.EntryId, constraint.Id,
                         force.EntryId, count, "need at least", constraintValue);
                 }
                 else if (isMax && constraintValue >= 0 && count > constraintValue + 0.001m)
                 {
-                    diagnostics.Add(ErrorCode.WRN_ForceCountViolation, Location.None,
+                    AddValidationDiagnostic(diagnostics, ErrorCode.WRN_ForceCountViolation,
+                        "roster", null, null, force.EntryId, constraint.Id,
                         force.EntryId, count, "allowed at most", constraintValue);
                 }
             }
@@ -219,7 +226,8 @@ internal sealed class ConstraintValidator
                     var selCount = CountSelectionsInForce(hiddenCountId, force);
                     if (selCount > 0)
                     {
-                        diagnostics.Add(ErrorCode.WRN_ConstraintMaxViolation, Location.None,
+                        AddValidationDiagnostic(diagnostics, ErrorCode.WRN_ConstraintMaxViolation,
+                            "selection", null, targetId, targetId, "hidden",
                             targetId, selCount, 0);
                     }
                 }
@@ -324,7 +332,8 @@ internal sealed class ConstraintValidator
                 if (query.ValueKind == QueryValueKind.ForceCount)
                 {
                     var forceConstraintValue = effectiveValues.GetValueOrDefault(constraintId, query.ReferenceValue ?? 0m);
-                    AddConstraintError(query.Comparison, forceConstraintValue, 0, sourceEntryId, diagnostics);
+                    AddConstraintError(query.Comparison, forceConstraintValue, 0, sourceEntryId, diagnostics,
+                        ownerType: "roster", constraintId: constraintId);
                     continue;
                 }
 
@@ -374,8 +383,20 @@ internal sealed class ConstraintValidator
 
                 // For shared constraints, attribute error to shared entry
                 var errorEntryId = isShared ? targetId : sourceEntryId;
+                var errorConstraintId = constraintId;
+                if (isShared)
+                {
+                    var direction = query.Comparison == QueryComparisonType.GreaterThanOrEqual ? "min" : "max";
+                    var mergeKey = $"{direction}:{query.ValueKind}:{query.ValueTypeSymbol?.Id}";
+                    if (mergedShared.TryGetValue(mergeKey, out var m))
+                        errorConstraintId = m.constraintId;
+                }
 
-                AddConstraintError(query.Comparison, constraintValue, count, errorEntryId, diagnostics);
+                var (ownerType, ownerEntryId) = GetOwnerForConstraint(
+                    query.Comparison, query.ScopeKind, entry, targetId);
+
+                AddConstraintError(query.Comparison, constraintValue, count, errorEntryId, diagnostics,
+                    ownerType: ownerType, ownerEntryId: ownerEntryId, constraintId: errorConstraintId);
             }
         }
 
@@ -420,7 +441,9 @@ internal sealed class ConstraintValidator
                 var constraintValue = effectiveChildValues.GetValueOrDefault(constraintId, query.ReferenceValue ?? 0m);
                 var count = childCounts.GetValueOrDefault(child.EntryId);
 
-                AddConstraintError(query.Comparison, constraintValue, count, child.EntryId, diagnostics);
+                var parentEntryId = parent.EntryId;
+                AddConstraintError(query.Comparison, constraintValue, count, child.EntryId, diagnostics,
+                    ownerType: "selection", ownerEntryId: parentEntryId, constraintId: constraintId);
             }
         }
 
@@ -444,7 +467,8 @@ internal sealed class ConstraintValidator
 
                     var constraintId = constraint.Id ?? "";
                     var constraintValue = effectiveAvailValues.GetValueOrDefault(constraintId, query.ReferenceValue ?? 0m);
-                    AddConstraintError(query.Comparison, constraintValue, 0, childId, diagnostics);
+                    AddConstraintError(query.Comparison, constraintValue, 0, childId, diagnostics,
+                        ownerType: "selection", ownerEntryId: parent.EntryId, constraintId: constraintId);
                 }
             }
         }
@@ -490,13 +514,15 @@ internal sealed class ConstraintValidator
                 if (query.Comparison == QueryComparisonType.GreaterThanOrEqual
                     && count < constraintValue - 0.001m && constraintValue > 0)
                 {
-                    diagnostics.Add(ErrorCode.WRN_CategoryCountViolation, Location.None,
+                    AddValidationDiagnostic(diagnostics, ErrorCode.WRN_CategoryCountViolation,
+                        "category", null, catTargetId, catTargetId, constraint.Id,
                         catTargetId, count, "need at least", constraintValue);
                 }
                 else if (query.Comparison == QueryComparisonType.LessThanOrEqual
                     && count > constraintValue + 0.001m)
                 {
-                    diagnostics.Add(ErrorCode.WRN_CategoryCountViolation, Location.None,
+                    AddValidationDiagnostic(diagnostics, ErrorCode.WRN_CategoryCountViolation,
+                        "category", null, catTargetId, catTargetId, constraint.Id,
                         catTargetId, count, "allowed at most", constraintValue);
                 }
             }
@@ -644,6 +670,44 @@ internal sealed class ConstraintValidator
     }
 
     // ------------------------------------------------------------------
+    //  Owner type resolution
+    // ------------------------------------------------------------------
+
+    private static (string ownerType, string? ownerEntryId) GetOwnerForConstraint(
+        QueryComparisonType comparison,
+        QueryScopeKind scopeKind,
+        ISelectionEntryContainerSymbol entry,
+        string entryId)
+    {
+        bool isMin = comparison == QueryComparisonType.GreaterThanOrEqual;
+
+        // scope=force + min → force owner
+        if (scopeKind == QueryScopeKind.ContainingForce && isMin)
+            return ("force", null);
+
+        // min constraints with category links → category owner
+        if (isMin)
+        {
+            var cats = entry.Categories;
+            if (cats.IsEmpty && entry.ReferencedEntry is { } referenced)
+                cats = referenced.Categories;
+
+            if (!cats.IsEmpty)
+            {
+                var primary = cats.FirstOrDefault(c => c.IsPrimaryCategory);
+                var catEntry = primary?.ReferencedEntry ?? primary;
+                if (catEntry is not null)
+                    return ("category", catEntry.Id);
+                var firstCat = cats[0].ReferencedEntry ?? cats[0];
+                return ("category", firstCat.Id);
+            }
+        }
+
+        // All other → selection owner
+        return ("selection", entryId);
+    }
+
+    // ------------------------------------------------------------------
     //  Constraint checking
     // ------------------------------------------------------------------
 
@@ -652,21 +716,42 @@ internal sealed class ConstraintValidator
         decimal constraintValue,
         decimal count,
         string entryId,
-        DiagnosticBag diagnostics)
+        DiagnosticBag diagnostics,
+        string? ownerType = null,
+        string? ownerEntryId = null,
+        string? constraintId = null)
     {
         bool isMin = comparison == QueryComparisonType.GreaterThanOrEqual;
         bool isMax = comparison == QueryComparisonType.LessThanOrEqual;
 
         if (isMin && count < constraintValue - 0.001m)
         {
-            diagnostics.Add(ErrorCode.WRN_ConstraintMinViolation, Location.None,
+            AddValidationDiagnostic(diagnostics, ErrorCode.WRN_ConstraintMinViolation,
+                ownerType ?? "selection", null, ownerEntryId ?? entryId, entryId, constraintId,
                 entryId, count, constraintValue);
         }
         else if (isMax && constraintValue >= 0 && count > constraintValue + 0.001m)
         {
-            diagnostics.Add(ErrorCode.WRN_ConstraintMaxViolation, Location.None,
+            AddValidationDiagnostic(diagnostics, ErrorCode.WRN_ConstraintMaxViolation,
+                ownerType ?? "selection", null, ownerEntryId ?? entryId, entryId, constraintId,
                 entryId, count, constraintValue);
         }
+    }
+
+    private static void AddValidationDiagnostic(
+        DiagnosticBag diagnostics,
+        ErrorCode code,
+        string? ownerType,
+        string? ownerId,
+        string? ownerEntryId,
+        string? entryId,
+        string? constraintId,
+        params object[] args)
+    {
+        var info = new WhamDiagnosticInfo(code, args);
+        var diag = new ValidationDiagnostic(info, Location.None,
+            ownerType, ownerId, ownerEntryId, entryId, constraintId);
+        diagnostics.Add(diag);
     }
 
     // ------------------------------------------------------------------
@@ -675,9 +760,11 @@ internal sealed class ConstraintValidator
 
     private void BuildIndex()
     {
-        var gs = _compilation.GlobalNamespace.RootCatalogue;
-        IndexCatalogue(gs);
-        foreach (var cat in _forceCatalogues)
+        // Index ALL catalogues in the compilation (gamesystem + all catalogues).
+        // Force catalogues alone may not include all catalogues that contain
+        // selection entries — e.g. when force entries are in the gamesystem
+        // but selection entries are in separate catalogues.
+        foreach (var cat in _compilation.GlobalNamespace.Catalogues)
         {
             IndexCatalogue(cat);
         }

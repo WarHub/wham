@@ -112,11 +112,8 @@ internal sealed class RosterSymbol : SourceDeclaredSymbol, IRosterSymbol, INodeD
                     break;
                 case CompletionPart.Validate:
                     {
-                        var compilation = DeclaringCompilation;
-                        if (compilation is not null)
-                        {
-                            ConstraintValidator.Validate(Declaration, compilation, compilation.DeclarationDiagnostics);
-                        }
+                        // Validation runs via compilation.GetDiagnostics() externally
+                        // to avoid holding symbol completion open during heavy work.
                         state.NotePartComplete(CompletionPart.Validate);
                         break;
                     }

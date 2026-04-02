@@ -46,6 +46,30 @@ public class WhamCompilation : Compilation
         return builder.MoveToImmutable();
     }
 
+    /// <summary>
+    /// Runs constraint validation on all rosters in the compilation and returns
+    /// validation diagnostics. This is separate from <see cref="GetDiagnostics"/>
+    /// to allow callers to get validation results without triggering full symbol completion.
+    /// </summary>
+    /// <param name="forceCatalogues">
+    /// Optional list of catalogues corresponding to each force in the roster,
+    /// in the same order as <see cref="RosterNode.Forces"/>. When provided, these
+    /// override the catalogue lookup from <see cref="ForceNode.CatalogueId"/>.
+    /// This is needed because force entries often live in the gamesystem while
+    /// selection entries live in separate catalogues.
+    /// </param>
+    public ImmutableArray<Diagnostic> GetValidationDiagnostics(
+        IReadOnlyList<ICatalogueSymbol>? forceCatalogues = null)
+    {
+        var bag = DiagnosticBag.GetInstance();
+        foreach (var roster in SourceGlobalNamespace.Rosters)
+        {
+            ConstraintValidator.Validate(roster.Declaration, this, bag, forceCatalogues);
+        }
+        var result = bag.ToReadOnlyAndFree();
+        return result;
+    }
+
     public override WhamCompilation AddSourceTrees(params SourceTree[] trees) =>
         Update(SourceTrees.AddRange(trees));
 

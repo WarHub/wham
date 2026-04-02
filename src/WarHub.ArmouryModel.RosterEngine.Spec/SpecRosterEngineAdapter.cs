@@ -167,7 +167,9 @@ public sealed class SpecRosterEngineAdapter : IRosterEngine
     public IReadOnlyList<ValidationErrorState> GetValidationErrors()
     {
         var state = EnsureState();
-        return ConstraintValidator.Validate(state.RosterRequired, state.Compilation, _forceCatalogues);
+        var compilation = (WhamCompilation)state.Compilation;
+        var diagnostics = compilation.GetValidationDiagnostics(_forceCatalogues);
+        return DiagnosticMapper.MapValidationDiagnostics(diagnostics);
     }
 
     public void Dispose()
