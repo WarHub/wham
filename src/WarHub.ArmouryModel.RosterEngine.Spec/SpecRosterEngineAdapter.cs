@@ -133,7 +133,7 @@ public sealed class SpecRosterEngineAdapter : IRosterEngine
         }
 
         var childAvail = childEntries[childEntryIndex];
-        _state = engine.SelectChildEntry(state, forceIndex, selectionIndex, childAvail.Symbol);
+        _state = engine.SelectChildEntry(state, forceIndex, selectionIndex, childAvail.Symbol, childAvail.SourceGroup);
     }
 
     public void DeselectSelection(int forceIndex, int selectionIndex)

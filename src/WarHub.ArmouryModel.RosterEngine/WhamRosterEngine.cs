@@ -191,7 +191,8 @@ public sealed class WhamRosterEngine
         RosterState state,
         int forceIndex,
         int selectionIndex,
-        ISelectionEntryContainerSymbol childEntry)
+        ISelectionEntryContainerSymbol childEntry,
+        ISelectionEntryGroupSymbol? sourceGroup = null)
     {
         var roster = state.RosterRequired;
         ValidateForceIndex(roster, forceIndex);
@@ -200,7 +201,7 @@ public sealed class WhamRosterEngine
         ValidateSelectionIndex(force, selectionIndex);
 
         var parentSelection = force.Selections[selectionIndex];
-        var childSelectionNode = CreateSelectionWithAutoChildren(childEntry, sourceGroup: null);
+        var childSelectionNode = CreateSelectionWithAutoChildren(childEntry, sourceGroup);
         var newParent = parentSelection.AddSelections(childSelectionNode);
         var newRoster = roster.Replace(parentSelection, _ => newParent).WithUpdatedCostTotals();
         return state.ReplaceRoster(newRoster);
@@ -304,11 +305,13 @@ public sealed class WhamRosterEngine
                 continue;
             }
 
-            for (var i = 0; i < autoCount; i++)
+            // Create one child selection with Number set to the min count.
+            var childSelection = CreateSelectionWithAutoChildren(child.Symbol, child.SourceGroup);
+            if (autoCount > 1)
             {
-                var childSelection = CreateSelectionWithAutoChildren(child.Symbol, child.SourceGroup);
-                selectionNode = selectionNode.AddSelections(childSelection);
+                childSelection = childSelection.WithNumber(autoCount);
             }
+            selectionNode = selectionNode.AddSelections(childSelection);
         }
 
         return selectionNode;
