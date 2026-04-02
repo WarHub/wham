@@ -76,4 +76,55 @@ internal sealed class RosterSymbol : SourceDeclaredSymbol, IRosterSymbol, INodeD
         base.MakeAllMembers(diagnostics)
         .AddRange(Costs.Cast<RosterCostSymbol, Symbol>())
         .AddRange(Forces.Cast<ForceSymbol, Symbol>());
+
+    internal override void ForceComplete(CancellationToken cancellationToken)
+    {
+        while (true)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            var incompletePart = state.NextIncompletePart;
+            switch (incompletePart)
+            {
+                case CompletionPart.None:
+                    return;
+                case CompletionPart.StartBindingReferences:
+                case CompletionPart.FinishBindingReferences:
+                    BindReferences();
+                    break;
+                case CompletionPart.Members:
+                    GetMembersCore();
+                    break;
+                case CompletionPart.MembersCompleted:
+                    {
+                        var members = GetMembersCore();
+                        foreach (var member in members)
+                        {
+                            cancellationToken.ThrowIfCancellationRequested();
+                            member.ForceComplete(cancellationToken);
+                        }
+                        state.NotePartComplete(CompletionPart.MembersCompleted);
+                        break;
+                    }
+                case CompletionPart.EvaluateModifiers:
+                    // Modifier evaluation is currently performed inline during validation.
+                    // This phase is reserved for future caching of effective values.
+                    state.NotePartComplete(CompletionPart.EvaluateModifiers);
+                    break;
+                case CompletionPart.Validate:
+                    {
+                        var compilation = DeclaringCompilation;
+                        if (compilation is not null)
+                        {
+                            ConstraintValidator.Validate(Declaration, compilation, compilation.DeclarationDiagnostics);
+                        }
+                        state.NotePartComplete(CompletionPart.Validate);
+                        break;
+                    }
+                default:
+                    state.NotePartComplete(incompletePart);
+                    break;
+            }
+            state.SpinWaitComplete(incompletePart, cancellationToken);
+        }
+    }
 }
