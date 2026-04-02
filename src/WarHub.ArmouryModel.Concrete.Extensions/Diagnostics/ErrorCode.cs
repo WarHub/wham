@@ -14,4 +14,11 @@ internal enum ErrorCode
     ERR_NoBindingCandidates = 6,
     ERR_MultipleViableBindingCandidates = 7,
     ERR_UnviableBindingCandidates = 8,
+
+    // Validation warnings (roster constraint violations)
+    WRN_ConstraintMinViolation = 100,
+    WRN_ConstraintMaxViolation = 101,
+    WRN_CostLimitExceeded = 102,
+    WRN_ForceCountViolation = 103,
+    WRN_CategoryCountViolation = 104,
 }

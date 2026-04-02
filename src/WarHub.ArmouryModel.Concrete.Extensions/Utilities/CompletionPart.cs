@@ -11,21 +11,27 @@ internal enum CompletionPart
 {
     None = 0,
 
+    // Reference binding parts
     StartBindingReferences = 1 << 0,
     FinishBindingReferences = 1 << 1,
     ReferencesCompleted = StartBindingReferences | FinishBindingReferences,
     Members = 1 << 2,
     MembersCompleted = 1 << 3,
 
+    // Roster validation parts (run after all members are complete)
+    EvaluateModifiers = 1 << 4,
+    Validate = 1 << 5,
+
 #pragma warning disable CA1069 // The enum member has the same constant value as member
-    All = (1 << 4) - 1,
+    All = (1 << 6) - 1,
 
-    // source symbol
-
+    // source symbol (catalogue/gamesystem entries)
     SourceDeclaredSymbolAll = ReferencesCompleted | Members | MembersCompleted,
 
-    // global namespace
+    // roster symbol (adds modifier evaluation and validation)
+    RosterSymbolAll = SourceDeclaredSymbolAll | EvaluateModifiers | Validate,
 
+    // global namespace
     NamespaceAll = Members | MembersCompleted,
 #pragma warning restore
 }

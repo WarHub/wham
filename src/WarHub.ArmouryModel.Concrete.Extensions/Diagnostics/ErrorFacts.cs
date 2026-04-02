@@ -66,6 +66,16 @@ internal static partial class ErrorFacts
                 "Multiple candidates for binding this reference were found (ref='{0}' in {1}).",
             ErrorCode.ERR_UnviableBindingCandidates =>
                 "There were candidates for binding this reference (ref='{0}' in {1}), but were disallowed due to some rules (visibility, scope).",
+            ErrorCode.WRN_ConstraintMinViolation =>
+                "Minimum constraint violated: {0} (have {1}, need at least {2}).",
+            ErrorCode.WRN_ConstraintMaxViolation =>
+                "Maximum constraint violated: {0} (have {1}, allowed at most {2}).",
+            ErrorCode.WRN_CostLimitExceeded =>
+                "Cost limit exceeded for '{0}': {1} / {2}.",
+            ErrorCode.WRN_ForceCountViolation =>
+                "Force count constraint violated: {0} (have {1}, {2} {3}).",
+            ErrorCode.WRN_CategoryCountViolation =>
+                "Category count constraint violated: {0} (have {1}, {2} {3}).",
             _ => code.ToString(),
         };
 
