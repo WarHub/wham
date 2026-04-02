@@ -166,8 +166,8 @@ public sealed class SpecRosterEngineAdapter : IRosterEngine
 
     public IReadOnlyList<ValidationErrorState> GetValidationErrors()
     {
-        // TODO Phase 5: constraint validation
-        return [];
+        var state = EnsureState();
+        return ConstraintValidator.Validate(state.RosterRequired, state.Compilation, _forceCatalogues);
     }
 
     public void Dispose()

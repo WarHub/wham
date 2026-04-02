@@ -51,7 +51,9 @@ internal sealed class StateMapper
 
         // Compute roster-level cost totals from effective selection costs (modifier-aware)
         var costs = ComputeRosterCostsFromSelections(roster, forces);
-        var errors = new List<ValidationErrorState>(); // TODO Phase 5
+
+        // Phase 5: Constraint validation
+        var errors = ConstraintValidator.Validate(roster, _compilation, _forceCatalogues);
 
         return new ProtocolRosterState(
             Name: roster.Name ?? "New Roster",
