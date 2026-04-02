@@ -1,43 +1,59 @@
-using WarHub.ArmouryModel.Concrete;
-
 namespace WarHub.ArmouryModel.RosterEngine;
 
 /// <summary>
 /// Resolves available entries from catalogue symbols for selection.
-/// Produces ordered entry lists matching the BattleScribe spec index semantics:
-/// GS entries → GS links → Cat entries → Cat links for root entries;
-/// direct children → entry links → flattened groups for child entries.
+/// Flattens entry groups, resolves links via <see cref="IEntrySymbol.ReferencedEntry"/>,
+/// and provides ordered entry lists matching the BattleScribe specification indexing.
 /// </summary>
+/// <remarks>
+/// <para>
+/// The resolver combines entries from the gamesystem (root catalogue) and a specific catalogue
+/// to produce a flat, ordered list of selectable entries. The ordering within each catalogue
+/// follows the <see cref="ICatalogueSymbol.RootContainerEntries"/> sequence which mirrors
+/// the BattleScribe XML: direct selection entries first, then entry links.
+/// </para>
+/// <para>
+/// Entry links are transparent — their <see cref="IEntrySymbol.ReferencedEntry"/> is used
+/// to determine whether the link targets a concrete entry or a group.
+/// Groups (including groups referenced via links) are recursively flattened:
+/// each leaf entry within a group becomes a separate <see cref="AvailableEntry"/>
+/// with the originating <see cref="AvailableEntry.SourceGroup"/> recorded.
+/// </para>
+/// </remarks>
 public sealed class EntryResolver
 {
     /// <summary>
     /// Gets the flattened list of available root entries for a catalogue.
-    /// Combines gamesystem root entries + catalogue root entries.
     /// </summary>
+    /// <param name="catalogue">
+    /// The catalogue to resolve entries for. Entries from the catalogue's gamesystem
+    /// (via <see cref="IModuleSymbol.Gamesystem"/>) are listed first, followed by
+    /// entries from the catalogue itself (if it is not the gamesystem).
+    /// </param>
+    /// <returns>An ordered, flattened list of selectable entries.</returns>
     /// <remarks>
-    /// Ordering must match legacy Protocol-based engine for spec index compatibility:
-    /// 1. Gamesystem SelectionEntries (IsReference = false)
-    /// 2. Gamesystem EntryLinks (IsReference = true)
-    /// 3. Catalogue SelectionEntries (IsReference = false)
-    /// 4. Catalogue EntryLinks (IsReference = true)
-    ///
-    /// The ISymbol <see cref="ICatalogueSymbol.RootContainerEntries"/> already yields
-    /// SelectionEntries before EntryLinks (see CatalogueBaseSymbol), so we just filter
-    /// for <see cref="ISelectionEntryContainerSymbol"/> to exclude force/category entries.
+    /// Order within each source catalogue:
+    /// <list type="number">
+    ///   <item>Direct <see cref="ISelectionEntrySymbol"/> entries</item>
+    ///   <item>Entry links resolving to concrete entries</item>
+    ///   <item>Entry links resolving to groups — flattened into child entries</item>
+    /// </list>
+    /// Force entries (<see cref="IForceEntrySymbol"/>) and category entries
+    /// (<see cref="ICategoryEntrySymbol"/>) present in
+    /// <see cref="ICatalogueSymbol.RootContainerEntries"/> are excluded.
     /// </remarks>
-    public IReadOnlyList<AvailableEntry> GetAvailableEntries(
-        ICatalogueSymbol gamesystem,
-        ICatalogueSymbol catalogue)
+    public IReadOnlyList<AvailableEntry> GetAvailableEntries(ICatalogueSymbol catalogue)
     {
         var result = new List<AvailableEntry>();
 
-        // Phase 1-2: Gamesystem root entries (entries first, then links — natural ISymbol order)
-        AddRootSelectionEntries(gamesystem, result);
+        // Phase 1: gamesystem root selection entries.
+        var gsSym = catalogue.Gamesystem;
+        AddRootSelectionEntries(gsSym.RootContainerEntries, result);
 
-        // Phase 3-4: Catalogue root entries (same ordering)
-        if (!ReferenceEquals(gamesystem, catalogue))
+        // Phase 2: catalogue root selection entries (skip if the catalogue IS the gamesystem).
+        if (!catalogue.IsGamesystem)
         {
-            AddRootSelectionEntries(catalogue, result);
+            AddRootSelectionEntries(catalogue.RootContainerEntries, result);
         }
 
         return result;
@@ -45,123 +61,143 @@ public sealed class EntryResolver
 
     /// <summary>
     /// Gets the flattened list of child entries under a selection entry container.
-    /// Groups are recursively flattened into their constituent entries.
+    /// Direct child entries and resolved links are added; child groups are recursively
+    /// flattened so that the caller receives only concrete selectable entries.
     /// </summary>
-    /// <remarks>
-    /// Legacy ordering: direct SelectionEntries → EntryLinks → flattened SelectionEntryGroups.
-    /// ISymbol <see cref="ISelectionEntryContainerSymbol.ChildSelectionEntries"/> ordering is
-    /// EntryLinks → SelectionEntries → SelectionEntryGroups, so we must reorder.
-    /// </remarks>
+    /// <param name="entry">
+    /// The parent entry whose children to enumerate.
+    /// If the entry is a link, it is resolved first via <see cref="ResolveEntry"/>.
+    /// </param>
+    /// <returns>An ordered, flattened list of child entries.</returns>
     public IReadOnlyList<AvailableEntry> GetChildEntries(ISelectionEntryContainerSymbol entry)
     {
         var result = new List<AvailableEntry>();
 
-        // We need to reorder to match legacy: entries → links → groups
-        // ISymbol ChildSelectionEntries has: links → entries → groups
-        // So we iterate and bucket by type, then add in legacy order.
+        // Resolve through links to get the effective container with children.
+        var effective = ResolveEntry(entry);
 
-        var directEntries = new List<ISelectionEntryContainerSymbol>();
-        var linkEntries = new List<ISelectionEntryContainerSymbol>();
-        var groupEntries = new List<ISelectionEntryGroupSymbol>();
-
-        foreach (var child in entry.ChildSelectionEntries)
+        foreach (var child in effective.ChildSelectionEntries)
         {
-            if (child is ISelectionEntryGroupSymbol group)
-            {
-                groupEntries.Add(group);
-            }
-            else if (child.IsReference)
-            {
-                linkEntries.Add(child);
-            }
-            else
-            {
-                directEntries.Add(child);
-            }
-        }
-
-        // Legacy order: direct entries first
-        foreach (var e in directEntries)
-        {
-            result.Add(new AvailableEntry { Symbol = e });
-        }
-
-        // Then entry links (resolved — the ISymbol already resolves via ReferencedEntry)
-        foreach (var e in linkEntries)
-        {
-            // Entry links to groups: add as group entry (will be a group symbol via ReferencedEntry)
-            if (e.ReferencedEntry is ISelectionEntryGroupSymbol linkedGroup)
-            {
-                result.Add(new AvailableEntry { Symbol = e, SourceGroup = linkedGroup });
-            }
-            else
-            {
-                result.Add(new AvailableEntry { Symbol = e });
-            }
-        }
-
-        // Then groups — flattened recursively
-        foreach (var group in groupEntries)
-        {
-            FlattenGroup(group, result);
+            AddEntryOrFlatten(child, result, sourceGroup: null);
         }
 
         return result;
     }
 
-    private static void AddRootSelectionEntries(ICatalogueSymbol catalogue, List<AvailableEntry> result)
+    /// <summary>
+    /// Filters <see cref="ICatalogueSymbol.RootContainerEntries"/> to selection entry
+    /// containers and adds them to <paramref name="result"/>, flattening groups encountered.
+    /// </summary>
+    private static void AddRootSelectionEntries(
+        ImmutableArray<IContainerEntrySymbol> rootEntries,
+        List<AvailableEntry> result)
     {
-        foreach (var entry in catalogue.RootContainerEntries)
+        foreach (var entry in rootEntries)
         {
-            if (entry is ISelectionEntryContainerSymbol selContainer)
+            if (entry is ISelectionEntryContainerSymbol selEntry)
             {
-                result.Add(new AvailableEntry { Symbol = selContainer });
+                AddEntryOrFlatten(selEntry, result, sourceGroup: null);
             }
+            // IForceEntrySymbol and ICategoryEntrySymbol are silently skipped.
         }
     }
 
     /// <summary>
-    /// Recursively flattens a group into its constituent entries.
-    /// Each entry is tagged with the <paramref name="group"/> as its <see cref="AvailableEntry.SourceGroup"/>.
-    /// Nested groups are recursively flattened; cycle detection prevents infinite loops.
+    /// Adds a single concrete entry to the result, or recursively flattens a group.
+    /// </summary>
+    private static void AddEntryOrFlatten(
+        ISelectionEntryContainerSymbol entry,
+        List<AvailableEntry> result,
+        ISelectionEntryGroupSymbol? sourceGroup)
+    {
+        var resolved = ResolveEntry(entry);
+
+        if (resolved is ISelectionEntryGroupSymbol group)
+        {
+            // The target is a group — flatten its children.
+            FlattenGroup(group, result, visited: null);
+        }
+        else
+        {
+            // Concrete entry (direct SelectionEntry or link-to-entry).
+            result.Add(new AvailableEntry
+            {
+                Symbol = entry,
+                SourceGroup = sourceGroup,
+            });
+        }
+    }
+
+    /// <summary>
+    /// Recursively flattens a group's child entries into the result list.
+    /// Each leaf entry records the originating <paramref name="group"/> as its
+    /// <see cref="AvailableEntry.SourceGroup"/>.
+    /// A visited-set prevents infinite recursion on self-referencing groups.
     /// </summary>
     private static void FlattenGroup(
         ISelectionEntryGroupSymbol group,
         List<AvailableEntry> result,
-        HashSet<string>? visited = null)
+        HashSet<string>? visited)
     {
-        visited ??= [];
-        if (!visited.Add(group.Id))
-            return; // cycle detected
+        if (group.Id is not null)
+        {
+            visited ??= [];
+            if (!visited.Add(group.Id)) return; // cycle guard
+        }
 
         foreach (var child in group.ChildSelectionEntries)
         {
-            if (child is ISelectionEntryGroupSymbol subGroup)
+            var resolved = ResolveEntry(child);
+
+            if (resolved is ISelectionEntryGroupSymbol childGroup)
             {
-                // Nested group — recurse
-                FlattenGroup(subGroup, result, visited);
+                FlattenGroup(childGroup, result, visited);
             }
             else
             {
-                // Entry or link from within a group — tag with source group
-                result.Add(new AvailableEntry { Symbol = child, SourceGroup = group });
+                result.Add(new AvailableEntry
+                {
+                    Symbol = child,
+                    SourceGroup = group,
+                });
             }
         }
+    }
+
+    /// <summary>
+    /// Follows the <see cref="ISelectionEntryContainerSymbol.ReferencedEntry"/> chain
+    /// to resolve links to their ultimate concrete target (entry or group).
+    /// A depth limit of 32 prevents runaway resolution on malformed data.
+    /// </summary>
+    internal static ISelectionEntryContainerSymbol ResolveEntry(ISelectionEntryContainerSymbol entry)
+    {
+        var current = entry;
+        for (var depth = 0; depth < 32 && current.ReferencedEntry is { } referenced; depth++)
+        {
+            current = referenced;
+        }
+        return current;
     }
 }
 
 /// <summary>
-/// An available entry for selection. Wraps an <see cref="ISelectionEntryContainerSymbol"/>
-/// and optionally tracks the source group it was flattened from (for category inheritance).
+/// Represents an available entry for selection, wrapping the catalogue symbol
+/// and optionally tracking the group it was flattened from.
 /// </summary>
 public sealed class AvailableEntry
 {
-    /// <summary>The symbol representing the available entry.</summary>
+    /// <summary>
+    /// The symbol representing this available entry.
+    /// May be a direct <see cref="ISelectionEntrySymbol"/>, a link symbol
+    /// (whose <see cref="ISelectionEntryContainerSymbol.ReferencedEntry"/> points to the
+    /// concrete target), or a child entry from a flattened group.
+    /// </summary>
     public required ISelectionEntryContainerSymbol Symbol { get; init; }
 
     /// <summary>
     /// The group this entry was flattened from, if any.
-    /// Used to inherit category links from the containing group onto the selection.
+    /// Used to populate <c>entryGroupId</c> on the resulting
+    /// <see cref="Source.SelectionNode"/>.
     /// </summary>
     public ISelectionEntryGroupSymbol? SourceGroup { get; init; }
 }

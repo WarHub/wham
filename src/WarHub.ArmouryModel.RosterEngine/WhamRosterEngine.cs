@@ -12,6 +12,12 @@ namespace WarHub.ArmouryModel.RosterEngine;
 /// </summary>
 public sealed class WhamRosterEngine
 {
+    private readonly EntryResolver _entryResolver = new();
+
+    // ──────────────────────────────────────────────────────────────────────
+    //  Roster lifecycle
+    // ──────────────────────────────────────────────────────────────────────
+
     /// <summary>
     /// Creates a new, empty roster for the given catalogue compilation.
     /// The compilation must contain exactly one gamesystem (root catalogue).
@@ -44,6 +50,10 @@ public sealed class WhamRosterEngine
         var compilation = catalogCompilation.AddSourceTrees(rosterTree);
         return new RosterState(compilation);
     }
+
+    // ──────────────────────────────────────────────────────────────────────
+    //  Force lifecycle
+    // ──────────────────────────────────────────────────────────────────────
 
     /// <summary>
     /// Adds a force to the roster using the given force entry definition.
@@ -96,23 +106,63 @@ public sealed class WhamRosterEngine
     public RosterState RemoveForce(RosterState state, int forceIndex)
     {
         var roster = state.RosterRequired;
-        if ((uint)forceIndex >= (uint)roster.Forces.Count)
-        {
-            throw new ArgumentOutOfRangeException(
-                nameof(forceIndex),
-                forceIndex,
-                $"Force index must be in [0, {roster.Forces.Count}). Roster contains {roster.Forces.Count} force(s).");
-        }
+        ValidateForceIndex(roster, forceIndex);
 
         var forceToRemove = roster.Forces[forceIndex];
         var newRoster = roster.Remove(forceToRemove).WithUpdatedCostTotals();
         return state.ReplaceRoster(newRoster);
     }
 
+    // ──────────────────────────────────────────────────────────────────────
+    //  Entry resolution
+    // ──────────────────────────────────────────────────────────────────────
+
     /// <summary>
-    /// Adds a selection to a force based on the given entry symbol.
-    /// Creates a <see cref="SelectionNode"/> with costs, categories, and auto-selected children.
+    /// Gets the available entries for a force, using the catalogue symbol associated with it.
+    /// The catalogue is resolved from the force's <see cref="ForceNode.CatalogueId"/>.
     /// </summary>
+    /// <param name="state">Current roster state.</param>
+    /// <param name="forceIndex">Zero-based index of the force.</param>
+    /// <returns>Ordered list of available entries for selection in the force's catalogue.</returns>
+    /// <exception cref="ArgumentOutOfRangeException"><paramref name="forceIndex"/> is out of range.</exception>
+    /// <exception cref="InvalidOperationException">No catalogue found for the force's catalogue ID.</exception>
+    public IReadOnlyList<AvailableEntry> GetAvailableEntries(RosterState state, int forceIndex)
+    {
+        var roster = state.RosterRequired;
+        ValidateForceIndex(roster, forceIndex);
+
+        var force = roster.Forces[forceIndex];
+        var catalogue = ResolveForceCatalogue(state, force);
+        return _entryResolver.GetAvailableEntries(catalogue);
+    }
+
+    /// <summary>
+    /// Gets the available child entries for a specific entry symbol.
+    /// Delegates to <see cref="EntryResolver.GetChildEntries"/>.
+    /// </summary>
+    public IReadOnlyList<AvailableEntry> GetChildEntries(ISelectionEntryContainerSymbol entry)
+    {
+        return _entryResolver.GetChildEntries(entry);
+    }
+
+    // ──────────────────────────────────────────────────────────────────────
+    //  Selection lifecycle
+    // ──────────────────────────────────────────────────────────────────────
+
+    /// <summary>
+    /// Selects an entry and adds it to the specified force.
+    /// Creates a <see cref="SelectionNode"/> from the entry symbol's declaration,
+    /// assigns categories and costs, and auto-selects child entries that have
+    /// minimum constraints requiring at least one instance.
+    /// </summary>
+    /// <param name="state">Current roster state.</param>
+    /// <param name="forceIndex">Zero-based index of the target force.</param>
+    /// <param name="entry">The entry symbol to select.</param>
+    /// <param name="sourceGroup">
+    /// The group this entry was flattened from, if any.
+    /// Used to populate <see cref="SelectionNode.EntryGroupId"/>.
+    /// </param>
+    /// <returns>A new <see cref="RosterState"/> with the selection added.</returns>
     public RosterState SelectEntry(
         RosterState state,
         int forceIndex,
@@ -120,19 +170,23 @@ public sealed class WhamRosterEngine
         ISelectionEntryGroupSymbol? sourceGroup = null)
     {
         var roster = state.RosterRequired;
+        ValidateForceIndex(roster, forceIndex);
+
+        var selectionNode = CreateSelectionWithAutoChildren(entry, sourceGroup);
         var force = roster.Forces[forceIndex];
-
-        var selectionNode = BuildSelectionNode(entry, sourceGroup);
-        selectionNode = AutoSelectChildren(selectionNode, entry);
-
         var newForce = force.AddSelections(selectionNode);
-        var newRoster = ReplaceForce(roster, forceIndex, newForce).WithUpdatedCostTotals();
+        var newRoster = roster.Replace(force, _ => newForce).WithUpdatedCostTotals();
         return state.ReplaceRoster(newRoster);
     }
 
     /// <summary>
-    /// Adds a child selection under an existing selection within a force.
+    /// Selects a child entry and nests it under an existing selection.
     /// </summary>
+    /// <param name="state">Current roster state.</param>
+    /// <param name="forceIndex">Zero-based index of the force containing the parent selection.</param>
+    /// <param name="selectionIndex">Zero-based index of the parent selection within the force.</param>
+    /// <param name="childEntry">The child entry symbol to select.</param>
+    /// <returns>A new <see cref="RosterState"/> with the child selection appended.</returns>
     public RosterState SelectChildEntry(
         RosterState state,
         int forceIndex,
@@ -140,62 +194,348 @@ public sealed class WhamRosterEngine
         ISelectionEntryContainerSymbol childEntry)
     {
         var roster = state.RosterRequired;
-        var force = roster.Forces[forceIndex];
-        var parentSelection = force.Selections[selectionIndex];
+        ValidateForceIndex(roster, forceIndex);
 
-        var childNode = BuildSelectionNode(childEntry, sourceGroup: null);
-        var newParent = parentSelection.AddSelections(childNode);
-        var newForce = ReplaceSelection(force, selectionIndex, newParent);
-        var newRoster = ReplaceForce(roster, forceIndex, newForce).WithUpdatedCostTotals();
+        var force = roster.Forces[forceIndex];
+        ValidateSelectionIndex(force, selectionIndex);
+
+        var parentSelection = force.Selections[selectionIndex];
+        var childSelectionNode = CreateSelectionWithAutoChildren(childEntry, sourceGroup: null);
+        var newParent = parentSelection.AddSelections(childSelectionNode);
+        var newRoster = roster.Replace(parentSelection, _ => newParent).WithUpdatedCostTotals();
         return state.ReplaceRoster(newRoster);
     }
 
     /// <summary>
-    /// Removes a root-level selection from a force.
+    /// Removes a selection from a force.
     /// </summary>
+    /// <param name="state">Current roster state.</param>
+    /// <param name="forceIndex">Zero-based index of the force.</param>
+    /// <param name="selectionIndex">Zero-based index of the selection to remove.</param>
+    /// <returns>A new <see cref="RosterState"/> without the specified selection.</returns>
     public RosterState DeselectSelection(RosterState state, int forceIndex, int selectionIndex)
     {
         var roster = state.RosterRequired;
-        var force = roster.Forces[forceIndex];
-        var selectionToRemove = force.Selections[selectionIndex];
+        ValidateForceIndex(roster, forceIndex);
 
-        var newForce = force.Remove(selectionToRemove);
-        var newRoster = ReplaceForce(roster, forceIndex, newForce).WithUpdatedCostTotals();
+        var force = roster.Forces[forceIndex];
+        ValidateSelectionIndex(force, selectionIndex);
+
+        var selectionToRemove = force.Selections[selectionIndex];
+        var newRoster = roster.Remove(selectionToRemove).WithUpdatedCostTotals();
         return state.ReplaceRoster(newRoster);
     }
 
     /// <summary>
-    /// Duplicates a root-level selection within a force, including all children.
-    /// The duplicate gets Number = 1.
+    /// Duplicates a selection within a force by appending a structural copy.
+    /// The duplicate carries the same entry data but is a distinct roster element.
     /// </summary>
+    /// <param name="state">Current roster state.</param>
+    /// <param name="forceIndex">Zero-based index of the force.</param>
+    /// <param name="selectionIndex">Zero-based index of the selection to duplicate.</param>
+    /// <returns>A new <see cref="RosterState"/> with the duplicate appended to the force.</returns>
     public RosterState DuplicateSelection(RosterState state, int forceIndex, int selectionIndex)
     {
         var roster = state.RosterRequired;
-        var force = roster.Forces[forceIndex];
-        var original = force.Selections[selectionIndex];
+        ValidateForceIndex(roster, forceIndex);
 
-        // Deep copy: the node is immutable, so we can reuse it as-is but reset Number to 1.
-        var duplicate = original.WithNumber(1);
-        var newForce = force.AddSelections(duplicate);
-        var newRoster = ReplaceForce(roster, forceIndex, newForce).WithUpdatedCostTotals();
+        var force = roster.Forces[forceIndex];
+        ValidateSelectionIndex(force, selectionIndex);
+
+        var original = force.Selections[selectionIndex];
+        // Create a structural copy. The immutable node framework ensures a fresh tree
+        // is built when we re-add the same shape. Future work: assign new IDs throughout
+        // the subtree to guarantee uniqueness.
+        var newForce = force.AddSelections(original);
+        var newRoster = roster.Replace(force, _ => newForce).WithUpdatedCostTotals();
         return state.ReplaceRoster(newRoster);
     }
 
     /// <summary>
-    /// Sets the cost limit for a cost type on the roster.
+    /// Sets the cost limit for a specific cost type on the roster.
+    /// The cost type must already exist in the roster's <see cref="RosterNode.CostLimits"/>
+    /// (seeded from the gamesystem during <see cref="CreateRoster"/>).
     /// </summary>
+    /// <param name="state">Current roster state.</param>
+    /// <param name="costTypeId">The <see cref="CostLimitNode.TypeId"/> to update.</param>
+    /// <param name="value">The new limit value.</param>
+    /// <returns>A new <see cref="RosterState"/> with the updated cost limit.</returns>
+    /// <exception cref="ArgumentException">No cost limit with the given type ID exists.</exception>
     public RosterState SetCostLimit(RosterState state, string costTypeId, decimal value)
     {
         var roster = state.RosterRequired;
-        var newLimits = roster.CostLimits
-            .Select(cl => cl.TypeId == costTypeId ? cl.WithValue(value) : cl)
-            .ToArray();
-        var newRoster = roster.WithCostLimits(newLimits);
+        var targets = roster.CostLimits.Where(cl => cl.TypeId == costTypeId).ToArray();
+        if (targets.Length == 0)
+        {
+            throw new ArgumentException(
+                $"No cost limit with type ID '{costTypeId}' found on the roster.",
+                nameof(costTypeId));
+        }
+
+        var newRoster = roster.Replace<RosterNode, CostLimitNode>(targets, cl => cl.WithValue(value));
         return state.ReplaceRoster(newRoster);
     }
 
     // TODO Phase 4: EvaluateModifiers — apply IEffectSymbol / IConditionSymbol modifiers
     // TODO Phase 5: ValidateConstraints — evaluate IConstraintSymbol / IQuerySymbol rules
+
+    // ──────────────────────────────────────────────────────────────────────
+    //  Selection creation helpers
+    // ──────────────────────────────────────────────────────────────────────
+
+    /// <summary>
+    /// Creates a <see cref="SelectionNode"/> from an entry symbol, including costs,
+    /// categories, and recursively auto-selected child entries (those with min ≥ 1
+    /// constraints on <c>selections</c> in <c>parent</c> scope).
+    /// </summary>
+    private SelectionNode CreateSelectionWithAutoChildren(
+        ISelectionEntryContainerSymbol entry,
+        ISelectionEntryGroupSymbol? sourceGroup)
+    {
+        var selectionNode = CreateSelectionNode(entry, sourceGroup);
+
+        // Auto-select child entries that have a minimum constraint ≥ 1.
+        var childEntries = _entryResolver.GetChildEntries(entry);
+        foreach (var child in childEntries)
+        {
+            var autoCount = GetMinSelectionCount(child.Symbol);
+            if (autoCount < 1)
+            {
+                continue;
+            }
+
+            for (var i = 0; i < autoCount; i++)
+            {
+                var childSelection = CreateSelectionWithAutoChildren(child.Symbol, child.SourceGroup);
+                selectionNode = selectionNode.AddSelections(childSelection);
+            }
+        }
+
+        return selectionNode;
+    }
+
+    /// <summary>
+    /// Creates a <see cref="SelectionNode"/> from an <see cref="ISelectionEntryContainerSymbol"/>.
+    /// Resolves the backing <see cref="SelectionEntryNode"/> declaration through links,
+    /// then populates costs and categories.
+    /// </summary>
+    private static SelectionNode CreateSelectionNode(
+        ISelectionEntryContainerSymbol entry,
+        ISelectionEntryGroupSymbol? sourceGroup)
+    {
+        var entryDecl = ResolveToEntryDeclaration(entry)
+            ?? throw new ArgumentException(
+                $"Cannot resolve entry '{entry.Name}' (ID: {entry.Id}) to a SelectionEntryNode declaration.",
+                nameof(entry));
+
+        var entryId = entry.Id ?? entryDecl.Id ?? "";
+        var entryGroupId = sourceGroup?.Id;
+
+        var selectionNode = NodeFactory.Selection(entryDecl, entryId, entryGroupId);
+
+        // Costs: use the entry's own costs, falling back to the resolved target's costs for links.
+        var costs = BuildSelectionCosts(entry);
+        if (costs.Length > 0)
+        {
+            selectionNode = selectionNode.AddCosts(costs);
+        }
+
+        // Categories: use the entry's own category links, falling back to the target's.
+        var categories = BuildSelectionCategories(entry, sourceGroup);
+        if (categories.Length > 0)
+        {
+            selectionNode = selectionNode.AddCategories(categories);
+        }
+
+        return selectionNode;
+    }
+
+    /// <summary>
+    /// Resolves an <see cref="ISelectionEntryContainerSymbol"/> through any link chain
+    /// to find the underlying <see cref="SelectionEntryNode"/> declaration.
+    /// Falls back to synthesising a declaration from a group if the resolved symbol is a group.
+    /// </summary>
+    private static SelectionEntryNode? ResolveToEntryDeclaration(ISelectionEntryContainerSymbol symbol)
+    {
+        var current = symbol;
+        for (var depth = 0; depth < 32; depth++)
+        {
+            var decl = current.GetEntryDeclaration();
+            if (decl is not null)
+            {
+                return decl;
+            }
+
+            if (current.ReferencedEntry is not { } next)
+            {
+                break;
+            }
+            current = next;
+        }
+
+        // If the resolved symbol is a group, synthesise a SelectionEntryNode from it.
+        var resolved = EntryResolver.ResolveEntry(symbol);
+        var groupDecl = resolved.GetEntryGroupDeclaration();
+        if (groupDecl is not null)
+        {
+            return NodeFactory.SelectionEntry(groupDecl.Name, groupDecl.Id);
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// Builds <see cref="CostNode"/> array for a new selection.
+    /// Uses the entry's own costs; for links with no costs, falls back to the resolved target.
+    /// </summary>
+    private static CostNode[] BuildSelectionCosts(ISelectionEntryContainerSymbol entry)
+    {
+        var costs = entry.Costs;
+
+        // Links may not carry their own costs — inherit from the resolved target.
+        if (costs.IsEmpty && entry.ReferencedEntry is { } referenced)
+        {
+            costs = referenced.Costs;
+        }
+
+        if (costs.IsEmpty)
+        {
+            return [];
+        }
+
+        var list = new List<CostNode>(costs.Length);
+        foreach (var costSym in costs)
+        {
+            var costDecl = costSym.GetDeclaration();
+            if (costDecl is not null)
+            {
+                list.Add(costDecl);
+            }
+        }
+        return [.. list];
+    }
+
+    /// <summary>
+    /// Builds <see cref="CategoryNode"/> array for a new selection.
+    /// Resolves category links through <see cref="ICategoryEntrySymbol.ReferencedEntry"/>
+    /// and preserves the <see cref="ICategoryEntrySymbol.IsPrimaryCategory"/> flag.
+    /// If <paramref name="sourceGroup"/> is provided, its categories are also inherited
+    /// (without duplicating entries already present from the entry itself).
+    /// </summary>
+    private static CategoryNode[] BuildSelectionCategories(
+        ISelectionEntryContainerSymbol entry,
+        ISelectionEntryGroupSymbol? sourceGroup)
+    {
+        var categories = entry.Categories;
+
+        // Links may not carry their own categories — inherit from the resolved target.
+        if (categories.IsEmpty && entry.ReferencedEntry is { } referenced)
+        {
+            categories = referenced.Categories;
+        }
+
+        var list = new List<CategoryNode>();
+        var addedIds = new HashSet<string>(StringComparer.Ordinal);
+
+        foreach (var catSym in categories)
+        {
+            var targetEntry = catSym.ReferencedEntry ?? catSym;
+            var catEntryDecl = targetEntry.GetEntryDeclaration();
+            if (catEntryDecl is null)
+            {
+                continue;
+            }
+
+            list.Add(
+                NodeFactory.Category(catEntryDecl)
+                    .WithPrimary(catSym.IsPrimaryCategory));
+            addedIds.Add(catEntryDecl.Id ?? "");
+        }
+
+        // Inherit categories from the source group (deduplicated).
+        if (sourceGroup is not null)
+        {
+            foreach (var catSym in sourceGroup.Categories)
+            {
+                var targetEntry = catSym.ReferencedEntry ?? catSym;
+                var catEntryDecl = targetEntry.GetEntryDeclaration();
+                if (catEntryDecl is null || !addedIds.Add(catEntryDecl.Id ?? ""))
+                {
+                    continue;
+                }
+
+                list.Add(
+                    NodeFactory.Category(catEntryDecl)
+                        .WithPrimary(catSym.IsPrimaryCategory));
+            }
+        }
+
+        return [.. list];
+    }
+
+    // ──────────────────────────────────────────────────────────────────────
+    //  Constraint inspection helpers
+    // ──────────────────────────────────────────────────────────────────────
+
+    /// <summary>
+    /// Inspects the constraints on an entry (and its resolved target, for links)
+    /// to determine the minimum selection count required by a <c>min</c> constraint
+    /// on <c>selections</c> in <c>parent</c> or <c>force</c> scope.
+    /// Returns 0 if no such constraint exists.
+    /// </summary>
+    private static int GetMinSelectionCount(ISelectionEntryContainerSymbol entry)
+    {
+        foreach (var constraint in GetEffectiveConstraints(entry))
+        {
+            if (IsMinSelectionConstraint(constraint))
+            {
+                return (int)(constraint.Query.ReferenceValue ?? 0);
+            }
+        }
+        return 0;
+    }
+
+    /// <summary>
+    /// Returns <see langword="true"/> if the constraint represents a minimum-selections
+    /// requirement in parent or force scope (the auto-select trigger).
+    /// Equivalent to the legacy check: <c>type=min, field=selections, scope=parent|force, value≥1</c>.
+    /// </summary>
+    private static bool IsMinSelectionConstraint(IConstraintSymbol constraint)
+    {
+        var q = constraint.Query;
+
+        return q.Comparison == QueryComparisonType.GreaterThanOrEqual
+            && q.ValueKind == QueryValueKind.SelectionCount
+            && q.ScopeKind is QueryScopeKind.Parent or QueryScopeKind.ContainingForce
+            && q.ReferenceValue >= 1
+            && !q.Options.HasFlag(QueryOptions.ValuePercentage);
+    }
+
+    /// <summary>
+    /// Yields constraints from the entry itself and, for links, from the resolved target.
+    /// This ensures that constraints defined on either the link or the target are considered
+    /// during auto-selection evaluation.
+    /// </summary>
+    private static IEnumerable<IConstraintSymbol> GetEffectiveConstraints(
+        ISelectionEntryContainerSymbol entry)
+    {
+        foreach (var c in entry.Constraints)
+        {
+            yield return c;
+        }
+
+        if (entry.ReferencedEntry is { } referenced)
+        {
+            foreach (var c in referenced.Constraints)
+            {
+                yield return c;
+            }
+        }
+    }
+
+    // ──────────────────────────────────────────────────────────────────────
+    //  Force category helpers
+    // ──────────────────────────────────────────────────────────────────────
 
     /// <summary>
     /// Resolves the category links on a force entry into <see cref="CategoryNode"/> instances.
@@ -224,231 +564,43 @@ public sealed class WhamRosterEngine
         return [.. list];
     }
 
+    // ──────────────────────────────────────────────────────────────────────
+    //  Catalogue resolution & validation
+    // ──────────────────────────────────────────────────────────────────────
+
     /// <summary>
-    /// Creates a <see cref="SelectionNode"/> from an entry symbol, including costs and categories.
+    /// Resolves the <see cref="ICatalogueSymbol"/> for a force using the force's
+    /// <see cref="ForceNode.CatalogueId"/>. Searches all catalogues in the compilation
+    /// including the gamesystem (since a force may originate from either).
     /// </summary>
-    private static SelectionNode BuildSelectionNode(
-        ISelectionEntryContainerSymbol entry,
-        ISelectionEntryGroupSymbol? sourceGroup)
+    private static ICatalogueSymbol ResolveForceCatalogue(RosterState state, ForceNode force)
     {
-        // Resolve the effective entry (follow reference links)
-        var effectiveEntry = entry.IsReference ? entry.ReferencedEntry ?? entry : entry;
-
-        // Get the entry declaration node for NodeFactory
-        var entryDecl = effectiveEntry.GetEntryDeclaration();
-        if (entryDecl is null && effectiveEntry is ISelectionEntryGroupSymbol groupSym)
-        {
-            // Groups need their declaration resolved differently
-            var groupDecl = groupSym.GetEntryGroupDeclaration();
-            return BuildGroupSelectionNode(groupSym, groupDecl, sourceGroup);
-        }
-
-        if (entryDecl is null)
-        {
-            throw new InvalidOperationException(
-                $"Entry symbol '{entry.Name}' (Id={entry.Id}) has no backing declaration node.");
-        }
-
-        // Create base selection node
-        var selNode = NodeFactory.Selection(entryDecl, effectiveEntry.Id)
-            .WithNumber(1);
-
-        // Add costs from the entry
-        selNode = AddCosts(selNode, effectiveEntry);
-
-        // Add categories from the entry and optionally from source group
-        selNode = AddCategories(selNode, effectiveEntry, sourceGroup);
-
-        return selNode;
+        var catalogueId = force.CatalogueId;
+        return state.Compilation.GlobalNamespace.Catalogues
+            .FirstOrDefault(c => c.Id == catalogueId)
+            ?? throw new InvalidOperationException(
+                $"No catalogue with ID '{catalogueId}' found in the compilation.");
     }
 
-    /// <summary>
-    /// Builds a selection node representing a selected group (used when a group is directly selectable).
-    /// </summary>
-    private static SelectionNode BuildGroupSelectionNode(
-        ISelectionEntryGroupSymbol groupSym,
-        SelectionEntryGroupNode? groupDecl,
-        ISelectionEntryGroupSymbol? sourceGroup)
+    private static void ValidateForceIndex(RosterNode roster, int forceIndex)
     {
-        // Groups selected as entries get type "upgrade" and use the group's ID
-        var selCore = new SelectionCore
+        if ((uint)forceIndex >= (uint)roster.Forces.Count)
         {
-            Id = Guid.NewGuid().ToString(),
-            Name = groupSym.Name,
-            EntryId = groupSym.Id,
-            Type = SelectionEntryKind.Upgrade,
-            Number = 1,
-        };
-        var selNode = selCore.ToNode();
-
-        // Add categories from group
-        selNode = AddGroupCategories(selNode, groupSym, sourceGroup);
-
-        return selNode;
+            throw new ArgumentOutOfRangeException(
+                nameof(forceIndex),
+                forceIndex,
+                $"Force index must be in [0, {roster.Forces.Count}). Roster contains {roster.Forces.Count} force(s).");
+        }
     }
 
-    /// <summary>
-    /// Adds cost nodes to a selection from the entry's defined costs.
-    /// </summary>
-    private static SelectionNode AddCosts(SelectionNode selNode, ISelectionEntryContainerSymbol entry)
+    private static void ValidateSelectionIndex(ForceNode force, int selectionIndex)
     {
-        if (entry is not ISelectionEntrySymbol selEntry)
-            return selNode;
-
-        var costs = new List<CostNode>();
-        foreach (var costSym in selEntry.Costs)
+        if ((uint)selectionIndex >= (uint)force.Selections.Count)
         {
-            var costDecl = costSym.GetDeclaration();
-            if (costDecl is not null)
-            {
-                costs.Add(costDecl);
-            }
+            throw new ArgumentOutOfRangeException(
+                nameof(selectionIndex),
+                selectionIndex,
+                $"Selection index must be in [0, {force.Selections.Count}). Force contains {force.Selections.Count} selection(s).");
         }
-
-        return costs.Count > 0 ? selNode.WithCosts(costs.ToArray()) : selNode;
-    }
-
-    /// <summary>
-    /// Adds category nodes to a selection from the entry's category links.
-    /// If <paramref name="sourceGroup"/> is provided, its categories are also inherited.
-    /// </summary>
-    private static SelectionNode AddCategories(
-        SelectionNode selNode,
-        ISelectionEntryContainerSymbol entry,
-        ISelectionEntryGroupSymbol? sourceGroup)
-    {
-        var categories = new List<CategoryNode>();
-        var addedIds = new HashSet<string>(StringComparer.Ordinal);
-
-        // Entry's own categories
-        foreach (var catSym in entry.Categories)
-        {
-            var targetEntry = catSym.ReferencedEntry ?? catSym;
-            var catDecl = targetEntry.GetEntryDeclaration();
-            if (catDecl is null) continue;
-
-            var catNode = NodeFactory.Category(catDecl).WithPrimary(catSym.IsPrimaryCategory);
-            categories.Add(catNode);
-            addedIds.Add(catDecl.Id ?? "");
-        }
-
-        // Source group's categories (inherited, not duplicated)
-        if (sourceGroup is not null)
-        {
-            foreach (var catSym in sourceGroup.Categories)
-            {
-                var targetEntry = catSym.ReferencedEntry ?? catSym;
-                var catDecl = targetEntry.GetEntryDeclaration();
-                if (catDecl is null) continue;
-                if (!addedIds.Add(catDecl.Id ?? "")) continue;
-
-                categories.Add(
-                    NodeFactory.Category(catDecl).WithPrimary(catSym.IsPrimaryCategory));
-            }
-        }
-
-        return categories.Count > 0 ? selNode.AddCategories([.. categories]) : selNode;
-    }
-
-    /// <summary>
-    /// Adds category nodes to a group selection node.
-    /// </summary>
-    private static SelectionNode AddGroupCategories(
-        SelectionNode selNode,
-        ISelectionEntryGroupSymbol groupSym,
-        ISelectionEntryGroupSymbol? sourceGroup)
-    {
-        var categories = new List<CategoryNode>();
-
-        foreach (var catSym in groupSym.Categories)
-        {
-            var targetEntry = catSym.ReferencedEntry ?? catSym;
-            var catDecl = targetEntry.GetEntryDeclaration();
-            if (catDecl is null) continue;
-            categories.Add(NodeFactory.Category(catDecl).WithPrimary(catSym.IsPrimaryCategory));
-        }
-
-        if (sourceGroup is not null && !ReferenceEquals(sourceGroup, groupSym))
-        {
-            var addedIds = new HashSet<string>(categories.Select(c => c.EntryId ?? ""), StringComparer.Ordinal);
-            foreach (var catSym in sourceGroup.Categories)
-            {
-                var targetEntry = catSym.ReferencedEntry ?? catSym;
-                var catDecl = targetEntry.GetEntryDeclaration();
-                if (catDecl is null) continue;
-                if (!addedIds.Add(catDecl.Id ?? "")) continue;
-                categories.Add(NodeFactory.Category(catDecl).WithPrimary(catSym.IsPrimaryCategory));
-            }
-        }
-
-        return categories.Count > 0 ? selNode.AddCategories([.. categories]) : selNode;
-    }
-
-    /// <summary>
-    /// Auto-selects child entries that have min constraints requiring at least 1.
-    /// This mirrors the legacy engine behavior of enforcing mandatory child selections.
-    /// </summary>
-    private static SelectionNode AutoSelectChildren(
-        SelectionNode parentNode,
-        ISelectionEntryContainerSymbol parentEntry)
-    {
-        var effectiveEntry = parentEntry.IsReference ? parentEntry.ReferencedEntry ?? parentEntry : parentEntry;
-
-        foreach (var childSym in effectiveEntry.ChildSelectionEntries)
-        {
-            var effectiveChild = childSym.IsReference ? childSym.ReferencedEntry ?? childSym : childSym;
-
-            // Check for min constraint requiring auto-selection
-            var minCount = GetMinConstraintValue(effectiveChild);
-            if (minCount < 1) continue;
-
-            var childNode = BuildSelectionNode(childSym, sourceGroup: null);
-            childNode = childNode.WithNumber(minCount);
-            childNode = AutoSelectChildren(childNode, childSym);
-            parentNode = parentNode.AddSelections(childNode);
-        }
-
-        return parentNode;
-    }
-
-    /// <summary>
-    /// Gets the minimum selection count from constraints (scope=parent/force, field=selections, type=min).
-    /// Returns 0 if no such constraint exists.
-    /// Uses the constraint's backing <see cref="Source.ConstraintNode"/> declaration for raw field access.
-    /// </summary>
-    private static int GetMinConstraintValue(ISelectionEntryContainerSymbol entry)
-    {
-        foreach (var constraint in entry.Constraints)
-        {
-            var decl = constraint.GetDeclaration();
-            if (decl is null) continue;
-            if (decl.Type != ConstraintKind.Minimum) continue;
-            if (decl.Field is not "selections") continue;
-            if (decl.Scope is not ("parent" or "force")) continue;
-            if (decl.IsValuePercentage) continue;
-
-            var value = (int)decl.Value;
-            if (value >= 1) return value;
-        }
-
-        return 0;
-    }
-
-    /// <summary>
-    /// Replaces a force at the given index in the roster.
-    /// </summary>
-    private static RosterNode ReplaceForce(RosterNode roster, int forceIndex, ForceNode newForce)
-    {
-        var forces = roster.Forces.Select((f, i) => i == forceIndex ? newForce : f).ToArray();
-        return roster.WithForces(forces);
-    }
-
-    /// <summary>
-    /// Replaces a selection at the given index in a force.
-    /// </summary>
-    private static ForceNode ReplaceSelection(ForceNode force, int selectionIndex, SelectionNode newSelection)
-    {
-        var selections = force.Selections.Select((s, i) => i == selectionIndex ? newSelection : s).ToArray();
-        return force.WithSelections(selections);
     }
 }
