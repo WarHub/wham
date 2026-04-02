@@ -140,9 +140,29 @@ public sealed class ModifierEvaluator
         var context = new EvalContext(selection, force, ruleEntry);
         foreach (var effect in ruleEntry.Effects)
         {
-            if (effect.TargetKind == EffectTargetKind.RuleDescription)
+            desc = ApplyRuleDescriptionEffect(effect, desc, context);
+        }
+        return desc;
+    }
+
+    private string ApplyRuleDescriptionEffect(IEffectSymbol effect, string desc, EvalContext context)
+    {
+        if (effect.TargetKind == EffectTargetKind.RuleDescription && EvaluateEffectCondition(effect, context))
+        {
+            desc = ApplyStringEffect(effect, desc, context);
+        }
+        // Process children (ModifierGroups)
+        if (effect.ChildrenWhenSatisfied.Length > 0 || effect.ChildrenWhenUnsatisfied.Length > 0)
+        {
+            var satisfied = EvaluateCondition(effect.Condition, context);
+            var children = satisfied ? effect.ChildrenWhenSatisfied : effect.ChildrenWhenUnsatisfied;
+            var repeatCount = satisfied ? GetRepeatCount(effect, context) : 1;
+            for (int r = 0; r < repeatCount; r++)
             {
-                desc = ApplyStringEffect(effect, desc, context);
+                foreach (var child in children)
+                {
+                    desc = ApplyRuleDescriptionEffect(child, desc, context);
+                }
             }
         }
         return desc;
@@ -796,17 +816,37 @@ public sealed class ModifierEvaluator
 
     private int GetRepeatCount(IEffectSymbol effect, EvalContext context)
     {
-        if (effect.RepetitionQuery is not { } query)
-            return 1;
+        // Check direct RepetitionQuery (used by RepeatEffectSymbol)
+        if (effect.RepetitionQuery is { } query)
+        {
+            var referenceValue = query.ReferenceValue ?? 1m;
+            // Division by zero guard: value=0 means skip the repeat entirely
+            if (referenceValue == 0)
+                return 0;
 
-        var value = CalculateQueryValue(query, context);
-        var roundUp = query.Options.HasFlag(QueryOptions.ValueRoundUp);
-        var referenceValue = query.ReferenceValue ?? 1m;
-        if (referenceValue == 0) referenceValue = 1m;
+            var value = CalculateQueryValue(query, context);
+            var roundUp = query.Options.HasFlag(QueryOptions.ValueRoundUp);
 
-        var repeats = value / referenceValue;
-        var repeatCount = roundUp ? (int)Math.Ceiling(repeats) : (int)Math.Floor(repeats);
-        return Math.Max(0, repeatCount * Math.Max(1, effect.Repetitions));
+            var repeats = value / referenceValue;
+            var repeatCount = roundUp ? (int)Math.Ceiling(repeats) : (int)Math.Floor(repeats);
+            return Math.Max(0, repeatCount * Math.Max(1, effect.Repetitions));
+        }
+
+        // Check repeat children (ModifierEffectBaseSymbol.Effects → RepeatEffectSymbol)
+        if (effect.Effects.Length > 0)
+        {
+            int totalRepeats = 1;
+            foreach (var repeatEffect in effect.Effects)
+            {
+                var childRepeat = GetRepeatCount(repeatEffect, context);
+                if (childRepeat == 0)
+                    return 0; // Any zero repeat means skip entirely
+                totalRepeats = childRepeat;
+            }
+            return totalRepeats;
+        }
+
+        return 1;
     }
 
     // ──────────────────────────────────────────────────────────────────

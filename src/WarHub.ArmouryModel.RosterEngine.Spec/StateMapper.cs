@@ -695,11 +695,21 @@ internal sealed class StateMapper
     {
         if (entry.Id is not null)
             _symbolEntries![entry.Id] = entry;
-        // Index sub-entries (profiles, rules, infolinks) from this entry's resources
-        foreach (var res in entry.Resources)
+        // Index sub-entries (profiles, rules, infolinks, infogroups) from this entry's resources
+        IndexResourceEntriesRecursive(entry.Resources);
+        foreach (var child in entry.ChildSelectionEntries)
+        {
+            IndexSymbolEntryRecursive(child);
+        }
+    }
+
+    private void IndexResourceEntriesRecursive(ImmutableArray<IResourceEntrySymbol> resources)
+    {
+        foreach (var res in resources)
         {
             if (res.Id is not null)
                 _symbolEntries!.TryAdd(res.Id, res);
+            // If profile, also index characteristics
             if (res is IProfileSymbol profile)
             {
                 foreach (var ch in profile.Characteristics)
@@ -708,10 +718,11 @@ internal sealed class StateMapper
                         _symbolEntries!.TryAdd(ch.Id, ch);
                 }
             }
-        }
-        foreach (var child in entry.ChildSelectionEntries)
-        {
-            IndexSymbolEntryRecursive(child);
+            // Recursively index resources within InfoGroups
+            if (res.Resources.Length > 0)
+            {
+                IndexResourceEntriesRecursive(res.Resources);
+            }
         }
     }
 
