@@ -17,6 +17,10 @@ internal sealed class StateMapper
     private readonly WhamCompilation _compilation;
     private readonly EntryResolver _resolver;
     private readonly IReadOnlyList<ICatalogueSymbol> _forceCatalogues;
+    private readonly ModifierEvaluator _modEval;
+
+    // ISymbol entry lookup (entryId → ISelectionEntryContainerSymbol or IContainerEntrySymbol)
+    private Dictionary<string, IEntrySymbol>? _symbolEntries;
 
     // Shared item lookups for InfoLink resolution (built lazily)
     private Dictionary<string, ProfileNode>? _sharedProfiles;
@@ -26,11 +30,12 @@ internal sealed class StateMapper
     // Entry declaration lookup (entryId → ContainerEntryBaseNode)
     private Dictionary<string, ContainerEntryBaseNode>? _entryDeclarations;
 
-    public StateMapper(Compilation compilation, IReadOnlyList<ICatalogueSymbol> forceCatalogues)
+    public StateMapper(Compilation compilation, RosterNode roster, IReadOnlyList<ICatalogueSymbol> forceCatalogues)
     {
         _compilation = (WhamCompilation)compilation;
         _resolver = new EntryResolver();
         _forceCatalogues = forceCatalogues;
+        _modEval = new ModifierEvaluator(roster, compilation);
     }
 
     public ProtocolRosterState MapRosterState(RosterNode roster)
@@ -44,7 +49,8 @@ internal sealed class StateMapper
             forces.Add(MapForce(roster.Forces[i], catalogue));
         }
 
-        var costs = MapRosterCosts(roster);
+        // Compute roster-level cost totals from effective selection costs (modifier-aware)
+        var costs = ComputeRosterCostsFromSelections(roster, forces);
         var errors = new List<ValidationErrorState>(); // TODO Phase 5
 
         return new ProtocolRosterState(
@@ -60,7 +66,7 @@ internal sealed class StateMapper
         var selections = new List<SelectionState>();
         foreach (var selNode in forceNode.Selections)
         {
-            selections.Add(MapSelection(selNode));
+            selections.Add(MapSelection(selNode, forceNode));
         }
 
         var availableEntries = _resolver.GetAvailableEntries(catalogue);
@@ -87,21 +93,34 @@ internal sealed class StateMapper
         };
     }
 
-    private SelectionState MapSelection(SelectionNode selNode)
+    private SelectionState MapSelection(SelectionNode selNode, ForceNode force)
     {
         var children = new List<SelectionState>();
         foreach (var childNode in selNode.Selections)
         {
-            children.Add(MapSelection(childNode));
+            children.Add(MapSelection(childNode, force));
         }
 
-        var costs = MapSelectionCosts(selNode);
+        // Look up the ISymbol for this entry to access effects (modifiers)
+        var entrySym = LookupEntrySymbol(selNode.EntryId);
+
+        // Apply modifiers to get effective values
+        var effectiveName = entrySym is ISelectionEntryContainerSymbol sec
+            ? _modEval.GetEffectiveName(sec, selNode, force)
+            : selNode.Name ?? "";
+        var effectiveHidden = entrySym is not null
+            ? _modEval.GetEffectiveHidden(entrySym, selNode, force)
+            : false;
+        var effectiveCosts = entrySym is ISelectionEntryContainerSymbol secCosts
+            ? GetModifiedSelectionCosts(secCosts, selNode, force)
+            : MapSelectionCosts(selNode);
+
         var categories = MapSelectionCategories(selNode);
 
         // Resolve profiles and rules from the entry declaration
         var entryDecl = FindEntryDeclaration(selNode.EntryId);
-        var profiles = ResolveSelectionProfiles(entryDecl);
-        var rules = ResolveSelectionRules(entryDecl);
+        var profiles = ResolveSelectionProfiles(entryDecl, selNode, force);
+        var rules = ResolveSelectionRules(entryDecl, selNode, force);
 
         var type = selNode.Type switch
         {
@@ -114,12 +133,12 @@ internal sealed class StateMapper
         var publicationName = ResolvePublicationName(selNode.PublicationId);
 
         return new SelectionState(
-            Name: selNode.Name ?? "",
+            Name: effectiveName,
             EntryId: selNode.EntryId,
             Type: type,
             Number: selNode.Number,
-            Hidden: false, // TODO Phase 4: modifier evaluation
-            Costs: costs,
+            Hidden: effectiveHidden,
+            Costs: effectiveCosts,
             Children: children,
             Profiles: profiles.Count > 0 ? profiles : null,
             Rules: rules.Count > 0 ? rules : null,
@@ -133,7 +152,10 @@ internal sealed class StateMapper
     //  Profile / Rule resolution from entry declarations
     // ──────────────────────────────────────────────────────────────────
 
-    private List<ProfileState> ResolveSelectionProfiles(ContainerEntryBaseNode? entryDecl)
+    private List<ProfileState> ResolveSelectionProfiles(
+        ContainerEntryBaseNode? entryDecl,
+        SelectionNode? selection = null,
+        ForceNode? force = null)
     {
         if (entryDecl is null) return [];
 
@@ -171,7 +193,10 @@ internal sealed class StateMapper
         return result;
     }
 
-    private List<RuleState> ResolveSelectionRules(ContainerEntryBaseNode? entryDecl)
+    private List<RuleState> ResolveSelectionRules(
+        ContainerEntryBaseNode? entryDecl,
+        SelectionNode? selection = null,
+        ForceNode? force = null)
     {
         if (entryDecl is null) return [];
 
@@ -431,6 +456,91 @@ internal sealed class StateMapper
         return categories;
     }
 
+    // ──────────────────────────────────────────────────────────────────
+    //  Modifier-aware cost mapping
+    // ──────────────────────────────────────────────────────────────────
+
+    private List<CostState> GetModifiedSelectionCosts(
+        ISelectionEntryContainerSymbol entrySym,
+        SelectionNode selNode,
+        ForceNode force)
+    {
+        // Get effective per-unit costs from modifier evaluator
+        var effectiveCosts = _modEval.GetEffectiveCosts(entrySym, selNode, force);
+        var result = new List<CostState>();
+
+        // Map costs using the effective values
+        foreach (var cost in selNode.Costs)
+        {
+            var typeId = cost.TypeId ?? "";
+            if (effectiveCosts.TryGetValue(typeId, out var modifiedPerUnit))
+            {
+                // Use modified per-unit value times the selection count
+                result.Add(new CostState(
+                    Name: cost.Name ?? "",
+                    TypeId: typeId,
+                    Value: (double)(modifiedPerUnit * selNode.Number)));
+            }
+            else
+            {
+                // Cost type not on entry (shouldn't happen, but be safe)
+                result.Add(new CostState(
+                    Name: cost.Name ?? "",
+                    TypeId: typeId,
+                    Value: (double)cost.Value));
+            }
+        }
+        return result;
+    }
+
+    // ──────────────────────────────────────────────────────────────────
+    //  ISymbol entry lookup
+    // ──────────────────────────────────────────────────────────────────
+
+    private IEntrySymbol? LookupEntrySymbol(string? entryId)
+    {
+        if (string.IsNullOrEmpty(entryId)) return null;
+        EnsureSymbolEntryLookup();
+        return _symbolEntries!.GetValueOrDefault(entryId);
+    }
+
+    private void EnsureSymbolEntryLookup()
+    {
+        if (_symbolEntries is not null) return;
+        _symbolEntries = new(StringComparer.Ordinal);
+
+        foreach (var catalogue in _compilation.GlobalNamespace.Catalogues)
+        {
+            IndexSymbolEntries(catalogue);
+        }
+        IndexSymbolEntries(_compilation.GlobalNamespace.RootCatalogue);
+    }
+
+    private void IndexSymbolEntries(ICatalogueSymbol catalogue)
+    {
+        foreach (var entry in catalogue.RootContainerEntries)
+        {
+            if (entry is ISelectionEntryContainerSymbol sec)
+                IndexSymbolEntryRecursive(sec);
+            else if (entry.Id is not null)
+                _symbolEntries![entry.Id] = entry;
+        }
+        foreach (var entry in catalogue.SharedSelectionEntryContainers)
+        {
+            IndexSymbolEntryRecursive(entry);
+        }
+    }
+
+    private void IndexSymbolEntryRecursive(ISelectionEntryContainerSymbol entry)
+    {
+        if (entry.Id is not null)
+            _symbolEntries![entry.Id] = entry;
+        foreach (var child in entry.ChildSelectionEntries)
+        {
+            IndexSymbolEntryRecursive(child);
+        }
+    }
+
     private List<CostState> MapRosterCosts(RosterNode roster)
     {
         // Collect cost types referenced by any available entry in any force's catalogue
@@ -456,6 +566,65 @@ internal sealed class StateMapper
             }
         }
         return result;
+    }
+
+    private List<CostState> ComputeRosterCostsFromSelections(RosterNode roster, List<ForceState> mappedForces)
+    {
+        // Collect cost types referenced by any available entry
+        var referencedTypes = new HashSet<string>(StringComparer.Ordinal);
+        var costNames = new Dictionary<string, string>(StringComparer.Ordinal);
+        foreach (var catalogue in _forceCatalogues)
+        {
+            var entries = _resolver.GetAvailableEntries(catalogue);
+            foreach (var entry in entries)
+            {
+                CollectReferencedCostTypes(entry.Symbol, referencedTypes);
+            }
+        }
+        // Collect cost type names from the roster node
+        foreach (var cost in roster.Costs)
+        {
+            if (cost.TypeId is not null && cost.Name is not null)
+                costNames[cost.TypeId] = cost.Name;
+        }
+
+        // Sum costs from all mapped selections (which have effective/modified values)
+        var totals = new Dictionary<string, double>(StringComparer.Ordinal);
+        foreach (var force in mappedForces)
+        {
+            AggregateCostsFromSelections(force.Selections, totals);
+        }
+
+        // Build result, only including referenced cost types
+        var result = new List<CostState>();
+        foreach (var cost in roster.Costs)
+        {
+            var typeId = cost.TypeId ?? "";
+            if (referencedTypes.Contains(typeId))
+            {
+                result.Add(new CostState(
+                    Name: cost.Name ?? "",
+                    TypeId: typeId,
+                    Value: totals.GetValueOrDefault(typeId, 0)));
+            }
+        }
+        return result;
+    }
+
+    private static void AggregateCostsFromSelections(IReadOnlyList<SelectionState> selections, Dictionary<string, double> totals)
+    {
+        foreach (var sel in selections)
+        {
+            foreach (var cost in sel.Costs)
+            {
+                totals.TryGetValue(cost.TypeId, out var current);
+                totals[cost.TypeId] = current + cost.Value;
+            }
+            if (sel.Children is { Count: > 0 })
+            {
+                AggregateCostsFromSelections(sel.Children, totals);
+            }
+        }
     }
 
     private static void CollectReferencedCostTypes(ISelectionEntryContainerSymbol symbol, HashSet<string> types)

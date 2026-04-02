@@ -160,7 +160,7 @@ public sealed class SpecRosterEngineAdapter : IRosterEngine
     public ProtocolRosterState GetRosterState()
     {
         var state = EnsureState();
-        var mapper = new StateMapper(state.Compilation, _forceCatalogues);
+        var mapper = new StateMapper(state.Compilation, state.RosterRequired, _forceCatalogues);
         return mapper.MapRosterState(state.RosterRequired);
     }
 
