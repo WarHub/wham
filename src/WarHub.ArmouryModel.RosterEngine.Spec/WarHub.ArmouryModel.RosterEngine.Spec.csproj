@@ -12,6 +12,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\WarHub.ArmouryModel.RosterEngine\WarHub.ArmouryModel.RosterEngine.csproj" />
     <ProjectReference Include="..\WarHub.ArmouryModel.EditorServices\WarHub.ArmouryModel.EditorServices.csproj" />
     <ProjectReference Include="..\WarHub.ArmouryModel.Source\WarHub.ArmouryModel.Source.csproj" />
     <ProjectReference Include="..\WarHub.ArmouryModel.Source.BattleScribe\WarHub.ArmouryModel.Source.BattleScribe.csproj" />

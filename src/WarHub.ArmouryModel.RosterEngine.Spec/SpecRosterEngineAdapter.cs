@@ -1,6 +1,6 @@
 using BattleScribeSpec;
 using BattleScribeSpec.Protocol;
-using WarHub.ArmouryModel.RosterEngine.Spec.Legacy;
+using LegacyEngine = WarHub.ArmouryModel.RosterEngine.Spec.Legacy.WhamRosterEngine;
 
 namespace WarHub.ArmouryModel.RosterEngine.Spec;
 
@@ -11,11 +11,11 @@ namespace WarHub.ArmouryModel.RosterEngine.Spec;
 /// </summary>
 public sealed class SpecRosterEngineAdapter : IRosterEngine
 {
-    private WhamRosterEngine? _engine;
+    private LegacyEngine? _engine;
 
     public IReadOnlyList<string> Setup(ProtocolGameSystem gameSystem, ProtocolCatalogue[] catalogues)
     {
-        _engine = new WhamRosterEngine();
+        _engine = new LegacyEngine();
         return _engine.Setup(gameSystem, catalogues);
     }
 
@@ -54,6 +54,6 @@ public sealed class SpecRosterEngineAdapter : IRosterEngine
         _engine = null;
     }
 
-    private WhamRosterEngine EnsureEngine()
+    private LegacyEngine EnsureEngine()
         => _engine ?? throw new InvalidOperationException("Engine not set up. Call Setup first.");
 }
