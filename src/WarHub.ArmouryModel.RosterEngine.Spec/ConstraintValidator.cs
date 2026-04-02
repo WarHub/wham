@@ -214,7 +214,7 @@ internal sealed class ConstraintValidator
 
             // For shared constraints, merge link constraints of the same type
             // and use the most restrictive value.
-            // Key by (comparison direction, value kind, scope) to avoid merging unrelated constraints.
+            // Key by (direction, value kind, cost type) to avoid merging unrelated constraints.
             var mergedShared = new Dictionary<string, (decimal value, string constraintId, QueryComparisonType comparison)>(StringComparer.Ordinal);
             foreach (var (constraint, _, isShared) in constraintSources)
             {
@@ -223,7 +223,7 @@ internal sealed class ConstraintValidator
                 var cid = constraint.Id ?? "";
                 var val = effectiveValues.GetValueOrDefault(cid, query.ReferenceValue ?? 0m);
                 var direction = query.Comparison == QueryComparisonType.GreaterThanOrEqual ? "min" : "max";
-                var key = $"{direction}:{query.ValueKind}";
+                var key = $"{direction}:{query.ValueKind}:{query.ValueTypeSymbol?.Id}";
                 if (!mergedShared.TryGetValue(key, out var existing))
                 {
                     mergedShared[key] = (val, cid, query.Comparison);
@@ -246,7 +246,7 @@ internal sealed class ConstraintValidator
                     var cid = constraint.Id ?? "";
                     var val = effectiveValues.GetValueOrDefault(cid, query.ReferenceValue ?? 0m);
                     var direction = query.Comparison == QueryComparisonType.GreaterThanOrEqual ? "min" : "max";
-                    var key = $"{direction}:{query.ValueKind}";
+                    var key = $"{direction}:{query.ValueKind}:{query.ValueTypeSymbol?.Id}";
                     if (mergedShared.TryGetValue(key, out var existing))
                     {
                         if (direction == "max" && val < existing.value)
@@ -265,7 +265,7 @@ internal sealed class ConstraintValidator
                     if (isShared) continue;
                     var query = constraint.Query;
                     var direction = query.Comparison == QueryComparisonType.GreaterThanOrEqual ? "min" : "max";
-                    var key = $"{direction}:{query.ValueKind}";
+                    var key = $"{direction}:{query.ValueKind}:{query.ValueTypeSymbol?.Id}";
                     if (mergedShared.ContainsKey(key) && constraint.Id is not null)
                         mergedLinkConstraintIds.Add(constraint.Id);
                 }
@@ -320,7 +320,7 @@ internal sealed class ConstraintValidator
                 if (isShared)
                 {
                     var direction = query.Comparison == QueryComparisonType.GreaterThanOrEqual ? "min" : "max";
-                    var mergeKey = $"{direction}:{query.ValueKind}";
+                    var mergeKey = $"{direction}:{query.ValueKind}:{query.ValueTypeSymbol?.Id}";
                     constraintValue = mergedShared.TryGetValue(mergeKey, out var m)
                         ? m.value
                         : effectiveValues.GetValueOrDefault(constraintId, query.ReferenceValue ?? 0m);
@@ -348,7 +348,7 @@ internal sealed class ConstraintValidator
                 if (isShared)
                 {
                     var direction = query.Comparison == QueryComparisonType.GreaterThanOrEqual ? "min" : "max";
-                    var mergeKey = $"{direction}:{query.ValueKind}";
+                    var mergeKey = $"{direction}:{query.ValueKind}:{query.ValueTypeSymbol?.Id}";
                     if (mergedShared.TryGetValue(mergeKey, out var m))
                         errorConstraintId = m.constraintId;
                 }
