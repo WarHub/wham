@@ -11,6 +11,7 @@ internal sealed class ValidationDiagnostic : DiagnosticWithInfo, IValidationDiag
     internal ValidationDiagnostic(
         DiagnosticInfo info,
         Location location,
+        string? rosterId = null,
         string? ownerType = null,
         string? ownerId = null,
         string? ownerEntryId = null,
@@ -18,6 +19,7 @@ internal sealed class ValidationDiagnostic : DiagnosticWithInfo, IValidationDiag
         string? constraintId = null)
         : base(info, location)
     {
+        RosterId = rosterId;
         OwnerType = ownerType;
         OwnerId = ownerId;
         OwnerEntryId = ownerEntryId;
@@ -25,6 +27,7 @@ internal sealed class ValidationDiagnostic : DiagnosticWithInfo, IValidationDiag
         ConstraintId = constraintId;
     }
 
+    public string? RosterId { get; }
     public string? OwnerType { get; }
     public string? OwnerId { get; }
     public string? OwnerEntryId { get; }
@@ -35,10 +38,10 @@ internal sealed class ValidationDiagnostic : DiagnosticWithInfo, IValidationDiag
         DiagnosticFormatter.Instance.Format(this, formatter: null);
 
     internal override Diagnostic WithLocation(Location location) =>
-        new ValidationDiagnostic(Info, location, OwnerType, OwnerId, OwnerEntryId, EntryId, ConstraintId);
+        new ValidationDiagnostic(Info, location, RosterId, OwnerType, OwnerId, OwnerEntryId, EntryId, ConstraintId);
 
     internal override Diagnostic WithSeverity(DiagnosticSeverity severity) =>
-        new ValidationDiagnostic(Info.GetInstanceWithSeverity(severity), Location, OwnerType, OwnerId, OwnerEntryId, EntryId, ConstraintId);
+        new ValidationDiagnostic(Info.GetInstanceWithSeverity(severity), Location, RosterId, OwnerType, OwnerId, OwnerEntryId, EntryId, ConstraintId);
 
     internal override Diagnostic WithIsSuppressed(bool isSuppressed) =>
         this; // Validation diagnostics are not suppressible

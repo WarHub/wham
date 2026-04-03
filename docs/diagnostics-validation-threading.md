@@ -479,37 +479,40 @@ compilation's `DeclarationDiagnostics` bag. Since compilations are immutable
 `GetValidationDiagnostics()` is retained as a convenience filter, and also
 supports the on-demand path with explicit `forceCatalogues` for the spec adapter.
 
-### Force Catalogue Association
+### ~~Force Catalogue Association~~ — RESOLVED
 
-The `forceCatalogues` parameter is a leaky abstraction. The compilation should
-know which catalogue provides entries for each force. This likely requires:
+Fixed in Phase 2: `NodeFactory.Force()` now accepts a `catalogueOverride`
+parameter. `WhamRosterEngine.AddForce()` passes the actual selection-catalogue,
+so `ForceNode.CatalogueId` is correct and `ForceCatalogueReferenceSymbol`
+resolves via the Binder without any external mapping.
 
-- Enriching `ForceNode` with the source catalogue ID
-- Or teaching the Binder to associate forces with their catalogues
-- Or using `RosterState` which already tracks force-catalogue associations
+### ~~Location Information~~ — RESOLVED
 
-### Location Information
+`ValidationDiagnostic` objects now carry `SourceNode` locations instead of
+`Location.None`. Each validation call site passes the relevant roster node:
+- Selection constraint violations → `ForceNode` location
+- Child constraint violations → parent `SelectionNode` location
+- Force count violations → `RosterNode` location
+- Cost limit violations → `RosterNode` location
+- Category count violations → `ForceNode` location
 
-Currently all `ValidationDiagnostic` objects use `Location.None`. In the future,
-diagnostics should carry location information pointing to the relevant SourceNode
-(the selection, force, or roster that has the violation). This would enable
-IDE-style error highlighting.
+The existing `SourceNodeExtensions.GetLocation()` creates a `SourceLocation`
+with `SourceTree` and `TextSpan`, enabling IDE-style error highlighting.
 
-### ValidationDiagnostic Visibility
+### ~~ValidationDiagnostic Visibility~~ — RESOLVED
 
-`ValidationDiagnostic` is `internal` because its base class `DiagnosticWithInfo`
-is internal. Access from the Spec project is via `InternalsVisibleTo`. If other
-projects need to inspect validation metadata, either:
+Resolved in Phase 2: `IValidationDiagnostic` public interface in the Extensions
+layer exposes validation metadata (OwnerType, OwnerId, OwnerEntryId, EntryId,
+ConstraintId, RosterId). Consumers check `diag is IValidationDiagnostic vd`.
+`DiagnosticMapper` uses the interface instead of casting to internal types.
 
-- Make `ValidationDiagnostic` public with a public base class
-- Or provide a public interface for accessing the metadata
-- Or use extension methods that cast and extract
+### ~~Multi-roster Compilation~~ — RESOLVED
 
-### Multi-roster Compilation
-
-The current API assumes one roster per compilation. If multi-roster support is
-needed, `GetValidationDiagnostics()` needs per-roster `forceCatalogues` mapping,
-and return values should be keyed by roster.
+Each `RosterSymbol.ForceComplete()` runs validation independently. Each
+`ValidationDiagnostic` now carries a `RosterId` property (from the roster node),
+enabling per-roster filtering. The new
+`WhamCompilation.GetValidationDiagnostics(IRosterSymbol)` overload filters
+diagnostics by roster ID.
 
 ---
 
@@ -528,6 +531,7 @@ and return values should be keyed by roster.
 | WhamMessageProvider | `Concrete.Extensions/Diagnostics/WhamMessageProvider.cs` |
 | WhamDiagnostic | `Concrete.Extensions/Diagnostics/WhamDiagnostic.cs` |
 | ValidationDiagnostic | `Concrete.Extensions/Diagnostics/ValidationDiagnostic.cs` |
+| IValidationDiagnostic | `Extensions/Diagnostics/IValidationDiagnostic.cs` |
 | DiagnosticMapper | `RosterEngine.Spec/DiagnosticMapper.cs` |
 | SpecRosterEngineAdapter | `RosterEngine.Spec/SpecRosterEngineAdapter.cs` |
 

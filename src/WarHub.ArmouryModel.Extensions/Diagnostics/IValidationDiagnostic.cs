@@ -14,6 +14,12 @@ namespace WarHub.ArmouryModel;
 public interface IValidationDiagnostic
 {
     /// <summary>
+    /// ID of the roster that produced this diagnostic.
+    /// Enables per-roster filtering in multi-roster compilations.
+    /// </summary>
+    string? RosterId { get; }
+
+    /// <summary>
     /// Type of the entity that owns the constraint violation.
     /// Values: <c>"selection"</c>, <c>"category"</c>, <c>"force"</c>, <c>"roster"</c>.
     /// </summary>

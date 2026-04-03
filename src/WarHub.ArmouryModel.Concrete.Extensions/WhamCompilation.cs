@@ -66,6 +66,24 @@ public class WhamCompilation : Compilation
             .ToImmutableArray();
     }
 
+    /// <summary>
+    /// Returns only the constraint validation diagnostics for a specific roster.
+    /// Use this overload in multi-roster compilations to get per-roster results.
+    /// </summary>
+    /// <param name="roster">The roster to get validation diagnostics for.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    public ImmutableArray<Diagnostic> GetValidationDiagnostics(
+        IRosterSymbol roster,
+        CancellationToken cancellationToken = default)
+    {
+        SourceGlobalNamespace.ForceComplete(cancellationToken);
+        var rosterId = roster.Id;
+        return GetDiagnostics(cancellationToken)
+            .Where(d => d is IValidationDiagnostic vd
+                && string.Equals(vd.RosterId, rosterId, StringComparison.Ordinal))
+            .ToImmutableArray();
+    }
+
     public override WhamCompilation AddSourceTrees(params SourceTree[] trees) =>
         Update(SourceTrees.AddRange(trees));
 
