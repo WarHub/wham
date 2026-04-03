@@ -5,6 +5,7 @@ namespace WarHub.ArmouryModel.Concrete;
 internal sealed class RosterSymbol : SourceDeclaredSymbol, IRosterSymbol, INodeDeclaredSymbol<RosterNode>
 {
     private ICatalogueSymbol? lazyGamesystem;
+    private EffectiveEntryCache? effectiveEntryCache;
 
     public RosterSymbol(
         SourceGlobalNamespaceSymbol containingSymbol,
@@ -47,6 +48,21 @@ internal sealed class RosterSymbol : SourceDeclaredSymbol, IRosterSymbol, INodeD
 
     public ICatalogueSymbol Gamesystem => GetBoundField(ref lazyGamesystem);
 
+    /// <summary>
+    /// Gets the effective entry cache, or <c>null</c> if not yet initialized.
+    /// Set externally by roster engine code that provides the modifier evaluation factory.
+    /// </summary>
+    internal EffectiveEntryCache? EffectiveEntryCache => effectiveEntryCache;
+
+    /// <summary>
+    /// Initializes the effective entry cache with the given factory.
+    /// Can only be set once; subsequent calls are ignored.
+    /// </summary>
+    internal void SetEffectiveEntryCache(EffectiveEntryCache cache)
+    {
+        Interlocked.CompareExchange(ref effectiveEntryCache, cache, null);
+    }
+
     public ImmutableArray<RosterCostSymbol> Costs { get; }
 
     public ImmutableArray<ForceSymbol> Forces { get; }
@@ -56,6 +72,18 @@ internal sealed class RosterSymbol : SourceDeclaredSymbol, IRosterSymbol, INodeD
 
     ImmutableArray<IForceSymbol> IForceContainerSymbol.Forces =>
         Forces.Cast<ForceSymbol, IForceSymbol>();
+
+    public ISelectionEntryContainerSymbol GetEffectiveEntry(
+        ISelectionEntryContainerSymbol declaredEntry,
+        ISelectionSymbol? selection = null,
+        IForceSymbol? force = null)
+    {
+        if (effectiveEntryCache is not { } cache)
+            return declaredEntry;
+        var selNode = (selection as SelectionSymbol)?.Declaration;
+        var forceNode = (force as ForceSymbol)?.Declaration;
+        return cache.GetEffectiveEntry(declaredEntry, selNode, forceNode);
+    }
 
     public override void Accept(SymbolVisitor visitor) =>
         visitor.VisitRoster(this);

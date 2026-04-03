@@ -1,4 +1,5 @@
 using BattleScribeSpec;
+using WarHub.ArmouryModel.Concrete;
 using WarHub.ArmouryModel.Source;
 
 namespace WarHub.ArmouryModel.RosterEngine.Spec;
@@ -12,7 +13,7 @@ internal sealed class ConstraintValidator
     private readonly RosterNode _roster;
     private readonly Compilation _compilation;
     private readonly IReadOnlyList<ICatalogueSymbol> _forceCatalogues;
-    private readonly ModifierEvaluator _modifierEvaluator;
+    private readonly EffectiveEntryCache _effectiveCache;
     private readonly Dictionary<string, ISelectionEntryContainerSymbol> _entryIndex;
     private readonly Dictionary<string, ICategoryEntrySymbol> _categoryIndex;
     private readonly Dictionary<string, IForceEntrySymbol> _forceEntryIndex;
@@ -27,7 +28,13 @@ internal sealed class ConstraintValidator
         _roster = roster;
         _compilation = compilation;
         _forceCatalogues = forceCatalogues;
-        _modifierEvaluator = new ModifierEvaluator(roster, compilation);
+        var evaluator = new ModifierEvaluator(roster, compilation);
+        _effectiveCache = EffectiveEntries.CreateCache(evaluator, compilation);
+        // Also initialize the cache on the roster symbol for symbol-layer access
+        if (compilation is WhamCompilation whamCompilation)
+        {
+            EffectiveEntries.InitializeRosterCaches(whamCompilation, roster, evaluator);
+        }
         _entryIndex = new Dictionary<string, ISelectionEntryContainerSymbol>(StringComparer.Ordinal);
         _categoryIndex = new Dictionary<string, ICategoryEntrySymbol>(StringComparer.Ordinal);
         _forceEntryIndex = new Dictionary<string, IForceEntrySymbol>(StringComparer.Ordinal);
@@ -204,10 +211,10 @@ internal sealed class ConstraintValidator
             if (constraintSources.Count == 0) continue;
 
             // Compute effective constraint values (modifiers can change constraint boundaries)
-            var effectiveValues = _modifierEvaluator.GetEffectiveConstraintValues(entry, null, force);
+            var effectiveValues = GetEffectiveConstraintValues(entry, null, force);
             if (isLink && entry.ReferencedEntry is IContainerEntrySymbol refEntry)
             {
-                var refValues = _modifierEvaluator.GetEffectiveConstraintValues(refEntry, null, force);
+                var refValues = GetEffectiveConstraintValues(refEntry, null, force);
                 foreach (var (k, v) in refValues)
                     effectiveValues.TryAdd(k, v);
             }
@@ -387,7 +394,7 @@ internal sealed class ConstraintValidator
             if (!_entryIndex.TryGetValue(child.EntryId, out var childEntry))
                 continue;
 
-            var effectiveChildValues = _modifierEvaluator.GetEffectiveConstraintValues(childEntry, child, force);
+            var effectiveChildValues = GetEffectiveConstraintValues(childEntry, child, force);
 
             foreach (var constraint in childEntry.Constraints)
             {
@@ -416,7 +423,7 @@ internal sealed class ConstraintValidator
                 if (childCounts.ContainsKey(childId)) continue; // already counted above
 
                 var targetEntry = childEntrySymbol.ReferencedEntry ?? childEntrySymbol;
-                var effectiveAvailValues = _modifierEvaluator.GetEffectiveConstraintValues(targetEntry, null, force);
+                var effectiveAvailValues = GetEffectiveConstraintValues(targetEntry, null, force);
 
                 foreach (var constraint in targetEntry.Constraints)
                 {
@@ -816,5 +823,40 @@ internal sealed class ConstraintValidator
             foreach (var desc in GetDescendantEntries(child))
                 yield return desc;
         }
+    }
+
+    /// <summary>
+    /// Gets effective constraint values from the <see cref="_effectiveCache"/>.
+    /// Returns a dictionary of constraint ID → effective ReferenceValue,
+    /// extracted from the effective entry's constraints.
+    /// </summary>
+    private Dictionary<string, decimal> GetEffectiveConstraintValues(
+        IContainerEntrySymbol entry,
+        SelectionNode? selection,
+        ForceNode? force)
+    {
+        if (entry is ISelectionEntryContainerSymbol sec)
+        {
+            var effectiveEntry = _effectiveCache.GetEffectiveEntry(sec, selection, force);
+            var result = new Dictionary<string, decimal>(StringComparer.Ordinal);
+            foreach (var constraint in effectiveEntry.Constraints)
+            {
+                if (constraint.Id is { } id)
+                {
+                    result[id] = constraint.Query.ReferenceValue ?? 0m;
+                }
+            }
+            return result;
+        }
+        // Fallback: return declared values for non-selection-entry containers
+        var fallback = new Dictionary<string, decimal>(StringComparer.Ordinal);
+        foreach (var constraint in entry.Constraints)
+        {
+            if (constraint.Id is { } id)
+            {
+                fallback[id] = constraint.Query.ReferenceValue ?? 0m;
+            }
+        }
+        return fallback;
     }
 }

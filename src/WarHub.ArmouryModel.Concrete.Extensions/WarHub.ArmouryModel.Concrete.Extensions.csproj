@@ -14,6 +14,11 @@
   </ItemGroup>
 
   <ItemGroup>
+    <InternalsVisibleTo Include="WarHub.ArmouryModel.RosterEngine.Spec" />
+    <InternalsVisibleTo Include="WarHub.ArmouryModel.Concrete.Extensions.Tests" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\WarHub.ArmouryModel.Extensions\WarHub.ArmouryModel.Extensions.csproj" />
   </ItemGroup>
 

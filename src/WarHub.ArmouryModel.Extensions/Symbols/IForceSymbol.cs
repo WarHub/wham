@@ -22,4 +22,12 @@ public interface IForceSymbol : ISelectionContainerSymbol, IForceContainerSymbol
     /// Publications provided by Catalogue.
     /// </summary>
     ImmutableArray<IPublicationSymbol> Publications { get; }
+
+    /// <summary>
+    /// Returns the effective (modifier-applied) version of a declared entry
+    /// in this force's context. When modifier evaluation is not available,
+    /// returns <paramref name="declaredEntry"/> as-is.
+    /// </summary>
+    ISelectionEntryContainerSymbol GetEffectiveEntry(
+        ISelectionEntryContainerSymbol declaredEntry);
 }

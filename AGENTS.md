@@ -9,15 +9,15 @@
 > not a frozen snapshot.
 
 wham — foundational .NET library (`WarHub.ArmouryModel`) and CLI tool for wargame
-datafile management, with a BattleScribe-spec conformant roster engine (303/303 specs).
+datafile management, with a BattleScribe-spec conformant roster engine (304/304 specs).
 
 ## Build & test
 
 ```bash
 git submodule update --init                            # first time (required)
 dotnet restore && dotnet build                         # build all
-dotnet test                                            # all tests (350)
-dotnet test tests/WarHub.ArmouryModel.RosterEngine.Tests/  # conformance only (303)
+dotnet test                                            # all tests (628)
+dotnet test tests/WarHub.ArmouryModel.RosterEngine.Tests/  # conformance only (304)
 dotnet pack                                            # NuGet packages (Release mode)
 ```
 
@@ -42,8 +42,21 @@ dotnet pack                                            # NuGet packages (Release
 | `src/WarHub.ArmouryModel.RosterEngine/WhamRosterEngine.cs` | IRosterEngine impl — setup, forces, selections, state |
 | `src/WarHub.ArmouryModel.RosterEngine/EntryResolver.cs` | Entry/link resolution, merging, flattening, cycle detection |
 | `src/WarHub.ArmouryModel.RosterEngine/ModifierEvaluator.cs` | Modifier application, condition eval, scope resolution |
-| `src/WarHub.ArmouryModel.RosterEngine/ConstraintValidator.cs` | Min/max validation, shared constraints, error generation |
-| `tests/WarHub.ArmouryModel.RosterEngine.Tests/ConformanceTests.cs` | Runs all 303 BattleScribe-spec conformance specs |
+| `src/WarHub.ArmouryModel.RosterEngine.Spec/ConstraintValidator.cs` | Min/max validation, shared constraints, error generation |
+| `src/WarHub.ArmouryModel.RosterEngine.Spec/StateMapper.cs` | ISymbol → Protocol state mapping with effective entries |
+| `src/WarHub.ArmouryModel.RosterEngine.Spec/EffectiveEntries.cs` | Cache factory bridging ModifierEvaluator to symbol layer |
+| `tests/WarHub.ArmouryModel.RosterEngine.Tests/ConformanceTests.cs` | Runs all 304 BattleScribe-spec conformance specs |
+
+### Effective entry symbols (Roslyn-style wrappers)
+
+| Path | What |
+|------|------|
+| `src/WarHub.ArmouryModel.Concrete.Extensions/Symbols/Effective/EffectiveEntrySymbol.cs` | Wraps ISelectionEntryContainerSymbol with effective Name/Hidden/Costs/Constraints |
+| `src/WarHub.ArmouryModel.Concrete.Extensions/Symbols/Effective/EffectiveConstraintSymbol.cs` | Wraps IConstraintSymbol with effective Query ReferenceValue |
+| `src/WarHub.ArmouryModel.Concrete.Extensions/Symbols/Effective/EffectiveCostSymbol.cs` | Wraps ICostSymbol with effective Value |
+| `src/WarHub.ArmouryModel.Concrete.Extensions/Symbols/Effective/EffectiveQuerySymbol.cs` | Wraps IQuerySymbol with effective ReferenceValue |
+| `src/WarHub.ArmouryModel.Concrete.Extensions/Symbols/Effective/EffectiveEntryCache.cs` | ConcurrentDictionary-based lazy cache on RosterSymbol |
+| `src/WarHub.ArmouryModel.Concrete.Extensions/Symbols/Effective/EffectiveEntryKey.cs` | Cache key: (entry, selection?, force?) |
 
 ### Source model (DTO and immutable trees)
 
@@ -66,7 +79,7 @@ dotnet pack                                            # NuGet packages (Release
 | Path | What |
 |------|------|
 | `lib/battlescribe-spec/` | Git submodule — conformance specs + TestKit |
-| `lib/battlescribe-spec/specs/{category}/{id}.yaml` | 303 YAML conformance specs |
+| `lib/battlescribe-spec/specs/{category}/{id}.yaml` | 304 YAML conformance specs |
 | `lib/battlescribe-spec/src/BattleScribeSpec.TestKit/` | TestKit: IRosterEngine, SpecRunner, Protocol types |
 
 ### Documentation
@@ -100,7 +113,10 @@ SourceNode/ISymbol. Four components:
 WhamRosterEngine (IRosterEngine)
 ├── EntryResolver      — flatten entries, merge links, resolve info
 ├── ModifierEvaluator  — apply modifiers, evaluate conditions, resolve scopes
-└── ConstraintValidator — validate min/max, generate structured errors
+└── EffectiveEntrySymbol (Concrete.Extensions) — Roslyn-style wrapper symbols
+    ├── EffectiveEntryCache — lazy ConcurrentDictionary cache on RosterSymbol
+    └── EffectiveEntries (RosterEngine.Spec) — cache factory from ModifierEvaluator
+ConstraintValidator + StateMapper (RosterEngine.Spec) — consume effective entries
 ```
 
 ## Code conventions
@@ -136,7 +152,7 @@ WhamRosterEngine (IRosterEngine)
 
 ## Conformance testing
 
-- **303 specs** in `lib/battlescribe-spec/specs/{category}/{id}.yaml`
+- **304 specs** in `lib/battlescribe-spec/specs/{category}/{id}.yaml`
 - Engine name: **"wham"** (registered in `ConformanceTests.cs`)
 - Per-engine overrides: specs can have `engines.wham:` section for wham-specific expectations
 - Error format: `on='ownerType ownerEntryId', from='entryId/constraintId'`

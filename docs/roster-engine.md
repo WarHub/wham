@@ -1,7 +1,7 @@
 # Roster Engine Architecture
 
 The wham roster engine is a BattleScribe-spec conformant implementation that
-passes 291/293 conformance specs (99.3%). It operates on ISymbol/WhamCompilation
+passes 304 conformance specs. It operates on ISymbol/WhamCompilation
 types from the Roslyn-inspired compilation model.
 
 See [ADR-0006](adrs/0006-isymbol-based-roster-engine.md) for the architectural
@@ -17,15 +17,18 @@ decision record.
 ┌──────────────────────────────────────────────────────────┐
 │         RosterEngine.Spec (adapter layer)                │
 │  ProtocolConverter → SpecRosterEngineAdapter → StateMapper│
+│  ConstraintValidator, EffectiveEntries (cache wiring)    │
 └──────────────────────┬──────────────────────────────────┘
                        ↓
 ┌──────────────────────────────────────────────────────────┐
 │            RosterEngine (core, ISymbol-based)             │
-│  WhamRosterEngine + ModifierEvaluator + ConstraintValidator│
+│  WhamRosterEngine + ModifierEvaluator + EntryResolver    │
 └──────────────────────┬──────────────────────────────────┘
                        ↓
 ┌──────────────────────────────────────────────────────────┐
-│   Concrete.Extensions / Extensions / Source (symbols)     │
+│   Concrete.Extensions (symbols + effective wrappers)     │
+│   Extensions (public ISymbol interfaces)                 │
+│   Source (DTO types, SourceNode trees)                   │
 └──────────────────────────────────────────────────────────┘
 ```
 
@@ -53,7 +56,37 @@ Adapter bridging TestKit's `IRosterEngine` to the ISymbol engine:
 
 ## Components
 
-### ModifierEvaluator (~1100 lines)
+### Effective Entry Symbols (Roslyn-style SubstitutedSymbol pattern)
+
+Wrapper symbols in `Concrete.Extensions/Symbols/Effective/` that implement the
+same public interfaces but return modifier-applied values:
+
+- **EffectiveEntrySymbol**: Wraps `ISelectionEntryContainerSymbol` — overrides
+  Name, IsHidden, Constraints, Costs, Categories. Exposes `OriginalEntry`.
+- **EffectiveConstraintSymbol**: Wraps `IConstraintSymbol` with effective Query.
+- **EffectiveQuerySymbol**: Wraps `IQuerySymbol` with effective ReferenceValue.
+- **EffectiveCostSymbol**: Wraps `ICostSymbol` with effective Value.
+
+Access patterns:
+```csharp
+// From ISelectionSymbol → effective entry (populated via cache)
+var sel = roster.Forces[0].Selections[0];
+var effectiveName = sel.EffectiveSourceEntry.Name;     // modifier-applied
+var effectiveCosts = sel.EffectiveSourceEntry.Costs;   // modifier-applied
+
+// From IForceSymbol → effective entry for force-context lookups
+var force = roster.Forces[0];
+var effectiveEntry = force.GetEffectiveEntry(catalogueEntry);
+
+// From IRosterSymbol → general effective entry lookup
+var effective = roster.GetEffectiveEntry(declaredEntry, selection, force);
+```
+
+Caching is handled by `EffectiveEntryCache` (ConcurrentDictionary-based), set on
+`RosterSymbol` via `SetEffectiveEntryCache()`. The `EffectiveEntries` helper in
+`RosterEngine.Spec` wires up the cache from a `ModifierEvaluator` instance.
+
+### ModifierEvaluator (~1000 lines)
 
 Evaluates modifiers and conditions using IEffectSymbol/IConditionSymbol:
 
@@ -64,9 +97,9 @@ Evaluates modifiers and conditions using IEffectSymbol/IConditionSymbol:
 - **Scopes**: self, parent, force, roster, primary-category, ancestor
 - **Repeat handling**: Multiplicative repeat counts based on queries
 
-### ConstraintValidator (~700 lines)
+### ConstraintValidator (~850 lines)
 
-Validates IConstraintSymbol constraints:
+Validates IConstraintSymbol constraints using effective entry symbols:
 
 - **Force-level validation**: Root entry constraints (scope=force/roster)
 - **Child validation**: Parent-scoped constraints on child selections
@@ -75,8 +108,8 @@ Validates IConstraintSymbol constraints:
   shared entry using link ID → shared entry mapping
 - **Constraint merging**: Link + shared constraints merged, most restrictive
   wins. Merge key: `direction:valueKind` (not scope)
-- **Modifier integration**: Uses `GetEffectiveConstraintValues` for
-  modifier-adjusted boundary values
+- **Effective symbols**: Uses `EffectiveEntryCache` for modifier-adjusted
+  constraint boundary values (replaces direct ModifierEvaluator calls)
 - **Error format**: `on='ownerType ownerEntryId', from='entryId/constraintId'`
 
 ## BattleScribe Behavioral Alignment
@@ -100,17 +133,28 @@ Validates IConstraintSymbol constraints:
 ## File Layout
 
 ```
+src/WarHub.ArmouryModel.Concrete.Extensions/Symbols/Effective/
+├── EffectiveEntrySymbol.cs       (wrapper: entry with effective values)
+├── EffectiveConstraintSymbol.cs  (wrapper: constraint with effective query)
+├── EffectiveQuerySymbol.cs       (wrapper: query with effective ReferenceValue)
+├── EffectiveCostSymbol.cs        (wrapper: cost with effective Value)
+├── EffectiveEntryCache.cs        (ConcurrentDictionary-based cache)
+└── EffectiveEntryKey.cs          (cache key type)
+
 src/WarHub.ArmouryModel.RosterEngine/
 ├── WhamRosterEngine.cs      (~790 lines)
 ├── EntryResolver.cs          (~530 lines)
-├── ModifierEvaluator.cs      (~540 lines)
-├── ConstraintValidator.cs    (~480 lines)
-├── RosterForce.cs            (state model)
-├── RosterSelection.cs        (state model)
-└── WarHub.ArmouryModel.RosterEngine.csproj
+└── ModifierEvaluator.cs      (~1000 lines)
+
+src/WarHub.ArmouryModel.RosterEngine.Spec/
+├── SpecRosterEngineAdapter.cs (IRosterEngine impl)
+├── ProtocolConverter.cs       (Protocol → SourceNode)
+├── StateMapper.cs             (ISymbol → Protocol state)
+├── ConstraintValidator.cs     (constraint validation)
+└── EffectiveEntries.cs        (cache factory + initialization)
 
 tests/WarHub.ArmouryModel.RosterEngine.Tests/
-├── ConformanceTests.cs       (runs all 303 specs)
+├── ConformanceTests.cs       (runs all 304 specs)
 └── WarHub.ArmouryModel.RosterEngine.Tests.csproj
 ```
 

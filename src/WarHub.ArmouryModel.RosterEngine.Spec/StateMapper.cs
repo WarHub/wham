@@ -18,6 +18,7 @@ internal sealed class StateMapper
     private readonly EntryResolver _resolver;
     private readonly IReadOnlyList<ICatalogueSymbol> _forceCatalogues;
     private readonly ModifierEvaluator _modEval;
+    private readonly EffectiveEntryCache _effectiveCache;
 
     // ISymbol entry lookup (entryId → ISelectionEntryContainerSymbol or IContainerEntrySymbol)
     private Dictionary<string, IEntrySymbol>? _symbolEntries;
@@ -36,6 +37,9 @@ internal sealed class StateMapper
         _resolver = new EntryResolver();
         _forceCatalogues = forceCatalogues;
         _modEval = new ModifierEvaluator(roster, compilation);
+        _effectiveCache = EffectiveEntries.CreateCache(_modEval, compilation);
+        // Initialize the cache on roster symbols for symbol-layer access
+        EffectiveEntries.InitializeRosterCaches(_compilation, roster, _modEval);
     }
 
     public ProtocolRosterState MapRosterState(RosterNode roster)
@@ -106,15 +110,21 @@ internal sealed class StateMapper
         // Look up the ISymbol for this entry to access effects (modifiers)
         var entrySym = LookupEntrySymbol(selNode.EntryId);
 
-        // Apply modifiers to get effective values
-        var effectiveName = entrySym is ISelectionEntryContainerSymbol sec
-            ? _modEval.GetEffectiveName(sec, selNode, force)
+        // Use effective entry from cache for modifier-applied values
+        var effectiveEntry = entrySym is ISelectionEntryContainerSymbol sec
+            ? _effectiveCache.GetEffectiveEntry(sec, selNode, force)
+            : null;
+
+        var effectiveName = effectiveEntry is not null
+            ? effectiveEntry.Name
             : selNode.Name ?? "";
-        var effectiveHidden = entrySym is not null
-            ? _modEval.GetEffectiveHidden(entrySym, selNode, force)
-            : false;
-        var effectiveCosts = entrySym is ISelectionEntryContainerSymbol secCosts
-            ? GetModifiedSelectionCosts(secCosts, selNode, force)
+        var effectiveHidden = effectiveEntry is not null
+            ? effectiveEntry.IsHidden
+            : entrySym is not null
+                ? _modEval.GetEffectiveHidden(entrySym, selNode, force)
+                : false;
+        var effectiveCosts = effectiveEntry is not null
+            ? GetModifiedSelectionCosts(effectiveEntry, selNode, force)
             : MapSelectionCosts(selNode);
 
         List<CategoryState> categories;
@@ -602,12 +612,20 @@ internal sealed class StateMapper
     // ──────────────────────────────────────────────────────────────────
 
     private List<CostState> GetModifiedSelectionCosts(
-        ISelectionEntryContainerSymbol entrySym,
+        ISelectionEntryContainerSymbol effectiveEntry,
         SelectionNode selNode,
         ForceNode force)
     {
-        // Get effective per-unit costs from modifier evaluator
-        var effectiveCosts = _modEval.GetEffectiveCosts(entrySym, selNode, force);
+        // Build effective per-unit cost dictionary from the effective entry's costs
+        var effectiveCosts = new Dictionary<string, decimal>(StringComparer.Ordinal);
+        foreach (var cost in effectiveEntry.Costs)
+        {
+            if (cost.Type?.Id is { } typeId)
+            {
+                effectiveCosts[typeId] = cost.Value;
+            }
+        }
+
         var result = new List<CostState>();
 
         // Map costs using the effective values

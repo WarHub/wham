@@ -30,6 +30,21 @@ internal abstract class ContainerSymbol : EntryInstanceSymbol, IContainerEntryIn
 
     public sealed override SymbolKind Kind => SymbolKind.Container;
 
+    /// <summary>
+    /// Walks the <see cref="Symbol.ContainingSymbol"/> chain to find the
+    /// containing <see cref="RosterSymbol"/>. Returns <c>null</c> if not
+    /// contained within a roster (shouldn't happen in normal compilation).
+    /// </summary>
+    internal RosterSymbol? GetRosterSymbol()
+    {
+        for (ISymbol? sym = ContainingSymbol; sym is not null; sym = sym.ContainingSymbol)
+        {
+            if (sym is RosterSymbol roster)
+                return roster;
+        }
+        return null;
+    }
+
     public abstract ContainerKind ContainerKind { get; }
 
     public string? CustomName => Declaration.CustomName;

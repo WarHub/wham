@@ -18,6 +18,13 @@ public interface ISelectionSymbol : ISelectionContainerSymbol
 
     new ISelectionEntrySymbol SourceEntry { get; }
 
+    /// <summary>
+    /// The source entry with modifiers applied in this roster context.
+    /// When modifier evaluation is not available, returns the declared
+    /// <see cref="SourceEntry"/> as-is.
+    /// </summary>
+    ISelectionEntryContainerSymbol EffectiveSourceEntry { get; }
+
     ICategorySymbol? PrimaryCategory { get; }
 
     ImmutableArray<ICategorySymbol> Categories { get; }

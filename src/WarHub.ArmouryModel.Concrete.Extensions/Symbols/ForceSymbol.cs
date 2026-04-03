@@ -50,6 +50,14 @@ internal sealed class ForceSymbol : ContainerSymbol, IForceSymbol, INodeDeclared
     ImmutableArray<ISelectionSymbol> ISelectionContainerSymbol.Selections =>
         ChildSelections.Cast<SelectionSymbol, ISelectionSymbol>();
 
+    public ISelectionEntryContainerSymbol GetEffectiveEntry(
+        ISelectionEntryContainerSymbol declaredEntry)
+    {
+        var roster = GetRosterSymbol();
+        return roster?.EffectiveEntryCache?.GetEffectiveEntry(declaredEntry, selection: null, Declaration)
+            ?? declaredEntry;
+    }
+
     protected override void BindReferencesCore(Binder binder, BindingDiagnosticBag diagnostics)
     {
         base.BindReferencesCore(binder, diagnostics);

@@ -4,6 +4,8 @@ namespace WarHub.ArmouryModel.Concrete;
 
 internal sealed class SelectionSymbol : ContainerSymbol, ISelectionSymbol, INodeDeclaredSymbol<SelectionNode>
 {
+    private ISelectionEntryContainerSymbol? lazyEffectiveSourceEntry;
+
     public SelectionSymbol(
         ISymbol? containingSymbol,
         SelectionNode declaration,
@@ -25,6 +27,23 @@ internal sealed class SelectionSymbol : ContainerSymbol, ISelectionSymbol, INode
 
     public override ISelectionEntrySymbol SourceEntry =>
         (ISelectionEntrySymbol)SourceEntryPath.SourceEntries.Last();
+
+    public ISelectionEntryContainerSymbol EffectiveSourceEntry
+    {
+        get
+        {
+            if (lazyEffectiveSourceEntry is { } cached)
+                return cached;
+            var roster = GetRosterSymbol();
+            var entry = roster?.EffectiveEntryCache?.GetEffectiveEntry(
+                SourceEntry,
+                Declaration,
+                (ContainingSymbol as ForceSymbol)?.Declaration);
+            var result = entry ?? (ISelectionEntryContainerSymbol)SourceEntry;
+            Interlocked.CompareExchange(ref lazyEffectiveSourceEntry, result, null);
+            return lazyEffectiveSourceEntry;
+        }
+    }
 
     public ImmutableArray<SelectionSymbol> ChildSelections { get; }
 
