@@ -78,10 +78,13 @@ public sealed class WhamRosterEngine
         var forceEntryDecl = forceEntry.GetDeclaration()
             ?? throw new ArgumentException("Force entry symbol has no backing declaration node.", nameof(forceEntry));
 
-        // Create the force node. NodeFactory.Force requires the ForceEntryNode
-        // to be a descendant of a CatalogueBaseNode (for catalogueId/name/revision),
-        // which is guaranteed for declarations obtained from the symbol tree.
-        var forceNode = NodeFactory.Force(forceEntryDecl);
+        // Use the provided catalogue for the ForceNode's catalogueId/name/revision.
+        // This ensures the ForceNode carries the selection-catalogue ID (where
+        // selection entries live), not the gamesystem ID (where force entries
+        // are typically defined). The Binder's ForceCatalogueReferenceSymbol
+        // resolves this ID to the correct ICatalogueSymbol.
+        var catDecl = catalogue.GetDeclaration() as CatalogueBaseNode;
+        var forceNode = NodeFactory.Force(forceEntryDecl, catalogueOverride: catDecl);
 
         // Resolve category links declared on the force entry into CategoryNodes.
         var categories = BuildForceCategories(forceEntry);

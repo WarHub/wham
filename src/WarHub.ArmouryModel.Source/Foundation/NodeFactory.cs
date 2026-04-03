@@ -257,9 +257,9 @@ namespace WarHub.ArmouryModel.Source
                 type: type);
         }
 
-        public static ForceNode Force(ForceEntryNode forceEntry, string? id = null)
+        public static ForceNode Force(ForceEntryNode forceEntry, CatalogueBaseNode? catalogueOverride = null, string? id = null)
         {
-            var catalogue = forceEntry.FirstAncestorOrSelf<CatalogueBaseNode>();
+            var catalogue = catalogueOverride ?? forceEntry.FirstAncestorOrSelf<CatalogueBaseNode>();
             if (catalogue is null)
             {
                 throw new ArgumentException(

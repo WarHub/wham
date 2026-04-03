@@ -53,48 +53,16 @@ public class WhamCompilation : Compilation
 
     /// <summary>
     /// Returns only the constraint validation diagnostics from this compilation.
-    /// This is a convenience method that calls <see cref="GetDiagnostics"/> and
-    /// filters for <see cref="ValidationDiagnostic"/> instances.
+    /// This is a convenience method that triggers <see cref="ForceComplete"/> (which
+    /// runs validation) and filters for <see cref="IValidationDiagnostic"/> instances.
     /// </summary>
-    /// <param name="forceCatalogues">
-    /// Optional list of catalogues corresponding to each force in the roster,
-    /// in the same order as <see cref="RosterNode.Forces"/>. When provided, these
-    /// override the catalogue lookup from <see cref="ForceNode.CatalogueId"/>.
-    /// This is needed because force entries often live in the gamesystem while
-    /// selection entries live in separate catalogues.
-    /// </param>
     /// <param name="cancellationToken">Cancellation token.</param>
-    /// <remarks>
-    /// <para>When <paramref name="forceCatalogues"/> is provided, validation is run
-    /// on-demand with the specified catalogues instead of using the cached results
-    /// from <c>ForceComplete()</c>. This is needed by the spec adapter where the
-    /// correct catalogue is tracked externally.</para>
-    /// <para>When <paramref name="forceCatalogues"/> is null, this method returns
-    /// the validation diagnostics produced during <c>ForceComplete()</c>, which are
-    /// included in <see cref="GetDiagnostics"/>.</para>
-    /// <para>Currently assumes a single roster per compilation. The
-    /// <paramref name="forceCatalogues"/> override applies to all rosters equally,
-    /// which is incorrect for multi-roster compilations.</para>
-    /// </remarks>
     public ImmutableArray<Diagnostic> GetValidationDiagnostics(
-        IReadOnlyList<ICatalogueSymbol>? forceCatalogues = null,
         CancellationToken cancellationToken = default)
     {
-        if (forceCatalogues is not null)
-        {
-            // Run validation on-demand with the specified catalogues.
-            var bag = DiagnosticBag.GetInstance();
-            foreach (var roster in SourceGlobalNamespace.Rosters)
-            {
-                ConstraintValidator.Validate(roster.Declaration, this, bag, forceCatalogues, cancellationToken);
-            }
-            return bag.ToReadOnlyAndFree();
-        }
-
-        // Return cached validation diagnostics from ForceComplete.
         SourceGlobalNamespace.ForceComplete(cancellationToken);
         return GetDiagnostics(cancellationToken)
-            .Where(d => d is ValidationDiagnostic)
+            .Where(d => d is IValidationDiagnostic)
             .ToImmutableArray();
     }
 

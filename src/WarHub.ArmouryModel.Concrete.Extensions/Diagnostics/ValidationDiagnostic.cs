@@ -6,7 +6,7 @@ namespace WarHub.ArmouryModel.Concrete;
 /// A diagnostic with validation-specific metadata for mapping to
 /// <c>BattleScribeSpec.ValidationErrorState</c> in the Spec adapter layer.
 /// </summary>
-internal sealed class ValidationDiagnostic : DiagnosticWithInfo
+internal sealed class ValidationDiagnostic : DiagnosticWithInfo, IValidationDiagnostic
 {
     internal ValidationDiagnostic(
         DiagnosticInfo info,

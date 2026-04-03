@@ -168,7 +168,7 @@ public sealed class SpecRosterEngineAdapter : IRosterEngine
     {
         var state = EnsureState();
         var compilation = (WhamCompilation)state.Compilation;
-        var diagnostics = compilation.GetValidationDiagnostics(_forceCatalogues);
+        var diagnostics = compilation.GetDiagnostics();
         return DiagnosticMapper.MapValidationDiagnostics(diagnostics);
     }
 

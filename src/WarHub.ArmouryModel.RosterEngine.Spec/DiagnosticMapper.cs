@@ -1,5 +1,4 @@
 using BattleScribeSpec;
-using WarHub.ArmouryModel.Concrete;
 using WarHub.ArmouryModel.Source;
 
 namespace WarHub.ArmouryModel.RosterEngine.Spec;
@@ -20,7 +19,7 @@ internal static class DiagnosticMapper
         var results = new List<ValidationErrorState>();
         foreach (var diag in diagnostics)
         {
-            if (!IsValidationDiagnostic(diag))
+            if (diag is not IValidationDiagnostic)
                 continue;
 
             results.Add(MapDiagnostic(diag));
@@ -28,15 +27,9 @@ internal static class DiagnosticMapper
         return results;
     }
 
-    private static bool IsValidationDiagnostic(Diagnostic diag)
-    {
-        // Validation diagnostics use WHAM error codes in the 100-199 range (WRN_ severity)
-        return diag is ValidationDiagnostic;
-    }
-
     private static ValidationErrorState MapDiagnostic(Diagnostic diag)
     {
-        if (diag is ValidationDiagnostic vd)
+        if (diag is IValidationDiagnostic vd)
         {
             return new ValidationErrorState(
                 Message: diag.GetMessage(),
@@ -47,7 +40,6 @@ internal static class DiagnosticMapper
                 ConstraintId: vd.ConstraintId);
         }
 
-        // Fallback for non-ValidationDiagnostic WRN_ diagnostics
         return new ValidationErrorState(Message: diag.GetMessage());
     }
 }
