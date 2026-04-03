@@ -6,6 +6,15 @@ namespace WarHub.ArmouryModel.Concrete;
 /// Validates constraints on roster selections and produces <see cref="Diagnostic"/> objects.
 /// Works with ISymbol/SourceNode types from <see cref="WhamCompilation"/>.
 /// </summary>
+/// <remarks>
+/// <para>Thread safety: each <see cref="Validate"/> call creates a fresh instance.
+/// The mutable dictionaries (<c>_entryIndex</c>, <c>_sharedEntryLinkIds</c>, etc.)
+/// are never shared between threads.</para>
+/// <para>When validation runs inside <c>ForceComplete()</c>, the
+/// <see cref="SymbolCompletionState.NotePartComplete"/> CAS ensures only one thread
+/// enters the <c>Validate</c> phase — other threads SpinWait until the phase is
+/// noted complete. This guarantees single-threaded access to the validator instance.</para>
+/// </remarks>
 internal sealed class ConstraintValidator
 {
     private readonly RosterNode _roster;
@@ -38,11 +47,12 @@ internal sealed class ConstraintValidator
         RosterNode roster,
         WhamCompilation compilation,
         DiagnosticBag diagnostics,
-        IReadOnlyList<ICatalogueSymbol>? forceCatalogues = null)
+        IReadOnlyList<ICatalogueSymbol>? forceCatalogues = null,
+        CancellationToken cancellationToken = default)
     {
         forceCatalogues ??= ResolveForceCatalogues(roster, compilation);
         var validator = new ConstraintValidator(roster, compilation, forceCatalogues);
-        validator.Run(diagnostics);
+        validator.Run(diagnostics, cancellationToken);
     }
 
     /// <summary>
@@ -83,10 +93,11 @@ internal sealed class ConstraintValidator
         return result;
     }
 
-    private void Run(DiagnosticBag diagnostics)
+    private void Run(DiagnosticBag diagnostics, CancellationToken cancellationToken)
     {
         for (int i = 0; i < _roster.Forces.Count; i++)
         {
+            cancellationToken.ThrowIfCancellationRequested();
             var force = _roster.Forces[i];
             ValidateForceSelections(force, i, diagnostics);
         }

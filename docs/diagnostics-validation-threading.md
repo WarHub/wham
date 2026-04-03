@@ -147,24 +147,32 @@ DiagnosticMapper.MapValidationDiagnostics(diagnostics) → ValidationErrorState[
 
 ### Two Separate Diagnostic Paths
 
-1. **Binding/declaration diagnostics** (`GetDiagnostics()`):
+1. **Binding/declaration diagnostics**:
    - Produced during symbol completion (reference binding, member construction)
    - Stored in `DeclarationDiagnostics` bag on `WhamCompilation`
    - Triggered by `ForceComplete()` on all symbols
    - Examples: missing gamesystem, unresolvable references, unknown enum values
 
-2. **Validation diagnostics** (`GetValidationDiagnostics()`):
-   - Produced by `ConstraintValidator` running on `RosterNode` data
-   - Created fresh on each call (not cached)
-   - Not part of `ForceComplete()` pipeline
+2. **Validation diagnostics**:
+   - Produced by `ConstraintValidator` during the `CompletionPart.Validate`
+     phase of `RosterSymbol.ForceComplete()`
+   - Stored in the same `DeclarationDiagnostics` bag alongside binding diagnostics
+   - Cached: runs once per compilation, not recomputed
    - Examples: min/max constraint violations, cost limits, force counts
 
-**These two paths are intentionally separate.** See [The Process Hang Investigation](#the-process-hang-investigation).
+**Both paths are unified in `GetDiagnostics()`**, which triggers `ForceComplete()`
+and returns all diagnostics. `GetValidationDiagnostics()` is a convenience filter.
+
+When called with explicit `forceCatalogues` (from `SpecRosterEngineAdapter`),
+`GetValidationDiagnostics()` runs validation on-demand instead of using cached
+results. See [The Process Hang Investigation](#the-process-hang-investigation).
 
 ### ConstraintValidator Lifecycle
 
-Each call to `GetValidationDiagnostics()` creates a **fresh** `ConstraintValidator`
-instance. The validator is not shared between threads or calls. Its lifecycle:
+When called via `ForceComplete()`, the `ConstraintValidator` is created fresh
+for each `RosterSymbol`'s `Validate` phase. The `NotePartComplete` CAS ensures
+only one thread enters the `Validate` phase per `RosterSymbol`, so the
+validator instance is never shared between threads. Its lifecycle:
 
 1. **Construction**: Receives `RosterNode`, `WhamCompilation`, `forceCatalogues`
 2. **BuildIndex()**: Indexes all catalogues' entries, categories, force entries,
@@ -172,11 +180,10 @@ instance. The validator is not shared between threads or calls. Its lifecycle:
 3. **Run()**: Iterates forces → root entries → child entries → constraints
 4. **Disposal**: Instance is garbage collected after `Run()` returns
 
-This per-call instantiation means the dictionaries (`_entryIndex`, `_categoryIndex`,
-`_sharedEntryLinkIds`) are never shared between threads, eliminating the race
-conditions that code reviewers flagged on the `_sharedEntryLinkIds` check-then-act
-pattern. However, if `GetValidationDiagnostics()` were ever cached or made lazy
-(via ForceComplete), thread safety would need revisiting.
+The dictionaries (`_entryIndex`, `_categoryIndex`, `_sharedEntryLinkIds`) are
+never shared between threads. The `_sharedEntryLinkIds` check-then-act pattern
+is safe because the CAS on `CompletionPart.Validate` guarantees single-threaded
+access to the validator instance.
 
 ### Catalogue Resolution
 
@@ -240,60 +247,71 @@ results. Killing the process and re-running produced the same hang.
 
 ### Resolution
 
-**Moved validation out of `ForceComplete()`**. The `CompletionPart.Validate`
-phase now just marks itself complete immediately:
+**Re-integrated validation into `ForceComplete()`** using the pre-completion
+strategy (option 3 from the original investigation — break the re-entrant
+dependency). The `CompletionPart.Validate` phase now:
+
+1. Pre-completes all catalogue symbols to ensure lazy symbol properties accessed
+   during validation are already resolved
+2. Runs `ConstraintValidator.Validate()` with `CancellationToken` support
+3. Adds validation diagnostics to the compilation's `DeclarationDiagnostics` bag
 
 ```csharp
 case CompletionPart.Validate:
-    // Validation runs via compilation.GetValidationDiagnostics() externally
-    // to avoid holding symbol completion open during heavy work.
-    state.NotePartComplete(CompletionPart.Validate);
-    break;
+    {
+        // Pre-complete catalogues to prevent re-entrant ForceComplete via
+        // GetBoundField → BindReferences → SpinWaitComplete.
+        var compilation = (WhamCompilation)DeclaringCompilation;
+        foreach (var catalogue in compilation.SourceGlobalNamespace.Catalogues)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            catalogue.ForceComplete(cancellationToken);
+        }
+        ConstraintValidator.Validate(
+            Declaration, compilation, compilation.DeclarationDiagnostics,
+            forceCatalogues: null, cancellationToken);
+        state.NotePartComplete(CompletionPart.Validate);
+        break;
+    }
 ```
 
-Validation runs on-demand via `WhamCompilation.GetValidationDiagnostics()`,
-which creates a fresh `ConstraintValidator`, runs it, and returns the results.
+**Why pre-complete catalogues, not the global namespace?** The global namespace's
+`MembersCompleted` phase calls `ForceComplete()` on all members including this
+`RosterSymbol`. Calling `SourceGlobalNamespace.ForceComplete()` from within
+the `Validate` phase would create infinite recursion (stack overflow). Instead,
+we complete only catalogue symbols — these are the cross-graph references that
+validation accesses through the Binder. The roster's own member tree is already
+completed by the `MembersCompleted` phase.
+
 This approach:
 
-- **Eliminates the hang**: No `SpinWait` contention during validation
-- **Keeps binding diagnostics lazy**: `ForceComplete()` still handles reference
-  binding and member completion normally
-- **Trades caching for correctness**: Validation recomputes on each call instead
-  of being cached in the symbol tree
+- **Eliminates the hang**: All lazy symbol bindings are pre-resolved; no
+  `SpinWait` contention during validation
+- **Caches validation results**: Diagnostics are stored in the compilation's
+  `DeclarationDiagnostics` bag during `ForceComplete()`, not recomputed
+- **Supports cancellation**: `CancellationToken` is threaded through validation,
+  allowing clean test host shutdown
+- **Maintains thread safety**: `NotePartComplete` CAS ensures only one thread
+  enters the `Validate` phase; the `ConstraintValidator` instance is never shared
 
 ### Impact on API
 
-`WhamCompilation.GetDiagnostics()` no longer returns validation diagnostics.
-This is documented in the method's XML doc comment. Callers needing validation
-must call `GetValidationDiagnostics()` separately.
+`WhamCompilation.GetDiagnostics()` now returns **all** diagnostics: binding,
+declaration, and validation. This matches Roslyn's convention where
+`GetDiagnostics()` is the single entry point for all diagnostic information.
 
-This was flagged by all three code reviewers (Opus 4.6, GPT-5.4, Codex 5.3)
-as a potential API break. For now it's acceptable because:
+`GetValidationDiagnostics()` is retained as a convenience method:
+- When called with `forceCatalogues` (non-null), it runs validation on-demand
+  with the specified catalogues (used by `SpecRosterEngineAdapter`)
+- When called without `forceCatalogues`, it filters `GetDiagnostics()` for
+  `ValidationDiagnostic` instances
 
-1. The only consumer is `SpecRosterEngineAdapter`, which calls
-   `GetValidationDiagnostics()` directly
-2. Future editor integration will need a different validation trigger anyway
-   (e.g., on-demand after user actions, not on every `GetDiagnostics()` call)
+### Previous Workaround (Removed)
 
-### Future: Re-integrating Validation into ForceComplete
-
-If we want to restore lazy cached validation, the path forward is:
-
-1. **Profile the SpinWait issue**: Determine exactly which re-entrant
-   `ForceComplete()` calls cause contention. It may be that guarding against
-   recursive completion (Roslyn uses `Interlocked.CompareExchange` for this)
-   is sufficient.
-
-2. **Run validation on a separate thread pool task**: Instead of blocking in
-   `ForceComplete()`, queue validation work and let `SpinWaitComplete()` wait
-   for it naturally.
-
-3. **Break the re-entrant dependency**: Ensure `ConstraintValidator` doesn't
-   trigger `ForceComplete()` on other symbols. This may require pre-computing
-   modifier values before validation runs.
-
-4. **Use CancellationToken**: Pass the cancellation token through to validation
-   so that `SpinWait` can honor cancellation at test host shutdown.
+The original workaround moved validation out of `ForceComplete()` entirely,
+splitting the API into `GetDiagnostics()` (binding only) and
+`GetValidationDiagnostics()` (validation only). This was flagged by all three
+code reviewers as an API break. The current implementation resolves this.
 
 ---
 
@@ -410,20 +428,22 @@ This means 3 patrol forces exceeding max:2 → 3 errors, not 1.
 
 Three-model review panel (Opus 4.6, GPT-5.4, Codex 5.3) findings:
 
-### 1. GetDiagnostics() API Break (all three reviewers)
+### 1. GetDiagnostics() API Break (all three reviewers) — RESOLVED
 
 **Finding**: `GetDiagnostics()` no longer returns validation diagnostics.
 
-**Response**: Documented intentionally. See [Process Hang Investigation](#the-process-hang-investigation).
+**Resolution**: Validation has been re-integrated into `ForceComplete()`.
+`GetDiagnostics()` now returns all diagnostics (binding + validation).
 
-### 2. Thread-unsafe `_sharedEntryLinkIds` (Opus 4.6)
+### 2. Thread-unsafe `_sharedEntryLinkIds` (Opus 4.6) — DOCUMENTED
 
 **Finding**: Race condition in `BuildIndex()` — check-then-act pattern on
 `_sharedEntryLinkIds` dictionary.
 
-**Response**: Not a real risk currently — each `Validate()` call creates its own
-`ConstraintValidator` instance. The dictionaries are never shared. Would become
-a real issue if validation were cached or made lazy via `ForceComplete()`.
+**Resolution**: Now that validation runs inside `ForceComplete()`, single-threaded
+access is guaranteed by the `NotePartComplete` CAS on `CompletionPart.Validate`.
+Only one thread enters the `Validate` phase; others SpinWait until it completes.
+This is documented in the `ConstraintValidator` class doc comment.
 
 ### 3. ResolveForceCatalogues Silent Fallback (Opus 4.6)
 
@@ -447,26 +467,17 @@ multi-roster support.
 
 ## Open Questions and Future Work
 
-### Lazy Validation Caching
+### ~~Lazy Validation Caching~~ — RESOLVED
 
-The current approach recomputes validation on every `GetValidationDiagnostics()`
-call. For editor scenarios with frequent validation requests, this could be
-expensive. Options:
+Validation now runs inside `ForceComplete()` and results are cached in the
+compilation's `DeclarationDiagnostics` bag. Since compilations are immutable
+(new instance per change), validation runs once per compilation instance.
 
-1. **Dirty-flag caching**: Cache validation results on `WhamCompilation`, invalidate
-   when source trees change (compilations are already immutable — new compilation
-   on each change, so cache per instance)
-2. **Re-integrate into ForceComplete**: Fix the SpinWait issue and restore lazy
-   evaluation. Requires understanding the exact re-entrancy pattern.
-3. **Incremental validation**: Only validate changed forces/selections. Requires
-   diff tracking between compilation versions.
+### ~~Unifying GetDiagnostics~~ — RESOLVED
 
-### Unifying GetDiagnostics
-
-In Roslyn, `GetDiagnostics()` returns ALL diagnostics (syntax + semantic + flow).
-Our split into `GetDiagnostics()` + `GetValidationDiagnostics()` is unusual.
-Future option: make `GetDiagnostics()` call `GetValidationDiagnostics()` internally,
-but only after confirming the SpinWait issue is fully resolved.
+`GetDiagnostics()` now returns all diagnostics (binding + validation).
+`GetValidationDiagnostics()` is retained as a convenience filter, and also
+supports the on-demand path with explicit `forceCatalogues` for the spec adapter.
 
 ### Force Catalogue Association
 

@@ -106,14 +106,36 @@ internal sealed class RosterSymbol : SourceDeclaredSymbol, IRosterSymbol, INodeD
                         break;
                     }
                 case CompletionPart.EvaluateModifiers:
-                    // Modifier evaluation is currently performed inline during validation.
+                    // Modifier evaluation is performed inline during validation.
                     // This phase is reserved for future caching of effective values.
                     state.NotePartComplete(CompletionPart.EvaluateModifiers);
                     break;
                 case CompletionPart.Validate:
                     {
-                        // Validation runs via compilation.GetDiagnostics() externally
-                        // to avoid holding symbol completion open during heavy work.
+                        // Ensure all catalogue symbols are fully completed before
+                        // running validation. This prevents re-entrant ForceComplete calls
+                        // from validation code that accesses lazy symbol properties (via
+                        // GetBoundField → BindReferences → SpinWaitComplete), which previously
+                        // caused process hang issues from SpinWait contention.
+                        //
+                        // We complete catalogues only (not the global namespace, which would
+                        // recurse back into this RosterSymbol's ForceComplete). Catalogue
+                        // symbols are the cross-graph references that validation accesses
+                        // through the Binder — entry symbols, category links, constraints,
+                        // query/effect symbols, etc. The roster's own member tree is already
+                        // completed by the MembersCompleted phase above.
+                        var compilation = (WhamCompilation)DeclaringCompilation;
+                        foreach (var catalogue in compilation.SourceGlobalNamespace.Catalogues)
+                        {
+                            cancellationToken.ThrowIfCancellationRequested();
+                            catalogue.ForceComplete(cancellationToken);
+                        }
+                        ConstraintValidator.Validate(
+                            Declaration,
+                            compilation,
+                            compilation.DeclarationDiagnostics,
+                            forceCatalogues: null,
+                            cancellationToken);
                         state.NotePartComplete(CompletionPart.Validate);
                         break;
                     }

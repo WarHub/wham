@@ -36,10 +36,9 @@ public class WhamCompilation : Compilation
     }
 
     /// <summary>
-    /// Returns binding and declaration diagnostics. Does not include constraint
-    /// validation diagnostics — use <see cref="GetValidationDiagnostics"/> for those.
-    /// Validation is kept separate to avoid process hang issues with SpinWait
-    /// contention when validation runs inside ForceComplete phases.
+    /// Returns all diagnostics including binding, declaration, and constraint
+    /// validation diagnostics. Triggers full symbol completion which runs
+    /// validation as part of the <see cref="CompletionPart.Validate"/> phase.
     /// </summary>
     public override ImmutableArray<Diagnostic> GetDiagnostics(CancellationToken cancellationToken = default)
     {
@@ -53,9 +52,9 @@ public class WhamCompilation : Compilation
     }
 
     /// <summary>
-    /// Runs constraint validation on all rosters in the compilation and returns
-    /// validation diagnostics. This is separate from <see cref="GetDiagnostics"/>
-    /// to allow callers to get validation results without triggering full symbol completion.
+    /// Returns only the constraint validation diagnostics from this compilation.
+    /// This is a convenience method that calls <see cref="GetDiagnostics"/> and
+    /// filters for <see cref="ValidationDiagnostic"/> instances.
     /// </summary>
     /// <param name="forceCatalogues">
     /// Optional list of catalogues corresponding to each force in the roster,
@@ -64,21 +63,39 @@ public class WhamCompilation : Compilation
     /// This is needed because force entries often live in the gamesystem while
     /// selection entries live in separate catalogues.
     /// </param>
+    /// <param name="cancellationToken">Cancellation token.</param>
     /// <remarks>
-    /// Currently assumes a single roster per compilation. The <paramref name="forceCatalogues"/>
-    /// override applies to all rosters equally, which is incorrect for multi-roster
-    /// compilations. This will need refactoring if multi-roster support is added.
+    /// <para>When <paramref name="forceCatalogues"/> is provided, validation is run
+    /// on-demand with the specified catalogues instead of using the cached results
+    /// from <c>ForceComplete()</c>. This is needed by the spec adapter where the
+    /// correct catalogue is tracked externally.</para>
+    /// <para>When <paramref name="forceCatalogues"/> is null, this method returns
+    /// the validation diagnostics produced during <c>ForceComplete()</c>, which are
+    /// included in <see cref="GetDiagnostics"/>.</para>
+    /// <para>Currently assumes a single roster per compilation. The
+    /// <paramref name="forceCatalogues"/> override applies to all rosters equally,
+    /// which is incorrect for multi-roster compilations.</para>
     /// </remarks>
     public ImmutableArray<Diagnostic> GetValidationDiagnostics(
-        IReadOnlyList<ICatalogueSymbol>? forceCatalogues = null)
+        IReadOnlyList<ICatalogueSymbol>? forceCatalogues = null,
+        CancellationToken cancellationToken = default)
     {
-        var bag = DiagnosticBag.GetInstance();
-        foreach (var roster in SourceGlobalNamespace.Rosters)
+        if (forceCatalogues is not null)
         {
-            ConstraintValidator.Validate(roster.Declaration, this, bag, forceCatalogues);
+            // Run validation on-demand with the specified catalogues.
+            var bag = DiagnosticBag.GetInstance();
+            foreach (var roster in SourceGlobalNamespace.Rosters)
+            {
+                ConstraintValidator.Validate(roster.Declaration, this, bag, forceCatalogues, cancellationToken);
+            }
+            return bag.ToReadOnlyAndFree();
         }
-        var result = bag.ToReadOnlyAndFree();
-        return result;
+
+        // Return cached validation diagnostics from ForceComplete.
+        SourceGlobalNamespace.ForceComplete(cancellationToken);
+        return GetDiagnostics(cancellationToken)
+            .Where(d => d is ValidationDiagnostic)
+            .ToImmutableArray();
     }
 
     public override WhamCompilation AddSourceTrees(params SourceTree[] trees) =>
