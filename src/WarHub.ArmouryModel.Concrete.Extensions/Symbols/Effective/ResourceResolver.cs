@@ -15,13 +15,13 @@ internal static class ResourceResolver
     /// </summary>
     public static (IReadOnlyList<ResolvedProfile> Profiles, IReadOnlyList<ResolvedRule> Rules)
         ResolveEffectiveResources(
-            ISelectionEntryContainerSymbol entry,
+            IEntrySymbol entry,
             ModifierEvaluator evaluator,
             ISelectionSymbol? selection,
             IForceSymbol? force)
     {
         // For entry links, resolve through to the shared target's resources
-        var resolvedEntry = entry.ReferencedEntry as ISelectionEntryContainerSymbol ?? entry;
+        var resolvedEntry = entry.ReferencedEntry ?? entry;
         var ctx = new ResolveContext(evaluator, selection, force);
         var profiles = new List<ResolvedProfile>();
         var rules = new List<ResolvedRule>();
@@ -37,7 +37,7 @@ internal static class ResourceResolver
     /// (2) InfoLinks, (3) inline InfoGroups.
     /// </summary>
     private static void CollectFromEntry(
-        ISelectionEntryContainerSymbol entry,
+        IEntrySymbol entry,
         ResolveContext ctx,
         List<ResolvedProfile> profiles,
         List<ResolvedRule> rules)

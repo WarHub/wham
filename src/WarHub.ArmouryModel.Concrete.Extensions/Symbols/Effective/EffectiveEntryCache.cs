@@ -108,7 +108,7 @@ internal sealed class EffectiveEntryCache
     /// </summary>
     public (IReadOnlyList<ResolvedProfile> Profiles, IReadOnlyList<ResolvedRule> Rules)
         GetEffectiveResources(
-            ISelectionEntryContainerSymbol entry,
+            IEntrySymbol entry,
             ISelectionSymbol? selection,
             IForceSymbol? force)
     {

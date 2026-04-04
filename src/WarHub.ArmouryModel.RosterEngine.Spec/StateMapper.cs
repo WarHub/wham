@@ -20,16 +20,8 @@ internal sealed class StateMapper
     private readonly EffectiveEntryCache _effectiveCache;
     private readonly NodeSymbolLookup _nodeSymbols;
 
-    // ISymbol entry lookup (entryId → ISelectionEntryContainerSymbol or IContainerEntrySymbol)
+    // ISymbol entry lookup (entryId → IEntrySymbol)
     private Dictionary<string, IEntrySymbol>? _symbolEntries;
-
-    // Shared item lookups for InfoLink resolution (built lazily)
-    private Dictionary<string, ProfileNode>? _sharedProfiles;
-    private Dictionary<string, RuleNode>? _sharedRules;
-    private Dictionary<string, InfoGroupNode>? _sharedInfoGroups;
-
-    // Entry declaration lookup (entryId → ContainerEntryBaseNode)
-    private Dictionary<string, ContainerEntryBaseNode>? _entryDeclarations;
 
     public StateMapper(Compilation compilation, RosterNode roster, IReadOnlyList<ICatalogueSymbol> forceCatalogues)
     {
@@ -80,14 +72,21 @@ internal sealed class StateMapper
 
         var availableEntries = _resolver.GetAvailableEntries(catalogue);
 
-        // Resolve profiles and rules from the force entry declaration
-        var forceEntryDecl = FindForceEntryDeclaration(forceNode.EntryId);
-        var profiles = forceEntryDecl is not null
-            ? ResolveSelectionProfiles(forceEntryDecl)
-            : MapNodeProfiles(forceNode.Profiles);
-        var rules = forceEntryDecl is not null
-            ? ResolveSelectionRules(forceEntryDecl)
-            : MapNodeRules(forceNode.Rules);
+        // Resolve profiles and rules from the force entry via Symbol layer
+        var forceSym = _nodeSymbols.GetForce(forceNode);
+        List<ProfileState> profiles;
+        List<RuleState> rules;
+        if (forceSym?.SourceEntry is { } forceEntry)
+        {
+            var (resolvedProfiles, resolvedRules) = _effectiveCache.GetEffectiveResources(forceEntry, null, forceSym);
+            profiles = MapResolvedProfiles(resolvedProfiles);
+            rules = MapResolvedRules(resolvedRules);
+        }
+        else
+        {
+            profiles = MapNodeProfiles(forceNode.Profiles);
+            rules = MapNodeRules(forceNode.Rules);
+        }
 
         return new ForceState(
             Name: forceNode.Name ?? "",
@@ -164,17 +163,16 @@ internal sealed class StateMapper
         // Profiles and rules: use Symbol-layer resolution
         List<ProfileState> profiles;
         List<RuleState> rules;
-        if (entrySym is ISelectionEntryContainerSymbol secRes)
+        if (entrySym is not null)
         {
-            var (resolvedProfiles, resolvedRules) = _effectiveCache.GetEffectiveResources(secRes, selSym, forceSym);
+            var (resolvedProfiles, resolvedRules) = _effectiveCache.GetEffectiveResources(entrySym, selSym, forceSym);
             profiles = MapResolvedProfiles(resolvedProfiles);
             rules = MapResolvedRules(resolvedRules);
         }
         else
         {
-            var entryDecl = FindEntryDeclaration(selNode.EntryId);
-            profiles = ResolveSelectionProfiles(entryDecl, selNode, force);
-            rules = ResolveSelectionRules(entryDecl, selNode, force);
+            profiles = MapNodeProfiles(selNode.Profiles);
+            rules = MapNodeRules(selNode.Rules);
         }
 
         var type = selNode.Type switch
@@ -211,310 +209,6 @@ internal sealed class StateMapper
             Page: effectivePage,
             PublicationId: selNode.PublicationId,
             PublicationName: publicationName);
-    }
-
-    // ──────────────────────────────────────────────────────────────────
-    //  Profile / Rule resolution from entry declarations
-    // ──────────────────────────────────────────────────────────────────
-
-    private List<ProfileState> ResolveSelectionProfiles(
-        ContainerEntryBaseNode? entryDecl,
-        SelectionNode? selection = null,
-        ForceNode? force = null)
-    {
-        if (entryDecl is null) return [];
-
-        var result = new List<ProfileState>();
-
-        // 1. Direct profiles on the entry
-        foreach (var p in entryDecl.Profiles)
-        {
-            result.Add(MapProfileNode(p, selection: selection, force: force));
-        }
-
-        // 2. InfoLinks pointing to profiles or infogroups
-        foreach (var link in entryDecl.InfoLinks)
-        {
-            if (link.Type == InfoLinkKind.Profile)
-            {
-                var target = LookupSharedProfile(link.TargetId);
-                if (target is not null)
-                    result.Add(MapProfileNodeWithOverrides(target, link, selection: selection, force: force));
-            }
-            else if (link.Type == InfoLinkKind.InfoGroup)
-            {
-                var group = LookupSharedInfoGroup(link.TargetId);
-                if (group is not null)
-                    CollectInfoGroupProfiles(group, result, visited: null, selection: selection, force: force,
-                        viaInfoLink: link);
-            }
-        }
-
-        // 3. Inline InfoGroups
-        foreach (var group in entryDecl.InfoGroups)
-        {
-            CollectInfoGroupProfiles(group, result, visited: null, selection: selection, force: force);
-        }
-
-        return result;
-    }
-
-    private List<RuleState> ResolveSelectionRules(
-        ContainerEntryBaseNode? entryDecl,
-        SelectionNode? selection = null,
-        ForceNode? force = null)
-    {
-        if (entryDecl is null) return [];
-
-        var result = new List<RuleState>();
-
-        // 1. Direct rules
-        foreach (var r in entryDecl.Rules)
-        {
-            result.Add(MapRuleNode(r, selection: selection, force: force));
-        }
-
-        // 2. InfoLinks pointing to rules or infogroups
-        foreach (var link in entryDecl.InfoLinks)
-        {
-            if (link.Type == InfoLinkKind.Rule)
-            {
-                var target = LookupSharedRule(link.TargetId);
-                if (target is not null)
-                    result.Add(MapRuleNodeWithOverrides(target, link, selection: selection, force: force));
-            }
-            else if (link.Type == InfoLinkKind.InfoGroup)
-            {
-                var group = LookupSharedInfoGroup(link.TargetId);
-                if (group is not null)
-                    CollectInfoGroupRules(group, result, visited: null, selection: selection, force: force,
-                        viaInfoLink: link);
-            }
-        }
-
-        // 3. Inline InfoGroups
-        foreach (var group in entryDecl.InfoGroups)
-        {
-            CollectInfoGroupRules(group, result, visited: null, selection: selection, force: force);
-        }
-
-        return result;
-    }
-
-    private void CollectInfoGroupProfiles(InfoGroupNode group, List<ProfileState> result, HashSet<string>? visited,
-        SelectionNode? selection = null, ForceNode? force = null, InfoLinkNode? viaInfoLink = null)
-    {
-        var groupId = group.Id;
-        if (groupId is not null)
-        {
-            visited ??= [];
-            if (!visited.Add(groupId)) return;
-        }
-
-        // Direct profiles in the group
-        foreach (var p in group.Profiles)
-        {
-            result.Add(MapProfileNode(p, group, selection: selection, force: force, viaInfoLink: viaInfoLink));
-        }
-
-        // InfoLinks within the group
-        foreach (var link in group.InfoLinks)
-        {
-            if (link.Type == InfoLinkKind.Profile)
-            {
-                var target = LookupSharedProfile(link.TargetId);
-                if (target is not null)
-                    result.Add(MapProfileNodeWithOverrides(target, link, group, selection: selection, force: force));
-            }
-            else if (link.Type == InfoLinkKind.InfoGroup)
-            {
-                var nested = LookupSharedInfoGroup(link.TargetId);
-                if (nested is not null)
-                    CollectInfoGroupProfiles(nested, result, visited, selection: selection, force: force,
-                        viaInfoLink: link);
-            }
-        }
-
-        // Nested inline InfoGroups
-        foreach (var nested in group.InfoGroups)
-        {
-            CollectInfoGroupProfiles(nested, result, visited, selection: selection, force: force);
-        }
-    }
-
-    private void CollectInfoGroupRules(InfoGroupNode group, List<RuleState> result, HashSet<string>? visited,
-        SelectionNode? selection = null, ForceNode? force = null, InfoLinkNode? viaInfoLink = null)
-    {
-        var groupId = group.Id;
-        if (groupId is not null)
-        {
-            visited ??= [];
-            if (!visited.Add(groupId)) return;
-        }
-
-        foreach (var r in group.Rules)
-        {
-            result.Add(MapRuleNode(r, group, selection: selection, force: force, viaInfoLink: viaInfoLink));
-        }
-
-        foreach (var link in group.InfoLinks)
-        {
-            if (link.Type == InfoLinkKind.Rule)
-            {
-                var target = LookupSharedRule(link.TargetId);
-                if (target is not null)
-                    result.Add(MapRuleNodeWithOverrides(target, link, group, selection: selection, force: force));
-            }
-            else if (link.Type == InfoLinkKind.InfoGroup)
-            {
-                var nested = LookupSharedInfoGroup(link.TargetId);
-                if (nested is not null)
-                    CollectInfoGroupRules(nested, result, visited, selection: selection, force: force,
-                        viaInfoLink: link);
-            }
-        }
-
-        foreach (var nested in group.InfoGroups)
-        {
-            CollectInfoGroupRules(nested, result, visited, selection: selection, force: force);
-        }
-    }
-
-    // ──────────────────────────────────────────────────────────────────
-    //  Profile / Rule node → Protocol state mapping
-    // ──────────────────────────────────────────────────────────────────
-
-    private ProfileState MapProfileNode(ProfileNode p, InfoGroupNode? group = null,
-        SelectionNode? selection = null, ForceNode? force = null,
-        InfoLinkNode? viaInfoLink = null)
-    {
-        // Look up the profile's ISymbol to access its modifiers
-        var profileSym = LookupEntrySymbol(p.Id);
-        // Also check InfoLink's modifiers if accessed via a link
-        var linkSym = viaInfoLink is not null ? LookupEntrySymbol(viaInfoLink.Id) : null;
-        // And InfoGroup's modifiers
-        var groupSym = group is not null ? LookupEntrySymbol(group.Id) : null;
-
-        var chars = new List<CharacteristicState>();
-        foreach (var ch in p.Characteristics)
-        {
-            var value = ch.Value ?? "";
-            // Apply modifiers from the profile itself
-            if (profileSym is not null)
-                value = _effectiveCache.Evaluator.GetEffectiveCharacteristic(profileSym, ch.TypeId ?? "", value, _nodeSymbols.GetSelection(selection), _nodeSymbols.GetForce(force));
-            // Apply modifiers from the infolink (if linked)
-            if (linkSym is not null)
-                value = _effectiveCache.Evaluator.GetEffectiveCharacteristic(linkSym, ch.TypeId ?? "", value, _nodeSymbols.GetSelection(selection), _nodeSymbols.GetForce(force));
-            // Apply modifiers from the infogroup
-            if (groupSym is not null)
-                value = _effectiveCache.Evaluator.GetEffectiveCharacteristic(groupSym, ch.TypeId ?? "", value, _nodeSymbols.GetSelection(selection), _nodeSymbols.GetForce(force));
-            chars.Add(new CharacteristicState(
-                Name: ch.Name ?? "",
-                TypeId: ch.TypeId ?? "",
-                Value: value));
-        }
-
-        return new ProfileState(
-            Name: p.Name ?? "",
-            TypeId: p.TypeId,
-            TypeName: p.TypeName,
-            Hidden: group?.Hidden ?? p.Hidden,
-            Characteristics: chars,
-            Page: p.Page,
-            PublicationId: p.PublicationId);
-    }
-
-    private ProfileState MapProfileNodeWithOverrides(ProfileNode target, InfoLinkNode link,
-        InfoGroupNode? group = null, SelectionNode? selection = null, ForceNode? force = null)
-    {
-        // Look up symbols for modifier evaluation
-        var profileSym = LookupEntrySymbol(target.Id);
-        var linkSym = LookupEntrySymbol(link.Id);
-        var groupSym = group is not null ? LookupEntrySymbol(group.Id) : null;
-
-        var chars = new List<CharacteristicState>();
-        foreach (var ch in target.Characteristics)
-        {
-            var value = ch.Value ?? "";
-            // Apply modifiers from the profile itself
-            if (profileSym is not null)
-                value = _effectiveCache.Evaluator.GetEffectiveCharacteristic(profileSym, ch.TypeId ?? "", value, _nodeSymbols.GetSelection(selection), _nodeSymbols.GetForce(force));
-            // Apply modifiers from the infolink
-            if (linkSym is not null)
-                value = _effectiveCache.Evaluator.GetEffectiveCharacteristic(linkSym, ch.TypeId ?? "", value, _nodeSymbols.GetSelection(selection), _nodeSymbols.GetForce(force));
-            // Apply modifiers from the infogroup
-            if (groupSym is not null)
-                value = _effectiveCache.Evaluator.GetEffectiveCharacteristic(groupSym, ch.TypeId ?? "", value, _nodeSymbols.GetSelection(selection), _nodeSymbols.GetForce(force));
-            chars.Add(new CharacteristicState(
-                Name: ch.Name ?? "",
-                TypeId: ch.TypeId ?? "",
-                Value: value));
-        }
-
-        // InfoLink overrides: hidden (OR'd), name overrides target if non-empty.
-        // Page and publicationId always come from the TARGET, never the InfoLink.
-        var hidden = link.Hidden || (group?.Hidden ?? target.Hidden);
-        var name = !string.IsNullOrEmpty(link.Name) ? link.Name : target.Name ?? "";
-
-        return new ProfileState(
-            Name: name,
-            TypeId: target.TypeId,
-            TypeName: target.TypeName,
-            Hidden: hidden,
-            Characteristics: chars,
-            Page: target.Page,
-            PublicationId: target.PublicationId);
-    }
-
-    private RuleState MapRuleNode(RuleNode r, InfoGroupNode? group = null,
-        SelectionNode? selection = null, ForceNode? force = null,
-        InfoLinkNode? viaInfoLink = null)
-    {
-        var desc = r.Description ?? "";
-        // Look up rule symbol for modifiers
-        var ruleSym = LookupEntrySymbol(r.Id);
-        var linkSym = viaInfoLink is not null ? LookupEntrySymbol(viaInfoLink.Id) : null;
-        var groupSym = group is not null ? LookupEntrySymbol(group.Id) : null;
-        if (ruleSym is not null)
-            desc = _effectiveCache.Evaluator.GetEffectiveRuleDescription(ruleSym, desc, _nodeSymbols.GetSelection(selection), _nodeSymbols.GetForce(force));
-        if (linkSym is not null)
-            desc = _effectiveCache.Evaluator.GetEffectiveRuleDescription(linkSym, desc, _nodeSymbols.GetSelection(selection), _nodeSymbols.GetForce(force));
-        if (groupSym is not null)
-            desc = _effectiveCache.Evaluator.GetEffectiveRuleDescription(groupSym, desc, _nodeSymbols.GetSelection(selection), _nodeSymbols.GetForce(force));
-
-        return new RuleState(
-            Name: r.Name ?? "",
-            Description: desc,
-            Hidden: group?.Hidden ?? r.Hidden,
-            Page: r.Page,
-            PublicationId: r.PublicationId);
-    }
-
-    private RuleState MapRuleNodeWithOverrides(RuleNode target, InfoLinkNode link,
-        InfoGroupNode? group = null, SelectionNode? selection = null, ForceNode? force = null)
-    {
-        var desc = target.Description ?? "";
-        var ruleSym = LookupEntrySymbol(target.Id);
-        var linkSym = LookupEntrySymbol(link.Id);
-        var groupSym = group is not null ? LookupEntrySymbol(group.Id) : null;
-        if (ruleSym is not null)
-            desc = _effectiveCache.Evaluator.GetEffectiveRuleDescription(ruleSym, desc, _nodeSymbols.GetSelection(selection), _nodeSymbols.GetForce(force));
-        if (linkSym is not null)
-            desc = _effectiveCache.Evaluator.GetEffectiveRuleDescription(linkSym, desc, _nodeSymbols.GetSelection(selection), _nodeSymbols.GetForce(force));
-        if (groupSym is not null)
-            desc = _effectiveCache.Evaluator.GetEffectiveRuleDescription(groupSym, desc, _nodeSymbols.GetSelection(selection), _nodeSymbols.GetForce(force));
-
-        // InfoLink overrides: hidden (OR'd), name overrides target if non-empty.
-        // Page and publicationId always come from the TARGET, never the InfoLink.
-        var hidden = link.Hidden || (group?.Hidden ?? target.Hidden);
-        var name = !string.IsNullOrEmpty(link.Name) ? link.Name : target.Name ?? "";
-
-        return new RuleState(
-            Name: name,
-            Description: desc,
-            Hidden: hidden,
-            Page: target.Page,
-            PublicationId: target.PublicationId);
     }
 
     private static List<ProfileState> MapResolvedProfiles(IReadOnlyList<ResolvedProfile> resolved)
@@ -857,200 +551,6 @@ internal sealed class StateMapper
         }
     }
 
-    // ──────────────────────────────────────────────────────────────────
-    //  Shared item lookups (lazily built from all source trees)
-    // ──────────────────────────────────────────────────────────────────
-
-    private ProfileNode? LookupSharedProfile(string? targetId)
-    {
-        if (string.IsNullOrEmpty(targetId)) return null;
-        EnsureSharedLookups();
-        return _sharedProfiles!.GetValueOrDefault(targetId);
-    }
-
-    private RuleNode? LookupSharedRule(string? targetId)
-    {
-        if (string.IsNullOrEmpty(targetId)) return null;
-        EnsureSharedLookups();
-        return _sharedRules!.GetValueOrDefault(targetId);
-    }
-
-    private InfoGroupNode? LookupSharedInfoGroup(string? targetId)
-    {
-        if (string.IsNullOrEmpty(targetId)) return null;
-        EnsureSharedLookups();
-        return _sharedInfoGroups!.GetValueOrDefault(targetId);
-    }
-
-    private void EnsureSharedLookups()
-    {
-        if (_sharedProfiles is not null) return;
-
-        _sharedProfiles = new(StringComparer.Ordinal);
-        _sharedRules = new(StringComparer.Ordinal);
-        _sharedInfoGroups = new(StringComparer.Ordinal);
-
-        foreach (var tree in _compilation.SourceTrees)
-        {
-            var root = tree.GetRoot();
-            if (root is GamesystemNode gs)
-            {
-                IndexSharedItems(gs.SharedProfiles, gs.SharedRules, gs.SharedInfoGroups);
-                // Root-level rules can also be InfoLink targets
-                IndexRootRules(gs.Rules);
-            }
-            else if (root is CatalogueNode cat)
-            {
-                IndexSharedItems(cat.SharedProfiles, cat.SharedRules, cat.SharedInfoGroups);
-                // Root-level rules can also be InfoLink targets
-                IndexRootRules(cat.Rules);
-            }
-        }
-    }
-
-    private void IndexSharedItems(
-        ListNode<ProfileNode> profiles,
-        ListNode<RuleNode> rules,
-        ListNode<InfoGroupNode> infoGroups)
-    {
-        foreach (var p in profiles)
-        {
-            if (p.Id is not null)
-                _sharedProfiles![p.Id] = p;
-        }
-        foreach (var r in rules)
-        {
-            if (r.Id is not null)
-                _sharedRules![r.Id] = r;
-        }
-        foreach (var g in infoGroups)
-        {
-            IndexInfoGroupRecursive(g);
-        }
-    }
-
-    private void IndexRootRules(ListNode<RuleNode> rules)
-    {
-        foreach (var r in rules)
-        {
-            if (r.Id is not null)
-                _sharedRules![r.Id] = r;
-        }
-    }
-
-    private void IndexInfoGroupRecursive(InfoGroupNode group)
-    {
-        if (group.Id is not null)
-            _sharedInfoGroups![group.Id] = group;
-        // Also index profiles/rules within the shared group itself
-        foreach (var p in group.Profiles)
-        {
-            if (p.Id is not null)
-                _sharedProfiles![p.Id] = p;
-        }
-        foreach (var r in group.Rules)
-        {
-            if (r.Id is not null)
-                _sharedRules![r.Id] = r;
-        }
-        foreach (var nested in group.InfoGroups)
-        {
-            IndexInfoGroupRecursive(nested);
-        }
-    }
-
-    // ──────────────────────────────────────────────────────────────────
-    //  Entry declaration lookup
-    // ──────────────────────────────────────────────────────────────────
-
-    private ContainerEntryBaseNode? FindEntryDeclaration(string? entryId)
-    {
-        if (string.IsNullOrEmpty(entryId)) return null;
-        EnsureEntryDeclarations();
-        return _entryDeclarations!.GetValueOrDefault(entryId);
-    }
-
-    private void EnsureEntryDeclarations()
-    {
-        if (_entryDeclarations is not null) return;
-
-        _entryDeclarations = new(StringComparer.Ordinal);
-
-        foreach (var tree in _compilation.SourceTrees)
-        {
-            var root = tree.GetRoot();
-            if (root is CatalogueBaseNode catBase)
-            {
-                IndexEntryDeclarations(catBase);
-            }
-        }
-    }
-
-    private void IndexEntryDeclarations(CatalogueBaseNode catBase)
-    {
-        // Root selection entries
-        foreach (var e in catBase.SelectionEntries)
-            IndexEntryRecursive(e);
-        foreach (var l in catBase.EntryLinks)
-            IndexLinkAndTarget(l);
-
-        // Force entries (they also inherit from ContainerEntryBase and can have profiles/rules)
-        foreach (var fe in catBase.ForceEntries)
-            IndexForceEntryRecursive(fe);
-
-        // Shared entries
-        foreach (var e in catBase.SharedSelectionEntries)
-            IndexEntryRecursive(e);
-        foreach (var g in catBase.SharedSelectionEntryGroups)
-            IndexGroupRecursive(g);
-    }
-
-    private void IndexEntryRecursive(SelectionEntryNode entry)
-    {
-        if (entry.Id is not null)
-            _entryDeclarations![entry.Id] = entry;
-
-        foreach (var child in entry.SelectionEntries)
-            IndexEntryRecursive(child);
-        foreach (var child in entry.SelectionEntryGroups)
-            IndexGroupRecursive(child);
-        foreach (var child in entry.EntryLinks)
-            IndexLinkAndTarget(child);
-    }
-
-    private void IndexGroupRecursive(SelectionEntryGroupNode group)
-    {
-        if (group.Id is not null)
-            _entryDeclarations![group.Id] = group;
-
-        foreach (var child in group.SelectionEntries)
-            IndexEntryRecursive(child);
-        foreach (var child in group.SelectionEntryGroups)
-            IndexGroupRecursive(child);
-        foreach (var child in group.EntryLinks)
-            IndexLinkAndTarget(child);
-    }
-
-    private void IndexLinkAndTarget(EntryLinkNode link)
-    {
-        if (link.Id is not null)
-            _entryDeclarations![link.Id] = link;
-    }
-
-    private void IndexForceEntryRecursive(ForceEntryNode fe)
-    {
-        if (fe.Id is not null)
-            _entryDeclarations![fe.Id] = fe;
-
-        foreach (var child in fe.ForceEntries)
-            IndexForceEntryRecursive(child);
-    }
-
-    private ContainerEntryBaseNode? FindForceEntryDeclaration(string? entryId)
-    {
-        // Force entry declarations are indexed in the same dictionary
-        return FindEntryDeclaration(entryId);
-    }
 
     private IReadOnlyList<ValidationErrorState> GetConstraintErrors()
     {
