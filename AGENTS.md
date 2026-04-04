@@ -41,10 +41,8 @@ dotnet pack                                            # NuGet packages (Release
 |------|------|
 | `src/WarHub.ArmouryModel.RosterEngine/WhamRosterEngine.cs` | IRosterEngine impl — setup, forces, selections, state |
 | `src/WarHub.ArmouryModel.RosterEngine/EntryResolver.cs` | Entry/link resolution, merging, flattening, cycle detection |
-| `src/WarHub.ArmouryModel.RosterEngine/ModifierEvaluator.cs` | Modifier application, condition eval, scope resolution |
 | `src/WarHub.ArmouryModel.RosterEngine.Spec/ConstraintValidator.cs` | Min/max validation, shared constraints, error generation |
 | `src/WarHub.ArmouryModel.RosterEngine.Spec/StateMapper.cs` | ISymbol → Protocol state mapping with effective entries |
-| `src/WarHub.ArmouryModel.RosterEngine.Spec/EffectiveEntries.cs` | Cache factory bridging ModifierEvaluator to symbol layer |
 | `tests/WarHub.ArmouryModel.RosterEngine.Tests/ConformanceTests.cs` | Runs all 304 BattleScribe-spec conformance specs |
 
 ### Effective entry symbols (Roslyn-style wrappers)
@@ -55,8 +53,9 @@ dotnet pack                                            # NuGet packages (Release
 | `src/WarHub.ArmouryModel.Concrete.Extensions/Symbols/Effective/EffectiveConstraintSymbol.cs` | Wraps IConstraintSymbol with effective Query ReferenceValue |
 | `src/WarHub.ArmouryModel.Concrete.Extensions/Symbols/Effective/EffectiveCostSymbol.cs` | Wraps ICostSymbol with effective Value |
 | `src/WarHub.ArmouryModel.Concrete.Extensions/Symbols/Effective/EffectiveQuerySymbol.cs` | Wraps IQuerySymbol with effective ReferenceValue |
-| `src/WarHub.ArmouryModel.Concrete.Extensions/Symbols/Effective/EffectiveEntryCache.cs` | ConcurrentDictionary-based lazy cache on RosterSymbol |
+| `src/WarHub.ArmouryModel.Concrete.Extensions/Symbols/Effective/EffectiveEntryCache.cs` | ConcurrentDictionary-based lazy cache; owns ModifierEvaluator, self-initializing on RosterSymbol |
 | `src/WarHub.ArmouryModel.Concrete.Extensions/Symbols/Effective/EffectiveEntryKey.cs` | Cache key: (entry, selection?, force?) |
+| `src/WarHub.ArmouryModel.Concrete.Extensions/Symbols/Effective/ModifierEvaluator.cs` | Modifier application, condition eval, scope resolution (internal to Compilation) |
 
 ### Source model (DTO and immutable trees)
 
@@ -112,11 +111,10 @@ SourceNode/ISymbol. Four components:
 ```
 WhamRosterEngine (IRosterEngine)
 ├── EntryResolver      — flatten entries, merge links, resolve info
-├── ModifierEvaluator  — apply modifiers, evaluate conditions, resolve scopes
 └── EffectiveEntrySymbol (Concrete.Extensions) — Roslyn-style wrapper symbols
-    ├── EffectiveEntryCache — lazy ConcurrentDictionary cache on RosterSymbol
-    └── EffectiveEntries (RosterEngine.Spec) — cache factory from ModifierEvaluator
-ConstraintValidator + StateMapper (RosterEngine.Spec) — consume effective entries
+    ├── EffectiveEntryCache — lazy ConcurrentDictionary cache, owns ModifierEvaluator
+    └── ModifierEvaluator  — apply modifiers, evaluate conditions, resolve scopes
+ConstraintValidator + StateMapper (RosterEngine.Spec) — consume effective entries from symbols
 ```
 
 ## Code conventions

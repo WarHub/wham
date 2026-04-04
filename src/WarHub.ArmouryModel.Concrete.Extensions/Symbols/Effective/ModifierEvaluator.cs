@@ -1,12 +1,12 @@
 using WarHub.ArmouryModel.Source;
 
-namespace WarHub.ArmouryModel.RosterEngine;
+namespace WarHub.ArmouryModel.Concrete;
 
 /// <summary>
 /// Evaluates IEffectSymbol modifiers against runtime roster state.
 /// Produces effective values for entry properties (name, hidden, costs, characteristics, etc.)
 /// </summary>
-public sealed class ModifierEvaluator
+internal sealed class ModifierEvaluator
 {
     private readonly RosterNode _roster;
     private readonly Compilation _compilation;

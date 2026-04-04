@@ -17,16 +17,17 @@ decision record.
 ┌──────────────────────────────────────────────────────────┐
 │         RosterEngine.Spec (adapter layer)                │
 │  ProtocolConverter → SpecRosterEngineAdapter → StateMapper│
-│  ConstraintValidator, EffectiveEntries (cache wiring)    │
+│  ConstraintValidator                                     │
 └──────────────────────┬──────────────────────────────────┘
                        ↓
 ┌──────────────────────────────────────────────────────────┐
 │            RosterEngine (core, ISymbol-based)             │
-│  WhamRosterEngine + ModifierEvaluator + EntryResolver    │
+│  WhamRosterEngine + EntryResolver                        │
 └──────────────────────┬──────────────────────────────────┘
                        ↓
 ┌──────────────────────────────────────────────────────────┐
 │   Concrete.Extensions (symbols + effective wrappers)     │
+│   ModifierEvaluator + EffectiveEntryCache (internal)     │
 │   Extensions (public ISymbol interfaces)                 │
 │   Source (DTO types, SourceNode trees)                   │
 └──────────────────────────────────────────────────────────┘
@@ -41,8 +42,8 @@ Core engine with zero TestKit dependency. Key classes:
 - **WhamRosterEngine**: Functional API — takes `RosterNode` + `Compilation`,
   returns modified `RosterNode`. Operations: CreateRoster, AddForce,
   RemoveForce, SelectEntry, SelectChildEntry, DeselectSelection, etc.
-- **ModifierEvaluator**: Evaluates `IEffectSymbol` effects with
-  `EvalContext(Selection?, Force?, EntrySymbol)`.
+- **ModifierEvaluator** (internal to Concrete.Extensions): Evaluates
+  `IEffectSymbol` effects with `EvalContext(Selection?, Force?, EntrySymbol)`.
 - Entry resolution leverages the Compilation's Binder for link targets.
 
 ### WarHub.ArmouryModel.RosterEngine.Spec
@@ -82,11 +83,13 @@ var effectiveEntry = force.GetEffectiveEntry(catalogueEntry);
 var effective = roster.GetEffectiveEntry(declaredEntry, selection, force);
 ```
 
-Caching is handled by `EffectiveEntryCache` (ConcurrentDictionary-based), set on
-`RosterSymbol` via `SetEffectiveEntryCache()`. The `EffectiveEntries` helper in
-`RosterEngine.Spec` wires up the cache from a `ModifierEvaluator` instance.
+Caching is handled by `EffectiveEntryCache` (ConcurrentDictionary-based), which
+is self-initializing on `RosterSymbol`. The cache lazily creates its own
+`ModifierEvaluator` from the roster's `Declaration` and `DeclaringCompilation`
+— no external wiring required. Consumers access effective values through the
+symbol API; `ConstraintValidator` and `StateMapper` share a single cache per roster.
 
-### ModifierEvaluator (~1000 lines)
+### ModifierEvaluator (~1000 lines, internal to Concrete.Extensions)
 
 Evaluates modifiers and conditions using IEffectSymbol/IConditionSymbol:
 
@@ -138,20 +141,19 @@ src/WarHub.ArmouryModel.Concrete.Extensions/Symbols/Effective/
 ├── EffectiveConstraintSymbol.cs  (wrapper: constraint with effective query)
 ├── EffectiveQuerySymbol.cs       (wrapper: query with effective ReferenceValue)
 ├── EffectiveCostSymbol.cs        (wrapper: cost with effective Value)
-├── EffectiveEntryCache.cs        (ConcurrentDictionary-based cache)
-└── EffectiveEntryKey.cs          (cache key type)
+├── EffectiveEntryCache.cs        (self-initializing cache, owns ModifierEvaluator)
+├── EffectiveEntryKey.cs          (cache key type)
+└── ModifierEvaluator.cs          (~1000 lines, internal)
 
 src/WarHub.ArmouryModel.RosterEngine/
 ├── WhamRosterEngine.cs      (~790 lines)
-├── EntryResolver.cs          (~530 lines)
-└── ModifierEvaluator.cs      (~1000 lines)
+└── EntryResolver.cs          (~530 lines)
 
 src/WarHub.ArmouryModel.RosterEngine.Spec/
 ├── SpecRosterEngineAdapter.cs (IRosterEngine impl)
 ├── ProtocolConverter.cs       (Protocol → SourceNode)
 ├── StateMapper.cs             (ISymbol → Protocol state)
-├── ConstraintValidator.cs     (constraint validation)
-└── EffectiveEntries.cs        (cache factory + initialization)
+└── ConstraintValidator.cs     (constraint validation)
 
 tests/WarHub.ArmouryModel.RosterEngine.Tests/
 ├── ConformanceTests.cs       (runs all 304 specs)

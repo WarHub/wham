@@ -49,18 +49,17 @@ internal sealed class RosterSymbol : SourceDeclaredSymbol, IRosterSymbol, INodeD
     public ICatalogueSymbol Gamesystem => GetBoundField(ref lazyGamesystem);
 
     /// <summary>
-    /// Gets the effective entry cache, or <c>null</c> if not yet initialized.
-    /// Set externally by roster engine code that provides the modifier evaluation factory.
+    /// Gets or lazily creates the effective entry cache for this roster.
+    /// The cache uses an internal <see cref="ModifierEvaluator"/> to compute
+    /// effective values on first access. Thread-safe (CAS-protected, set-once).
     /// </summary>
-    internal EffectiveEntryCache? EffectiveEntryCache => effectiveEntryCache;
-
-    /// <summary>
-    /// Initializes the effective entry cache with the given factory.
-    /// Can only be set once; subsequent calls are ignored.
-    /// </summary>
-    internal void SetEffectiveEntryCache(EffectiveEntryCache cache)
+    internal EffectiveEntryCache GetOrCreateEffectiveEntryCache()
     {
+        if (effectiveEntryCache is { } existing)
+            return existing;
+        var cache = new EffectiveEntryCache(Declaration, (WhamCompilation)DeclaringCompilation);
         Interlocked.CompareExchange(ref effectiveEntryCache, cache, null);
+        return effectiveEntryCache!;
     }
 
     public ImmutableArray<RosterCostSymbol> Costs { get; }
@@ -78,8 +77,7 @@ internal sealed class RosterSymbol : SourceDeclaredSymbol, IRosterSymbol, INodeD
         ISelectionSymbol? selection = null,
         IForceSymbol? force = null)
     {
-        if (effectiveEntryCache is not { } cache)
-            return declaredEntry;
+        var cache = GetOrCreateEffectiveEntryCache();
         var selNode = (selection as SelectionSymbol)?.Declaration;
         var forceNode = (force as ForceSymbol)?.Declaration;
         return cache.GetEffectiveEntry(declaredEntry, selNode, forceNode);

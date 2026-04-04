@@ -17,7 +17,6 @@ internal sealed class StateMapper
     private readonly WhamCompilation _compilation;
     private readonly EntryResolver _resolver;
     private readonly IReadOnlyList<ICatalogueSymbol> _forceCatalogues;
-    private readonly ModifierEvaluator _modEval;
     private readonly EffectiveEntryCache _effectiveCache;
 
     // ISymbol entry lookup (entryId → ISelectionEntryContainerSymbol or IContainerEntrySymbol)
@@ -36,10 +35,12 @@ internal sealed class StateMapper
         _compilation = (WhamCompilation)compilation;
         _resolver = new EntryResolver();
         _forceCatalogues = forceCatalogues;
-        _modEval = new ModifierEvaluator(roster, compilation);
-        _effectiveCache = EffectiveEntries.CreateCache(_modEval, compilation);
-        // Initialize the cache on roster symbols for symbol-layer access
-        EffectiveEntries.InitializeRosterCaches(_compilation, roster, _modEval);
+        // Get or create the effective entry cache from the roster symbol.
+        // The cache is self-initializing — it creates its own ModifierEvaluator.
+        var rosterSymbol = _compilation.SourceGlobalNamespace.Rosters
+            .FirstOrDefault(r => r.Declaration == roster)
+            ?? _compilation.SourceGlobalNamespace.Rosters.FirstOrDefault();
+        _effectiveCache = rosterSymbol!.GetOrCreateEffectiveEntryCache();
     }
 
     public ProtocolRosterState MapRosterState(RosterNode roster)
@@ -121,7 +122,7 @@ internal sealed class StateMapper
         var effectiveHidden = effectiveEntry is not null
             ? effectiveEntry.IsHidden
             : entrySym is not null
-                ? _modEval.GetEffectiveHidden(entrySym, selNode, force)
+                ? _effectiveCache.Evaluator.GetEffectiveHidden(entrySym, selNode, force)
                 : false;
         var effectiveCosts = effectiveEntry is not null
             ? GetModifiedSelectionCosts(effectiveEntry, selNode, force)
@@ -164,7 +165,7 @@ internal sealed class StateMapper
         var effectivePage = selNode.Page;
         if (entrySym is not null)
         {
-            var modPage = _modEval.GetEffectivePage(entrySym, selNode, force);
+            var modPage = _effectiveCache.Evaluator.GetEffectivePage(entrySym, selNode, force);
             if (modPage is not null)
                 effectivePage = modPage;
         }
@@ -373,13 +374,13 @@ internal sealed class StateMapper
             var value = ch.Value ?? "";
             // Apply modifiers from the profile itself
             if (profileSym is not null)
-                value = _modEval.GetEffectiveCharacteristic(profileSym, ch.TypeId ?? "", value, selection, force);
+                value = _effectiveCache.Evaluator.GetEffectiveCharacteristic(profileSym, ch.TypeId ?? "", value, selection, force);
             // Apply modifiers from the infolink (if linked)
             if (linkSym is not null)
-                value = _modEval.GetEffectiveCharacteristic(linkSym, ch.TypeId ?? "", value, selection, force);
+                value = _effectiveCache.Evaluator.GetEffectiveCharacteristic(linkSym, ch.TypeId ?? "", value, selection, force);
             // Apply modifiers from the infogroup
             if (groupSym is not null)
-                value = _modEval.GetEffectiveCharacteristic(groupSym, ch.TypeId ?? "", value, selection, force);
+                value = _effectiveCache.Evaluator.GetEffectiveCharacteristic(groupSym, ch.TypeId ?? "", value, selection, force);
             chars.Add(new CharacteristicState(
                 Name: ch.Name ?? "",
                 TypeId: ch.TypeId ?? "",
@@ -410,13 +411,13 @@ internal sealed class StateMapper
             var value = ch.Value ?? "";
             // Apply modifiers from the profile itself
             if (profileSym is not null)
-                value = _modEval.GetEffectiveCharacteristic(profileSym, ch.TypeId ?? "", value, selection, force);
+                value = _effectiveCache.Evaluator.GetEffectiveCharacteristic(profileSym, ch.TypeId ?? "", value, selection, force);
             // Apply modifiers from the infolink
             if (linkSym is not null)
-                value = _modEval.GetEffectiveCharacteristic(linkSym, ch.TypeId ?? "", value, selection, force);
+                value = _effectiveCache.Evaluator.GetEffectiveCharacteristic(linkSym, ch.TypeId ?? "", value, selection, force);
             // Apply modifiers from the infogroup
             if (groupSym is not null)
-                value = _modEval.GetEffectiveCharacteristic(groupSym, ch.TypeId ?? "", value, selection, force);
+                value = _effectiveCache.Evaluator.GetEffectiveCharacteristic(groupSym, ch.TypeId ?? "", value, selection, force);
             chars.Add(new CharacteristicState(
                 Name: ch.Name ?? "",
                 TypeId: ch.TypeId ?? "",
@@ -448,11 +449,11 @@ internal sealed class StateMapper
         var linkSym = viaInfoLink is not null ? LookupEntrySymbol(viaInfoLink.Id) : null;
         var groupSym = group is not null ? LookupEntrySymbol(group.Id) : null;
         if (ruleSym is not null)
-            desc = _modEval.GetEffectiveRuleDescription(ruleSym, desc, selection, force);
+            desc = _effectiveCache.Evaluator.GetEffectiveRuleDescription(ruleSym, desc, selection, force);
         if (linkSym is not null)
-            desc = _modEval.GetEffectiveRuleDescription(linkSym, desc, selection, force);
+            desc = _effectiveCache.Evaluator.GetEffectiveRuleDescription(linkSym, desc, selection, force);
         if (groupSym is not null)
-            desc = _modEval.GetEffectiveRuleDescription(groupSym, desc, selection, force);
+            desc = _effectiveCache.Evaluator.GetEffectiveRuleDescription(groupSym, desc, selection, force);
 
         return new RuleState(
             Name: r.Name ?? "",
@@ -470,11 +471,11 @@ internal sealed class StateMapper
         var linkSym = LookupEntrySymbol(link.Id);
         var groupSym = group is not null ? LookupEntrySymbol(group.Id) : null;
         if (ruleSym is not null)
-            desc = _modEval.GetEffectiveRuleDescription(ruleSym, desc, selection, force);
+            desc = _effectiveCache.Evaluator.GetEffectiveRuleDescription(ruleSym, desc, selection, force);
         if (linkSym is not null)
-            desc = _modEval.GetEffectiveRuleDescription(linkSym, desc, selection, force);
+            desc = _effectiveCache.Evaluator.GetEffectiveRuleDescription(linkSym, desc, selection, force);
         if (groupSym is not null)
-            desc = _modEval.GetEffectiveRuleDescription(groupSym, desc, selection, force);
+            desc = _effectiveCache.Evaluator.GetEffectiveRuleDescription(groupSym, desc, selection, force);
 
         // InfoLink overrides: hidden (OR'd), name overrides target if non-empty.
         // Page and publicationId always come from the TARGET, never the InfoLink.
@@ -552,7 +553,7 @@ internal sealed class StateMapper
         }
 
         // Apply category modifiers from entry symbol effects
-        var (effectiveCatIds, effectivePrimaryId) = _modEval.GetEffectiveCategoriesFrom(
+        var (effectiveCatIds, effectivePrimaryId) = _effectiveCache.Evaluator.GetEffectiveCategoriesFrom(
             entrySym, initialCatIds, initialPrimaryId, selNode, force);
 
         // Try to get names for any new categories added by modifiers

@@ -28,13 +28,13 @@ internal sealed class ConstraintValidator
         _roster = roster;
         _compilation = compilation;
         _forceCatalogues = forceCatalogues;
-        var evaluator = new ModifierEvaluator(roster, compilation);
-        _effectiveCache = EffectiveEntries.CreateCache(evaluator, compilation);
-        // Also initialize the cache on the roster symbol for symbol-layer access
-        if (compilation is WhamCompilation whamCompilation)
-        {
-            EffectiveEntries.InitializeRosterCaches(whamCompilation, roster, evaluator);
-        }
+        // Get or create the effective entry cache from the roster symbol.
+        // The cache is self-initializing — it creates its own ModifierEvaluator.
+        var whamCompilation = (WhamCompilation)compilation;
+        var rosterSymbol = whamCompilation.SourceGlobalNamespace.Rosters
+            .FirstOrDefault(r => r.Declaration == roster)
+            ?? whamCompilation.SourceGlobalNamespace.Rosters.FirstOrDefault();
+        _effectiveCache = rosterSymbol!.GetOrCreateEffectiveEntryCache();
         _entryIndex = new Dictionary<string, ISelectionEntryContainerSymbol>(StringComparer.Ordinal);
         _categoryIndex = new Dictionary<string, ICategoryEntrySymbol>(StringComparer.Ordinal);
         _forceEntryIndex = new Dictionary<string, IForceEntrySymbol>(StringComparer.Ordinal);

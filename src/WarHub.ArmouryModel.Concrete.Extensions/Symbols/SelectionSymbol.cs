@@ -35,11 +35,11 @@ internal sealed class SelectionSymbol : ContainerSymbol, ISelectionSymbol, INode
             if (lazyEffectiveSourceEntry is { } cached)
                 return cached;
             var roster = GetRosterSymbol();
-            var entry = roster?.EffectiveEntryCache?.GetEffectiveEntry(
+            var result = roster?.GetOrCreateEffectiveEntryCache().GetEffectiveEntry(
                 SourceEntry,
                 Declaration,
-                (ContainingSymbol as ForceSymbol)?.Declaration);
-            var result = entry ?? (ISelectionEntryContainerSymbol)SourceEntry;
+                (ContainingSymbol as ForceSymbol)?.Declaration)
+                ?? (ISelectionEntryContainerSymbol)SourceEntry;
             Interlocked.CompareExchange(ref lazyEffectiveSourceEntry, result, null);
             return lazyEffectiveSourceEntry;
         }
