@@ -8,6 +8,13 @@ internal abstract class SourceDeclaredSymbol : Symbol, INodeDeclaredSymbol<Sourc
     protected SymbolCompletionState state;
     private ImmutableArray<Symbol> lazyMembers;
 
+    /// <summary>
+    /// Thread-local set of symbols currently in <see cref="BindReferences"/>.
+    /// Used to detect reentrancy when <see cref="WhamCompilationOptions.DetectBindingReentrancy"/> is enabled.
+    /// </summary>
+    [ThreadStatic]
+    private static HashSet<SourceDeclaredSymbol>? t_bindingSymbols;
+
     protected SourceDeclaredSymbol(
         ISymbol? containingSymbol,
         SourceNode declaration)
@@ -119,14 +126,36 @@ internal abstract class SourceDeclaredSymbol : Symbol, INodeDeclaredSymbol<Sourc
         {
             return;
         }
-        if (state.NotePartComplete(CompletionPart.StartBindingReferences))
+        var detectReentrancy = (DeclaringCompilation.Options as WhamCompilationOptions)?.DetectBindingReentrancy == true;
+        if (detectReentrancy)
         {
-            var diagnostics = BindingDiagnosticBag.GetInstance();
-            BindReferencesCore(DeclaringCompilation.GetBinder(Declaration, ContainingSymbol), diagnostics);
-            AddDeclarationDiagnostics(diagnostics);
-            state.NotePartComplete(CompletionPart.FinishBindingReferences);
+            var binding = t_bindingSymbols ??= [];
+            if (!binding.Add(this))
+            {
+                throw new InvalidOperationException(
+                    $"Binding reentrancy detected on symbol '{Name}' ({GetType().Name}, Id='{Id}'). " +
+                    $"This symbol is already being bound on this thread. " +
+                    $"Currently binding: [{string.Join(", ", binding.Select(s => $"{s.GetType().Name}('{s.Name}')"))}]");
+            }
         }
-        state.SpinWaitComplete(CompletionPart.ReferencesCompleted, default);
+        try
+        {
+            if (state.NotePartComplete(CompletionPart.StartBindingReferences))
+            {
+                var diagnostics = BindingDiagnosticBag.GetInstance();
+                BindReferencesCore(DeclaringCompilation.GetBinder(Declaration, ContainingSymbol), diagnostics);
+                AddDeclarationDiagnostics(diagnostics);
+                state.NotePartComplete(CompletionPart.FinishBindingReferences);
+            }
+            state.SpinWaitComplete(CompletionPart.ReferencesCompleted, default);
+        }
+        finally
+        {
+            if (detectReentrancy)
+            {
+                t_bindingSymbols?.Remove(this);
+            }
+        }
     }
 
     protected virtual void BindReferencesCore(Binder binder, BindingDiagnosticBag diagnostics)
