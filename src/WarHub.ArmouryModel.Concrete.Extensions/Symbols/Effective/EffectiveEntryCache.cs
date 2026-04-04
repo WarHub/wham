@@ -115,6 +115,108 @@ internal sealed class EffectiveEntryCache
         return ResourceResolver.ResolveEffectiveResources(entry, Evaluator, selection, force);
     }
 
+    /// <summary>
+    /// Computes effective categories for a selection: applies entry modifiers
+    /// to the selection's runtime categories and resolves category names.
+    /// </summary>
+    public IReadOnlyList<ResolvedCategory> GetEffectiveSelectionCategories(
+        ISelectionEntryContainerSymbol entry,
+        ISelectionSymbol selection,
+        IForceSymbol? force)
+    {
+        // Read initial categories from the selection (runtime-assigned by roster engine)
+        var initialCatIds = new List<string>();
+        string? initialPrimaryId = null;
+        var catNameMap = new Dictionary<string, string>(StringComparer.Ordinal);
+
+        foreach (var cat in selection.Categories)
+        {
+            // Use declaration node to avoid triggering binder for SourceEntry
+            var catId = (cat is CategorySymbol concreteCat)
+                ? concreteCat.Declaration.EntryId ?? ""
+                : cat.SourceEntry?.Id ?? "";
+            var catName = (cat is CategorySymbol concreteCat2)
+                ? concreteCat2.Declaration.Name ?? ""
+                : cat.SourceEntry?.Name ?? "";
+            initialCatIds.Add(catId);
+            catNameMap[catId] = catName;
+            if (cat.IsPrimaryCategory)
+                initialPrimaryId = catId;
+        }
+
+        // Apply category modifiers from the entry's effects
+        var (effectiveCatIds, effectivePrimaryId) = Evaluator.GetEffectiveCategoriesFrom(
+            entry, initialCatIds, initialPrimaryId, selection, force);
+
+        // Resolve names for any modifier-added categories not in the original set
+        var result = new List<ResolvedCategory>(effectiveCatIds.Count);
+        foreach (var catId in effectiveCatIds)
+        {
+            var name = catNameMap.GetValueOrDefault(catId, "");
+            if (string.IsNullOrEmpty(name))
+            {
+                name = FindCategoryName(catId) ?? "";
+            }
+            result.Add(new ResolvedCategory(name, catId, catId == effectivePrimaryId));
+        }
+        return result;
+    }
+
+    /// <summary>
+    /// Computes effective costs for a selection: modifier-applied per-unit costs
+    /// multiplied by <see cref="ISelectionSymbol.SelectedCount"/>.
+    /// </summary>
+    public IReadOnlyList<ResolvedCost> GetEffectiveSelectionCosts(
+        EffectiveEntrySymbol effectiveEntry,
+        ISelectionSymbol selection)
+    {
+        var result = new List<ResolvedCost>();
+        foreach (var cost in effectiveEntry.Costs)
+        {
+            var typeId = cost.Type?.Id ?? "";
+            var name = cost.Name ?? "";
+            var value = (double)(cost.Value * selection.SelectedCount);
+            result.Add(new ResolvedCost(name, typeId, value));
+        }
+        return result;
+    }
+
+    /// <summary>
+    /// Resolves a publication name by ID from any catalogue in the compilation.
+    /// </summary>
+    public string? ResolvePublicationName(string? publicationId)
+    {
+        if (string.IsNullOrEmpty(publicationId))
+            return null;
+
+        foreach (var cat in _compilation.GlobalNamespace.Catalogues)
+        {
+            foreach (var rd in cat.ResourceDefinitions)
+            {
+                if (rd is IPublicationSymbol pub && pub.Id == publicationId)
+                    return pub.Name;
+            }
+        }
+        return null;
+    }
+
+    private string? FindCategoryName(string catId)
+    {
+        foreach (var cat in _compilation.GlobalNamespace.Catalogues)
+        {
+            foreach (var entry in cat.RootContainerEntries)
+            {
+                if (entry is ICategoryEntrySymbol catEntry)
+                {
+                    var effectiveId = catEntry.ReferencedEntry?.Id ?? catEntry.Id;
+                    if (effectiveId == catId)
+                        return catEntry.Name;
+                }
+            }
+        }
+        return null;
+    }
+
     private static void IndexCategories(
         ImmutableArray<IContainerEntrySymbol> entries,
         Dictionary<string, ICategoryEntrySymbol> index)

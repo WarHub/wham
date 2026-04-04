@@ -130,20 +130,29 @@ internal sealed class StateMapper
             : entrySym is not null
                 ? _effectiveCache.Evaluator.GetEffectiveHidden(entrySym, selSym, forceSym)
                 : false;
-        var effectiveCosts = effectiveEntry is not null
-            ? GetModifiedSelectionCosts(effectiveEntry, selNode, force)
-            : MapSelectionCosts(selNode);
 
+        // Costs: use Symbol-layer effective costs × SelectedCount
+        List<CostState> effectiveCosts;
+        if (effectiveEntry is not null && selSym is not null)
+        {
+            effectiveCosts = MapResolvedCosts(_effectiveCache.GetEffectiveSelectionCosts(effectiveEntry, selSym));
+        }
+        else
+        {
+            effectiveCosts = MapSelectionCosts(selNode);
+        }
+
+        // Categories: use Symbol-layer effective categories with modifier application
         List<CategoryState> categories;
-        if (entrySym is ISelectionEntryContainerSymbol secCat)
+        if (entrySym is ISelectionEntryContainerSymbol secCat && selSym is not null)
         {
             try
             {
-                categories = GetModifiedCategories(secCat, selNode, force);
+                categories = MapResolvedCategories(
+                    _effectiveCache.GetEffectiveSelectionCategories(secCat, selSym, forceSym));
             }
             catch (InvalidCastException)
             {
-                // Fall back to unmodified categories if symbol binding fails
                 categories = MapSelectionCategories(selNode);
             }
         }
@@ -152,7 +161,7 @@ internal sealed class StateMapper
             categories = MapSelectionCategories(selNode);
         }
 
-        // Resolve profiles and rules from the Symbol layer
+        // Profiles and rules: use Symbol-layer resolution
         List<ProfileState> profiles;
         List<RuleState> rules;
         if (entrySym is ISelectionEntryContainerSymbol secRes)
@@ -176,9 +185,10 @@ internal sealed class StateMapper
             _ => "upgrade",
         };
 
-        var publicationName = ResolvePublicationName(selNode.PublicationId);
+        // Publication: use Symbol-layer resolution
+        var publicationName = _effectiveCache.ResolvePublicationName(selNode.PublicationId);
 
-        // Apply page modifiers if entry symbol is available
+        // Page: apply modifiers if entry symbol is available
         var effectivePage = selNode.Page;
         if (entrySym is not null)
         {
@@ -547,6 +557,32 @@ internal sealed class StateMapper
         return result;
     }
 
+    private static List<CategoryState> MapResolvedCategories(IReadOnlyList<ResolvedCategory> resolved)
+    {
+        var result = new List<CategoryState>(resolved.Count);
+        foreach (var c in resolved)
+        {
+            result.Add(new CategoryState(
+                Name: c.Name,
+                EntryId: c.EntryId,
+                Primary: c.IsPrimary));
+        }
+        return result;
+    }
+
+    private static List<CostState> MapResolvedCosts(IReadOnlyList<ResolvedCost> resolved)
+    {
+        var result = new List<CostState>(resolved.Count);
+        foreach (var c in resolved)
+        {
+            result.Add(new CostState(
+                Name: c.Name,
+                TypeId: c.TypeId,
+                Value: c.Value));
+        }
+        return result;
+    }
+
     private static List<ProfileState> MapNodeProfiles(ListNode<ProfileNode> profiles)
     {
         var result = new List<ProfileState>();
@@ -588,54 +624,7 @@ internal sealed class StateMapper
     }
 
     // ──────────────────────────────────────────────────────────────────
-    //  Category mapping
-    // ──────────────────────────────────────────────────────────────────
-
-    private List<CategoryState> GetModifiedCategories(
-        ISelectionEntryContainerSymbol entrySym,
-        SelectionNode selNode,
-        ForceNode force)
-    {
-        // Build initial category list from the runtime selection node (already resolved by engine)
-        var initialCatIds = new List<string>();
-        string? initialPrimaryId = null;
-        var catNameMap = new Dictionary<string, string>(StringComparer.Ordinal);
-        foreach (var catNode in selNode.Categories)
-        {
-            var catId = catNode.EntryId ?? "";
-            initialCatIds.Add(catId);
-            catNameMap[catId] = catNode.Name ?? "";
-            if (catNode.Primary)
-                initialPrimaryId = catId;
-        }
-
-        // Apply category modifiers from entry symbol effects
-        var (effectiveCatIds, effectivePrimaryId) = _effectiveCache.Evaluator.GetEffectiveCategoriesFrom(
-            entrySym, initialCatIds, initialPrimaryId, _nodeSymbols.GetSelection(selNode), _nodeSymbols.GetForce(force));
-
-        // Try to get names for any new categories added by modifiers
-        foreach (var catId in effectiveCatIds)
-        {
-            if (!catNameMap.ContainsKey(catId))
-            {
-                var catSym = LookupEntrySymbol(catId);
-                if (catSym is not null)
-                    catNameMap[catId] = catSym.Name ?? "";
-            }
-        }
-
-        var categories = new List<CategoryState>();
-        foreach (var catId in effectiveCatIds)
-        {
-            var name = catNameMap.GetValueOrDefault(catId, "");
-            var isPrimary = catId == effectivePrimaryId;
-            categories.Add(new CategoryState(Name: name, EntryId: catId, Primary: isPrimary));
-        }
-        return categories;
-    }
-
-    // ──────────────────────────────────────────────────────────────────
-    //  Cost mapping
+    //  Cost mapping (fallback for selections without symbol entries)
     // ──────────────────────────────────────────────────────────────────
 
     private static List<CostState> MapSelectionCosts(SelectionNode selNode)
@@ -663,51 +652,6 @@ internal sealed class StateMapper
                 Primary: catNode.Primary));
         }
         return categories;
-    }
-
-    // ──────────────────────────────────────────────────────────────────
-    //  Modifier-aware cost mapping
-    // ──────────────────────────────────────────────────────────────────
-
-    private List<CostState> GetModifiedSelectionCosts(
-        ISelectionEntryContainerSymbol effectiveEntry,
-        SelectionNode selNode,
-        ForceNode force)
-    {
-        // Build effective per-unit cost dictionary from the effective entry's costs
-        var effectiveCosts = new Dictionary<string, decimal>(StringComparer.Ordinal);
-        foreach (var cost in effectiveEntry.Costs)
-        {
-            if (cost.Type?.Id is { } typeId)
-            {
-                effectiveCosts[typeId] = cost.Value;
-            }
-        }
-
-        var result = new List<CostState>();
-
-        // Map costs using the effective values
-        foreach (var cost in selNode.Costs)
-        {
-            var typeId = cost.TypeId ?? "";
-            if (effectiveCosts.TryGetValue(typeId, out var modifiedPerUnit))
-            {
-                // Use modified per-unit value times the selection count
-                result.Add(new CostState(
-                    Name: cost.Name ?? "",
-                    TypeId: typeId,
-                    Value: (double)(modifiedPerUnit * selNode.Number)));
-            }
-            else
-            {
-                // Cost type not on entry (shouldn't happen, but be safe)
-                result.Add(new CostState(
-                    Name: cost.Name ?? "",
-                    TypeId: typeId,
-                    Value: (double)cost.Value));
-            }
-        }
-        return result;
     }
 
     // ──────────────────────────────────────────────────────────────────
@@ -1106,27 +1050,6 @@ internal sealed class StateMapper
     {
         // Force entry declarations are indexed in the same dictionary
         return FindEntryDeclaration(entryId);
-    }
-
-    // ──────────────────────────────────────────────────────────────────
-    //  Publication resolution
-    // ──────────────────────────────────────────────────────────────────
-
-    private string? ResolvePublicationName(string? publicationId)
-    {
-        if (string.IsNullOrEmpty(publicationId))
-            return null;
-
-        foreach (var cat in _compilation.GlobalNamespace.Catalogues)
-        {
-            foreach (var rd in cat.ResourceDefinitions)
-            {
-                if (rd is IPublicationSymbol pub && pub.Id == publicationId)
-                    return pub.Name;
-            }
-        }
-
-        return null;
     }
 
     private IReadOnlyList<ValidationErrorState> GetConstraintErrors()

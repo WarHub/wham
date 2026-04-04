@@ -25,3 +25,13 @@ internal readonly record struct ResolvedRule(
     bool Hidden,
     string? Page,
     string? PublicationId);
+
+internal readonly record struct ResolvedCategory(
+    string Name,
+    string EntryId,
+    bool IsPrimary);
+
+internal readonly record struct ResolvedCost(
+    string Name,
+    string TypeId,
+    double Value);
