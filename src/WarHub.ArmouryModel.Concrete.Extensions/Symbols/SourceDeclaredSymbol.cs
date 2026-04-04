@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using WarHub.ArmouryModel.Source;
 
 namespace WarHub.ArmouryModel.Concrete;
@@ -10,7 +11,7 @@ internal abstract class SourceDeclaredSymbol : Symbol, INodeDeclaredSymbol<Sourc
 
     /// <summary>
     /// Thread-local set of symbols currently in <see cref="BindReferences"/>.
-    /// Used to detect reentrancy when <see cref="WhamCompilationOptions.DetectBindingReentrancy"/> is enabled.
+    /// Used to detect reentrancy when <see cref="CompilationOptions.DetectBindingReentrancy"/> is enabled.
     /// </summary>
     [ThreadStatic]
     private static HashSet<SourceDeclaredSymbol>? t_bindingSymbols;
@@ -126,36 +127,51 @@ internal abstract class SourceDeclaredSymbol : Symbol, INodeDeclaredSymbol<Sourc
         {
             return;
         }
-        var detectReentrancy = (DeclaringCompilation.Options as WhamCompilationOptions)?.DetectBindingReentrancy == true;
-        if (detectReentrancy)
+        if (DeclaringCompilation.Options.DetectBindingReentrancy)
         {
-            var binding = t_bindingSymbols ??= [];
-            if (!binding.Add(this))
-            {
-                throw new InvalidOperationException(
-                    $"Binding reentrancy detected on symbol '{Name}' ({GetType().Name}, Id='{Id}'). " +
-                    $"This symbol is already being bound on this thread. " +
-                    $"Currently binding: [{string.Join(", ", binding.Select(s => $"{s.GetType().Name}('{s.Name}')"))}]");
-            }
+            BindReferencesWithReentrancyDetection();
+            return;
+        }
+        BindReferencesCore();
+    }
+
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private void BindReferencesWithReentrancyDetection()
+    {
+        var binding = t_bindingSymbols ??= [];
+        if (!binding.Add(this))
+        {
+            ThrowReentrancyDetected(binding);
         }
         try
         {
-            if (state.NotePartComplete(CompletionPart.StartBindingReferences))
-            {
-                var diagnostics = BindingDiagnosticBag.GetInstance();
-                BindReferencesCore(DeclaringCompilation.GetBinder(Declaration, ContainingSymbol), diagnostics);
-                AddDeclarationDiagnostics(diagnostics);
-                state.NotePartComplete(CompletionPart.FinishBindingReferences);
-            }
-            state.SpinWaitComplete(CompletionPart.ReferencesCompleted, default);
+            BindReferencesCore();
         }
         finally
         {
-            if (detectReentrancy)
-            {
-                t_bindingSymbols?.Remove(this);
-            }
+            binding.Remove(this);
         }
+    }
+
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private void ThrowReentrancyDetected(HashSet<SourceDeclaredSymbol> binding)
+    {
+        throw new InvalidOperationException(
+            $"Binding reentrancy detected on symbol '{Name}' ({GetType().Name}, Id='{Id}'). " +
+            $"This symbol is already being bound on this thread. " +
+            $"Currently binding: [{string.Join(", ", binding.Select(s => $"{s.GetType().Name}('{s.Name}')"))}]");
+    }
+
+    private void BindReferencesCore()
+    {
+        if (state.NotePartComplete(CompletionPart.StartBindingReferences))
+        {
+            var diagnostics = BindingDiagnosticBag.GetInstance();
+            BindReferencesCore(DeclaringCompilation.GetBinder(Declaration, ContainingSymbol), diagnostics);
+            AddDeclarationDiagnostics(diagnostics);
+            state.NotePartComplete(CompletionPart.FinishBindingReferences);
+        }
+        state.SpinWaitComplete(CompletionPart.ReferencesCompleted, default);
     }
 
     protected virtual void BindReferencesCore(Binder binder, BindingDiagnosticBag diagnostics)
