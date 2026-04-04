@@ -166,30 +166,7 @@ public sealed class SpecRosterEngineAdapter : IRosterEngine
 
     public IReadOnlyList<ValidationErrorState> GetValidationErrors()
     {
-        var state = EnsureState();
-        var compilation = (WhamCompilation)state.Compilation;
-        var diagnostics = compilation.GetConstraintDiagnostics();
-        var result = new List<ValidationErrorState>(diagnostics.Length);
-        foreach (var diagnostic in diagnostics)
-        {
-            if (diagnostic is WhamDiagnostic whamDiag && whamDiag.DiagnosticInfo is WhamDiagnosticInfo info)
-            {
-                var args = info.Args;
-                var ownerType = args.Length > 0 ? args[0] as string ?? "" : "";
-                var ownerEntryId = args.Length > 1 ? args[1] as string : null;
-                if (ownerEntryId is "") ownerEntryId = null;
-                var entryId = args.Length > 2 ? args[2] as string ?? "" : "";
-                var constraintId = args.Length > 3 ? args[3] as string : null;
-                if (constraintId is "") constraintId = null;
-                result.Add(new ValidationErrorState(
-                    Message: diagnostic.GetMessage(),
-                    OwnerType: ownerType,
-                    OwnerEntryId: ownerEntryId,
-                    EntryId: entryId,
-                    ConstraintId: constraintId));
-            }
-        }
-        return result;
+        return GetRosterState().ValidationErrors;
     }
 
     public void Dispose()

@@ -6,7 +6,7 @@ namespace WarHub.ArmouryModel.RosterEngine.Spec;
 /// <summary>
 /// Lazily-built lookup from SourceNode instances (ForceNode, SelectionNode)
 /// to their corresponding ISymbol instances. Built by walking the compilation's
-/// symbol tree. Shared between <see cref="StateMapper"/> and <see cref="ConstraintValidator"/>.
+/// symbol tree. Used by <see cref="StateMapper"/>.
 /// </summary>
 internal sealed class NodeSymbolLookup
 {

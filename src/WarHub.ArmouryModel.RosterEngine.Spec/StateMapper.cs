@@ -59,8 +59,8 @@ internal sealed class StateMapper
         // Compute roster-level cost totals from effective selection costs (modifier-aware)
         var costs = ComputeRosterCostsFromSelections(roster, forces);
 
-        // Phase 5: Constraint validation
-        var errors = ConstraintValidator.Validate(roster, _compilation, _forceCatalogues);
+        // Phase 5: Constraint validation (from compilation diagnostics)
+        var errors = GetConstraintErrors();
 
         return new ProtocolRosterState(
             Name: roster.Name ?? "New Roster",
@@ -1076,5 +1076,31 @@ internal sealed class StateMapper
         }
 
         return null;
+    }
+
+    private IReadOnlyList<ValidationErrorState> GetConstraintErrors()
+    {
+        var diagnostics = _compilation.GetConstraintDiagnostics();
+        var result = new List<ValidationErrorState>(diagnostics.Length);
+        foreach (var diagnostic in diagnostics)
+        {
+            if (diagnostic is WhamDiagnostic whamDiag && whamDiag.DiagnosticInfo is WhamDiagnosticInfo info)
+            {
+                var args = info.Args;
+                var ownerType = args.Length > 0 ? args[0] as string ?? "" : "";
+                var ownerEntryId = args.Length > 1 ? args[1] as string : null;
+                if (ownerEntryId is "") ownerEntryId = null;
+                var entryId = args.Length > 2 ? args[2] as string ?? "" : "";
+                var constraintId = args.Length > 3 ? args[3] as string : null;
+                if (constraintId is "") constraintId = null;
+                result.Add(new ValidationErrorState(
+                    Message: diagnostic.GetMessage(),
+                    OwnerType: ownerType,
+                    OwnerEntryId: ownerEntryId,
+                    EntryId: entryId,
+                    ConstraintId: constraintId));
+            }
+        }
+        return result;
     }
 }
