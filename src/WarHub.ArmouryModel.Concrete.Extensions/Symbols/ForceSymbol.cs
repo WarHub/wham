@@ -24,6 +24,8 @@ internal sealed class ForceSymbol : ContainerSymbol, IForceSymbol, INodeDeclared
 
     public override ContainerKind ContainerKind => ContainerKind.Force;
 
+    public string? EntryId => Declaration.EntryId;
+
     public override IForceEntrySymbol SourceEntry => GetBoundField(ref lazyForceEntry);
 
     public ImmutableArray<ForceSymbol> Forces { get; }
