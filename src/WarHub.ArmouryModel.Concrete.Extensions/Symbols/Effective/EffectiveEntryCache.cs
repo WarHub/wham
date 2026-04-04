@@ -101,6 +101,20 @@ internal sealed class EffectiveEntryCache
         return (builder.ToImmutable(), primary);
     }
 
+    /// <summary>
+    /// Resolves effective profiles and rules for an entry,
+    /// including those reached through InfoLinks and InfoGroups,
+    /// with modifier-applied characteristic values and rule descriptions.
+    /// </summary>
+    public (IReadOnlyList<ResolvedProfile> Profiles, IReadOnlyList<ResolvedRule> Rules)
+        GetEffectiveResources(
+            ISelectionEntryContainerSymbol entry,
+            ISelectionSymbol? selection,
+            IForceSymbol? force)
+    {
+        return ResourceResolver.ResolveEffectiveResources(entry, Evaluator, selection, force);
+    }
+
     private static void IndexCategories(
         ImmutableArray<IContainerEntrySymbol> entries,
         Dictionary<string, ICategoryEntrySymbol> index)

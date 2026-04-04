@@ -152,10 +152,21 @@ internal sealed class StateMapper
             categories = MapSelectionCategories(selNode);
         }
 
-        // Resolve profiles and rules from the entry declaration
-        var entryDecl = FindEntryDeclaration(selNode.EntryId);
-        var profiles = ResolveSelectionProfiles(entryDecl, selNode, force);
-        var rules = ResolveSelectionRules(entryDecl, selNode, force);
+        // Resolve profiles and rules from the Symbol layer
+        List<ProfileState> profiles;
+        List<RuleState> rules;
+        if (entrySym is ISelectionEntryContainerSymbol secRes)
+        {
+            var (resolvedProfiles, resolvedRules) = _effectiveCache.GetEffectiveResources(secRes, selSym, forceSym);
+            profiles = MapResolvedProfiles(resolvedProfiles);
+            rules = MapResolvedRules(resolvedRules);
+        }
+        else
+        {
+            var entryDecl = FindEntryDeclaration(selNode.EntryId);
+            profiles = ResolveSelectionProfiles(entryDecl, selNode, force);
+            rules = ResolveSelectionRules(entryDecl, selNode, force);
+        }
 
         var type = selNode.Type switch
         {
@@ -494,6 +505,46 @@ internal sealed class StateMapper
             Hidden: hidden,
             Page: target.Page,
             PublicationId: target.PublicationId);
+    }
+
+    private static List<ProfileState> MapResolvedProfiles(IReadOnlyList<ResolvedProfile> resolved)
+    {
+        var result = new List<ProfileState>(resolved.Count);
+        foreach (var p in resolved)
+        {
+            var chars = new List<CharacteristicState>(p.Characteristics.Length);
+            foreach (var ch in p.Characteristics)
+            {
+                chars.Add(new CharacteristicState(
+                    Name: ch.Name,
+                    TypeId: ch.TypeId ?? "",
+                    Value: ch.Value));
+            }
+            result.Add(new ProfileState(
+                Name: p.Name,
+                TypeId: p.TypeId,
+                TypeName: p.TypeName,
+                Hidden: p.Hidden,
+                Characteristics: chars,
+                Page: p.Page,
+                PublicationId: p.PublicationId));
+        }
+        return result;
+    }
+
+    private static List<RuleState> MapResolvedRules(IReadOnlyList<ResolvedRule> resolved)
+    {
+        var result = new List<RuleState>(resolved.Count);
+        foreach (var r in resolved)
+        {
+            result.Add(new RuleState(
+                Name: r.Name,
+                Description: r.Description,
+                Hidden: r.Hidden,
+                Page: r.Page,
+                PublicationId: r.PublicationId));
+        }
+        return result;
     }
 
     private static List<ProfileState> MapNodeProfiles(ListNode<ProfileNode> profiles)
