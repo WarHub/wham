@@ -354,7 +354,12 @@ internal class Binder
                 queuedForProcessing.Enqueue(import.Catalogue);
             }
         }
-        closureItems.Add(catalogue.Gamesystem);
+        // Ensure gamesystem is always in the closure (it may already be
+        // present if the starting catalogue imported it or is the gamesystem).
+        if (!closureItems.Contains(catalogue.Gamesystem))
+        {
+            closureItems.Add(catalogue.Gamesystem);
+        }
         // TODO consider filtering out "missing"/error items
         return closureItems.ToImmutableArray();
     }

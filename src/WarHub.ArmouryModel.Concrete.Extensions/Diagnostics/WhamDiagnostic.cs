@@ -12,6 +12,8 @@ internal sealed class WhamDiagnostic : DiagnosticWithInfo
     {
     }
 
+    internal new DiagnosticInfo DiagnosticInfo => Info;
+
     public override string ToString() =>
         DiagnosticFormatter.Instance.Format(this, formatter: null);
 

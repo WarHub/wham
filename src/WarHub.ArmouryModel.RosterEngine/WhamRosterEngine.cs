@@ -78,10 +78,11 @@ public sealed class WhamRosterEngine
         var forceEntryDecl = forceEntry.GetDeclaration()
             ?? throw new ArgumentException("Force entry symbol has no backing declaration node.", nameof(forceEntry));
 
-        // Create the force node. NodeFactory.Force requires the ForceEntryNode
-        // to be a descendant of a CatalogueBaseNode (for catalogueId/name/revision),
-        // which is guaranteed for declarations obtained from the symbol tree.
-        var forceNode = NodeFactory.Force(forceEntryDecl);
+        // Resolve the catalogue's backing declaration node so the force records
+        // the correct catalogueId (not the force entry's defining catalogue).
+        var catalogueDecl = catalogue.GetDeclaration() as CatalogueBaseNode;
+
+        var forceNode = NodeFactory.Force(forceEntryDecl, catalogueDecl);
 
         // Resolve category links declared on the force entry into CategoryNodes.
         var categories = BuildForceCategories(forceEntry);
@@ -331,7 +332,11 @@ public sealed class WhamRosterEngine
                 $"Cannot resolve entry '{entry.Name}' (ID: {entry.Id}) to a SelectionEntryNode declaration.",
                 nameof(entry));
 
-        var entryId = entry.Id ?? entryDecl.Id ?? "";
+        // Build entryId path matching BattleScribe format:
+        // For entry links, use "linkId::targetId" so the binder resolves
+        // SourceEntryPath = [link, target] with SourceEntry = target.
+        // For direct entries, use just the entry's ID.
+        var entryId = BuildEntryIdPath(entry);
         var entryGroupId = sourceGroup?.Id;
 
         var selectionNode = NodeFactory.Selection(entryDecl, entryId, entryGroupId);
@@ -385,6 +390,23 @@ public sealed class WhamRosterEngine
         }
 
         return null;
+    }
+
+    /// <summary>
+    /// Builds the <c>entryId</c> for a selection node, matching BattleScribe's
+    /// <c>"::"</c>-separated path format. For entry links, the path is
+    /// <c>"linkId::targetId"</c> so that the binder produces
+    /// <c>SourceEntryPath = [link, resolvedTarget]</c>. For direct entries,
+    /// returns just the entry's own ID.
+    /// </summary>
+    private static string BuildEntryIdPath(ISelectionEntryContainerSymbol entry)
+    {
+        if (entry.ReferencedEntry is { Id: { } targetId })
+        {
+            var linkId = entry.Id ?? "";
+            return $"{linkId}::{targetId}";
+        }
+        return entry.Id ?? "";
     }
 
     /// <summary>

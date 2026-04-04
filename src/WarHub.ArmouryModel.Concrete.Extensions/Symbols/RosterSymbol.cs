@@ -162,6 +162,21 @@ internal sealed class RosterSymbol : SourceDeclaredSymbol, IRosterSymbol, INodeD
         }
     }
 
+    protected override void EvaluateConstraints()
+    {
+        if (state.HasComplete(CompletionPart.ConstraintsCompleted))
+            return;
+        if (state.NotePartComplete(CompletionPart.StartConstraints))
+        {
+            var diagnostics = DiagnosticBag.GetInstance();
+            ConstraintEvaluator.Evaluate(this, (WhamCompilation)DeclaringCompilation, diagnostics);
+            AddConstraintDiagnostics(diagnostics);
+            diagnostics.Free();
+            state.NotePartComplete(CompletionPart.FinishConstraints);
+        }
+        state.SpinWaitComplete(CompletionPart.ConstraintsCompleted, default);
+    }
+
     protected override ImmutableArray<Symbol> MakeAllMembers(BindingDiagnosticBag diagnostics) =>
         base.MakeAllMembers(diagnostics)
         .AddRange(Costs.Cast<RosterCostSymbol, Symbol>())
