@@ -57,9 +57,10 @@ Adapter bridging TestKit's `IRosterEngine` to the ISymbol engine:
 
 - **ProtocolConverter**: Protocol* → SourceNode trees → WhamCompilation
 - **SpecRosterEngineAdapter**: `IRosterEngine` impl maintaining current state
-- **StateMapper**: Maps ISymbol roster tree to Protocol `RosterState`
-- **ConstraintValidator**: Validates constraints using ISymbol types
-  (legacy — replaced by ConstraintEvaluator in Concrete.Extensions)
+- **StateMapper**: Thin (~350 LOC) Symbol→Protocol mapper. Walks the
+  RosterSymbol/ForceSymbol/SelectionSymbol tree directly — all business logic
+  (modifier eval, profile/rule resolution, categories, costs) lives in the
+  Symbol layer via EffectiveEntryCache.
 
 ## Components
 
@@ -92,12 +93,10 @@ var effective = roster.GetEffectiveEntry(declaredEntry, selection, force);
 Caching is handled by `EffectiveEntryCache` (ConcurrentDictionary-based), which
 is self-initializing on `RosterSymbol`. The cache lazily creates its own
 `ModifierEvaluator` from the roster symbol and compilation
-— no external wiring required. Consumers access effective values through the
-symbol API; `ConstraintValidator` and `StateMapper` share a single cache per roster.
-
-**Important**: `StateMapper` and `ConstraintValidator` map node→symbol via lazy
-lookup dictionaries (built from `Compilation.SourceGlobalNamespace.Rosters` symbol
-tree) when calling evaluator methods that require `ISelectionSymbol`/`IForceSymbol`.
+— no external wiring required. It also owns a `ResourceResolver` for
+profile/rule resolution and provides helper methods for categories, costs, and
+publication name resolution. `StateMapper` walks the symbol tree directly
+and delegates all effective value computation to the cache.
 
 ### ModifierEvaluator (~960 lines, internal to Concrete.Extensions)
 

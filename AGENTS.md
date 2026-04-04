@@ -42,8 +42,7 @@ dotnet pack                                            # NuGet packages (Release
 | `src/WarHub.ArmouryModel.RosterEngine/WhamRosterEngine.cs` | IRosterEngine impl — setup, forces, selections, state |
 | `src/WarHub.ArmouryModel.RosterEngine/EntryResolver.cs` | Entry/link resolution, merging, flattening, cycle detection |
 | `src/WarHub.ArmouryModel.Concrete.Extensions/Symbols/ConstraintEvaluator.cs` | Symbol-layer constraint validation, produces WhamDiagnostics |
-| `src/WarHub.ArmouryModel.RosterEngine.Spec/ConstraintValidator.cs` | Legacy node-layer constraint validator (replaced by ConstraintEvaluator) |
-| `src/WarHub.ArmouryModel.RosterEngine.Spec/StateMapper.cs` | ISymbol → Protocol state mapping with effective entries |
+| `src/WarHub.ArmouryModel.RosterEngine.Spec/StateMapper.cs` | Thin Symbol→Protocol mapper (~350 LOC), walks symbol tree directly |
 | `tests/WarHub.ArmouryModel.RosterEngine.Tests/ConformanceTests.cs` | Runs all 304 BattleScribe-spec conformance specs |
 
 ### Effective entry symbols (Roslyn-style wrappers)
@@ -54,9 +53,11 @@ dotnet pack                                            # NuGet packages (Release
 | `src/WarHub.ArmouryModel.Concrete.Extensions/Symbols/Effective/EffectiveConstraintSymbol.cs` | Wraps IConstraintSymbol with effective Query ReferenceValue |
 | `src/WarHub.ArmouryModel.Concrete.Extensions/Symbols/Effective/EffectiveCostSymbol.cs` | Wraps ICostSymbol with effective Value |
 | `src/WarHub.ArmouryModel.Concrete.Extensions/Symbols/Effective/EffectiveQuerySymbol.cs` | Wraps IQuerySymbol with effective ReferenceValue |
-| `src/WarHub.ArmouryModel.Concrete.Extensions/Symbols/Effective/EffectiveEntryCache.cs` | ConcurrentDictionary-based lazy cache; owns ModifierEvaluator, self-initializing on RosterSymbol |
+| `src/WarHub.ArmouryModel.Concrete.Extensions/Symbols/Effective/EffectiveEntryCache.cs` | ConcurrentDictionary-based lazy cache; owns ModifierEvaluator, resource/category/cost resolution |
 | `src/WarHub.ArmouryModel.Concrete.Extensions/Symbols/Effective/EffectiveEntryKey.cs` | Cache key: (entry, selection?, force?) |
 | `src/WarHub.ArmouryModel.Concrete.Extensions/Symbols/Effective/ModifierEvaluator.cs` | Modifier application, condition eval, scope resolution (internal to Compilation) |
+| `src/WarHub.ArmouryModel.Concrete.Extensions/Symbols/Effective/ResourceResolver.cs` | Symbol-layer profile/rule resolution from InfoLinks/InfoGroups |
+| `src/WarHub.ArmouryModel.Concrete.Extensions/Symbols/Effective/ResolvedResource.cs` | Plain records: ResolvedProfile, ResolvedRule, ResolvedCategory, ResolvedCost |
 
 ### Source model (DTO and immutable trees)
 
@@ -114,15 +115,22 @@ constraint evaluation via `CompletionPart` phases:
 WhamRosterEngine (IRosterEngine)
 ├── EntryResolver      — flatten entries, merge links, resolve info
 └── EffectiveEntrySymbol (Concrete.Extensions) — Roslyn-style wrapper symbols
-    ├── EffectiveEntryCache — lazy ConcurrentDictionary cache, owns ModifierEvaluator
+    ├── EffectiveEntryCache — lazy cache, owns ModifierEvaluator + ResourceResolver
+    │   ├── GetEffectiveResources()  — profiles/rules via InfoLink/InfoGroup traversal
+    │   ├── GetEffectiveSelectionCategories() — modifier-applied categories
+    │   ├── GetEffectiveSelectionCosts()     — effective costs × SelectedCount
+    │   └── ResolvePublicationName()         — publication lookup by ID
+    ├── ResourceResolver   — Symbol-layer profile/rule resolution
     └── ModifierEvaluator  — apply modifiers, evaluate conditions, resolve scopes
 
 Symbol completion pipeline (CompletionPart phases):
   BindReferences → Members → EffectiveEntries → Constraints
   (RosterSymbol overrides EffectiveEntries + Constraints phases)
-  
+
 ConstraintEvaluator (Concrete.Extensions) — symbol-layer constraint validation
-ConstraintValidator + StateMapper (RosterEngine.Spec) — protocol adapter layer
+StateMapper (RosterEngine.Spec) — thin Symbol→Protocol mapper (~350 LOC)
+  Walks RosterSymbol/ForceSymbol/SelectionSymbol tree directly.
+  All business logic lives in the Symbol layer.
 ```
 
 ## Code conventions
