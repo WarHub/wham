@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using WarHub.ArmouryModel.Source; // SelectionEntryKind enum
 
 namespace WarHub.ArmouryModel.Concrete;
@@ -5,6 +6,19 @@ namespace WarHub.ArmouryModel.Concrete;
 /// <summary>
 /// Evaluates IEffectSymbol modifiers against runtime roster state.
 /// Produces effective values for entry properties (name, hidden, costs, characteristics, etc.)
+/// <para>
+/// <b>Reentrancy safety:</b> This evaluator runs during compilation and must NOT access
+/// lazily-bound roster-level symbol properties (SourceEntry, SourceEntryPath, ICategorySymbol.SourceEntry,
+/// ICostSymbol.Type on roster selections) as these trigger binder reentrancy → deadlocks.
+/// Instead, use <c>SelectionSymbol.Declaration</c> node properties for EntryId, EntryGroupId,
+/// Categories, and Costs.
+/// </para>
+/// <para>
+/// Catalogue-level lazy properties (IQuerySymbol.FilterSymbol/ScopeSymbol/ValueTypeSymbol,
+/// IEffectSymbol.TargetMember/OperandSymbol, entry.Costs[].Type) are safe because catalogue
+/// symbols are fully bound before roster evaluation begins. If this binding order invariant
+/// ever changes, these accesses must be converted to Declaration-based lookups as well.
+/// </para>
 /// </summary>
 internal sealed class ModifierEvaluator
 {
@@ -591,6 +605,7 @@ internal sealed class ModifierEvaluator
 
         // Use Declaration properties to avoid triggering lazy binding
         // (SourceEntry/SourceEntryPath access the binder, which can re-enter evaluation)
+        Debug.Assert(selection is SelectionSymbol, "Expected concrete SelectionSymbol in ModifierEvaluator");
         if (selection is SelectionSymbol ss)
         {
             if (ss.Declaration.EntryId == filterId)
@@ -759,6 +774,7 @@ internal sealed class ModifierEvaluator
         if (context.Selection is null || context.Force is null)
             yield break;
 
+        Debug.Assert(context.Selection is null or SelectionSymbol, "Expected concrete SelectionSymbol in ModifierEvaluator");
         var primaryCat = context.Selection is SelectionSymbol ss
             ? ss.Declaration.Categories.FirstOrDefault(c => c.Primary)?.EntryId
             : null;
@@ -815,6 +831,7 @@ internal sealed class ModifierEvaluator
 
         foreach (var force in _roster.Forces)
         {
+            Debug.Assert(force is ForceSymbol, "Expected concrete ForceSymbol in ModifierEvaluator");
             if (filterId is null || (force is ForceSymbol fs && fs.Declaration.EntryId == filterId))
                 count++;
         }
@@ -832,6 +849,7 @@ internal sealed class ModifierEvaluator
             if (MatchesFilter(sel, query))
             {
                 // Use Declaration.Costs to avoid triggering lazy symbol binding
+                Debug.Assert(sel is SelectionSymbol, "Expected concrete SelectionSymbol in ModifierEvaluator");
                 if (sel is SelectionSymbol ss)
                 {
                     foreach (var cost in ss.Declaration.Costs)
@@ -853,6 +871,7 @@ internal sealed class ModifierEvaluator
         if (valueTypeId is null) return 0m;
 
         // Use Declaration.CostLimits to avoid triggering lazy symbol binding
+        Debug.Assert(_roster is RosterSymbol, "Expected concrete RosterSymbol in ModifierEvaluator");
         if (_roster is RosterSymbol rs)
         {
             foreach (var limit in rs.Declaration.CostLimits)
@@ -909,6 +928,7 @@ internal sealed class ModifierEvaluator
     {
         if (categoryId is null) return false;
         // Use Declaration.Categories to avoid triggering lazy symbol binding
+        Debug.Assert(sel is SelectionSymbol, "Expected concrete SelectionSymbol in ModifierEvaluator");
         if (sel is SelectionSymbol ss)
         {
             foreach (var cat in ss.Declaration.Categories)
@@ -1052,6 +1072,7 @@ internal sealed class ModifierEvaluator
     /// </summary>
     private static bool MatchesEntryOrGroup(ISelectionSymbol sel, string id)
     {
+        Debug.Assert(sel is SelectionSymbol, "Expected concrete SelectionSymbol in ModifierEvaluator");
         if (sel is SelectionSymbol ss)
             return ss.Declaration.EntryId == id || ss.Declaration.EntryGroupId == id;
         return false;

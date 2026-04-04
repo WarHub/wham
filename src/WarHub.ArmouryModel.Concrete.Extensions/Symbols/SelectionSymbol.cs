@@ -38,11 +38,21 @@ internal sealed class SelectionSymbol : ContainerSymbol, ISelectionSymbol, INode
             var result = roster?.GetOrCreateEffectiveEntryCache().GetEffectiveEntry(
                 SourceEntry,
                 this,
-                ContainingSymbol as IForceSymbol)
+                GetContainingForce())
                 ?? (ISelectionEntryContainerSymbol)SourceEntry;
             Interlocked.CompareExchange(ref lazyEffectiveSourceEntry, result, null);
             return lazyEffectiveSourceEntry;
         }
+    }
+
+    private IForceSymbol? GetContainingForce()
+    {
+        for (var sym = ContainingSymbol; sym is not null; sym = sym.ContainingSymbol)
+        {
+            if (sym is IForceSymbol force)
+                return force;
+        }
+        return null;
     }
 
     public ImmutableArray<SelectionSymbol> ChildSelections { get; }
