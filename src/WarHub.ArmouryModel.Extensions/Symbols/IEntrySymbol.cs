@@ -22,6 +22,13 @@ public interface IEntrySymbol : ISymbol
 
     IPublicationReferenceSymbol? PublicationReference { get; }
 
+    /// <summary>
+    /// Page reference from this entry's declaration.
+    /// Unlike <see cref="PublicationReference"/>.<see cref="IPublicationReferenceSymbol.Page"/>,
+    /// this is available even when <see cref="PublicationReference"/> is null (no publicationId).
+    /// </summary>
+    string? Page => PublicationReference?.Page;
+
     ImmutableArray<IEffectSymbol> Effects { get; }
 
     ImmutableArray<IResourceEntrySymbol> Resources { get; }

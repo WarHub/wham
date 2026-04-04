@@ -42,6 +42,8 @@ internal abstract class EntrySymbol : SourceDeclaredSymbol, IEntrySymbol
 
     IPublicationReferenceSymbol? IEntrySymbol.PublicationReference => PublicationReference;
 
+    string? IEntrySymbol.Page => (Declaration as IPublicationReferencingNode)?.Page;
+
     public ImmutableArray<ModifierEffectBaseSymbol> Effects { get; } =
         ImmutableArray<ModifierEffectBaseSymbol>.Empty;
 
