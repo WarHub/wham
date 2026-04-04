@@ -217,14 +217,16 @@ internal sealed class ModifierEvaluator
         var categories = new List<string>();
         string? primaryId = null;
 
-        // Start with declared categories
+        // Start with declared categories, using resolved target IDs
         foreach (var cat in entry.Categories)
         {
-            if (cat.Id is not null)
-                categories.Add(cat.Id);
+            var effectiveId = cat.ReferencedEntry?.Id ?? cat.Id;
+            if (effectiveId is not null)
+                categories.Add(effectiveId);
         }
-        if (entry.PrimaryCategory?.Id is { } primId)
-            primaryId = primId;
+        var primarySym = entry.PrimaryCategory;
+        if (primarySym is not null)
+            primaryId = primarySym.ReferencedEntry?.Id ?? primarySym.Id;
 
         var context = new EvalContext(selection, force, entry);
         foreach (var effect in entry.Effects)

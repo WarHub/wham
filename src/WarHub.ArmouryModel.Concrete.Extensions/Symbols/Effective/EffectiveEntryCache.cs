@@ -76,11 +76,30 @@ internal sealed class EffectiveEntryCache
         var constraintValues = Evaluator.GetEffectiveConstraintValues(entry, selection, force);
         var costValues = Evaluator.GetEffectiveCosts(entry, selection, force);
 
-        var (effectiveCatIds, effectivePrimaryId) = Evaluator.GetEffectiveCategories(entry, selection, force);
-        var (effectiveCategories, effectivePrimary) = ResolveCategorySymbols(effectiveCatIds, effectivePrimaryId);
+        // When a selection is present, start from the selection's runtime categories
+        // (which include group-inherited categories). Otherwise use entry's declared categories.
+        (List<string> CategoryIds, string? PrimaryCategoryId) catResult;
+        if (selection is not null)
+        {
+            var initialCats = new List<string>();
+            string? initialPrimary = null;
+            foreach (var cat in selection.Categories)
+            {
+                if (cat.SourceEntry?.Id is { } catId)
+                    initialCats.Add(catId);
+                if (cat.IsPrimaryCategory && cat.SourceEntry?.Id is { } primId)
+                    initialPrimary = primId;
+            }
+            catResult = Evaluator.GetEffectiveCategoriesFrom(entry, initialCats, initialPrimary, selection, force);
+        }
+        else
+        {
+            catResult = Evaluator.GetEffectiveCategories(entry, selection, force);
+        }
+        var (effectiveCategories, effectivePrimary) = ResolveCategorySymbols(catResult.CategoryIds, catResult.PrimaryCategoryId);
 
         var (effectiveProfiles, effectiveRules) = CollectEffectiveResources(entry, selection, force);
-        var effectivePage = Evaluator.GetEffectivePage(entry, selection, force);
+        var effectivePage = Evaluator.GetEffectivePage(entry, selection, force) ?? entry.Page;
 
         return new EffectiveEntrySymbol(
             entry,
@@ -230,7 +249,7 @@ internal sealed class EffectiveEntryCache
             hidden,
             profile.Type?.Id,
             profile.Type?.Name,
-            profile.PublicationReference?.Page,
+            profile.Page,
             profile.PublicationReference?.Publication?.Id,
             chars.MoveToImmutable());
     }
@@ -272,7 +291,7 @@ internal sealed class EffectiveEntryCache
             name,
             desc,
             hidden,
-            rule.PublicationReference?.Page,
+            rule.Page,
             rule.PublicationReference?.Publication?.Id);
     }
 

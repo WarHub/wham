@@ -160,8 +160,28 @@ public sealed class SpecRosterEngineAdapter : IRosterEngine
     public ProtocolRosterState GetRosterState()
     {
         var state = EnsureState();
-        var mapper = new StateMapper(state.Compilation, state.RosterRequired, _forceCatalogues);
-        return mapper.MapRosterState(state.RosterRequired);
+        var compilation = (WhamCompilation)state.Compilation;
+
+        // Find roster symbol
+        var rosterSymbol = compilation.SourceGlobalNamespace.Rosters
+            .FirstOrDefault(r => r.Declaration == state.RosterRequired)
+            ?? compilation.SourceGlobalNamespace.Rosters.FirstOrDefault();
+
+        // Compute per-force available entry counts and referenced cost types
+        var counts = new List<int>();
+        var referencedCostTypes = new HashSet<string>(StringComparer.Ordinal);
+        foreach (var catalogue in _forceCatalogues)
+        {
+            var entries = _resolver.GetAvailableEntries(catalogue);
+            counts.Add(entries.Count);
+            foreach (var entry in entries)
+            {
+                StateMapper.CollectReferencedCostTypes(entry.Symbol, referencedCostTypes);
+            }
+        }
+
+        var mapper = new StateMapper(rosterSymbol!, compilation);
+        return mapper.MapRosterState(counts, referencedCostTypes);
     }
 
     public IReadOnlyList<ValidationErrorState> GetValidationErrors()
