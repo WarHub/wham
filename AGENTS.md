@@ -41,7 +41,8 @@ dotnet pack                                            # NuGet packages (Release
 |------|------|
 | `src/WarHub.ArmouryModel.RosterEngine/WhamRosterEngine.cs` | IRosterEngine impl — setup, forces, selections, state |
 | `src/WarHub.ArmouryModel.RosterEngine/EntryResolver.cs` | Entry/link resolution, merging, flattening, cycle detection |
-| `src/WarHub.ArmouryModel.RosterEngine.Spec/ConstraintValidator.cs` | Min/max validation, shared constraints, error generation |
+| `src/WarHub.ArmouryModel.Concrete.Extensions/Symbols/ConstraintEvaluator.cs` | Symbol-layer constraint validation, produces WhamDiagnostics |
+| `src/WarHub.ArmouryModel.RosterEngine.Spec/ConstraintValidator.cs` | Legacy node-layer constraint validator (replaced by ConstraintEvaluator) |
 | `src/WarHub.ArmouryModel.RosterEngine.Spec/StateMapper.cs` | ISymbol → Protocol state mapping with effective entries |
 | `tests/WarHub.ArmouryModel.RosterEngine.Tests/ConformanceTests.cs` | Runs all 304 BattleScribe-spec conformance specs |
 
@@ -106,7 +107,8 @@ XML file → DTO (*Core) → SourceNode tree → SourceTree
 ### Roster engine (protocol-based)
 
 Works directly with `Protocol*` types from BattleScribeSpec.TestKit, not with
-SourceNode/ISymbol. Four components:
+SourceNode/ISymbol. The compilation pipeline integrates effective entries and
+constraint evaluation via `CompletionPart` phases:
 
 ```
 WhamRosterEngine (IRosterEngine)
@@ -114,7 +116,13 @@ WhamRosterEngine (IRosterEngine)
 └── EffectiveEntrySymbol (Concrete.Extensions) — Roslyn-style wrapper symbols
     ├── EffectiveEntryCache — lazy ConcurrentDictionary cache, owns ModifierEvaluator
     └── ModifierEvaluator  — apply modifiers, evaluate conditions, resolve scopes
-ConstraintValidator + StateMapper (RosterEngine.Spec) — consume effective entries from symbols
+
+Symbol completion pipeline (CompletionPart phases):
+  BindReferences → Members → EffectiveEntries → Constraints
+  (RosterSymbol overrides EffectiveEntries + Constraints phases)
+  
+ConstraintEvaluator (Concrete.Extensions) — symbol-layer constraint validation
+ConstraintValidator + StateMapper (RosterEngine.Spec) — protocol adapter layer
 ```
 
 ## Code conventions
@@ -186,3 +194,8 @@ ConstraintValidator + StateMapper (RosterEngine.Spec) — consume effective entr
 - **BattleScribe quirks**: some spec default expectations match BattleScribe bugs rather than
   "correct" behavior; wham uses engine-specific overrides for these (documented in
   `docs/adrs/0004-battlescribe-spec-conformance-testing.md`)
+- **Entry link entryId format**: Selections created from entry links MUST use
+  `"linkId::targetId"` format for `entryId` (matching BattleScribe). This produces
+  `SourceEntryPath = [link, target]` with `SourceEntry` = resolved target.
+  Single-segment `entryId = "linkId"` causes `InvalidCastException` in
+  `SelectionSymbol.SourceEntry`.

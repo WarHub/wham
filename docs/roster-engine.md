@@ -17,7 +17,7 @@ decision record.
 ┌──────────────────────────────────────────────────────────┐
 │         RosterEngine.Spec (adapter layer)                │
 │  ProtocolConverter → SpecRosterEngineAdapter → StateMapper│
-│  ConstraintValidator                                     │
+│  (ConstraintValidator — legacy, replaced by evaluator)   │
 └──────────────────────┬──────────────────────────────────┘
                        ↓
 ┌──────────────────────────────────────────────────────────┐
@@ -28,6 +28,8 @@ decision record.
 ┌──────────────────────────────────────────────────────────┐
 │   Concrete.Extensions (symbols + effective wrappers)     │
 │   ModifierEvaluator + EffectiveEntryCache (internal)     │
+│   ConstraintEvaluator (internal)                         │
+│   CompletionPart pipeline (EffectiveEntries, Constraints)│
 │   Extensions (public ISymbol interfaces)                 │
 │   Source (DTO types, SourceNode trees)                   │
 └──────────────────────────────────────────────────────────┘
@@ -57,6 +59,7 @@ Adapter bridging TestKit's `IRosterEngine` to the ISymbol engine:
 - **SpecRosterEngineAdapter**: `IRosterEngine` impl maintaining current state
 - **StateMapper**: Maps ISymbol roster tree to Protocol `RosterState`
 - **ConstraintValidator**: Validates constraints using ISymbol types
+  (legacy — replaced by ConstraintEvaluator in Concrete.Extensions)
 
 ## Components
 
@@ -117,7 +120,13 @@ Evaluates modifiers and conditions using IEffectSymbol/IConditionSymbol:
 - **Scopes**: self, parent, force, roster, primary-category, ancestor
 - **Repeat handling**: Multiplicative repeat counts based on queries
 
-### ConstraintValidator (~850 lines)
+### ConstraintValidator (~850 lines, legacy)
+
+> **Note**: `ConstraintValidator` in RosterEngine.Spec is the legacy node-layer
+> validator. Constraint evaluation is now performed by `ConstraintEvaluator` in
+> Concrete.Extensions as part of the `CompletionPart.Constraints` phase.
+> The adapter's `GetValidationErrors()` reads from
+> `compilation.GetConstraintDiagnostics()`.
 
 Validates IConstraintSymbol constraints using effective entry symbols:
 
@@ -144,6 +153,63 @@ Validates IConstraintSymbol constraints using effective entry symbols:
 | field=forces on SelectionEntry | Always 0 | Same | Child filter never matches |
 | Hidden entry + selections | Error with constraintId="hidden" | Same | Checks `IsEffectivelyHidden` |
 
+## CompletionPart Pipeline (Roslyn-inspired)
+
+Symbol completion proceeds through ordered phases using a `CompletionPart`
+flags enum. Each phase has `Start`/`Finish` pairs with CAS-protected
+once-only execution:
+
+```
+Phase 0-1: BindReferences     — resolve IDs to symbols (all symbols)
+Phase 2-3: Members             — compute GetMembers() (all symbols)
+Phase 4-5: EffectiveEntries    — compute effective entry symbols (RosterSymbol only)
+Phase 6-7: Constraints         — evaluate constraint diagnostics (RosterSymbol only)
+```
+
+Non-roster symbols auto-complete phases 4-7 in the base virtual methods.
+`RosterSymbol` overrides `ComputeEffectiveEntries()` and
+`EvaluateConstraints()` to perform actual work.
+
+**EffectiveEntries phase** (`RosterSymbol.ComputeEffectiveEntries`):
+1. Force-complete only referenced catalogues (gamesystem + each force's catalogue)
+2. Create `EffectiveEntryCache` for the roster
+3. Walk force→selection tree, eagerly populate `SelectionSymbol.lazyEffectiveSourceEntry`
+
+**Constraints phase** (`RosterSymbol.EvaluateConstraints`):
+1. Call `ConstraintEvaluator.Evaluate(roster, compilation, diagnosticBag)`
+2. Diagnostics are stored in `WhamCompilation.ConstraintDiagnostics`
+3. Accessed via `compilation.GetConstraintDiagnostics()`
+
+### ConstraintEvaluator (~810 lines, internal to Concrete.Extensions)
+
+Symbol-layer port of the legacy `ConstraintValidator`. Produces
+`WhamDiagnostic` instances with structured args:
+
+- **Args format**: `[ownerType, ownerEntryId, entryId, constraintId]`
+- **Diagnostic codes**: `WRN_ConstraintMinSelections` through
+  `WRN_ConstraintCostLimit` (WHAM0100-0107)
+- **Force catalogue**: Uses `force.CatalogueReference.Catalogue` to get the
+  per-force catalogue (requires correct `catalogueId` on force nodes)
+- **Entry link handling**: Merges link + shared constraints, counts across
+  all links to the same shared entry
+
+## Entry Link Selection Binding
+
+When creating selections from entry links, the `entryId` must use
+BattleScribe's `"::"` path format:
+
+```
+entryId = "linkId::targetId"   ← correct (produces 2-element path)
+entryId = "linkId"             ← WRONG (produces 1-element path, cast fails)
+```
+
+The binder resolves this into `SourceEntryPath = [link, resolvedTarget]`:
+- `SourceEntryPath.SourceEntries[0]` = the entry link symbol
+- `SourceEntryPath.SourceEntries[1]` = the resolved target entry
+- `SourceEntry` = last element = resolved target (`ISelectionEntrySymbol`)
+
+`WhamRosterEngine.BuildEntryIdPath()` generates this format automatically.
+
 ## Expected Failures
 
 2 specs tagged `undefined-behavior` that all engines fail:
@@ -162,15 +228,21 @@ src/WarHub.ArmouryModel.Concrete.Extensions/Symbols/Effective/
 ├── EffectiveEntryKey.cs          (cache key type)
 └── ModifierEvaluator.cs          (~1000 lines, internal)
 
+src/WarHub.ArmouryModel.Concrete.Extensions/Symbols/
+└── ConstraintEvaluator.cs        (~810 lines, internal, symbol-layer constraints)
+
+src/WarHub.ArmouryModel.Concrete.Extensions/Utilities/
+└── CompletionPart.cs             (8-bit flags enum, phases 0-7)
+
 src/WarHub.ArmouryModel.RosterEngine/
 ├── WhamRosterEngine.cs      (~790 lines)
 └── EntryResolver.cs          (~530 lines)
 
 src/WarHub.ArmouryModel.RosterEngine.Spec/
-├── SpecRosterEngineAdapter.cs (IRosterEngine impl)
+├── SpecRosterEngineAdapter.cs (IRosterEngine impl, uses GetConstraintDiagnostics())
 ├── ProtocolConverter.cs       (Protocol → SourceNode)
 ├── StateMapper.cs             (ISymbol → Protocol state)
-└── ConstraintValidator.cs     (constraint validation)
+└── ConstraintValidator.cs     (legacy constraint validation, replaced by ConstraintEvaluator)
 
 tests/WarHub.ArmouryModel.RosterEngine.Tests/
 ├── ConformanceTests.cs       (runs all 304 specs)
