@@ -78,6 +78,14 @@ internal abstract class SourceDeclaredSymbol : Symbol, INodeDeclaredSymbol<Sourc
                         state.NotePartComplete(CompletionPart.MembersCompleted);
                         break;
                     }
+                case CompletionPart.StartEffectiveEntries:
+                case CompletionPart.FinishEffectiveEntries:
+                    ComputeEffectiveEntries();
+                    break;
+                case CompletionPart.StartConstraints:
+                case CompletionPart.FinishConstraints:
+                    EvaluateConstraints();
+                    break;
                 default:
                     // This assert will trigger if we forgot to handle any of the completion parts
                     Debug.Assert((incompletePart & CompletionPart.SourceDeclaredSymbolAll) == 0);
@@ -176,6 +184,24 @@ internal abstract class SourceDeclaredSymbol : Symbol, INodeDeclaredSymbol<Sourc
 
     protected virtual void BindReferencesCore(Binder binder, BindingDiagnosticBag diagnostics)
     {
+    }
+
+    /// <summary>
+    /// Computes effective entries (name/hidden/costs/constraints after modifier application).
+    /// Only meaningful for RosterSymbol; base auto-completes.
+    /// </summary>
+    protected virtual void ComputeEffectiveEntries()
+    {
+        state.NotePartComplete(CompletionPart.EffectiveEntriesCompleted);
+    }
+
+    /// <summary>
+    /// Evaluates constraints (min/max selection count, cost limits, etc.).
+    /// Only meaningful for RosterSymbol; base auto-completes.
+    /// </summary>
+    protected virtual void EvaluateConstraints()
+    {
+        state.NotePartComplete(CompletionPart.ConstraintsCompleted);
     }
 
     protected T GetBoundField<T>(ref T? field) where T : notnull

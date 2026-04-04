@@ -96,6 +96,72 @@ internal sealed class RosterSymbol : SourceDeclaredSymbol, IRosterSymbol, INodeD
         lazyGamesystem = binder.BindGamesystemSymbol(Declaration, diagnostics);
     }
 
+    protected override void ComputeEffectiveEntries()
+    {
+        if (state.HasComplete(CompletionPart.EffectiveEntriesCompleted))
+            return;
+        if (state.NotePartComplete(CompletionPart.StartEffectiveEntries))
+        {
+            EnsureReferencedCataloguesComplete();
+            var cache = GetOrCreateEffectiveEntryCache();
+            foreach (var force in Forces)
+            {
+                PopulateForceEffectiveEntries(cache, force);
+            }
+            state.NotePartComplete(CompletionPart.FinishEffectiveEntries);
+        }
+        state.SpinWaitComplete(CompletionPart.EffectiveEntriesCompleted, default);
+    }
+
+    private void EnsureReferencedCataloguesComplete()
+    {
+        // Force-complete the Gamesystem catalogue
+        if (Gamesystem is SourceDeclaredSymbol gamesystem)
+        {
+            gamesystem.ForceComplete(default);
+        }
+        // Force-complete each force's referenced catalogue
+        foreach (var force in Forces)
+        {
+            EnsureForcesCataloguesComplete(force);
+        }
+    }
+
+    private static void EnsureForcesCataloguesComplete(ForceSymbol force)
+    {
+        if (force.CatalogueReference.Catalogue is SourceDeclaredSymbol catalogue)
+        {
+            catalogue.ForceComplete(default);
+        }
+        foreach (var childForce in force.Forces)
+        {
+            EnsureForcesCataloguesComplete(childForce);
+        }
+    }
+
+    private static void PopulateForceEffectiveEntries(EffectiveEntryCache cache, ForceSymbol force)
+    {
+        foreach (var selection in force.ChildSelections)
+        {
+            PopulateSelectionEffectiveEntries(cache, selection, force);
+        }
+        foreach (var childForce in force.Forces)
+        {
+            PopulateForceEffectiveEntries(cache, childForce);
+        }
+    }
+
+    private static void PopulateSelectionEffectiveEntries(
+        EffectiveEntryCache cache, SelectionSymbol selection, ForceSymbol force)
+    {
+        var effective = cache.GetEffectiveEntry(selection.SourceEntry, selection, force);
+        Interlocked.CompareExchange(ref selection.lazyEffectiveSourceEntry, effective, null);
+        foreach (var child in selection.ChildSelections)
+        {
+            PopulateSelectionEffectiveEntries(cache, child, force);
+        }
+    }
+
     protected override ImmutableArray<Symbol> MakeAllMembers(BindingDiagnosticBag diagnostics) =>
         base.MakeAllMembers(diagnostics)
         .AddRange(Costs.Cast<RosterCostSymbol, Symbol>())

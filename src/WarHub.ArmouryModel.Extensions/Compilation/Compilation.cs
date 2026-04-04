@@ -30,6 +30,10 @@ public abstract class Compilation
 
     public abstract ImmutableArray<Diagnostic> GetDiagnostics(CancellationToken cancellationToken = default);
 
+    public abstract ImmutableArray<Diagnostic> GetDeclarationDiagnostics(CancellationToken cancellationToken = default);
+
+    public abstract ImmutableArray<Diagnostic> GetConstraintDiagnostics(CancellationToken cancellationToken = default);
+
     public abstract Compilation AddSourceTrees(params SourceTree[] trees);
 
     public abstract Compilation ReplaceSourceTree(SourceTree oldTree, SourceTree? newTree);

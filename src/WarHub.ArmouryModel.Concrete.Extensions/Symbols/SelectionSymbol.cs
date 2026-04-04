@@ -4,7 +4,7 @@ namespace WarHub.ArmouryModel.Concrete;
 
 internal sealed class SelectionSymbol : ContainerSymbol, ISelectionSymbol, INodeDeclaredSymbol<SelectionNode>
 {
-    private ISelectionEntryContainerSymbol? lazyEffectiveSourceEntry;
+    internal ISelectionEntryContainerSymbol? lazyEffectiveSourceEntry;
 
     public SelectionSymbol(
         ISymbol? containingSymbol,

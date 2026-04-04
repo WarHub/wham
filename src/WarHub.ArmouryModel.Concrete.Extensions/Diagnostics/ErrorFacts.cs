@@ -66,6 +66,22 @@ internal static partial class ErrorFacts
                 "Multiple candidates for binding this reference were found (ref='{0}' in {1}).",
             ErrorCode.ERR_UnviableBindingCandidates =>
                 "There were candidates for binding this reference (ref='{0}' in {1}), but were disallowed due to some rules (visibility, scope).",
+            ErrorCode.WRN_MinSelectionCountViolation =>
+                "Minimum selection count not met: on='{0}', from='{1}', min={2}, actual={3}.",
+            ErrorCode.WRN_MaxSelectionCountViolation =>
+                "Maximum selection count exceeded: on='{0}', from='{1}', max={2}, actual={3}.",
+            ErrorCode.WRN_BelowCostLimit =>
+                "Below cost limit: on='{0}', from='{1}', min={2}, actual={3}.",
+            ErrorCode.WRN_ExceedsCostLimit =>
+                "Exceeds cost limit: on='{0}', from='{1}', max={2}, actual={3}.",
+            ErrorCode.WRN_MinForceCountViolation =>
+                "Minimum force count not met: on='{0}', from='{1}', min={2}, actual={3}.",
+            ErrorCode.WRN_MaxForceCountViolation =>
+                "Maximum force count exceeded: on='{0}', from='{1}', max={2}, actual={3}.",
+            ErrorCode.WRN_MinCategoryCountViolation =>
+                "Minimum category count not met: on='{0}', from='{1}', min={2}, actual={3}.",
+            ErrorCode.WRN_MaxCategoryCountViolation =>
+                "Maximum category count exceeded: on='{0}', from='{1}', max={2}, actual={3}.",
             _ => code.ToString(),
         };
 

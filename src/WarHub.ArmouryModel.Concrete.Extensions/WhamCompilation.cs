@@ -7,6 +7,7 @@ public class WhamCompilation : Compilation
     private SourceGlobalNamespaceSymbol? lazyGlobalNamespace;
     private Binder? lazyGlobalNamespaceBinder;
     private DiagnosticBag? lazyDeclarationDiagnostics;
+    private DiagnosticBag? lazyConstraintDiagnostics;
     private ICategoryEntrySymbol? lazyNoCategoryEntrySymbol;
 
     internal WhamCompilation(string? name, ImmutableArray<SourceTree> sourceTrees, CompilationOptions options)
@@ -37,13 +38,34 @@ public class WhamCompilation : Compilation
 
     public override ImmutableArray<Diagnostic> GetDiagnostics(CancellationToken cancellationToken = default)
     {
-        var namespaceDiagnostics = SourceGlobalNamespace.DeclarationDiagnostics;
         SourceGlobalNamespace.ForceComplete(cancellationToken);
+        var namespaceDiagnostics = SourceGlobalNamespace.DeclarationDiagnostics;
         var declarationDiagnostics = DeclarationDiagnostics;
-        var builder = ImmutableArray.CreateBuilder<Diagnostic>(namespaceDiagnostics.Count + declarationDiagnostics.Count);
+        var constraintDiagnostics = ConstraintDiagnostics;
+        var builder = ImmutableArray.CreateBuilder<Diagnostic>(
+            namespaceDiagnostics.Count + declarationDiagnostics.Count + constraintDiagnostics.Count);
+        builder.AddRange(namespaceDiagnostics.AsEnumerable());
+        builder.AddRange(declarationDiagnostics.AsEnumerable());
+        builder.AddRange(constraintDiagnostics.AsEnumerable());
+        return builder.MoveToImmutable();
+    }
+
+    public override ImmutableArray<Diagnostic> GetDeclarationDiagnostics(CancellationToken cancellationToken = default)
+    {
+        SourceGlobalNamespace.ForceComplete(cancellationToken);
+        var namespaceDiagnostics = SourceGlobalNamespace.DeclarationDiagnostics;
+        var declarationDiagnostics = DeclarationDiagnostics;
+        var builder = ImmutableArray.CreateBuilder<Diagnostic>(
+            namespaceDiagnostics.Count + declarationDiagnostics.Count);
         builder.AddRange(namespaceDiagnostics.AsEnumerable());
         builder.AddRange(declarationDiagnostics.AsEnumerable());
         return builder.MoveToImmutable();
+    }
+
+    public override ImmutableArray<Diagnostic> GetConstraintDiagnostics(CancellationToken cancellationToken = default)
+    {
+        SourceGlobalNamespace.ForceComplete(cancellationToken);
+        return [.. ConstraintDiagnostics.AsEnumerable()];
     }
 
     public override WhamCompilation AddSourceTrees(params SourceTree[] trees) =>
@@ -111,6 +133,18 @@ public class WhamCompilation : Compilation
                 Interlocked.CompareExchange(ref lazyDeclarationDiagnostics, DiagnosticBag.GetInstance(), null);
             }
             return lazyDeclarationDiagnostics;
+        }
+    }
+
+    internal DiagnosticBag ConstraintDiagnostics
+    {
+        get
+        {
+            if (lazyConstraintDiagnostics is null)
+            {
+                Interlocked.CompareExchange(ref lazyConstraintDiagnostics, DiagnosticBag.GetInstance(), null);
+            }
+            return lazyConstraintDiagnostics;
         }
     }
 

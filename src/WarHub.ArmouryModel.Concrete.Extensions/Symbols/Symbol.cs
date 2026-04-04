@@ -51,6 +51,16 @@ internal abstract class Symbol : ISymbol
         }
     }
 
+    internal virtual void AddConstraintDiagnostics(DiagnosticBag diagnostics)
+    {
+        if (diagnostics is { IsEmptyWithoutResolution: false })
+        {
+            var compilation = DeclaringCompilation;
+            Debug.Assert(compilation != null);
+            compilation.ConstraintDiagnostics.AddRange(diagnostics);
+        }
+    }
+
     /// <summary>
     /// Reports specified use-site diagnostic to given diagnostic bag. 
     /// </summary>
