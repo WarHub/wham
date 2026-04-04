@@ -43,7 +43,10 @@ Core engine with zero TestKit dependency. Key classes:
   returns modified `RosterNode`. Operations: CreateRoster, AddForce,
   RemoveForce, SelectEntry, SelectChildEntry, DeselectSelection, etc.
 - **ModifierEvaluator** (internal to Concrete.Extensions): Evaluates
-  `IEffectSymbol` effects with `EvalContext(Selection?, Force?, EntrySymbol)`.
+  `IEffectSymbol` effects with `EvalContext(ISelectionSymbol?, IForceSymbol?, EntrySymbol)`.
+  All public methods accept ISymbol types. Internally accesses `Declaration`
+  node properties for EntryId/EntryGroupId/Categories/Costs to avoid
+  triggering lazy binding reentrancy during evaluation.
 - Entry resolution leverages the Compilation's Binder for link targets.
 
 ### WarHub.ArmouryModel.RosterEngine.Spec
@@ -85,11 +88,25 @@ var effective = roster.GetEffectiveEntry(declaredEntry, selection, force);
 
 Caching is handled by `EffectiveEntryCache` (ConcurrentDictionary-based), which
 is self-initializing on `RosterSymbol`. The cache lazily creates its own
-`ModifierEvaluator` from the roster's `Declaration` and `DeclaringCompilation`
+`ModifierEvaluator` from the roster symbol and compilation
 — no external wiring required. Consumers access effective values through the
 symbol API; `ConstraintValidator` and `StateMapper` share a single cache per roster.
 
-### ModifierEvaluator (~1000 lines, internal to Concrete.Extensions)
+**Important**: `StateMapper` and `ConstraintValidator` map node→symbol via lazy
+lookup dictionaries (built from `Compilation.SourceGlobalNamespace.Rosters` symbol
+tree) when calling evaluator methods that require `ISelectionSymbol`/`IForceSymbol`.
+
+### ModifierEvaluator (~960 lines, internal to Concrete.Extensions)
+
+Evaluates modifiers and conditions using IEffectSymbol/IConditionSymbol.
+All public methods accept ISymbol types (ISelectionSymbol, IForceSymbol).
+Constructor takes `IRosterSymbol` and `WhamCompilation`.
+
+**Lazy binding safety**: Methods that query selection properties (EntryId,
+EntryGroupId, Categories, Costs) use `SelectionSymbol.Declaration` node
+properties instead of ISymbol accessors like `SourceEntry` or `SourceEntryPath`,
+because those trigger lazy binder resolution that would cause reentrancy
+during modifier evaluation.
 
 Evaluates modifiers and conditions using IEffectSymbol/IConditionSymbol:
 

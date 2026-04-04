@@ -1,5 +1,3 @@
-using WarHub.ArmouryModel.Source;
-
 namespace WarHub.ArmouryModel.Concrete;
 
 /// <summary>
@@ -9,5 +7,5 @@ namespace WarHub.ArmouryModel.Concrete;
 /// </summary>
 internal readonly record struct EffectiveEntryKey(
     ISelectionEntryContainerSymbol Entry,
-    SelectionNode? Selection,
-    ForceNode? Force);
+    ISelectionSymbol? Selection,
+    IForceSymbol? Force);

@@ -1,5 +1,4 @@
 using System.Collections.Concurrent;
-using WarHub.ArmouryModel.Source;
 
 namespace WarHub.ArmouryModel.Concrete;
 
@@ -20,7 +19,7 @@ internal sealed class EffectiveEntryCache
     /// <summary>
     /// Creates a new cache with a <see cref="ModifierEvaluator"/> for the given roster.
     /// </summary>
-    public EffectiveEntryCache(RosterNode roster, WhamCompilation compilation)
+    public EffectiveEntryCache(IRosterSymbol roster, WhamCompilation compilation)
     {
         _compilation = compilation;
         Evaluator = new ModifierEvaluator(roster, compilation);
@@ -38,8 +37,8 @@ internal sealed class EffectiveEntryCache
     /// </summary>
     public EffectiveEntrySymbol GetEffectiveEntry(
         ISelectionEntryContainerSymbol entry,
-        SelectionNode? selection,
-        ForceNode? force)
+        ISelectionSymbol? selection,
+        IForceSymbol? force)
     {
         return _cache.GetOrAdd(
             new EffectiveEntryKey(entry, selection, force),
@@ -48,8 +47,8 @@ internal sealed class EffectiveEntryCache
 
     private EffectiveEntrySymbol CreateEffectiveEntry(
         ISelectionEntryContainerSymbol entry,
-        SelectionNode? selection,
-        ForceNode? force)
+        ISelectionSymbol? selection,
+        IForceSymbol? force)
     {
         var name = Evaluator.GetEffectiveName(entry, selection, force);
         var hidden = Evaluator.GetEffectiveHidden(entry, selection, force);

@@ -54,7 +54,7 @@ internal sealed class ForceSymbol : ContainerSymbol, IForceSymbol, INodeDeclared
         ISelectionEntryContainerSymbol declaredEntry)
     {
         var roster = GetRosterSymbol();
-        return roster?.GetOrCreateEffectiveEntryCache().GetEffectiveEntry(declaredEntry, selection: null, Declaration)
+        return roster?.GetOrCreateEffectiveEntryCache().GetEffectiveEntry(declaredEntry, selection: null, this)
             ?? declaredEntry;
     }
 

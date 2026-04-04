@@ -20,6 +20,10 @@ internal sealed class ConstraintValidator
     // Maps shared entry target ID → set of link IDs that reference it
     private readonly Dictionary<string, HashSet<string>> _sharedEntryLinkIds;
 
+    // Node → Symbol lookups (built lazily from the compilation's symbol tree)
+    private Dictionary<ForceNode, IForceSymbol>? _forceSymbols;
+    private Dictionary<SelectionNode, ISelectionSymbol>? _selectionSymbols;
+
     private ConstraintValidator(
         RosterNode roster,
         Compilation compilation,
@@ -40,6 +44,49 @@ internal sealed class ConstraintValidator
         _forceEntryIndex = new Dictionary<string, IForceEntrySymbol>(StringComparer.Ordinal);
         _sharedEntryLinkIds = new Dictionary<string, HashSet<string>>(StringComparer.Ordinal);
         BuildIndex();
+    }
+
+    private void EnsureSymbolLookup()
+    {
+        if (_forceSymbols is not null) return;
+        _forceSymbols = new Dictionary<ForceNode, IForceSymbol>();
+        _selectionSymbols = new Dictionary<SelectionNode, ISelectionSymbol>();
+        var whamCompilation = (WhamCompilation)_compilation;
+        foreach (var rosterSym in whamCompilation.SourceGlobalNamespace.Rosters)
+        {
+            foreach (var forceSym in rosterSym.Forces)
+                IndexForce(forceSym);
+        }
+    }
+
+    private void IndexForce(ForceSymbol forceSym)
+    {
+        _forceSymbols![forceSym.Declaration] = forceSym;
+        foreach (var selSym in forceSym.ChildSelections)
+            IndexSelection(selSym);
+        foreach (var childForce in forceSym.Forces)
+            IndexForce(childForce);
+    }
+
+    private void IndexSelection(SelectionSymbol selSym)
+    {
+        _selectionSymbols![selSym.Declaration] = selSym;
+        foreach (var childSel in selSym.ChildSelections)
+            IndexSelection(childSel);
+    }
+
+    private ISelectionSymbol? LookupSelection(SelectionNode? node)
+    {
+        if (node is null) return null;
+        EnsureSymbolLookup();
+        return _selectionSymbols!.GetValueOrDefault(node);
+    }
+
+    private IForceSymbol? LookupForce(ForceNode? node)
+    {
+        if (node is null) return null;
+        EnsureSymbolLookup();
+        return _forceSymbols!.GetValueOrDefault(node);
     }
 
     public static List<ValidationErrorState> Validate(
@@ -837,7 +884,7 @@ internal sealed class ConstraintValidator
     {
         if (entry is ISelectionEntryContainerSymbol sec)
         {
-            var effectiveEntry = _effectiveCache.GetEffectiveEntry(sec, selection, force);
+            var effectiveEntry = _effectiveCache.GetEffectiveEntry(sec, LookupSelection(selection), LookupForce(force));
             var result = new Dictionary<string, decimal>(StringComparer.Ordinal);
             foreach (var constraint in effectiveEntry.Constraints)
             {

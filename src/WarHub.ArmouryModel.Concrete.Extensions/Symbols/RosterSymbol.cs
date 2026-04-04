@@ -57,7 +57,7 @@ internal sealed class RosterSymbol : SourceDeclaredSymbol, IRosterSymbol, INodeD
     {
         if (effectiveEntryCache is { } existing)
             return existing;
-        var cache = new EffectiveEntryCache(Declaration, (WhamCompilation)DeclaringCompilation);
+        var cache = new EffectiveEntryCache(this, (WhamCompilation)DeclaringCompilation);
         Interlocked.CompareExchange(ref effectiveEntryCache, cache, null);
         return effectiveEntryCache!;
     }
@@ -78,9 +78,7 @@ internal sealed class RosterSymbol : SourceDeclaredSymbol, IRosterSymbol, INodeD
         IForceSymbol? force = null)
     {
         var cache = GetOrCreateEffectiveEntryCache();
-        var selNode = (selection as SelectionSymbol)?.Declaration;
-        var forceNode = (force as ForceSymbol)?.Declaration;
-        return cache.GetEffectiveEntry(declaredEntry, selNode, forceNode);
+        return cache.GetEffectiveEntry(declaredEntry, selection, force);
     }
 
     public override void Accept(SymbolVisitor visitor) =>

@@ -1,4 +1,4 @@
-using WarHub.ArmouryModel.Source;
+using WarHub.ArmouryModel.Source; // SelectionEntryKind enum
 
 namespace WarHub.ArmouryModel.Concrete;
 
@@ -8,10 +8,10 @@ namespace WarHub.ArmouryModel.Concrete;
 /// </summary>
 internal sealed class ModifierEvaluator
 {
-    private readonly RosterNode _roster;
-    private readonly Compilation _compilation;
+    private readonly IRosterSymbol _roster;
+    private readonly WhamCompilation _compilation;
 
-    public ModifierEvaluator(RosterNode roster, Compilation compilation)
+    public ModifierEvaluator(IRosterSymbol roster, WhamCompilation compilation)
     {
         _roster = roster;
         _compilation = compilation;
@@ -20,7 +20,7 @@ internal sealed class ModifierEvaluator
     /// <summary>
     /// Gets the effective name for a selection entry after applying modifiers.
     /// </summary>
-    public string GetEffectiveName(ISelectionEntryContainerSymbol entry, SelectionNode? selection, ForceNode? force)
+    public string GetEffectiveName(ISelectionEntryContainerSymbol entry, ISelectionSymbol? selection, IForceSymbol? force)
     {
         var name = entry.Name ?? "";
         var context = new EvalContext(selection, force, entry);
@@ -34,7 +34,7 @@ internal sealed class ModifierEvaluator
     /// <summary>
     /// Gets the effective hidden state for a selection entry after applying modifiers.
     /// </summary>
-    public bool GetEffectiveHidden(IEntrySymbol entry, SelectionNode? selection, ForceNode? force)
+    public bool GetEffectiveHidden(IEntrySymbol entry, ISelectionSymbol? selection, IForceSymbol? force)
     {
         var hidden = entry.IsHidden;
         var context = new EvalContext(selection, force, entry);
@@ -51,8 +51,8 @@ internal sealed class ModifierEvaluator
     /// </summary>
     public Dictionary<string, decimal> GetEffectiveConstraintValues(
         IContainerEntrySymbol entry,
-        SelectionNode? selection,
-        ForceNode? force)
+        ISelectionSymbol? selection,
+        IForceSymbol? force)
     {
         var values = new Dictionary<string, decimal>(StringComparer.Ordinal);
         foreach (var constraint in entry.Constraints)
@@ -74,8 +74,8 @@ internal sealed class ModifierEvaluator
     /// </summary>
     public Dictionary<string, decimal> GetEffectiveCosts(
         ISelectionEntryContainerSymbol entry,
-        SelectionNode? selection,
-        ForceNode? force)
+        ISelectionSymbol? selection,
+        IForceSymbol? force)
     {
         var costs = new Dictionary<string, decimal>(StringComparer.Ordinal);
         foreach (var cost in entry.Costs)
@@ -100,8 +100,8 @@ internal sealed class ModifierEvaluator
         IEntrySymbol profileEntry,
         string characteristicTypeId,
         string currentValue,
-        SelectionNode? selection,
-        ForceNode? force)
+        ISelectionSymbol? selection,
+        IForceSymbol? force)
     {
         var value = currentValue;
         var context = new EvalContext(selection, force, profileEntry);
@@ -116,7 +116,7 @@ internal sealed class ModifierEvaluator
     /// Gets the effective page for an entry after applying page modifiers.
     /// Returns null if no page modifiers fired and no page was set.
     /// </summary>
-    public string? GetEffectivePage(IEntrySymbol entry, SelectionNode? selection, ForceNode? force)
+    public string? GetEffectivePage(IEntrySymbol entry, ISelectionSymbol? selection, IForceSymbol? force)
     {
         string? page = null;
         var context = new EvalContext(selection, force, entry);
@@ -156,8 +156,8 @@ internal sealed class ModifierEvaluator
     public string GetEffectiveRuleDescription(
         IEntrySymbol ruleEntry,
         string currentDescription,
-        SelectionNode? selection,
-        ForceNode? force)
+        ISelectionSymbol? selection,
+        IForceSymbol? force)
     {
         var desc = currentDescription;
         var context = new EvalContext(selection, force, ruleEntry);
@@ -197,8 +197,8 @@ internal sealed class ModifierEvaluator
     /// </summary>
     public (List<string> CategoryIds, string? PrimaryCategoryId) GetEffectiveCategories(
         ISelectionEntryContainerSymbol entry,
-        SelectionNode? selection,
-        ForceNode? force)
+        ISelectionSymbol? selection,
+        IForceSymbol? force)
     {
         var categories = new List<string>();
         string? primaryId = null;
@@ -228,8 +228,8 @@ internal sealed class ModifierEvaluator
         ISelectionEntryContainerSymbol entry,
         List<string> initialCategoryIds,
         string? initialPrimaryId,
-        SelectionNode? selection,
-        ForceNode? force)
+        ISelectionSymbol? selection,
+        IForceSymbol? force)
     {
         var categories = new List<string>(initialCategoryIds);
         string? primaryId = initialPrimaryId;
@@ -571,33 +571,35 @@ internal sealed class ModifierEvaluator
         return false;
     }
 
-    private static bool CheckInstanceOf(IQuerySymbol query, SelectionNode? selection)
+    private static bool CheckInstanceOf(IQuerySymbol query, ISelectionSymbol? selection)
     {
         if (selection is null)
             return false;
 
         // Check by entry type (unit/model/upgrade) — childId was "unit"/"model"/"upgrade"
         if (query.ValueFilterKind is QueryFilterKind.UnitEntry)
-            return selection.Type == SelectionEntryKind.Unit;
+            return selection.EntryKind == SelectionEntryKind.Unit;
         if (query.ValueFilterKind is QueryFilterKind.ModelEntry)
-            return selection.Type == SelectionEntryKind.Model;
+            return selection.EntryKind == SelectionEntryKind.Model;
         if (query.ValueFilterKind is QueryFilterKind.UpgradeEntry)
-            return selection.Type == SelectionEntryKind.Upgrade;
+            return selection.EntryKind == SelectionEntryKind.Upgrade;
 
         // Check by specific entry/category ID
         var filterId = query.FilterSymbol?.Id;
         if (filterId is null)
             return false;
 
-        // Check by entry ID
-        if (selection.EntryId == filterId)
-            return true;
-
-        // Check by category
-        foreach (var cat in selection.Categories)
+        // Use Declaration properties to avoid triggering lazy binding
+        // (SourceEntry/SourceEntryPath access the binder, which can re-enter evaluation)
+        if (selection is SelectionSymbol ss)
         {
-            if (cat.EntryId == filterId)
+            if (ss.Declaration.EntryId == filterId)
                 return true;
+            foreach (var cat in ss.Declaration.Categories)
+            {
+                if (cat.EntryId == filterId)
+                    return true;
+            }
         }
 
         return false;
@@ -605,41 +607,16 @@ internal sealed class ModifierEvaluator
 
     private bool CheckAncestorInstanceOf(IQuerySymbol query, EvalContext context)
     {
-        // Walk up parent chain: check if any ancestor matches
-        // Find parent selection from force's selection tree
-        if (context.Selection is not null && context.Force is not null)
+        if (context.Selection is null)
+            return false;
+        for (ISymbol? sym = context.Selection.ContainingSymbol; sym is not null; sym = sym.ContainingSymbol)
         {
-            var parent = FindParentSelection(context.Force, context.Selection);
-            while (parent is not null)
-            {
-                if (CheckInstanceOf(query, parent))
-                    return true;
-                parent = FindParentSelection(context.Force, parent);
-            }
+            if (sym is ISelectionSymbol parentSel && CheckInstanceOf(query, parentSel))
+                return true;
+            if (sym is IForceSymbol)
+                break; // Stop at force boundary
         }
         return false;
-    }
-
-    private static SelectionNode? FindParentSelection(ForceNode force, SelectionNode child)
-    {
-        foreach (var rootSel in force.Selections)
-        {
-            if (rootSel == child) return null; // root-level, parent is force
-            var found = FindParentInTree(rootSel, child);
-            if (found is not null) return found;
-        }
-        return null;
-    }
-
-    private static SelectionNode? FindParentInTree(SelectionNode parent, SelectionNode target)
-    {
-        foreach (var child in parent.Selections)
-        {
-            if (child == target) return parent;
-            var found = FindParentInTree(child, target);
-            if (found is not null) return found;
-        }
-        return null;
     }
 
     private decimal CalculateQueryValue(IQuerySymbol query, EvalContext context)
@@ -657,7 +634,7 @@ internal sealed class ModifierEvaluator
         };
     }
 
-    private IEnumerable<SelectionNode> GetSelectionsInScope(IQuerySymbol query, EvalContext context)
+    private IEnumerable<ISelectionSymbol> GetSelectionsInScope(IQuerySymbol query, EvalContext context)
     {
         return query.ScopeKind switch
         {
@@ -672,16 +649,14 @@ internal sealed class ModifierEvaluator
         };
     }
 
-    private IEnumerable<SelectionNode> GetSelfSelections(EvalContext context)
+    private IEnumerable<ISelectionSymbol> GetSelfSelections(EvalContext context)
     {
         if (context.Selection is { } sel)
             yield return sel;
     }
 
-    private IEnumerable<SelectionNode> GetParentSelections(EvalContext context)
+    private IEnumerable<ISelectionSymbol> GetParentSelections(EvalContext context)
     {
-        // When no specific selection context but force exists,
-        // "parent" of a root entry is the force — return force-level selections
         if (context.Selection is null)
         {
             if (context.Force is not null)
@@ -691,45 +666,23 @@ internal sealed class ModifierEvaluator
             }
             yield break;
         }
-
-        // Find the parent selection in the roster tree
-        if (context.Force is not null)
+        // Parent is just ContainingSymbol
+        var parent = context.Selection.ContainingSymbol;
+        if (parent is ISelectionSymbol parentSel)
         {
-            foreach (var rootSel in context.Force.Selections)
-            {
-                if (rootSel == context.Selection)
-                {
-                    // Root selection's parent is the force — return force-level selections
-                    foreach (var s in context.Force.Selections)
-                        yield return s;
-                    yield break;
-                }
-                var parent = FindParentSelection(rootSel, context.Selection);
-                if (parent is not null)
-                {
-                    // Return the parent's children (siblings of current selection)
-                    foreach (var s in parent.Selections)
-                        yield return s;
-                    yield break;
-                }
-            }
+            // Return siblings (parent's children)
+            foreach (var s in parentSel.Selections)
+                yield return s;
+        }
+        else if (parent is IForceSymbol parentForce)
+        {
+            // Root selection — parent is force, return force-level selections
+            foreach (var s in parentForce.Selections)
+                yield return s;
         }
     }
 
-    private static SelectionNode? FindParentSelection(SelectionNode current, SelectionNode target)
-    {
-        foreach (var child in current.Selections)
-        {
-            if (child == target)
-                return current;
-            var found = FindParentSelection(child, target);
-            if (found is not null)
-                return found;
-        }
-        return null;
-    }
-
-    private IEnumerable<SelectionNode> GetForceSelections(EvalContext context)
+    private IEnumerable<ISelectionSymbol> GetForceSelections(EvalContext context)
     {
         if (context.Force is null)
             yield break;
@@ -742,7 +695,7 @@ internal sealed class ModifierEvaluator
         }
     }
 
-    private IEnumerable<SelectionNode> GetRosterSelections()
+    private IEnumerable<ISelectionSymbol> GetRosterSelections()
     {
         foreach (var force in _roster.Forces)
         {
@@ -755,7 +708,7 @@ internal sealed class ModifierEvaluator
         }
     }
 
-    private IEnumerable<SelectionNode> GetAncestorSelections(IQuerySymbol query, EvalContext context)
+    private IEnumerable<ISelectionSymbol> GetAncestorSelections(IQuerySymbol query, EvalContext context)
     {
         // Ancestor scope: walk up from current selection to find matching ancestor
         if (context.Selection is null || context.Force is null)
@@ -770,28 +723,22 @@ internal sealed class ModifierEvaluator
             yield break;
         }
 
-        // Find ancestor matching the scope symbol
-        foreach (var rootSel in context.Force.Selections)
+        // Walk up ContainingSymbol chain looking for matching ancestor
+        for (ISymbol? sym = context.Selection; sym is not null; sym = sym.ContainingSymbol)
         {
-            var path = FindPathToSelection(rootSel, context.Selection);
-            if (path is not null)
+            if (sym is ISelectionSymbol selSym && MatchesEntryOrGroup(selSym, scopeId))
             {
-                // Walk up the path looking for matching entry
-                foreach (var ancestor in path)
-                {
-                    if (ancestor.EntryId == scopeId || ancestor.EntryGroupId == scopeId)
-                    {
-                        yield return ancestor;
-                        foreach (var desc in GetDescendantSelections(ancestor))
-                            yield return desc;
-                        yield break;
-                    }
-                }
+                yield return selSym;
+                foreach (var desc in GetDescendantSelections(selSym))
+                    yield return desc;
+                yield break;
             }
+            if (sym is IForceSymbol)
+                break;
         }
     }
 
-    private IEnumerable<SelectionNode> GetReferencedEntrySelections(IQuerySymbol query)
+    private IEnumerable<ISelectionSymbol> GetReferencedEntrySelections(IQuerySymbol query)
     {
         // Scope is a specific entry — find all selections matching that entry across the roster
         var entryId = query.ScopeSymbol?.Id;
@@ -800,20 +747,21 @@ internal sealed class ModifierEvaluator
 
         foreach (var sel in GetRosterSelections())
         {
-            if (sel.EntryId == entryId || sel.EntryGroupId == entryId)
+            if (MatchesEntryOrGroup(sel, entryId))
                 yield return sel;
         }
     }
 
-    private IEnumerable<SelectionNode> GetPrimaryCategorySelections(EvalContext context)
+    private IEnumerable<ISelectionSymbol> GetPrimaryCategorySelections(EvalContext context)
     {
         // Find the primary category of the current selection's root,
         // then find all selections in the force with that category
         if (context.Selection is null || context.Force is null)
             yield break;
 
-        var primaryCat = context.Selection.Categories
-            .FirstOrDefault(c => c.Primary)?.EntryId;
+        var primaryCat = context.Selection is SelectionSymbol ss
+            ? ss.Declaration.Categories.FirstOrDefault(c => c.Primary)?.EntryId
+            : null;
 
         if (primaryCat is null)
             yield break;
@@ -825,7 +773,7 @@ internal sealed class ModifierEvaluator
         }
     }
 
-    private static IEnumerable<SelectionNode> GetDescendantSelections(SelectionNode sel)
+    private static IEnumerable<ISelectionSymbol> GetDescendantSelections(ISelectionSymbol sel)
     {
         foreach (var child in sel.Selections)
         {
@@ -835,14 +783,14 @@ internal sealed class ModifierEvaluator
         }
     }
 
-    private decimal CountSelections(IEnumerable<SelectionNode> selections, IQuerySymbol query)
+    private decimal CountSelections(IEnumerable<ISelectionSymbol> selections, IQuerySymbol query)
     {
         decimal count = 0;
         foreach (var sel in selections)
         {
             if (MatchesFilter(sel, query))
             {
-                count += sel.Number;
+                count += sel.SelectedCount;
             }
         }
         return count;
@@ -855,7 +803,7 @@ internal sealed class ModifierEvaluator
         decimal count = 0;
         foreach (var sel in selections)
         {
-            count += sel.Number;
+            count += sel.SelectedCount;
         }
         return count;
     }
@@ -867,13 +815,13 @@ internal sealed class ModifierEvaluator
 
         foreach (var force in _roster.Forces)
         {
-            if (filterId is null || force.EntryId == filterId)
+            if (filterId is null || (force is ForceSymbol fs && fs.Declaration.EntryId == filterId))
                 count++;
         }
         return count;
     }
 
-    private decimal SumMemberValues(IEnumerable<SelectionNode> selections, IQuerySymbol query)
+    private decimal SumMemberValues(IEnumerable<ISelectionSymbol> selections, IQuerySymbol query)
     {
         var valueTypeId = query.ValueTypeSymbol?.Id;
         if (valueTypeId is null) return 0m;
@@ -883,11 +831,15 @@ internal sealed class ModifierEvaluator
         {
             if (MatchesFilter(sel, query))
             {
-                foreach (var cost in sel.Costs)
+                // Use Declaration.Costs to avoid triggering lazy symbol binding
+                if (sel is SelectionSymbol ss)
                 {
-                    if (cost.TypeId == valueTypeId)
+                    foreach (var cost in ss.Declaration.Costs)
                     {
-                        sum += cost.Value;
+                        if (cost.TypeId == valueTypeId)
+                        {
+                            sum += cost.Value;
+                        }
                     }
                 }
             }
@@ -900,29 +852,33 @@ internal sealed class ModifierEvaluator
         var valueTypeId = query.ValueTypeSymbol?.Id;
         if (valueTypeId is null) return 0m;
 
-        foreach (var limit in _roster.CostLimits)
+        // Use Declaration.CostLimits to avoid triggering lazy symbol binding
+        if (_roster is RosterSymbol rs)
         {
-            if (limit.TypeId == valueTypeId)
-                return limit.Value;
+            foreach (var limit in rs.Declaration.CostLimits)
+            {
+                if (limit.TypeId == valueTypeId)
+                    return limit.Value;
+            }
         }
         return -1m; // No limit
     }
 
-    private static bool MatchesFilter(SelectionNode sel, IQuerySymbol query)
+    private static bool MatchesFilter(ISelectionSymbol sel, IQuerySymbol query)
     {
         return query.ValueFilterKind switch
         {
             QueryFilterKind.Anything => true,
             QueryFilterKind.Unknown => true,
-            QueryFilterKind.UnitEntry => sel.Type == SelectionEntryKind.Unit,
-            QueryFilterKind.ModelEntry => sel.Type == SelectionEntryKind.Model,
-            QueryFilterKind.UpgradeEntry => sel.Type == SelectionEntryKind.Upgrade,
+            QueryFilterKind.UnitEntry => sel.EntryKind == SelectionEntryKind.Unit,
+            QueryFilterKind.ModelEntry => sel.EntryKind == SelectionEntryKind.Model,
+            QueryFilterKind.UpgradeEntry => sel.EntryKind == SelectionEntryKind.Upgrade,
             QueryFilterKind.SpecifiedEntry => MatchesSpecifiedEntry(sel, query),
             _ => true,
         };
     }
 
-    private static bool MatchesSpecifiedEntry(SelectionNode sel, IQuerySymbol query)
+    private static bool MatchesSpecifiedEntry(ISelectionSymbol sel, IQuerySymbol query)
     {
         var filterSymbol = query.FilterSymbol;
         // Error symbols (binding failures) or null → don't match anything
@@ -933,7 +889,7 @@ internal sealed class ModifierEvaluator
             return false;
 
         // Check if selection's entry matches
-        if (sel.EntryId == filterId || sel.EntryGroupId == filterId)
+        if (MatchesEntryOrGroup(sel, filterId))
             return true;
 
         // Check if selection has a category matching the filter
@@ -943,30 +899,34 @@ internal sealed class ModifierEvaluator
         return false;
     }
 
-    private static bool MatchesEntry(SelectionNode sel, string? entryId)
+    private static bool MatchesEntry(ISelectionSymbol sel, string? entryId)
     {
         if (entryId is null) return false;
-        return sel.EntryId == entryId || sel.EntryGroupId == entryId;
+        return MatchesEntryOrGroup(sel, entryId);
     }
 
-    private static bool SelectionHasCategory(SelectionNode sel, string? categoryId)
+    private static bool SelectionHasCategory(ISelectionSymbol sel, string? categoryId)
     {
         if (categoryId is null) return false;
-        foreach (var cat in sel.Categories)
+        // Use Declaration.Categories to avoid triggering lazy symbol binding
+        if (sel is SelectionSymbol ss)
         {
-            if (cat.EntryId == categoryId)
-                return true;
+            foreach (var cat in ss.Declaration.Categories)
+            {
+                if (cat.EntryId == categoryId)
+                    return true;
+            }
         }
         return false;
     }
 
-    private static bool MatchesEntryType(SelectionNode sel, QueryFilterKind filterKind)
+    private static bool MatchesEntryType(ISelectionSymbol sel, QueryFilterKind filterKind)
     {
         return filterKind switch
         {
-            QueryFilterKind.UnitEntry => sel.Type == SelectionEntryKind.Unit,
-            QueryFilterKind.ModelEntry => sel.Type == SelectionEntryKind.Model,
-            QueryFilterKind.UpgradeEntry => sel.Type == SelectionEntryKind.Upgrade,
+            QueryFilterKind.UnitEntry => sel.EntryKind == SelectionEntryKind.Unit,
+            QueryFilterKind.ModelEntry => sel.EntryKind == SelectionEntryKind.Model,
+            QueryFilterKind.UpgradeEntry => sel.EntryKind == SelectionEntryKind.Upgrade,
             _ => false,
         };
     }
@@ -1008,27 +968,6 @@ internal sealed class ModifierEvaluator
         }
 
         return 1;
-    }
-
-    // ──────────────────────────────────────────────────────────────────
-    //  Path finding utilities
-    // ──────────────────────────────────────────────────────────────────
-
-    private static List<SelectionNode>? FindPathToSelection(SelectionNode current, SelectionNode target)
-    {
-        if (current == target)
-            return [current];
-
-        foreach (var child in current.Selections)
-        {
-            var path = FindPathToSelection(child, target);
-            if (path is not null)
-            {
-                path.Insert(0, current);
-                return path;
-            }
-        }
-        return null;
     }
 
     // ──────────────────────────────────────────────────────────────────
@@ -1102,7 +1041,19 @@ internal sealed class ModifierEvaluator
     /// Evaluation context: runtime information about where the evaluation is happening.
     /// </summary>
     private record struct EvalContext(
-        SelectionNode? Selection,
-        ForceNode? Force,
+        ISelectionSymbol? Selection,
+        IForceSymbol? Force,
         ISymbol EntrySymbol);
+
+    /// <summary>
+    /// Checks if a selection matches a given entry or entry group ID.
+    /// Uses Declaration properties to avoid triggering lazy binding
+    /// (SourceEntryPath is lazily bound and would cause binder reentrancy).
+    /// </summary>
+    private static bool MatchesEntryOrGroup(ISelectionSymbol sel, string id)
+    {
+        if (sel is SelectionSymbol ss)
+            return ss.Declaration.EntryId == id || ss.Declaration.EntryGroupId == id;
+        return false;
+    }
 }

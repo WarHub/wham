@@ -37,8 +37,8 @@ internal sealed class SelectionSymbol : ContainerSymbol, ISelectionSymbol, INode
             var roster = GetRosterSymbol();
             var result = roster?.GetOrCreateEffectiveEntryCache().GetEffectiveEntry(
                 SourceEntry,
-                Declaration,
-                (ContainingSymbol as ForceSymbol)?.Declaration)
+                this,
+                ContainingSymbol as IForceSymbol)
                 ?? (ISelectionEntryContainerSymbol)SourceEntry;
             Interlocked.CompareExchange(ref lazyEffectiveSourceEntry, result, null);
             return lazyEffectiveSourceEntry;
