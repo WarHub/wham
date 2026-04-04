@@ -33,4 +33,16 @@ public interface IForceSymbol : ISelectionContainerSymbol, IForceContainerSymbol
     /// </summary>
     ISelectionEntryContainerSymbol GetEffectiveEntry(
         ISelectionEntryContainerSymbol declaredEntry);
+
+    /// <summary>
+    /// Profiles with modifier-applied values, collected from the force entry's resource graph.
+    /// Empty when effective entry computation is not available.
+    /// </summary>
+    ImmutableArray<IEffectiveProfileSymbol> EffectiveProfiles => ImmutableArray<IEffectiveProfileSymbol>.Empty;
+
+    /// <summary>
+    /// Rules with modifier-applied values, collected from the force entry's resource graph.
+    /// Empty when effective entry computation is not available.
+    /// </summary>
+    ImmutableArray<IEffectiveRuleSymbol> EffectiveRules => ImmutableArray<IEffectiveRuleSymbol>.Empty;
 }

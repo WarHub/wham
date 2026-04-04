@@ -36,7 +36,10 @@ internal sealed class EffectiveEntrySymbol : ISelectionEntryContainerSymbol
         IReadOnlyDictionary<string, decimal> effectiveConstraintValues,
         IReadOnlyDictionary<string, decimal> effectiveCostValues,
         ImmutableArray<ICategoryEntrySymbol> effectiveCategories,
-        ICategoryEntrySymbol? effectivePrimaryCategory)
+        ICategoryEntrySymbol? effectivePrimaryCategory,
+        ImmutableArray<IEffectiveProfileSymbol> effectiveProfiles,
+        ImmutableArray<IEffectiveRuleSymbol> effectiveRules,
+        string? effectivePage)
     {
         OriginalEntry = original;
         Name = effectiveName;
@@ -45,6 +48,9 @@ internal sealed class EffectiveEntrySymbol : ISelectionEntryContainerSymbol
         PrimaryCategory = effectivePrimaryCategory;
         Constraints = BuildEffectiveConstraints(original.Constraints, effectiveConstraintValues);
         Costs = BuildEffectiveCosts(original.Costs, effectiveCostValues);
+        EffectiveProfiles = effectiveProfiles;
+        EffectiveRules = effectiveRules;
+        EffectivePage = effectivePage;
     }
 
     /// <summary>
@@ -59,6 +65,9 @@ internal sealed class EffectiveEntrySymbol : ISelectionEntryContainerSymbol
     public ImmutableArray<ICostSymbol> Costs { get; }
     public ImmutableArray<ICategoryEntrySymbol> Categories { get; }
     public ICategoryEntrySymbol? PrimaryCategory { get; }
+    public ImmutableArray<IEffectiveProfileSymbol> EffectiveProfiles { get; }
+    public ImmutableArray<IEffectiveRuleSymbol> EffectiveRules { get; }
+    public string? EffectivePage { get; }
 
     // Delegated from ISelectionEntryContainerSymbol
     public ImmutableArray<ISelectionEntryContainerSymbol> ChildSelectionEntries => OriginalEntry.ChildSelectionEntries;

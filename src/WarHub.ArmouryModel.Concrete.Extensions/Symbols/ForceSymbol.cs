@@ -5,6 +5,8 @@ namespace WarHub.ArmouryModel.Concrete;
 internal sealed class ForceSymbol : ContainerSymbol, IForceSymbol, INodeDeclaredSymbol<ForceNode>
 {
     private IForceEntrySymbol? lazyForceEntry;
+    private ImmutableArray<IEffectiveProfileSymbol> lazyEffectiveProfiles;
+    private ImmutableArray<IEffectiveRuleSymbol> lazyEffectiveRules;
 
     public ForceSymbol(
         ISymbol? containingSymbol,
@@ -58,6 +60,46 @@ internal sealed class ForceSymbol : ContainerSymbol, IForceSymbol, INodeDeclared
         var roster = GetRosterSymbol();
         return roster?.GetOrCreateEffectiveEntryCache().GetEffectiveEntry(declaredEntry, selection: null, this)
             ?? declaredEntry;
+    }
+
+    ImmutableArray<IEffectiveProfileSymbol> IForceSymbol.EffectiveProfiles
+    {
+        get
+        {
+            EnsureEffectiveResources();
+            return lazyEffectiveProfiles;
+        }
+    }
+
+    ImmutableArray<IEffectiveRuleSymbol> IForceSymbol.EffectiveRules
+    {
+        get
+        {
+            EnsureEffectiveResources();
+            return lazyEffectiveRules;
+        }
+    }
+
+    private void EnsureEffectiveResources()
+    {
+        if (!lazyEffectiveProfiles.IsDefault)
+            return;
+
+        var roster = GetRosterSymbol();
+        if (roster is not null)
+        {
+            // Force-level resources are resolved with null selection/force context
+            // matching BattleScribe behavior (force entry modifiers don't have selection context).
+            var cache = roster.GetOrCreateEffectiveEntryCache();
+            var (profiles, rules) = cache.CollectEffectiveResources(SourceEntry, selection: null, force: null);
+            lazyEffectiveProfiles = profiles;
+            lazyEffectiveRules = rules;
+        }
+        else
+        {
+            lazyEffectiveProfiles = ImmutableArray<IEffectiveProfileSymbol>.Empty;
+            lazyEffectiveRules = ImmutableArray<IEffectiveRuleSymbol>.Empty;
+        }
     }
 
     protected override void BindReferencesCore(Binder binder, BindingDiagnosticBag diagnostics)
