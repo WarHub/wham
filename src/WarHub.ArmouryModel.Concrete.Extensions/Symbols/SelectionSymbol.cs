@@ -23,6 +23,8 @@ internal sealed class SelectionSymbol : ContainerSymbol, ISelectionSymbol, INode
 
     public override ContainerKind ContainerKind => ContainerKind.Selection;
 
+    public string? EntryId => Declaration.EntryId;
+
     public int SelectedCount => Declaration.Number;
 
     public override ISelectionEntrySymbol SourceEntry =>

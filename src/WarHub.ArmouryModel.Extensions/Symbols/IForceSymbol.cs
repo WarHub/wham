@@ -7,11 +7,14 @@ namespace WarHub.ArmouryModel;
 /// </summary>
 public interface IForceSymbol : ISelectionContainerSymbol, IForceContainerSymbol
 {
+    /// <summary>
+    /// The force entry ID string from the roster.
+    /// </summary>
+    string? EntryId { get; }
+
     new IForceEntrySymbol SourceEntry { get; }
 
     ICatalogueReferenceSymbol CatalogueReference { get; }
-
-    // TODO catalogue reference: id, name, revision?
 
     /// <summary>
     /// Categories declared in the <see cref="SourceEntry"/>.

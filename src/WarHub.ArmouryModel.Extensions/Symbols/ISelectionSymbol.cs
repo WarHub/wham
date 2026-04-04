@@ -10,6 +10,13 @@ namespace WarHub.ArmouryModel;
 public interface ISelectionSymbol : ISelectionContainerSymbol
 {
     /// <summary>
+    /// The entry ID string as stored in the roster (e.g., "linkId::targetId").
+    /// This is the BattleScribe roster-level identity, distinct from
+    /// <see cref="IEntryInstanceSymbol.SourceEntry"/>.<see cref="ISymbol.Id"/>.
+    /// </summary>
+    string? EntryId { get; }
+
+    /// <summary>
     /// Selection count (number of times that selection is "taken").
     /// </summary>
     int SelectedCount { get; }
