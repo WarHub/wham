@@ -376,7 +376,7 @@ internal static class ConstraintEvaluator
             // Check constraints on child entries (scope=parent)
             foreach (var child in parent.ChildSelections)
             {
-                if (!_entryIndex.TryGetValue(child.Declaration.EntryId, out var childEntry))
+                if (!TryGetIndexedEntry(child.Declaration.EntryId, out var childEntry))
                     continue;
 
                 var effectiveChildValues = GetEffectiveConstraintValues(childEntry, child, force);
@@ -399,7 +399,7 @@ internal static class ConstraintEvaluator
             }
 
             // Also check entries that are available but have 0 selections (min violations)
-            if (_entryIndex.TryGetValue(parent.Declaration.EntryId, out var parentEntry))
+            if (TryGetIndexedEntry(parent.Declaration.EntryId, out var parentEntry))
             {
                 foreach (var childEntrySymbol in parentEntry.ChildSelectionEntries)
                 {
@@ -499,7 +499,7 @@ internal static class ConstraintEvaluator
             decimal count = 0;
             foreach (var sel in selections)
             {
-                if (sel.Declaration.EntryId == targetId)
+                if (EntryIdMatches(sel.Declaration.EntryId, targetId))
                     count += sel.SelectedCount;
             }
             return count;
@@ -532,7 +532,7 @@ internal static class ConstraintEvaluator
             decimal count = 0;
             foreach (var sel in selections)
             {
-                if (matchIds.Contains(sel.Declaration.EntryId))
+                if (EntryIdMatchesAny(sel.Declaration.EntryId, matchIds))
                     count += sel.SelectedCount;
             }
             return count;
@@ -556,7 +556,7 @@ internal static class ConstraintEvaluator
             decimal sum = 0;
             foreach (var sel in selections)
             {
-                if (sel.Declaration.EntryId != targetId) continue;
+                if (!EntryIdMatches(sel.Declaration.EntryId, targetId)) continue;
                 foreach (var cost in sel.Declaration.Costs)
                 {
                     if (cost.TypeId == costTypeId)
@@ -597,7 +597,7 @@ internal static class ConstraintEvaluator
             int count = 0;
             foreach (var sel in FlattenSelections(force.ChildSelections))
             {
-                if (sel.Declaration.EntryId == entryId)
+                if (EntryIdMatches(sel.Declaration.EntryId, entryId))
                     count += sel.SelectedCount;
             }
             return count;
@@ -790,6 +790,71 @@ internal static class ConstraintEvaluator
                 yield return child;
                 foreach (var desc in GetDescendantEntries(child))
                     yield return desc;
+            }
+        }
+
+        // ──────────────────────────────────────────────────────────────────
+        //  EntryId path matching
+        // ──────────────────────────────────────────────────────────────────
+
+        /// <summary>
+        /// Checks if a selection's entryId (which may be a "::" path like "link-1::shared-unit")
+        /// matches the given <paramref name="targetId"/> (a single segment).
+        /// </summary>
+        private static bool EntryIdMatches(string selectionEntryId, string targetId)
+        {
+            if (selectionEntryId == targetId)
+                return true;
+            // Check if any segment of the :: path matches
+            var span = selectionEntryId.AsSpan();
+            while (true)
+            {
+                var sepIndex = span.IndexOf("::", StringComparison.Ordinal);
+                if (sepIndex < 0)
+                    return span.SequenceEqual(targetId.AsSpan());
+                if (span[..sepIndex].SequenceEqual(targetId.AsSpan()))
+                    return true;
+                span = span[(sepIndex + 2)..];
+            }
+        }
+
+        /// <summary>
+        /// Checks if a selection's entryId (which may be a "::" path) contains any ID in the set.
+        /// </summary>
+        private static bool EntryIdMatchesAny(string selectionEntryId, HashSet<string> ids)
+        {
+            if (ids.Contains(selectionEntryId))
+                return true;
+            // Check if any segment of the :: path is in the set
+            var span = selectionEntryId.AsSpan();
+            while (true)
+            {
+                var sepIndex = span.IndexOf("::", StringComparison.Ordinal);
+                if (sepIndex < 0)
+                    return ids.Contains(span.ToString());
+                if (ids.Contains(span[..sepIndex].ToString()))
+                    return true;
+                span = span[(sepIndex + 2)..];
+            }
+        }
+
+        /// <summary>
+        /// Looks up an entry in the index by any segment of a "::" path.
+        /// </summary>
+        private bool TryGetIndexedEntry(string entryId, [System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out ISelectionEntryContainerSymbol? result)
+        {
+            if (_entryIndex.TryGetValue(entryId, out result))
+                return true;
+            // Try each segment of the :: path
+            var span = entryId.AsSpan();
+            while (true)
+            {
+                var sepIndex = span.IndexOf("::", StringComparison.Ordinal);
+                if (sepIndex < 0)
+                    return _entryIndex.TryGetValue(span.ToString(), out result);
+                if (_entryIndex.TryGetValue(span[..sepIndex].ToString(), out result))
+                    return true;
+                span = span[(sepIndex + 2)..];
             }
         }
 
