@@ -47,8 +47,9 @@ internal sealed class EffectiveEntryCache
 
     /// <summary>
     /// Collects and returns effective profiles and rules from an entry's resource graph.
-    /// Walks all resources (profiles, rules, info groups, info links), resolving references
-    /// and applying modifiers from each symbol along the traversal path.
+    /// For entry links, resolves through to the shared target's resources.
+    /// Uses a 4-pass traversal matching BattleScribe's output ordering:
+    /// (1) direct profiles, (2) direct rules, (3) InfoLinks, (4) inline InfoGroups.
     /// </summary>
     public (ImmutableArray<IEffectiveProfileSymbol> Profiles, ImmutableArray<IEffectiveRuleSymbol> Rules)
         CollectEffectiveResources(
@@ -56,10 +57,12 @@ internal sealed class EffectiveEntryCache
             ISelectionSymbol? selection,
             IForceSymbol? force)
     {
+        // For entry links, resolve through to the shared target's resources
+        var resolvedEntry = entry.ReferencedEntry ?? entry;
         var profiles = new List<IEffectiveProfileSymbol>();
         var rules = new List<IEffectiveRuleSymbol>();
         CollectFromResources(
-            entry.Resources,
+            resolvedEntry.Resources,
             viaInfoLink: null,
             containingGroup: null,
             selection, force, visited: null, profiles, rules);
@@ -115,8 +118,10 @@ internal sealed class EffectiveEntryCache
     }
 
     /// <summary>
-    /// Walks the resource graph collecting profiles and rules.
-    /// Tracks at most two context symbols matching BattleScribe semantics:
+    /// Walks the resource graph collecting profiles and rules using a 4-pass traversal
+    /// that matches BattleScribe's output ordering: (1) direct profiles, (2) direct rules,
+    /// (3) InfoLinks (profile, rule, and group links), (4) inline InfoGroups.
+    /// Tracks context symbols for modifier chains:
     /// <paramref name="viaInfoLink"/> (the link to the containing group, for characteristic modifiers only)
     /// and <paramref name="containingGroup"/> (the immediately containing group, for modifiers + hidden fallback).
     /// </summary>
@@ -130,50 +135,69 @@ internal sealed class EffectiveEntryCache
         List<IEffectiveProfileSymbol> profiles,
         List<IEffectiveRuleSymbol> rules)
     {
+        // Pass 1: Direct profiles
         foreach (var resource in resources)
         {
-            switch (resource.ResourceKind)
+            if (resource.ResourceKind == ResourceKind.Profile && !resource.IsReference
+                && resource is IProfileSymbol directProfile)
             {
-                case ResourceKind.Cost:
-                case ResourceKind.Characteristic:
-                case ResourceKind.Error:
-                    continue;
+                profiles.Add(BuildEffectiveProfile(
+                    directProfile, link: viaInfoLink, linkOverridesProfile: false,
+                    containingGroup, selection, force));
             }
+        }
 
-            if (resource.IsReference && resource.ReferencedEntry is { } target)
+        // Pass 2: Direct rules
+        foreach (var resource in resources)
+        {
+            if (resource.ResourceKind == ResourceKind.Rule && !resource.IsReference
+                && resource is IRuleSymbol directRule)
             {
-                // InfoLink — behavior depends on target type
-                switch (target.ResourceKind)
-                {
-                    case ResourceKind.Profile when target is IProfileSymbol profile:
-                        // Link directly targets profile → MapProfileNodeWithOverrides semantics
-                        // (link name/hidden overrides apply)
-                        profiles.Add(BuildEffectiveProfile(
-                            profile, link: resource, linkOverridesProfile: true,
-                            containingGroup, selection, force));
-                        break;
-
-                    case ResourceKind.Rule when target is IRuleSymbol rule:
-                        rules.Add(BuildEffectiveRule(
-                            rule, link: resource, linkOverridesProfile: true,
-                            containingGroup, selection, force));
-                        break;
-
-                    case ResourceKind.Group:
-                        // Link to group → recurse. Link becomes viaInfoLink; target group becomes containingGroup.
-                        visited ??= new HashSet<object>(ReferenceEqualityComparer.Instance);
-                        if (visited.Add(resource))
-                        {
-                            CollectFromResources(target.Resources,
-                                viaInfoLink: resource, containingGroup: target,
-                                selection, force, visited, profiles, rules);
-                        }
-                        break;
-                }
+                rules.Add(BuildEffectiveRule(
+                    directRule, link: viaInfoLink, linkOverridesProfile: false,
+                    containingGroup, selection, force));
             }
-            else if (resource.ResourceKind == ResourceKind.Group)
+        }
+
+        // Pass 3: InfoLinks (profile links, rule links, group links)
+        foreach (var resource in resources)
+        {
+            if (!resource.IsReference || resource.ReferencedEntry is not { } target)
+                continue;
+
+            switch (target.ResourceKind)
             {
-                // Inline InfoGroup → recurse. No viaInfoLink; resource becomes containingGroup.
+                case ResourceKind.Profile when target is IProfileSymbol profile:
+                    // Link directly targets profile → link name/hidden overrides apply
+                    profiles.Add(BuildEffectiveProfile(
+                        profile, link: resource, linkOverridesProfile: true,
+                        containingGroup, selection, force));
+                    break;
+
+                case ResourceKind.Rule when target is IRuleSymbol rule:
+                    rules.Add(BuildEffectiveRule(
+                        rule, link: resource, linkOverridesProfile: true,
+                        containingGroup, selection, force));
+                    break;
+
+                case ResourceKind.Group:
+                    // Link to group → recurse. Link becomes viaInfoLink; target becomes containingGroup.
+                    visited ??= new HashSet<object>(ReferenceEqualityComparer.Instance);
+                    if (visited.Add(resource))
+                    {
+                        CollectFromResources(target.Resources,
+                            viaInfoLink: resource, containingGroup: target,
+                            selection, force, visited, profiles, rules);
+                    }
+                    break;
+            }
+        }
+
+        // Pass 4: Inline InfoGroups
+        foreach (var resource in resources)
+        {
+            if (resource.ResourceKind == ResourceKind.Group && !resource.IsReference)
+            {
                 visited ??= new HashSet<object>(ReferenceEqualityComparer.Instance);
                 if (visited.Add(resource))
                 {
@@ -181,20 +205,6 @@ internal sealed class EffectiveEntryCache
                         viaInfoLink: null, containingGroup: resource,
                         selection, force, visited, profiles, rules);
                 }
-            }
-            else if (resource.ResourceKind == ResourceKind.Profile && resource is IProfileSymbol directProfile)
-            {
-                // Direct profile → MapProfileNode semantics
-                // (viaInfoLink applies characteristic modifiers but NOT name/hidden overrides)
-                profiles.Add(BuildEffectiveProfile(
-                    directProfile, link: viaInfoLink, linkOverridesProfile: false,
-                    containingGroup, selection, force));
-            }
-            else if (resource.ResourceKind == ResourceKind.Rule && resource is IRuleSymbol directRule)
-            {
-                rules.Add(BuildEffectiveRule(
-                    directRule, link: viaInfoLink, linkOverridesProfile: false,
-                    containingGroup, selection, force));
             }
         }
     }
