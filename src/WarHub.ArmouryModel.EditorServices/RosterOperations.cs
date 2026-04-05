@@ -34,8 +34,8 @@ public static class RosterOperations
     public static ChangeSelectionCountOperation ChangeCountOf(SelectionNode selection, int newCount) =>
         new(selection, newCount);
 
-    public static AddRootEntryFromSymbol AddRootEntryFromSymbol(ISelectionEntryContainerSymbol link, string force, int count = 1) =>
-        new(link, force, count);
+    public static AddRootEntryFromSymbol AddRootEntryFromSymbol(ISelectionEntryContainerSymbol entry, string force, int count = 1) =>
+        new(SymbolKey.Create(entry), force, count);
 }
 
 public sealed class IdentityRosterOperation : IRosterOperation
@@ -185,21 +185,19 @@ public record AddSelectionFromLinkOp(SelectionEntryNode SelectionEntry, EntryLin
     }
 }
 
-public record AddRootEntryFromSymbol(ISelectionEntryContainerSymbol Entry, string ForceId, int Count = 1) : RosterOperationBase
+public record AddRootEntryFromSymbol(SymbolKey EntryKey, string ForceId, int Count = 1) : RosterOperationBase
 {
     protected override RosterOperationKind Kind => RosterOperationKind.AddSelection;
 
     protected override RosterNode TransformRoster(RosterState state)
     {
         var roster = state.RosterRequired;
-        // hack for referencing symbols from previous compilations, until SymbolReference is done
-        var entryLocal = state.Compilation.GlobalNamespace.Catalogues
-            .FirstOrDefault(x => x.Id == Entry.ContainingModule!.Id)
-            ?.RootContainerEntries
-            .Where(x => x.IsContainerKind(ContainerKind.Selection))
-            .OfType<ISelectionEntryContainerSymbol>()
-            .FirstOrDefault(x => x.Id == Entry.Id)
-            ?? throw new InvalidOperationException($"Entry '{Entry.Id}' not found in compilation.");
+        var resolution = EntryKey.Resolve(state.Compilation);
+        if (resolution.Kind != SymbolKeyResolutionKind.Resolved || resolution.Symbol is not ISelectionEntryContainerSymbol entryLocal)
+        {
+            throw new InvalidOperationException(
+                $"Entry key ({EntryKey.Kind}, '{EntryKey.SymbolId}') could not be resolved: {resolution.Kind}.");
+        }
         var entries = !entryLocal.IsReference
             ? new[] { entryLocal }
             : new[] { entryLocal, entryLocal.ReferencedEntry! };
