@@ -254,13 +254,16 @@ internal sealed class EffectiveEntryCache
         }
 
         // Page and publication always from the target profile.
+        // Use resolved publication ID, falling back to raw declaration ID if binding failed.
+        var publicationId = GetPublicationId(profile);
+
         return new EffectiveProfileSymbol(
             name,
             hidden,
             profile.Type?.Id,
             profile.Type?.Name,
             profile.Page,
-            profile.PublicationReference?.Publication?.Id,
+            publicationId,
             chars.MoveToImmutable());
     }
 
@@ -297,12 +300,35 @@ internal sealed class EffectiveEntryCache
             name = rule.Name ?? "";
         }
 
+        // Use resolved publication ID, falling back to raw declaration ID if binding failed.
+        var publicationId = GetPublicationId(rule);
+
         return new EffectiveRuleSymbol(
             name,
             desc,
             hidden,
             rule.Page,
-            rule.PublicationReference?.Publication?.Id);
+            publicationId);
+    }
+
+    /// <summary>
+    /// Gets the publication ID from an entry's publication reference.
+    /// Falls back to the raw declaration ID when the publication symbol binding failed
+    /// (e.g. the publicationId references a publication not in the catalogue).
+    /// </summary>
+    private static string? GetPublicationId(IEntrySymbol entry)
+    {
+        var pubRef = entry.PublicationReference;
+        if (pubRef is null)
+            return null;
+        // Try resolved publication symbol first
+        var id = pubRef.Publication?.Id;
+        if (id is not null)
+            return id;
+        // Fallback: raw publicationId from declaration (binding may have failed)
+        if (pubRef is PublicationReferenceSymbol concrete)
+            return concrete.PublicationRefDeclaration.PublicationId;
+        return null;
     }
 
     private (ImmutableArray<ICategoryEntrySymbol> Categories, ICategoryEntrySymbol? Primary) ResolveCategorySymbols(
