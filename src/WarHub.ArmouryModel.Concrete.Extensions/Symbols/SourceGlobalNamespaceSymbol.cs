@@ -7,6 +7,10 @@ internal sealed class SourceGlobalNamespaceSymbol : Symbol, IGamesystemNamespace
 {
     private SymbolCompletionState state;
 
+    /// <summary>
+    /// Creates a namespace for a standalone (catalogue-mode) compilation.
+    /// All root nodes produce catalogue and/or roster symbols.
+    /// </summary>
     public SourceGlobalNamespaceSymbol(
         ImmutableArray<SourceNode> rootDataNodes,
         WhamCompilation declaringCompilation)
@@ -61,6 +65,39 @@ internal sealed class SourceGlobalNamespaceSymbol : Symbol, IGamesystemNamespace
         }
     }
 
+    /// <summary>
+    /// Creates a namespace for a roster compilation that references a catalogue compilation.
+    /// Own source trees produce only roster symbols; catalogue symbols come from the reference.
+    /// </summary>
+    public SourceGlobalNamespaceSymbol(
+        ImmutableArray<SourceNode> rootDataNodes,
+        WhamCompilation declaringCompilation,
+        SourceGlobalNamespaceSymbol referencedNamespace)
+    {
+        DeclaringCompilation = declaringCompilation;
+        DeclarationDiagnostics = DiagnosticBag.GetInstance();
+
+        // Only create roster symbols from own source trees.
+        var ownSymbols = rootDataNodes
+            .Select(node => node is RosterNode rosterNode
+                ? (Symbol)new RosterSymbol(this, rosterNode, DeclarationDiagnostics)
+                : null)
+            .Where(x => x is not null)
+            .ToImmutableArray()!;
+
+        Rosters = ownSymbols.OfType<RosterSymbol>().ToImmutableArray();
+
+        // Catalogue symbols come from the referenced compilation — same object references.
+        Catalogues = referencedNamespace.Catalogues;
+        RootCatalogue = referencedNamespace.RootCatalogue;
+
+        // AllRootSymbols includes both own roster symbols and referenced catalogue symbols.
+        AllRootSymbols = ownSymbols
+            .AddRange(Catalogues.Cast<CatalogueBaseSymbol, Symbol>());
+
+        state.NotePartComplete(CompletionPart.Members);
+    }
+
     public override SymbolKind Kind => SymbolKind.Namespace;
 
     public override string? Id => RootCatalogue.Id;
@@ -112,7 +149,9 @@ internal sealed class SourceGlobalNamespaceSymbol : Symbol, IGamesystemNamespace
                     return;
                 case CompletionPart.MembersCompleted:
                     {
-                        foreach (var member in AllRootSymbols)
+                        // Only force-complete own roster symbols.
+                        // Referenced catalogue symbols are already complete from their own compilation.
+                        foreach (var member in Rosters)
                         {
                             cancellationToken.ThrowIfCancellationRequested();
                             member.ForceComplete(cancellationToken);

@@ -29,7 +29,10 @@ public static class SourceNodeExtensions
     public static SourceTree GetSourceTree(this SourceNode node, Compilation compilation)
     {
         // TODO this should not require compilation (a node knows it's tree)
-        return compilation.SourceTrees.Single(x => x.GetRoot() == node);
+        var root = node.AncestorsAndSelf().Last();
+        return compilation.FindSourceTree(root)
+            ?? throw new InvalidOperationException(
+                "SourceTree not found in compilation or its references.");
     }
 
     public static int GetWidth(this SourceNode node)

@@ -11,10 +11,31 @@ public class WhamCompilation : Compilation
     private ICategoryEntrySymbol? lazyNoCategoryEntrySymbol;
     private SymbolIndex? lazySymbolIndex;
 
-    internal WhamCompilation(string? name, ImmutableArray<SourceTree> sourceTrees, CompilationOptions options)
+    internal WhamCompilation(
+        string? name,
+        ImmutableArray<SourceTree> sourceTrees,
+        CompilationOptions options,
+        ImmutableArray<WhamCompilation> references = default)
         : base(name, sourceTrees, options)
     {
+        References = references.IsDefault ? [] : references;
+        ValidateInvariants();
     }
+
+    /// <summary>
+    /// Referenced compilations whose symbols are visible from this compilation.
+    /// <para>
+    /// A <b>catalogue compilation</b> has no references and contains only catalogue/gamesystem trees.
+    /// A <b>roster compilation</b> references exactly one catalogue compilation and contains only roster trees.
+    /// </para>
+    /// </summary>
+    public ImmutableArray<WhamCompilation> References { get; }
+
+    /// <summary>
+    /// <see langword="true"/> when this compilation references another compilation
+    /// (i.e. this is a roster compilation).
+    /// </summary>
+    public bool HasReferences => References.Length > 0;
 
     public override IGamesystemNamespaceSymbol GlobalNamespace => SourceGlobalNamespace;
 
@@ -32,6 +53,28 @@ public class WhamCompilation : Compilation
         return new WhamCompilation(null, sourceTrees, options ?? new WhamCompilationOptions());
     }
 
+    /// <summary>
+    /// Creates a roster compilation that references a catalogue compilation.
+    /// The <paramref name="catalogueCompilation"/> must not itself have references.
+    /// </summary>
+    public static WhamCompilation CreateRosterCompilation(
+        ImmutableArray<SourceTree> rosterTrees,
+        WhamCompilation catalogueCompilation,
+        WhamCompilationOptions? options = null)
+    {
+        if (catalogueCompilation.HasReferences)
+        {
+            throw new ArgumentException(
+                "The catalogue compilation must not itself have references (no chains).",
+                nameof(catalogueCompilation));
+        }
+        return new WhamCompilation(
+            null,
+            rosterTrees,
+            options ?? new WhamCompilationOptions(),
+            [catalogueCompilation]);
+    }
+
     public override SemanticModel GetSemanticModel(SourceTree tree)
     {
         throw new NotImplementedException();
@@ -39,6 +82,7 @@ public class WhamCompilation : Compilation
 
     public override ImmutableArray<Diagnostic> GetDiagnostics(CancellationToken cancellationToken = default)
     {
+        ForceCompleteReferences(cancellationToken);
         SourceGlobalNamespace.ForceComplete(cancellationToken);
         var namespaceDiagnostics = SourceGlobalNamespace.DeclarationDiagnostics;
         var declarationDiagnostics = DeclarationDiagnostics;
@@ -48,11 +92,13 @@ public class WhamCompilation : Compilation
         builder.AddRange(namespaceDiagnostics.AsEnumerable());
         builder.AddRange(declarationDiagnostics.AsEnumerable());
         builder.AddRange(constraintDiagnostics.AsEnumerable());
-        return builder.MoveToImmutable();
+        AggregateReferenceDiagnostics(builder, cancellationToken);
+        return builder.ToImmutable();
     }
 
     public override ImmutableArray<Diagnostic> GetDeclarationDiagnostics(CancellationToken cancellationToken = default)
     {
+        ForceCompleteReferences(cancellationToken);
         SourceGlobalNamespace.ForceComplete(cancellationToken);
         var namespaceDiagnostics = SourceGlobalNamespace.DeclarationDiagnostics;
         var declarationDiagnostics = DeclarationDiagnostics;
@@ -60,11 +106,16 @@ public class WhamCompilation : Compilation
             namespaceDiagnostics.Count + declarationDiagnostics.Count);
         builder.AddRange(namespaceDiagnostics.AsEnumerable());
         builder.AddRange(declarationDiagnostics.AsEnumerable());
-        return builder.MoveToImmutable();
+        foreach (var reference in References)
+        {
+            builder.AddRange(reference.GetDeclarationDiagnostics(cancellationToken));
+        }
+        return builder.ToImmutable();
     }
 
     public override ImmutableArray<Diagnostic> GetConstraintDiagnostics(CancellationToken cancellationToken = default)
     {
+        ForceCompleteReferences(cancellationToken);
         SourceGlobalNamespace.ForceComplete(cancellationToken);
         return [.. ConstraintDiagnostics.AsEnumerable()];
     }
@@ -75,8 +126,22 @@ public class WhamCompilation : Compilation
     public override WhamCompilation ReplaceSourceTree(SourceTree oldTree, SourceTree? newTree) =>
         Update(newTree is null ? SourceTrees.Remove(oldTree) : SourceTrees.Replace(oldTree, newTree));
 
+    public override SourceTree? FindSourceTree(SourceNode rootNode)
+    {
+        var tree = base.FindSourceTree(rootNode);
+        if (tree is not null)
+            return tree;
+        foreach (var reference in References)
+        {
+            tree = reference.FindSourceTree(rootNode);
+            if (tree is not null)
+                return tree;
+        }
+        return null;
+    }
+
     private WhamCompilation Update(ImmutableArray<SourceTree> trees) =>
-        new(Name, trees, Options);
+        new(Name, trees, Options, References);
 
     internal override ICatalogueSymbol CreateMissingGamesystemSymbol(DiagnosticBag diagnostics)
     {
@@ -138,6 +203,12 @@ public class WhamCompilation : Compilation
     private SourceGlobalNamespaceSymbol CreateGlobalNamespace()
     {
         var nodes = SourceTrees.Select(x => x.GetRoot()).ToImmutableArray();
+        if (HasReferences)
+        {
+            // Roster compilation: take catalogue symbols from the referenced compilation.
+            var referencedNamespace = References[0].SourceGlobalNamespace;
+            return new SourceGlobalNamespaceSymbol(nodes, this, referencedNamespace);
+        }
         return new SourceGlobalNamespaceSymbol(nodes, this);
     }
 
@@ -181,5 +252,51 @@ public class WhamCompilation : Compilation
     {
         var node = NodeFactory.CategoryEntry("Uncategorised", "(No Category)");
         return new CategoryEntrySymbol(SourceGlobalNamespace, node, DeclarationDiagnostics);
+    }
+
+    private void ValidateInvariants()
+    {
+        if (References.Length == 0)
+            return;
+
+        // Roster compilations must not reference compilations that themselves have references.
+        foreach (var reference in References)
+        {
+            if (reference.HasReferences)
+            {
+                throw new InvalidOperationException(
+                    "Referenced compilations must not themselves have references (no chains).");
+            }
+        }
+
+        // Roster compilations must contain only roster source trees.
+        foreach (var tree in SourceTrees)
+        {
+            var root = tree.GetRoot();
+            if (root is not Source.RosterNode)
+            {
+                throw new InvalidOperationException(
+                    $"A roster compilation (with references) must contain only roster source trees, " +
+                    $"but found a {root.GetType().Name}.");
+            }
+        }
+    }
+
+    private void ForceCompleteReferences(CancellationToken cancellationToken)
+    {
+        foreach (var reference in References)
+        {
+            reference.SourceGlobalNamespace.ForceComplete(cancellationToken);
+        }
+    }
+
+    private void AggregateReferenceDiagnostics(
+        ImmutableArray<Diagnostic>.Builder builder,
+        CancellationToken cancellationToken)
+    {
+        foreach (var reference in References)
+        {
+            builder.AddRange(reference.GetDiagnostics(cancellationToken));
+        }
     }
 }

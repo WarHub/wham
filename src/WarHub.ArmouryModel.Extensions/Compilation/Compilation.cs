@@ -39,6 +39,16 @@ public abstract class Compilation
     public abstract Compilation ReplaceSourceTree(SourceTree oldTree, SourceTree? newTree);
 
     /// <summary>
+    /// Finds the <see cref="SourceTree"/> whose root matches <paramref name="rootNode"/>,
+    /// searching own source trees first, then any referenced compilations.
+    /// Returns <see langword="null"/> if not found.
+    /// </summary>
+    public virtual SourceTree? FindSourceTree(SourceNode rootNode)
+    {
+        return SourceTrees.SingleOrDefault(x => x.GetRoot() == rootNode);
+    }
+
+    /// <summary>
     /// Resolves a <see cref="SymbolKey"/> in this compilation, returning the matching symbol
     /// or a description of why resolution failed (missing or ambiguous).
     /// </summary>
