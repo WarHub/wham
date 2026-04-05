@@ -42,19 +42,20 @@ dotnet pack                                            # NuGet packages (Release
 | `src/WarHub.ArmouryModel.RosterEngine/WhamRosterEngine.cs` | IRosterEngine impl — setup, forces, selections, state |
 | `src/WarHub.ArmouryModel.RosterEngine/EntryResolver.cs` | Entry/link resolution, merging, flattening, cycle detection |
 | `src/WarHub.ArmouryModel.Concrete.Extensions/Symbols/ConstraintEvaluator.cs` | Symbol-layer constraint validation, produces WhamDiagnostics |
-| `src/WarHub.ArmouryModel.RosterEngine.Spec/ConstraintValidator.cs` | Legacy node-layer constraint validator (replaced by ConstraintEvaluator) |
-| `src/WarHub.ArmouryModel.RosterEngine.Spec/StateMapper.cs` | ISymbol → Protocol state mapping with effective entries |
+| `src/WarHub.ArmouryModel.RosterEngine.Spec/StateMapper.cs` | Thin Symbol→Protocol mapper (~140 LOC), reads only public Symbol API |
 | `tests/WarHub.ArmouryModel.RosterEngine.Tests/ConformanceTests.cs` | Runs all 304 BattleScribe-spec conformance specs |
 
 ### Effective entry symbols (Roslyn-style wrappers)
 
 | Path | What |
 |------|------|
-| `src/WarHub.ArmouryModel.Concrete.Extensions/Symbols/Effective/EffectiveEntrySymbol.cs` | Wraps ISelectionEntryContainerSymbol with effective Name/Hidden/Costs/Constraints |
+| `src/WarHub.ArmouryModel.Concrete.Extensions/Symbols/Effective/EffectiveEntrySymbol.cs` | Wraps ISelectionEntryContainerSymbol with effective Name/Hidden/Costs/Constraints/Profiles/Rules/Page |
+| `src/WarHub.ArmouryModel.Concrete.Extensions/Symbols/Effective/EffectiveProfileSymbol.cs` | IEffectiveProfileSymbol impl — effective name, hidden, characteristics, page, publicationId |
+| `src/WarHub.ArmouryModel.Concrete.Extensions/Symbols/Effective/EffectiveRuleSymbol.cs` | IEffectiveRuleSymbol impl — effective name, description, hidden, page, publicationId |
 | `src/WarHub.ArmouryModel.Concrete.Extensions/Symbols/Effective/EffectiveConstraintSymbol.cs` | Wraps IConstraintSymbol with effective Query ReferenceValue |
 | `src/WarHub.ArmouryModel.Concrete.Extensions/Symbols/Effective/EffectiveCostSymbol.cs` | Wraps ICostSymbol with effective Value |
 | `src/WarHub.ArmouryModel.Concrete.Extensions/Symbols/Effective/EffectiveQuerySymbol.cs` | Wraps IQuerySymbol with effective ReferenceValue |
-| `src/WarHub.ArmouryModel.Concrete.Extensions/Symbols/Effective/EffectiveEntryCache.cs` | ConcurrentDictionary-based lazy cache; owns ModifierEvaluator, self-initializing on RosterSymbol |
+| `src/WarHub.ArmouryModel.Concrete.Extensions/Symbols/Effective/EffectiveEntryCache.cs` | Lazy cache + 4-pass resource resolution; owns ModifierEvaluator, self-initializing on RosterSymbol |
 | `src/WarHub.ArmouryModel.Concrete.Extensions/Symbols/Effective/EffectiveEntryKey.cs` | Cache key: (entry, selection?, force?) |
 | `src/WarHub.ArmouryModel.Concrete.Extensions/Symbols/Effective/ModifierEvaluator.cs` | Modifier application, condition eval, scope resolution (internal to Compilation) |
 
@@ -114,15 +115,21 @@ constraint evaluation via `CompletionPart` phases:
 WhamRosterEngine (IRosterEngine)
 ├── EntryResolver      — flatten entries, merge links, resolve info
 └── EffectiveEntrySymbol (Concrete.Extensions) — Roslyn-style wrapper symbols
-    ├── EffectiveEntryCache — lazy ConcurrentDictionary cache, owns ModifierEvaluator
-    └── ModifierEvaluator  — apply modifiers, evaluate conditions, resolve scopes
+    ├── EffectiveEntryCache — lazy cache, owns ModifierEvaluator
+    │   └── CollectEffectiveResources() — 4-pass profile/rule resolution
+    │       Pass 1: direct profiles, Pass 2: direct rules,
+    │       Pass 3: InfoLinks, Pass 4: inline InfoGroups
+    ├── EffectiveProfileSymbol — IEffectiveProfileSymbol with modifier-applied characteristics
+    ├── EffectiveRuleSymbol    — IEffectiveRuleSymbol with modifier-applied description
+    └── ModifierEvaluator      — apply modifiers, evaluate conditions, resolve scopes
 
 Symbol completion pipeline (CompletionPart phases):
   BindReferences → Members → EffectiveEntries → Constraints
   (RosterSymbol overrides EffectiveEntries + Constraints phases)
-  
+
 ConstraintEvaluator (Concrete.Extensions) — symbol-layer constraint validation
-ConstraintValidator + StateMapper (RosterEngine.Spec) — protocol adapter layer
+StateMapper (RosterEngine.Spec) — thin Symbol→Protocol mapper (~140 LOC)
+  Reads only the public Symbol API surface — no SourceNode access.
 ```
 
 ## Code conventions

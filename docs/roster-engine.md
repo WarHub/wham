@@ -57,9 +57,8 @@ Adapter bridging TestKit's `IRosterEngine` to the ISymbol engine:
 
 - **ProtocolConverter**: Protocol* → SourceNode trees → WhamCompilation
 - **SpecRosterEngineAdapter**: `IRosterEngine` impl maintaining current state
-- **StateMapper**: Maps ISymbol roster tree to Protocol `RosterState`
-- **ConstraintValidator**: Validates constraints using ISymbol types
-  (legacy — replaced by ConstraintEvaluator in Concrete.Extensions)
+- **StateMapper**: Thin (~140 LOC) Symbol→Protocol mapper. Reads only the public
+  Symbol API — no SourceNode access, no internal helpers.
 
 ## Components
 
@@ -69,7 +68,9 @@ Wrapper symbols in `Concrete.Extensions/Symbols/Effective/` that implement the
 same public interfaces but return modifier-applied values:
 
 - **EffectiveEntrySymbol**: Wraps `ISelectionEntryContainerSymbol` — overrides
-  Name, IsHidden, Constraints, Costs, Categories. Exposes `OriginalEntry`.
+  Name, IsHidden, Constraints, Costs, Categories, EffectiveProfiles, EffectiveRules, EffectivePage.
+- **EffectiveProfileSymbol**: `IEffectiveProfileSymbol` with modifier-applied characteristics.
+- **EffectiveRuleSymbol**: `IEffectiveRuleSymbol` with modifier-applied description.
 - **EffectiveConstraintSymbol**: Wraps `IConstraintSymbol` with effective Query.
 - **EffectiveQuerySymbol**: Wraps `IQuerySymbol` with effective ReferenceValue.
 - **EffectiveCostSymbol**: Wraps `ICostSymbol` with effective Value.
@@ -92,12 +93,10 @@ var effective = roster.GetEffectiveEntry(declaredEntry, selection, force);
 Caching is handled by `EffectiveEntryCache` (ConcurrentDictionary-based), which
 is self-initializing on `RosterSymbol`. The cache lazily creates its own
 `ModifierEvaluator` from the roster symbol and compilation
-— no external wiring required. Consumers access effective values through the
-symbol API; `ConstraintValidator` and `StateMapper` share a single cache per roster.
-
-**Important**: `StateMapper` and `ConstraintValidator` map node→symbol via lazy
-lookup dictionaries (built from `Compilation.SourceGlobalNamespace.Rosters` symbol
-tree) when calling evaluator methods that require `ISelectionSymbol`/`IForceSymbol`.
+— no external wiring required. It also resolves profiles, rules, categories,
+costs, and publication data into effective wrapper symbols. `StateMapper` walks
+the symbol tree directly and reads only the public API — all business logic
+lives in the Symbol layer.
 
 ### ModifierEvaluator (~960 lines, internal to Concrete.Extensions)
 
