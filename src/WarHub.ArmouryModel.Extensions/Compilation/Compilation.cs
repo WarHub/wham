@@ -38,5 +38,11 @@ public abstract class Compilation
 
     public abstract Compilation ReplaceSourceTree(SourceTree oldTree, SourceTree? newTree);
 
+    /// <summary>
+    /// Resolves a <see cref="SymbolKey"/> in this compilation, returning the matching symbol
+    /// or a description of why resolution failed (missing or ambiguous).
+    /// </summary>
+    public abstract SymbolKeyResolution ResolveSymbolKey(SymbolKey key);
+
     internal abstract ICatalogueSymbol CreateMissingGamesystemSymbol(DiagnosticBag diagnostics);
 }

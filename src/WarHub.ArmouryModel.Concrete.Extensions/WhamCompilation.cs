@@ -9,6 +9,7 @@ public class WhamCompilation : Compilation
     private DiagnosticBag? lazyDeclarationDiagnostics;
     private DiagnosticBag? lazyConstraintDiagnostics;
     private ICategoryEntrySymbol? lazyNoCategoryEntrySymbol;
+    private SymbolIndex? lazySymbolIndex;
 
     internal WhamCompilation(string? name, ImmutableArray<SourceTree> sourceTrees, CompilationOptions options)
         : base(name, sourceTrees, options)
@@ -81,6 +82,22 @@ public class WhamCompilation : Compilation
     {
         diagnostics.Add(ErrorCode.ERR_MissingGamesystem, Location.None);
         return new ErrorSymbols.ErrorGamesystemSymbol();
+    }
+
+    public override SymbolKeyResolution ResolveSymbolKey(SymbolKey key)
+    {
+        return GetSymbolIndex().Resolve(key);
+    }
+
+    private SymbolIndex GetSymbolIndex()
+    {
+        if (lazySymbolIndex is not null)
+        {
+            return lazySymbolIndex;
+        }
+        var index = SymbolIndex.Build(this);
+        Interlocked.CompareExchange(ref lazySymbolIndex, index, null);
+        return lazySymbolIndex;
     }
 
     internal Binder GetBinder(SourceNode node, ISymbol? containingSymbol)
