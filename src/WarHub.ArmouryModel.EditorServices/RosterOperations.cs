@@ -1,3 +1,4 @@
+using WarHub.ArmouryModel.Concrete;
 using WarHub.ArmouryModel.Source;
 using static WarHub.ArmouryModel.Source.NodeFactory;
 
@@ -78,7 +79,14 @@ public record CreateRosterOperation : IRosterOperation
             .WithCosts(gamesystem.CostTypes
                 .Select(costType => Cost(costType, 0m))
                 .ToArray());
-        return new RosterState(baseState.Compilation.AddSourceTrees(SourceTree.CreateForRoot(roster)));
+        var rosterTree = SourceTree.CreateForRoot(roster);
+        // When the base state is a catalogue-only compilation, create a roster compilation
+        // referencing it. Otherwise (already has roster), add to existing compilation.
+        if (baseState.Compilation is WhamCompilation wham && !wham.HasReferences && baseState.Roster is null)
+        {
+            return new RosterState(WhamCompilation.CreateRosterCompilation([rosterTree], wham));
+        }
+        return new RosterState(baseState.Compilation.AddSourceTrees(rosterTree));
     }
 }
 

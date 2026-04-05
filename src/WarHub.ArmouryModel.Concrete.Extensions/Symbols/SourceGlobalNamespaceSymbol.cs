@@ -149,12 +149,25 @@ internal sealed class SourceGlobalNamespaceSymbol : Symbol, IGamesystemNamespace
                     return;
                 case CompletionPart.MembersCompleted:
                     {
-                        // Only force-complete own roster symbols.
-                        // Referenced catalogue symbols are already complete from their own compilation.
-                        foreach (var member in Rosters)
+                        if (DeclaringCompilation.HasReferences)
                         {
-                            cancellationToken.ThrowIfCancellationRequested();
-                            member.ForceComplete(cancellationToken);
+                            // Roster compilation: only complete own roster symbols.
+                            // Referenced catalogue symbols are already complete
+                            // from their own compilation.
+                            foreach (var member in Rosters)
+                            {
+                                cancellationToken.ThrowIfCancellationRequested();
+                                member.ForceComplete(cancellationToken);
+                            }
+                        }
+                        else
+                        {
+                            // Catalogue compilation (or standalone): complete all symbols.
+                            foreach (var member in AllRootSymbols)
+                            {
+                                cancellationToken.ThrowIfCancellationRequested();
+                                member.ForceComplete(cancellationToken);
+                            }
                         }
                         state.NotePartComplete(CompletionPart.MembersCompleted);
                         break;

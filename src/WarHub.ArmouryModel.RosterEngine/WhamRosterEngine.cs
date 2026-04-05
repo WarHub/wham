@@ -47,7 +47,7 @@ public sealed class WhamRosterEngine
                 .ToArray());
 
         var rosterTree = SourceTree.CreateForRoot(rosterNode);
-        var compilation = catalogCompilation.AddSourceTrees(rosterTree);
+        var compilation = WhamCompilation.CreateRosterCompilation([rosterTree], catalogCompilation);
         return new RosterState(compilation);
     }
 
