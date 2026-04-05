@@ -86,20 +86,24 @@ internal sealed class ForceSymbol : ContainerSymbol, IForceSymbol, INodeDeclared
             return;
 
         var roster = GetRosterSymbol();
+        ImmutableArray<IEffectiveProfileSymbol> profiles;
+        ImmutableArray<IEffectiveRuleSymbol> rules;
         if (roster is not null)
         {
             // Force-level resources are resolved with null selection/force context
             // matching BattleScribe behavior (force entry modifiers don't have selection context).
             var cache = roster.GetOrCreateEffectiveEntryCache();
-            var (profiles, rules) = cache.CollectEffectiveResources(SourceEntry, selection: null, force: null);
-            lazyEffectiveProfiles = profiles;
-            lazyEffectiveRules = rules;
+            (profiles, rules) = cache.CollectEffectiveResources(SourceEntry, selection: null, force: null);
         }
         else
         {
-            lazyEffectiveProfiles = ImmutableArray<IEffectiveProfileSymbol>.Empty;
-            lazyEffectiveRules = ImmutableArray<IEffectiveRuleSymbol>.Empty;
+            profiles = ImmutableArray<IEffectiveProfileSymbol>.Empty;
+            rules = ImmutableArray<IEffectiveRuleSymbol>.Empty;
         }
+        // Thread-safe initialization: use InterlockedInitialize to avoid races
+        // in parallel test execution.
+        ImmutableInterlocked.InterlockedInitialize(ref lazyEffectiveRules, rules);
+        ImmutableInterlocked.InterlockedInitialize(ref lazyEffectiveProfiles, profiles);
     }
 
     protected override void BindReferencesCore(Binder binder, BindingDiagnosticBag diagnostics)
