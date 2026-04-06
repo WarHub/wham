@@ -10,6 +10,8 @@ significant design choices in the wham project.
 | [0003](0003-protocol-based-roster-engine.md) | Protocol-based roster engine (direct TestKit types) | Accepted |
 | [0004](0004-battlescribe-spec-conformance-testing.md) | BattleScribe-spec conformance testing | Accepted |
 | [0005](0005-git-submodule-for-battlescribe-spec.md) | Git submodule for battlescribe-spec dependency | Accepted |
+| [0006](0006-isymbol-based-roster-engine.md) | ISymbol-based roster engine | Accepted |
+| [0007](0007-incremental-compilation-references.md) | Incremental compilation via references model | Accepted |
 
 ## Format
 

@@ -253,3 +253,9 @@ tests/WarHub.ArmouryModel.RosterEngine.Tests/
 - [ADR-0001](adrs/0001-roslyn-inspired-compilation-model.md) — Compilation model (ported from phalanx)
 - [ADR-0003](adrs/0003-protocol-based-roster-engine.md) — Why protocol types over ISymbol
 - [ADR-0004](adrs/0004-battlescribe-spec-conformance-testing.md) — Conformance testing strategy
+- [ADR-0007](adrs/0007-incremental-compilation-references.md) — Incremental compilation via references
+
+## See Also
+
+- [Incremental Compilation](incremental-compilation.md) — Design and benchmark
+  results for catalogue/roster compilation splitting

@@ -88,8 +88,15 @@ dotnet pack                                            # NuGet packages (Release
 | Path | What |
 |------|------|
 | `docs/roster-engine.md` | Roster engine architecture overview |
+| `docs/incremental-compilation.md` | Incremental compilation design and benchmark results |
 | `docs/latent-issues-plan.md` | Plan for addressing known latent issues |
-| `docs/adrs/` | Architecture Decision Records (5 ADRs) |
+| `docs/adrs/` | Architecture Decision Records (7 ADRs) |
+
+### Benchmarks
+
+| Path | What |
+|------|------|
+| `tests/WarHub.ArmouryModel.Benchmarks/` | BenchmarkDotNet project — compilation performance |
 
 ## Architecture
 
