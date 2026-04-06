@@ -73,7 +73,17 @@ dotnet pack                                            # NuGet packages (Release
 |------|------|
 | `src/WarHub.ArmouryModel.Extensions/` | ISymbol public API (40+ interfaces), Binder, Diagnostics |
 | `src/WarHub.ArmouryModel.Concrete.Extensions/` | Symbol implementations (89 files), lazy binding |
-| `src/WarHub.ArmouryModel.EditorServices/` | Roster operations, undo/redo, formatting |
+| `src/WarHub.ArmouryModel.EditorServices/` | Roster operations, undo/redo, formatting, workspace |
+
+### Workspace layer (multi-roster management)
+
+| Path | What |
+|------|------|
+| `src/WarHub.ArmouryModel.EditorServices/WhamWorkspace.cs` | Central workspace: catalogue + multi-roster management, owns all mutations, change events |
+| `src/WarHub.ArmouryModel.EditorServices/CompilationTracker.cs` | Internal lazy per-roster compilation via `CreateRosterCompilation()` |
+| `src/WarHub.ArmouryModel.EditorServices/DocumentId.cs` | Synthetic GUID for stable source tree identity |
+| `src/WarHub.ArmouryModel.EditorServices/WorkspaceChangeKind.cs` | Enum for workspace change event kinds |
+| `src/WarHub.ArmouryModel.EditorServices/WorkspaceChangedEventArgs.cs` | Versioned event args for workspace change notifications |
 
 ### External dependency
 
@@ -90,7 +100,7 @@ dotnet pack                                            # NuGet packages (Release
 | `docs/roster-engine.md` | Roster engine architecture overview |
 | `docs/incremental-compilation.md` | Incremental compilation design and benchmark results |
 | `docs/latent-issues-plan.md` | Plan for addressing known latent issues |
-| `docs/adrs/` | Architecture Decision Records (7 ADRs) |
+| `docs/adrs/` | Architecture Decision Records (8 ADRs) |
 
 ### Benchmarks
 
@@ -138,6 +148,25 @@ ConstraintEvaluator (Concrete.Extensions) — symbol-layer constraint validation
 StateMapper (RosterEngine.Spec) — thin Symbol→Protocol mapper (~140 LOC)
   Reads only the public Symbol API surface — no SourceNode access.
 ```
+
+### Workspace layer (multi-roster management)
+
+```
+WhamWorkspace (owns all mutations, fires all events)
+├── CatalogueCompilation (shared, rebuilt when catalogues change)
+├── CatalogueTrees: ImmutableDictionary<DocumentId, SourceTree>
+├── Version: long (incremented on every state change)
+├── Per-roster (internal RosterDocumentState):
+│   ├── CompilationTracker (lazily rebuilds RosterCompilation)
+│   ├── RosterEditor (internal, undo/redo stack)
+│   └── DocumentId (stable identity)
+├── Events: WorkspaceChanged (EventHandler<WorkspaceChangedEventArgs>)
+└── Background diagnostics (Task-based, snapshot-then-compute)
+```
+
+Workspace owns all roster mutations — no public `GetEditor()`. Consumers use
+`ApplyOperation()`, `Undo()`, `Redo()` on the workspace. This ensures all
+state changes fire events and prevents stale editor references.
 
 ## Code conventions
 
