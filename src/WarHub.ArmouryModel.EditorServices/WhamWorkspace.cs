@@ -190,7 +190,8 @@ public sealed class WhamWorkspace
         {
             var catComp = catalogueCompilation;
             var tracker = new CompilationTracker(tree, catComp);
-            var rosterComp = WhamCompilation.CreateRosterCompilation([tree], catComp);
+            // Use the tracker's compilation to avoid building two equivalent compilations.
+            var rosterComp = tracker.GetCompilation();
             var state = new RosterState(rosterComp);
             var editor = new RosterEditor(state);
             rosterStates = rosterStates.Add(docId, new(docId, editor, tracker));
