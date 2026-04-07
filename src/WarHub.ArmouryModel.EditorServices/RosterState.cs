@@ -26,17 +26,14 @@ public record RosterState(Compilation Compilation)
     public static RosterState CreateFromNodes(params SourceNode[] rootNodes)
         => CreateFromNodes((IEnumerable<SourceNode>)rootNodes);
 
+    /// <summary>
+    /// Creates a <see cref="RosterState"/> from root nodes. If both catalogue and roster
+    /// nodes are present, <see cref="WhamCompilation.Create"/> auto-splits them into
+    /// a catalogue subcompilation referenced by a roster compilation.
+    /// </summary>
     public static RosterState CreateFromNodes(IEnumerable<SourceNode> rootNodes)
     {
         var trees = rootNodes.Select(SourceTree.CreateForRoot).ToImmutableArray();
-        var catalogueTrees = trees.Where(t => t.GetRoot() is not RosterNode).ToImmutableArray();
-        var rosterTrees = trees.Where(t => t.GetRoot() is RosterNode).ToImmutableArray();
-        if (rosterTrees.Length > 0 && catalogueTrees.Length > 0)
-        {
-            var catalogueCompilation = WhamCompilation.Create(catalogueTrees);
-            return new(WhamCompilation.CreateRosterCompilation(rosterTrees, catalogueCompilation));
-        }
-        // No split needed: either all catalogues (no roster) or legacy mixed usage.
         return new(WhamCompilation.Create(trees));
     }
 

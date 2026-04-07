@@ -278,9 +278,9 @@ public class WhamWorkspaceTests
         var comp2 = workspace.GetRosterCompilation(roster2);
 
         // Both roster compilations reference the same catalogue compilation
-        comp1.References.Should().HaveCount(1);
-        comp2.References.Should().HaveCount(1);
-        comp1.References[0].Should().BeSameAs(comp2.References[0]);
+        comp1.CatalogueReference.Should().NotBeNull();
+        comp2.CatalogueReference.Should().NotBeNull();
+        comp1.CatalogueReference.Should().BeSameAs(comp2.CatalogueReference);
     }
 
     #endregion
@@ -600,7 +600,7 @@ public class WhamWorkspaceTests
         var compilation = workspace.GetRosterCompilation(rosterId);
 
         compilation.Should().NotBeNull();
-        compilation.HasReferences.Should().BeTrue();
+        compilation.HasCatalogueReference.Should().BeTrue();
         compilation.GlobalNamespace.Rosters.Should().NotBeEmpty();
     }
 

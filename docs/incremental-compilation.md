@@ -17,10 +17,10 @@ constraints), a single roster edit took **~25 ms** and allocated **~2.9 MB**.
 With incremental compilation it takes **~25 µs** and allocates **~17 KB** — a
 **1,000× improvement** in both time and memory.
 
-## Design: References Model
+## Design: CatalogueReference Model
 
 Rather than separate `CatalogueCompilation`/`RosterCompilation` subclasses,
-`WhamCompilation` has a `References` property (analogous to Roslyn's
+`WhamCompilation` has a `CatalogueReference` property (analogous to Roslyn's
 `ProjectReference`):
 
 ```
@@ -28,9 +28,9 @@ Catalogue Compilation                Roster Compilation
 ┌─────────────────────┐              ┌─────────────────────┐
 │ SourceTrees:        │              │ SourceTrees:        │
 │   gamesystem.gst    │◄─────────── │   roster.ros        │
-│   catalogue.cat     │  References  │                     │
-│                     │              │ References:         │
-│ GlobalNamespace:    │              │   [catalogue comp]  │
+│   catalogue.cat     │  CatRef      │                     │
+│                     │              │ CatalogueReference: │
+│ GlobalNamespace:    │              │   catalogue comp    │
 │   RootCatalogue     │              │                     │
 │   Catalogues [...]  │              │ GlobalNamespace:    │
 │   Rosters []        │              │   RootCatalogue ◄───── same object
@@ -42,18 +42,24 @@ Catalogue Compilation                Roster Compilation
 **Key properties:**
 
 - **Catalogue compilation** = `WhamCompilation` with catalogue/gamesystem trees,
-  no references, no roster trees.
+  no `CatalogueReference`, no roster trees.
 - **Roster compilation** = `WhamCompilation` with roster tree(s), references
-  exactly one catalogue compilation.
+  exactly one catalogue compilation. **Options are always inherited** from the
+  catalogue reference (structurally enforced — the roster constructor has no
+  options parameter).
+- `CatalogueReference` is a single nullable `WhamCompilation?`, making multiple
+  references structurally impossible.
 - Catalogue symbols are **shared by object reference** — not duplicated.
 - Catalogue symbols' `DeclaringCompilation` always points to the catalogue
   compilation (through the `ContainingNamespace` chain).
 
 ### Invariants (enforced at construction time)
 
-1. No chained references (a referenced compilation must not itself have references)
-2. Roster compilations must contain only `RosterNode` source trees
-3. `Update()` / `ReplaceSourceTree()` preserves references
+1. No chained references (a referenced compilation must not itself have a catalogue reference)
+2. Catalogue compilations must not contain `RosterNode` source trees
+3. Roster compilations must contain only `RosterNode` source trees
+4. Options always match between roster and catalogue compilations (by construction)
+5. `AddSourceTrees()` validates tree type consistency; `ReplaceSourceTree()` rejects kind changes
 
 ### API
 
@@ -61,13 +67,22 @@ Catalogue Compilation                Roster Compilation
 // Create a catalogue compilation (standalone, no roster)
 var catComp = WhamCompilation.Create(catalogueTrees);
 
-// Create a roster compilation referencing the catalogue
+// Create from mixed trees — auto-splits into catalogue + roster compilation
+var comp = WhamCompilation.Create(allTrees);  // returns roster compilation
+comp.CatalogueReference  // the auto-created catalogue subcompilation
+comp.AllSourceTrees       // all trees (catalogue + roster), for round-tripping
+
+// Create a roster compilation referencing the catalogue (inherits options)
 var rosterComp = WhamCompilation.CreateRosterCompilation(
     rosterTrees, catComp);
 
 // Edit a roster — catalogue compilation is reused
 var editedComp = rosterComp.ReplaceSourceTree(oldTree, newTree);
-// editedComp.References[0] is still catComp — same object
+// editedComp.CatalogueReference is still catComp — same object
+
+// Add roster trees to a catalogue compilation
+var rosterComp = catComp.AddRosterTrees(rosterTree);
+// rosterComp.CatalogueReference is catComp
 
 // Multiple rosters can share one catalogue compilation
 var roster1 = WhamCompilation.CreateRosterCompilation([tree1], catComp);

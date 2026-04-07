@@ -81,7 +81,7 @@ public class IncrementalCompilationTests
         var updatedCompilation = rosterCompilation.ReplaceSourceTree(rosterTree, newTree);
 
         // assert: catalogue symbols are still same references
-        updatedCompilation.HasReferences.Should().BeTrue();
+        updatedCompilation.HasCatalogueReference.Should().BeTrue();
         var gsSym = catalogueCompilation.GlobalNamespace.RootCatalogue;
         var updatedGsSym = updatedCompilation.GlobalNamespace.RootCatalogue;
         ReferenceEquals(gsSym, updatedGsSym).Should().BeTrue(
@@ -216,27 +216,22 @@ public class IncrementalCompilationTests
         var act = () => WhamCompilation.CreateRosterCompilation(
             [SourceTree.CreateForRoot(NodeFactory.Roster(gst))], rosterCompilation);
 
-        act.Should().Throw<ArgumentException>()
-            .WithMessage("*must not itself have references*");
+        act.Should().Throw<InvalidOperationException>()
+            .WithMessage("*must not themselves have references*");
     }
 
     [Fact]
-    public void Invariant_rejects_multiple_references()
+    public void CatalogueReference_is_structurally_single()
     {
+        // With the new design, CatalogueReference is a single nullable property,
+        // making multiple references structurally impossible.
         var gst = NodeFactory.Gamesystem("foo");
-        var catComp1 = WhamCompilation.Create([SourceTree.CreateForRoot(gst)]);
-        var catComp2 = WhamCompilation.Create([SourceTree.CreateForRoot(NodeFactory.Gamesystem("bar"))]);
+        var catalogueCompilation = WhamCompilation.Create([SourceTree.CreateForRoot(gst)]);
         var roster = NodeFactory.Roster(gst);
+        var rosterCompilation = WhamCompilation.CreateRosterCompilation(
+            [SourceTree.CreateForRoot(roster)], catalogueCompilation);
 
-        // Try to create a compilation with two references via internal constructor
-        var act = () => new WhamCompilation(
-            null,
-            [SourceTree.CreateForRoot(roster)],
-            new WhamCompilationOptions(),
-            [catComp1, catComp2]);
-
-        act.Should().Throw<InvalidOperationException>()
-            .WithMessage("*exactly one*");
+        rosterCompilation.CatalogueReference.Should().BeSameAs(catalogueCompilation);
     }
 
     [Fact]
@@ -284,8 +279,8 @@ public class IncrementalCompilationTests
     [Fact]
     public void GetConstraintDiagnostics_aggregates_reference_constraint_diagnostics()
     {
-        // arrange: create a standalone compilation with catalogue + roster.
-        // The standalone compilation's constraint diagnostics (if any) should be
+        // arrange: create a compilation with catalogue + roster via auto-split.
+        // The catalogue compilation's constraint diagnostics (if any) should be
         // visible from a roster compilation that references it.
         var gst = NodeFactory.Gamesystem("foo")
             .AddCostTypes(NodeFactory.CostType("pts", 0m))
@@ -294,23 +289,27 @@ public class IncrementalCompilationTests
         var roster = NodeFactory.Roster(gst)
             .AddForces(NodeFactory.Force(forceEntry, gst))
             .WithCosts(NodeFactory.Cost("pts", "pts", 0m));
-        var standaloneCompilation = WhamCompilation.Create([
+        var autoSplitCompilation = WhamCompilation.Create([
             SourceTree.CreateForRoot(gst),
             SourceTree.CreateForRoot(cat),
             SourceTree.CreateForRoot(roster),
         ]);
-        var standaloneConstraints = standaloneCompilation.GetConstraintDiagnostics();
+        // autoSplitCompilation is now a roster compilation with auto-split catalogue reference
+        autoSplitCompilation.HasCatalogueReference.Should().BeTrue();
+        var catalogueCompilation = autoSplitCompilation.CatalogueReference!;
+        var autoSplitConstraints = autoSplitCompilation.GetConstraintDiagnostics();
 
-        // act: create a roster compilation referencing the standalone compilation
+        // act: create a new roster compilation referencing the same catalogue
         var newRoster = NodeFactory.Roster(gst)
             .WithCosts(NodeFactory.Cost("pts", "pts", 0m));
         var rosterCompilation = WhamCompilation.CreateRosterCompilation(
-            [SourceTree.CreateForRoot(newRoster)], standaloneCompilation);
+            [SourceTree.CreateForRoot(newRoster)], catalogueCompilation);
         var rosterConstraints = rosterCompilation.GetConstraintDiagnostics();
 
-        // assert: roster compilation's constraint diagnostics include the reference's
-        rosterConstraints.Length.Should().BeGreaterThanOrEqualTo(standaloneConstraints.Length);
-        foreach (var diag in standaloneConstraints)
+        // assert: roster compilation's constraint diagnostics include the catalogue's
+        rosterConstraints.Length.Should().BeGreaterThanOrEqualTo(
+            catalogueCompilation.GetConstraintDiagnostics().Length);
+        foreach (var diag in catalogueCompilation.GetConstraintDiagnostics())
         {
             rosterConstraints.Should().Contain(diag);
         }

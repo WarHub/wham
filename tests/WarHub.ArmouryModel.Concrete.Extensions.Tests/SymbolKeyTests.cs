@@ -167,7 +167,7 @@ public class SymbolKeyTests
         var key = SymbolKey.Create(rootEntry);
 
         // Rebuild compilation from the same source trees.
-        var newCompilation = WhamCompilation.Create(compilation.SourceTrees);
+        var newCompilation = WhamCompilation.Create(compilation.AllSourceTrees);
         var resolution = key.Resolve(newCompilation);
 
         resolution.Kind.Should().Be(SymbolKeyResolutionKind.Resolved);
@@ -184,7 +184,7 @@ public class SymbolKeyTests
 
         var key = SymbolKey.Create(force);
 
-        var newCompilation = WhamCompilation.Create(compilation.SourceTrees);
+        var newCompilation = WhamCompilation.Create(compilation.AllSourceTrees);
         var resolution = key.Resolve(newCompilation);
 
         resolution.Kind.Should().Be(SymbolKeyResolutionKind.Resolved);

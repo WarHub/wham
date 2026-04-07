@@ -76,7 +76,7 @@ layer).
 - `GetDiagnostics()` must aggregate diagnostics from referenced compilations
   (adds complexity to diagnostic reporting)
 - `FindSourceTree()` must fall through to referenced compilations
-- `ForceComplete` behavior depends on `HasReferences` — catalogue-only
+- `ForceComplete` behavior depends on `HasCatalogueReference` — catalogue-only
   compilations complete all symbols, roster compilations complete only rosters
 
 ### Risks

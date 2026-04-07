@@ -79,9 +79,9 @@ public record CreateRosterOperation : IRosterOperation
         var rosterTree = SourceTree.CreateForRoot(roster);
         // When the base state is a catalogue-only compilation, create a roster compilation
         // referencing it. Otherwise (already has roster), add to existing compilation.
-        if (baseState.Compilation is WhamCompilation wham && !wham.HasReferences && baseState.Roster is null)
+        if (baseState.Compilation is WhamCompilation wham)
         {
-            return new RosterState(WhamCompilation.CreateRosterCompilation([rosterTree], wham));
+            return new RosterState(wham.AddRosterTrees(rosterTree));
         }
         return new RosterState(baseState.Compilation.AddSourceTrees(rosterTree));
     }

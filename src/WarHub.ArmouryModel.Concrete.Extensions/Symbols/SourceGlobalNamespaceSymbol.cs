@@ -154,7 +154,7 @@ internal sealed class SourceGlobalNamespaceSymbol : Symbol, IGamesystemNamespace
                     return;
                 case CompletionPart.MembersCompleted:
                     {
-                        if (DeclaringCompilation.HasReferences)
+                        if (DeclaringCompilation.HasCatalogueReference)
                         {
                             // Roster compilation: only complete own roster symbols.
                             // Referenced catalogue symbols are already complete
