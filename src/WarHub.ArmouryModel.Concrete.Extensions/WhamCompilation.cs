@@ -117,7 +117,14 @@ public class WhamCompilation : Compilation
     {
         ForceCompleteReferences(cancellationToken);
         SourceGlobalNamespace.ForceComplete(cancellationToken);
-        return [.. ConstraintDiagnostics.AsEnumerable()];
+        var constraintDiagnostics = ConstraintDiagnostics;
+        var builder = ImmutableArray.CreateBuilder<Diagnostic>(constraintDiagnostics.Count);
+        builder.AddRange(constraintDiagnostics.AsEnumerable());
+        foreach (var reference in References)
+        {
+            builder.AddRange(reference.GetConstraintDiagnostics(cancellationToken));
+        }
+        return builder.MoveToImmutable();
     }
 
     public override WhamCompilation AddSourceTrees(params SourceTree[] trees) =>

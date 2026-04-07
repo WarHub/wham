@@ -261,4 +261,39 @@ public class IncrementalCompilationTests
         // assert
         found.Should().BeSameAs(gstTree);
     }
+
+    [Fact]
+    public void GetConstraintDiagnostics_aggregates_reference_constraint_diagnostics()
+    {
+        // arrange: create a standalone compilation with catalogue + roster.
+        // The standalone compilation's constraint diagnostics (if any) should be
+        // visible from a roster compilation that references it.
+        var gst = NodeFactory.Gamesystem("foo")
+            .AddCostTypes(NodeFactory.CostType("pts", 0m))
+            .AddForceEntries(NodeFactory.ForceEntry("det").Tee(out var forceEntry));
+        var cat = NodeFactory.Catalogue(gst, "bar");
+        var roster = NodeFactory.Roster(gst)
+            .AddForces(NodeFactory.Force(forceEntry, gst))
+            .WithCosts(NodeFactory.Cost("pts", "pts", 0m));
+        var standaloneCompilation = WhamCompilation.Create([
+            SourceTree.CreateForRoot(gst),
+            SourceTree.CreateForRoot(cat),
+            SourceTree.CreateForRoot(roster),
+        ]);
+        var standaloneConstraints = standaloneCompilation.GetConstraintDiagnostics();
+
+        // act: create a roster compilation referencing the standalone compilation
+        var newRoster = NodeFactory.Roster(gst)
+            .WithCosts(NodeFactory.Cost("pts", "pts", 0m));
+        var rosterCompilation = WhamCompilation.CreateRosterCompilation(
+            [SourceTree.CreateForRoot(newRoster)], standaloneCompilation);
+        var rosterConstraints = rosterCompilation.GetConstraintDiagnostics();
+
+        // assert: roster compilation's constraint diagnostics include the reference's
+        rosterConstraints.Length.Should().BeGreaterThanOrEqualTo(standaloneConstraints.Length);
+        foreach (var diag in standaloneConstraints)
+        {
+            rosterConstraints.Should().Contain(diag);
+        }
+    }
 }
