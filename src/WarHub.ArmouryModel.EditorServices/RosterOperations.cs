@@ -34,9 +34,6 @@ public static class RosterOperations
 
     public static ChangeSelectionCountOperation ChangeCountOf(SelectionNode selection, int newCount) =>
         new(selection, newCount);
-
-    public static AddRootEntryFromSymbol AddRootEntryFromSymbol(ISelectionEntryContainerSymbol entry, string force, int count = 1) =>
-        new(SymbolKey.Create(entry), force, count);
 }
 
 public sealed class IdentityRosterOperation : IRosterOperation
@@ -196,12 +193,6 @@ public record AddSelectionFromLinkOp(SelectionEntryNode SelectionEntry, EntryLin
 /// <summary>
 /// Adds a root selection to a force by resolving the entry via <see cref="SymbolKey"/>.
 /// </summary>
-/// <remarks>
-/// <b>Breaking change:</b> This record previously stored <c>ISelectionEntryContainerSymbol Entry</c>.
-/// It now stores <see cref="SymbolKey"/> <see cref="EntryKey"/> for cross-compilation stability.
-/// Use <see cref="RosterOperations.AddRootEntryFromSymbol(ISelectionEntryContainerSymbol, string, int)"/>
-/// for the convenience factory that accepts the symbol directly.
-/// </remarks>
 public record AddRootEntryFromSymbol(SymbolKey EntryKey, string ForceId, int Count = 1) : RosterOperationBase
 {
     protected override RosterOperationKind Kind => RosterOperationKind.AddSelection;
