@@ -43,7 +43,9 @@ public sealed class WhamWorkspace
     public event EventHandler<WorkspaceChangedEventArgs>? WorkspaceChanged;
 
     /// <summary>
-    /// Monotonically increasing version number, incremented on every state change.
+    /// Monotonically increasing version number, incremented on every mutation.
+    /// A single logical change (e.g. catalogue replacement that resets all roster editors)
+    /// increments the version once; all resulting events share that version number.
     /// </summary>
     public long Version
     {

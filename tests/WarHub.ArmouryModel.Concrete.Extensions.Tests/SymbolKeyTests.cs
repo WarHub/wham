@@ -313,6 +313,77 @@ public class SymbolKeyTests
 
     #endregion
 
+    #region Ambiguous key resolution
+
+    [Fact]
+    public void Duplicate_ids_disambiguated_by_containing_entry_id()
+    {
+        var gst = NodeFactory.Gamesystem("foo");
+        var duplicateId = "shared-child-id";
+        var parent1 = NodeFactory.SelectionEntry("parent1")
+            .AddSelectionEntries(
+                NodeFactory.SelectionEntry("child", id: duplicateId));
+        var parent2 = NodeFactory.SelectionEntry("parent2")
+            .AddSelectionEntries(
+                NodeFactory.SelectionEntry("child", id: duplicateId));
+        var cat = NodeFactory.Catalogue(gst, "bar")
+            .AddSharedSelectionEntries(parent1, parent2);
+        var compilation = WhamCompilation.Create([
+            SourceTree.CreateForRoot(gst),
+            SourceTree.CreateForRoot(cat),
+        ]);
+
+        var catalogue = compilation.GlobalNamespace.Catalogues.Single(x => !x.IsGamesystem);
+        var entry1 = catalogue.SharedSelectionEntryContainers[0].ChildSelectionEntries[0];
+        var entry2 = catalogue.SharedSelectionEntryContainers[1].ChildSelectionEntries[0];
+
+        // Both children have same ID but different parents
+        entry1.Id.Should().Be(duplicateId);
+        entry2.Id.Should().Be(duplicateId);
+
+        // Keys should differ by ContainingEntryId
+        var key1 = SymbolKey.Create(entry1);
+        var key2 = SymbolKey.Create(entry2);
+        key1.ContainingEntryId.Should().NotBe(key2.ContainingEntryId);
+
+        // Both should resolve correctly via disambiguation
+        var resolution1 = key1.Resolve(compilation);
+        resolution1.Kind.Should().Be(SymbolKeyResolutionKind.Resolved);
+        resolution1.Symbol.Should().BeSameAs(entry1);
+
+        var resolution2 = key2.Resolve(compilation);
+        resolution2.Kind.Should().Be(SymbolKeyResolutionKind.Resolved);
+        resolution2.Symbol.Should().BeSameAs(entry2);
+    }
+
+    [Fact]
+    public void Duplicate_ids_without_disambiguation_returns_Ambiguous()
+    {
+        var gst = NodeFactory.Gamesystem("foo");
+        var duplicateId = "shared-root-id";
+        // Two root entries with same ID — no ContainingEntryId to disambiguate
+        var cat = NodeFactory.Catalogue(gst, "bar")
+            .AddSelectionEntries(
+                NodeFactory.SelectionEntry("entry1", id: duplicateId),
+                NodeFactory.SelectionEntry("entry2", id: duplicateId));
+        var compilation = WhamCompilation.Create([
+            SourceTree.CreateForRoot(gst),
+            SourceTree.CreateForRoot(cat),
+        ]);
+
+        // Both entries are root-level, so ContainingEntryId is null for both
+        var entry1 = compilation.GlobalNamespace.Catalogues
+            .Single(x => !x.IsGamesystem).RootContainerEntries[0];
+        var key = SymbolKey.Create(entry1);
+        key.ContainingEntryId.Should().BeNull();
+
+        var resolution = key.Resolve(compilation);
+        resolution.Kind.Should().Be(SymbolKeyResolutionKind.Ambiguous);
+        resolution.CandidateSymbols.Should().HaveCount(2);
+    }
+
+    #endregion
+
     #region Simple compilation tests
 
     [Fact]

@@ -93,7 +93,7 @@ public class WhamCompilation : Compilation
         builder.AddRange(declarationDiagnostics.AsEnumerable());
         builder.AddRange(constraintDiagnostics.AsEnumerable());
         AggregateReferenceDiagnostics(builder, cancellationToken);
-        return builder.ToImmutable();
+        return builder.DrainToImmutable();
     }
 
     public override ImmutableArray<Diagnostic> GetDeclarationDiagnostics(CancellationToken cancellationToken = default)
@@ -110,7 +110,7 @@ public class WhamCompilation : Compilation
         {
             builder.AddRange(reference.GetDeclarationDiagnostics(cancellationToken));
         }
-        return builder.ToImmutable();
+        return builder.DrainToImmutable();
     }
 
     public override ImmutableArray<Diagnostic> GetConstraintDiagnostics(CancellationToken cancellationToken = default)
@@ -124,7 +124,7 @@ public class WhamCompilation : Compilation
         {
             builder.AddRange(reference.GetConstraintDiagnostics(cancellationToken));
         }
-        return builder.MoveToImmutable();
+        return builder.DrainToImmutable();
     }
 
     public override WhamCompilation AddSourceTrees(params SourceTree[] trees) =>
