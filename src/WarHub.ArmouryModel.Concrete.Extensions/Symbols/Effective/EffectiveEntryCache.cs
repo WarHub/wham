@@ -51,7 +51,7 @@ internal sealed class EffectiveEntryCache
     /// Uses a 4-pass traversal matching BattleScribe's output ordering:
     /// (1) direct profiles, (2) direct rules, (3) InfoLinks, (4) inline InfoGroups.
     /// </summary>
-    public (ImmutableArray<IEffectiveProfileSymbol> Profiles, ImmutableArray<IEffectiveRuleSymbol> Rules)
+    public (ImmutableArray<IProfileSymbol> Profiles, ImmutableArray<IRuleSymbol> Rules)
         CollectEffectiveResources(
             IEntrySymbol entry,
             ISelectionSymbol? selection,
@@ -59,8 +59,8 @@ internal sealed class EffectiveEntryCache
     {
         // For entry links, resolve through to the shared target's resources
         var resolvedEntry = entry.ReferencedEntry ?? entry;
-        var profiles = new List<IEffectiveProfileSymbol>();
-        var rules = new List<IEffectiveRuleSymbol>();
+        var profiles = new List<IProfileSymbol>();
+        var rules = new List<IRuleSymbol>();
         CollectFromResources(
             resolvedEntry.Resources,
             viaInfoLink: null,
@@ -132,8 +132,8 @@ internal sealed class EffectiveEntryCache
         ISelectionSymbol? selection,
         IForceSymbol? force,
         HashSet<object>? visited,
-        List<IEffectiveProfileSymbol> profiles,
-        List<IEffectiveRuleSymbol> rules)
+        List<IProfileSymbol> profiles,
+        List<IRuleSymbol> rules)
     {
         // Pass 1: Direct profiles
         foreach (var resource in resources)
@@ -215,7 +215,7 @@ internal sealed class EffectiveEntryCache
     /// the link's name and hidden flags override the target. When false (link targets the
     /// containing group), only characteristic modifiers from the link are applied.
     /// </summary>
-    private IEffectiveProfileSymbol BuildEffectiveProfile(
+    private IProfileSymbol BuildEffectiveProfile(
         IProfileSymbol profile,
         IEntrySymbol? link,
         bool linkOverridesProfile,
@@ -224,7 +224,7 @@ internal sealed class EffectiveEntryCache
         IForceSymbol? force)
     {
         // Build characteristics with modifier chain: profile → link → group.
-        var chars = ImmutableArray.CreateBuilder<EffectiveCharacteristic>(profile.Characteristics.Length);
+        var chars = ImmutableArray.CreateBuilder<ICharacteristicSymbol>(profile.Characteristics.Length);
         foreach (var ch in profile.Characteristics)
         {
             var typeId = ch.Type?.Id ?? "";
@@ -234,7 +234,7 @@ internal sealed class EffectiveEntryCache
                 value = Evaluator.GetEffectiveCharacteristic(link, typeId, value, selection, force);
             if (group is not null)
                 value = Evaluator.GetEffectiveCharacteristic(group, typeId, value, selection, force);
-            chars.Add(new EffectiveCharacteristic(ch.Name ?? "", typeId, value));
+            chars.Add(new EffectiveCharacteristicSymbol(ch, value));
         }
 
         bool hidden;
@@ -253,24 +253,17 @@ internal sealed class EffectiveEntryCache
             name = profile.Name ?? "";
         }
 
-        // Page and publication always from the target profile.
-        // Use resolved publication ID, falling back to raw declaration ID if binding failed.
-        var publicationId = GetPublicationId(profile);
-
         return new EffectiveProfileSymbol(
+            profile,
             name,
             hidden,
-            profile.Type?.Id,
-            profile.Type?.Name,
-            profile.Page,
-            publicationId,
             chars.MoveToImmutable());
     }
 
     /// <summary>
     /// Builds an effective rule. Same modifier/override semantics as profiles.
     /// </summary>
-    private IEffectiveRuleSymbol BuildEffectiveRule(
+    private IRuleSymbol BuildEffectiveRule(
         IRuleSymbol rule,
         IEntrySymbol? link,
         bool linkOverridesProfile,
@@ -300,35 +293,11 @@ internal sealed class EffectiveEntryCache
             name = rule.Name ?? "";
         }
 
-        // Use resolved publication ID, falling back to raw declaration ID if binding failed.
-        var publicationId = GetPublicationId(rule);
-
         return new EffectiveRuleSymbol(
+            rule,
             name,
-            desc,
             hidden,
-            rule.Page,
-            publicationId);
-    }
-
-    /// <summary>
-    /// Gets the publication ID from an entry's publication reference.
-    /// Falls back to the raw declaration ID when the publication symbol binding failed
-    /// (e.g. the publicationId references a publication not in the catalogue).
-    /// </summary>
-    private static string? GetPublicationId(IEntrySymbol entry)
-    {
-        var pubRef = entry.PublicationReference;
-        if (pubRef is null)
-            return null;
-        // Try resolved publication symbol first
-        var id = pubRef.Publication?.Id;
-        if (id is not null)
-            return id;
-        // Fallback: raw publicationId from declaration (binding may have failed)
-        if (pubRef is PublicationReferenceSymbol concrete)
-            return concrete.PublicationRefDeclaration.PublicationId;
-        return null;
+            desc);
     }
 
     private (ImmutableArray<ICategoryEntrySymbol> Categories, ICategoryEntrySymbol? Primary) ResolveCategorySymbols(

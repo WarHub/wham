@@ -117,7 +117,7 @@ internal sealed class StateMapper
     //  Profile / Rule mapping from effective symbols
     // ──────────────────────────────────────────────────────────────────
 
-    private static List<ProfileState> MapProfiles(ImmutableArray<IEffectiveProfileSymbol> effectiveProfiles)
+    private static List<ProfileState> MapProfiles(ImmutableArray<IProfileSymbol> effectiveProfiles)
     {
         var result = new List<ProfileState>(effectiveProfiles.Length);
         foreach (var p in effectiveProfiles)
@@ -126,35 +126,53 @@ internal sealed class StateMapper
             foreach (var ch in p.Characteristics)
             {
                 chars.Add(new CharacteristicState(
-                    Name: ch.Name,
-                    TypeId: ch.TypeId,
+                    Name: ch.Name ?? "",
+                    TypeId: ch.Type?.Id ?? "",
                     Value: ch.Value));
             }
             result.Add(new ProfileState(
-                Name: p.Name,
-                TypeId: p.TypeId,
-                TypeName: p.TypeName,
+                Name: p.Name ?? "",
+                TypeId: p.Type?.Id,
+                TypeName: p.Type?.Name,
                 Hidden: p.IsHidden,
                 Characteristics: chars,
                 Page: p.Page,
-                PublicationId: p.PublicationId));
+                PublicationId: GetPublicationId(p)));
         }
         return result;
     }
 
-    private static List<RuleState> MapRules(ImmutableArray<IEffectiveRuleSymbol> effectiveRules)
+    private static List<RuleState> MapRules(ImmutableArray<IRuleSymbol> effectiveRules)
     {
         var result = new List<RuleState>(effectiveRules.Length);
         foreach (var r in effectiveRules)
         {
             result.Add(new RuleState(
-                Name: r.Name,
-                Description: r.Description,
+                Name: r.Name ?? "",
+                Description: r.DescriptionText,
                 Hidden: r.IsHidden,
                 Page: r.Page,
-                PublicationId: r.PublicationId));
+                PublicationId: GetPublicationId(r)));
         }
         return result;
+    }
+
+    /// <summary>
+    /// Gets the publication ID from an entry's publication reference.
+    /// Falls back to the raw declaration ID when the publication symbol binding failed
+    /// (e.g. the publicationId references a publication not in the catalogue).
+    /// </summary>
+    private static string? GetPublicationId(IEntrySymbol entry)
+    {
+        var pubRef = entry.PublicationReference;
+        if (pubRef is null)
+            return null;
+        var id = pubRef.Publication?.Id;
+        if (id is not null)
+            return id;
+        if (pubRef is Concrete.PublicationReferenceSymbol concrete)
+            return concrete.PublicationRefDeclaration.PublicationId;
+        return null;
     }
 
     // ──────────────────────────────────────────────────────────────────

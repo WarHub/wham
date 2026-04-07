@@ -5,8 +5,8 @@ namespace WarHub.ArmouryModel.Concrete;
 internal sealed class ForceSymbol : ContainerSymbol, IForceSymbol, INodeDeclaredSymbol<ForceNode>
 {
     private IForceEntrySymbol? lazyForceEntry;
-    private ImmutableArray<IEffectiveProfileSymbol> lazyEffectiveProfiles;
-    private ImmutableArray<IEffectiveRuleSymbol> lazyEffectiveRules;
+    private ImmutableArray<IProfileSymbol> lazyEffectiveProfiles;
+    private ImmutableArray<IRuleSymbol> lazyEffectiveRules;
 
     public ForceSymbol(
         ISymbol? containingSymbol,
@@ -62,7 +62,7 @@ internal sealed class ForceSymbol : ContainerSymbol, IForceSymbol, INodeDeclared
             ?? declaredEntry;
     }
 
-    ImmutableArray<IEffectiveProfileSymbol> IForceSymbol.EffectiveProfiles
+    ImmutableArray<IProfileSymbol> IForceSymbol.EffectiveProfiles
     {
         get
         {
@@ -71,7 +71,7 @@ internal sealed class ForceSymbol : ContainerSymbol, IForceSymbol, INodeDeclared
         }
     }
 
-    ImmutableArray<IEffectiveRuleSymbol> IForceSymbol.EffectiveRules
+    ImmutableArray<IRuleSymbol> IForceSymbol.EffectiveRules
     {
         get
         {
@@ -86,8 +86,8 @@ internal sealed class ForceSymbol : ContainerSymbol, IForceSymbol, INodeDeclared
             return;
 
         var roster = GetRosterSymbol();
-        ImmutableArray<IEffectiveProfileSymbol> profiles;
-        ImmutableArray<IEffectiveRuleSymbol> rules;
+        ImmutableArray<IProfileSymbol> profiles;
+        ImmutableArray<IRuleSymbol> rules;
         if (roster is not null)
         {
             // Force-level resources are resolved with null selection/force context
@@ -97,8 +97,8 @@ internal sealed class ForceSymbol : ContainerSymbol, IForceSymbol, INodeDeclared
         }
         else
         {
-            profiles = ImmutableArray<IEffectiveProfileSymbol>.Empty;
-            rules = ImmutableArray<IEffectiveRuleSymbol>.Empty;
+            profiles = ImmutableArray<IProfileSymbol>.Empty;
+            rules = ImmutableArray<IRuleSymbol>.Empty;
         }
         // Thread-safe initialization: use InterlockedInitialize to avoid races
         // in parallel test execution.

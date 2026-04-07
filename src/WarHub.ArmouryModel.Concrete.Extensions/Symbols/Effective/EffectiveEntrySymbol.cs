@@ -37,8 +37,8 @@ internal sealed class EffectiveEntrySymbol : ISelectionEntryContainerSymbol
         IReadOnlyDictionary<string, decimal> effectiveCostValues,
         ImmutableArray<ICategoryEntrySymbol> effectiveCategories,
         ICategoryEntrySymbol? effectivePrimaryCategory,
-        ImmutableArray<IEffectiveProfileSymbol> effectiveProfiles,
-        ImmutableArray<IEffectiveRuleSymbol> effectiveRules,
+        ImmutableArray<IProfileSymbol> effectiveProfiles,
+        ImmutableArray<IRuleSymbol> effectiveRules,
         string? effectivePage)
     {
         OriginalEntry = original;
@@ -65,8 +65,8 @@ internal sealed class EffectiveEntrySymbol : ISelectionEntryContainerSymbol
     public ImmutableArray<ICostSymbol> Costs { get; }
     public ImmutableArray<ICategoryEntrySymbol> Categories { get; }
     public ICategoryEntrySymbol? PrimaryCategory { get; }
-    public ImmutableArray<IEffectiveProfileSymbol> EffectiveProfiles { get; }
-    public ImmutableArray<IEffectiveRuleSymbol> EffectiveRules { get; }
+    public ImmutableArray<IProfileSymbol> EffectiveProfiles { get; }
+    public ImmutableArray<IRuleSymbol> EffectiveRules { get; }
     public string? EffectivePage { get; }
 
     // Delegated from ISelectionEntryContainerSymbol

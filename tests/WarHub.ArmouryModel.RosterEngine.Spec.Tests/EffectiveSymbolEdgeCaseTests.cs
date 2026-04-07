@@ -206,7 +206,7 @@ public class EffectiveSymbolEdgeCaseTests
             .EffectiveProfiles.Single();
 
         profile.Page.Should().Be("42");
-        profile.PublicationId.Should().BeNull();
+        profile.PublicationReference.Should().BeNull();
     }
 
     [Fact]
