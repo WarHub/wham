@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- **BREAKING:** `AddRootEntryFromSymbol` record changed from storing
+  `ISelectionEntryContainerSymbol Entry` to `SymbolKey EntryKey`.
+  The factory method `RosterOperations.AddRootEntryFromSymbol(ISelectionEntryContainerSymbol, string, int)`
+  preserves the old call-site shape (converting to `SymbolKey` internally), but
+  direct constructor calls, property access, serialization, and pattern matching
+  against the record will break. ([#289])
+
 ## [0.14.0] - 2026-02-28
 
 ### Changed
