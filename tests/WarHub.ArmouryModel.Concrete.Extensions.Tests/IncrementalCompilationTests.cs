@@ -221,6 +221,25 @@ public class IncrementalCompilationTests
     }
 
     [Fact]
+    public void Invariant_rejects_multiple_references()
+    {
+        var gst = NodeFactory.Gamesystem("foo");
+        var catComp1 = WhamCompilation.Create([SourceTree.CreateForRoot(gst)]);
+        var catComp2 = WhamCompilation.Create([SourceTree.CreateForRoot(NodeFactory.Gamesystem("bar"))]);
+        var roster = NodeFactory.Roster(gst);
+
+        // Try to create a compilation with two references via internal constructor
+        var act = () => new WhamCompilation(
+            null,
+            [SourceTree.CreateForRoot(roster)],
+            new WhamCompilationOptions(),
+            [catComp1, catComp2]);
+
+        act.Should().Throw<InvalidOperationException>()
+            .WithMessage("*exactly one*");
+    }
+
+    [Fact]
     public void GetDiagnostics_aggregates_reference_diagnostics()
     {
         // arrange: create catalogue with a bad entry link

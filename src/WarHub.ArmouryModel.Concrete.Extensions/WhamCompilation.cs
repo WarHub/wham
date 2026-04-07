@@ -266,14 +266,19 @@ public class WhamCompilation : Compilation
         if (References.Length == 0)
             return;
 
-        // Roster compilations must not reference compilations that themselves have references.
-        foreach (var reference in References)
+        // Roster compilations must reference exactly one catalogue compilation.
+        if (References.Length != 1)
         {
-            if (reference.HasReferences)
-            {
-                throw new InvalidOperationException(
-                    "Referenced compilations must not themselves have references (no chains).");
-            }
+            throw new InvalidOperationException(
+                $"A roster compilation must reference exactly one catalogue compilation, " +
+                $"but {References.Length} references were provided.");
+        }
+
+        // Roster compilations must not reference compilations that themselves have references.
+        if (References[0].HasReferences)
+        {
+            throw new InvalidOperationException(
+                "Referenced compilations must not themselves have references (no chains).");
         }
 
         // Roster compilations must contain only roster source trees.
