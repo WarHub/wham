@@ -191,9 +191,9 @@ public record AddSelectionFromLinkOp(SelectionEntryNode SelectionEntry, EntryLin
 }
 
 /// <summary>
-/// Adds a root selection to a force by resolving the entry via <see cref="SymbolKey"/>.
+/// Adds a root selection to a force by resolving the entry and force via <see cref="SymbolKey"/>.
 /// </summary>
-public record AddRootEntryFromSymbol(SymbolKey EntryKey, string ForceId, int Count = 1) : RosterOperationBase
+public record AddRootEntryFromSymbol(SymbolKey EntryKey, SymbolKey ForceKey, int Count = 1) : RosterOperationBase
 {
     protected override RosterOperationKind Kind => RosterOperationKind.AddSelection;
 
@@ -206,6 +206,13 @@ public record AddRootEntryFromSymbol(SymbolKey EntryKey, string ForceId, int Cou
             throw new InvalidOperationException(
                 $"Entry key ({EntryKey.Kind}, '{EntryKey.SymbolId}') could not be resolved: {resolution.Kind}.");
         }
+        var forceResolution = ForceKey.Resolve(state.Compilation);
+        if (forceResolution.Kind != SymbolKeyResolutionKind.Resolved || forceResolution.Symbol is not IForceSymbol forceSymbol)
+        {
+            throw new InvalidOperationException(
+                $"Force key ({ForceKey.Kind}, '{ForceKey.SymbolId}') could not be resolved: {forceResolution.Kind}.");
+        }
+        var forceId = forceSymbol.Id;
         var entries = !entryLocal.IsReference
             ? new[] { entryLocal }
             : new[] { entryLocal, entryLocal.ReferencedEntry! };
@@ -223,10 +230,10 @@ public record AddRootEntryFromSymbol(SymbolKey EntryKey, string ForceId, int Cou
         var selectionEntryNode = (entryLocal.IsReference ? entryLocal.ReferencedEntry! : entryLocal).GetEntryDeclaration()!;
         for (var i = 0; i < Count; i++)
         {
-            // Use ID because the ForceNode object becomes invalid after other operations,
-            // such as a prior selectionAdd
-            var force = roster.Forces.FirstOrDefault(f => f.Id == ForceId)
-                ?? throw new InvalidOperationException($"Force '{ForceId}' not found in roster.");
+            // Look up by ID each iteration because the ForceNode object becomes
+            // invalid after prior mutations (immutable tree replacement).
+            var force = roster.Forces.FirstOrDefault(f => f.Id == forceId)
+                ?? throw new InvalidOperationException($"Force '{forceId}' not found in roster.");
             var selection =
                 Selection(selectionEntryNode, selectionEntryNode.Id!)
                 .AddCosts(costNodes)
