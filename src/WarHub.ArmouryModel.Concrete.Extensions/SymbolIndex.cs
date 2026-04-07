@@ -144,6 +144,25 @@ internal sealed class SymbolIndex
             {
                 IndexContainerEntry(index, child);
             }
+
+            // Index category links on selection entries.
+            foreach (var category in selectionContainer.Categories)
+            {
+                IndexSymbol(index, category);
+            }
+        }
+
+        // Index force entry children and category links.
+        if (entry is IForceEntrySymbol forceEntry)
+        {
+            foreach (var childForce in forceEntry.ChildForces)
+            {
+                IndexContainerEntry(index, childForce);
+            }
+            foreach (var category in forceEntry.Categories)
+            {
+                IndexSymbol(index, category);
+            }
         }
 
         // Index resources attached to this entry.
@@ -199,6 +218,16 @@ internal sealed class SymbolIndex
         ISelectionSymbol selection)
     {
         IndexSymbol(index, selection);
+
+        // Index selection instance costs and categories.
+        foreach (var cost in selection.Costs)
+        {
+            IndexSymbol(index, cost);
+        }
+        foreach (var category in selection.Categories)
+        {
+            IndexSymbol(index, category);
+        }
 
         // Nested selections.
         foreach (var childSelection in selection.Selections)

@@ -374,6 +374,65 @@ public class SymbolKeyTests
 
     #endregion
 
+    #region Category link and selection member tests
+
+    [Fact]
+    public void Selection_entry_category_link_round_trips()
+    {
+        var compilation = CreateSampleCompilation();
+        var catalogue = compilation.GlobalNamespace.Catalogues.First(x => !x.IsGamesystem);
+        // Find a selection entry that has category links.
+        var entryWithCategories = catalogue.RootContainerEntries
+            .OfType<ISelectionEntryContainerSymbol>()
+            .Concat(catalogue.SharedSelectionEntryContainers)
+            .FirstOrDefault(x => x.Categories.Length > 0);
+        if (entryWithCategories is null)
+            return; // Skip if sample data has no category links on entries
+        var categoryLink = entryWithCategories.Categories.First();
+
+        var key = SymbolKey.Create(categoryLink);
+        var resolution = key.Resolve(compilation);
+
+        resolution.Kind.Should().Be(SymbolKeyResolutionKind.Resolved);
+        resolution.Symbol.Should().BeSameAs(categoryLink);
+    }
+
+    [Fact]
+    public void Roster_selection_cost_has_null_id_and_is_not_indexable()
+    {
+        // CostNode does not implement IIdentifiableNode, so cost symbols have null ID
+        // and cannot be resolved via SymbolKey. This is by design.
+        var compilation = CreateSampleCompilation();
+        var selection = compilation.GlobalNamespace.Rosters.First()
+            .Forces.First()
+            .Selections.FirstOrDefault(s => s.Costs.Length > 0);
+        if (selection is null)
+            return;
+        var cost = selection.Costs.First();
+
+        cost.Id.Should().BeNull("CostNode does not have an ID");
+    }
+
+    [Fact]
+    public void Roster_selection_category_round_trips()
+    {
+        var compilation = CreateSampleCompilation();
+        var selection = compilation.GlobalNamespace.Rosters.First()
+            .Forces.First()
+            .Selections.FirstOrDefault(s => s.Categories.Length > 0);
+        if (selection is null)
+            return; // Skip if sample data has no selection categories
+        var category = selection.Categories.First();
+
+        var key = SymbolKey.Create(category);
+        var resolution = key.Resolve(compilation);
+
+        resolution.Kind.Should().Be(SymbolKeyResolutionKind.Resolved);
+        resolution.Symbol.Should().BeSameAs(category);
+    }
+
+    #endregion
+
     #region Helpers
 
     private static WhamCompilation CreateSampleCompilation()

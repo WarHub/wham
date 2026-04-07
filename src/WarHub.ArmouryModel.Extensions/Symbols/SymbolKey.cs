@@ -4,6 +4,11 @@ namespace WarHub.ArmouryModel;
 /// Lightweight, serializable identifier for an <see cref="ISymbol"/> that can be
 /// resolved across compilations built from compatible data.
 /// Analogous to Roslyn's internal SymbolKey.
+/// <para>
+/// Only symbols with a non-null <see cref="ISymbol.Id"/> can be resolved.
+/// This excludes some entry-level types such as costs (<see cref="ICostSymbol"/>)
+/// whose underlying nodes do not carry an ID.
+/// </para>
 /// </summary>
 public readonly record struct SymbolKey
 {
