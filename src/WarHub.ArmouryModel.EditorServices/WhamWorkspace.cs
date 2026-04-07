@@ -354,7 +354,9 @@ public sealed class WhamWorkspace
 
     /// <summary>
     /// Gets the lazily-computed roster compilation for the given roster.
-    /// Uses the latest catalogue compilation and current roster tree.
+    /// Returns a point-in-time snapshot: the compilation is built from the catalogue
+    /// compilation and roster tree that were current when the tracker was last updated.
+    /// Concurrent edits may have occurred after the snapshot was captured.
     /// </summary>
     public WhamCompilation GetRosterCompilation(DocumentId rosterId)
     {

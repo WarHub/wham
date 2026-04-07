@@ -69,6 +69,13 @@ internal sealed class SourceGlobalNamespaceSymbol : Symbol, IGamesystemNamespace
     /// Creates a namespace for a roster compilation that references a catalogue compilation.
     /// Own source trees produce only roster symbols; catalogue symbols come from the reference.
     /// </summary>
+    /// <remarks>
+    /// Catalogue symbols are reused by object identity from the referenced namespace.
+    /// Their <see cref="Symbol.ContainingSymbol"/> and <c>DeclaringCompilation</c> still
+    /// point back to the catalogue compilation's namespace, not this roster namespace.
+    /// This is intentional: it avoids duplicating symbols and allows the catalogue
+    /// compilation to be shared across multiple roster compilations.
+    /// </remarks>
     public SourceGlobalNamespaceSymbol(
         ImmutableArray<SourceNode> rootDataNodes,
         WhamCompilation declaringCompilation,
