@@ -7,8 +7,9 @@
     <IsPackable>false</IsPackable>
     <GenerateDocumentationFile>false</GenerateDocumentationFile>
     <AnalysisMode>Default</AnalysisMode>
-    <!-- Ported project: suppress pre-existing nullable warnings from TreatWarningsAsErrors in Release -->
-    <WarningsNotAsErrors>CS0109;CS8604;CS8619;CS8620</WarningsNotAsErrors>
+    <!-- Ported project: suppress pre-existing 'new' keyword warning from TreatWarningsAsErrors in Release.
+         Nullable warnings (CS8604, CS8619, CS8620) are suppressed locally in affected files. -->
+    <WarningsNotAsErrors>CS0109</WarningsNotAsErrors>
   </PropertyGroup>
 
   <ItemGroup>

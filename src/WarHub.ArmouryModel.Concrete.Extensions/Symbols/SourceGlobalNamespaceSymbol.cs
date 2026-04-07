@@ -86,11 +86,9 @@ internal sealed class SourceGlobalNamespaceSymbol : Symbol, IGamesystemNamespace
 
         // Only create roster symbols from own source trees.
         var ownSymbols = rootDataNodes
-            .Select(node => node is RosterNode rosterNode
-                ? (Symbol)new RosterSymbol(this, rosterNode, DeclarationDiagnostics)
-                : null)
-            .Where(x => x is not null)
-            .ToImmutableArray()!;
+            .OfType<RosterNode>()
+            .Select(rosterNode => (Symbol)new RosterSymbol(this, rosterNode, DeclarationDiagnostics))
+            .ToImmutableArray();
 
         Rosters = ownSymbols.OfType<RosterSymbol>().ToImmutableArray();
 

@@ -1,3 +1,8 @@
+// Ported code: many BattleScribe IDs are string? but dictionary keys are string.
+// Suppress nullable warnings at file level until IDs are properly typed.
+#pragma warning disable CS8604 // Possible null reference argument
+#pragma warning disable CS8620 // Nullability differences in argument
+
 using WarHub.ArmouryModel.Source;
 
 namespace WarHub.ArmouryModel.Concrete;
