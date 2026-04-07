@@ -12,6 +12,7 @@ significant design choices in the wham project.
 | [0005](0005-git-submodule-for-battlescribe-spec.md) | Git submodule for battlescribe-spec dependency | Accepted |
 | [0006](0006-isymbol-based-roster-engine.md) | ISymbol-based roster engine | Accepted |
 | [0007](0007-incremental-compilation-references.md) | Incremental compilation via references model | Accepted |
+| [0008](0008-workspace-layer.md) | Workspace layer | Accepted |
 
 ## Format
 
