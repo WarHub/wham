@@ -230,13 +230,14 @@ public class WhamCompilation : Compilation
         return GetSymbolIndex().Resolve(key);
     }
 
-    private SymbolIndex GetSymbolIndex()
+    internal SymbolIndex GetSymbolIndex()
     {
         if (lazySymbolIndex is not null)
         {
             return lazySymbolIndex;
         }
-        var index = SymbolIndex.Build(this);
+        var catalogueIndex = CatalogueReference?.GetSymbolIndex();
+        var index = SymbolIndex.Build(this, catalogueIndex);
         Interlocked.CompareExchange(ref lazySymbolIndex, index, null);
         return lazySymbolIndex;
     }

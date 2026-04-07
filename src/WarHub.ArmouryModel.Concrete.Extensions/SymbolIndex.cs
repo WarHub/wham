@@ -7,65 +7,79 @@ namespace WarHub.ArmouryModel.Concrete;
 internal sealed class SymbolIndex
 {
     private readonly Dictionary<(SymbolKind Kind, string? ModuleId, string? SymbolId), List<ISymbol>> _index;
+    private readonly SymbolIndex? _catalogueIndex;
 
-    private SymbolIndex(Dictionary<(SymbolKind, string?, string?), List<ISymbol>> index)
+    private SymbolIndex(
+        Dictionary<(SymbolKind, string?, string?), List<ISymbol>> index,
+        SymbolIndex? catalogueIndex = null)
     {
         _index = index;
+        _catalogueIndex = catalogueIndex;
     }
 
-    internal static SymbolIndex Build(WhamCompilation compilation)
+    internal static SymbolIndex Build(WhamCompilation compilation, SymbolIndex? catalogueIndex = null)
     {
         var index = new Dictionary<(SymbolKind, string?, string?), List<ISymbol>>();
         var ns = compilation.GlobalNamespace;
 
-        // Index catalogue symbols.
-        foreach (var catalogue in ns.Catalogues)
+        if (catalogueIndex is null)
         {
-            IndexSymbol(index, catalogue);
-            IndexCatalogueContents(index, catalogue);
+            // Catalogue compilation (or standalone): index all catalogue symbols.
+            foreach (var catalogue in ns.Catalogues)
+            {
+                IndexSymbol(index, catalogue);
+                IndexCatalogueContents(index, catalogue);
+            }
         }
+        // else: roster compilation — catalogue symbols are resolved via catalogueIndex fallback.
 
-        // Index roster symbols.
+        // Index roster symbols (always needed when rosters exist).
         foreach (var roster in ns.Rosters)
         {
             IndexSymbol(index, roster);
             IndexRosterContents(index, roster);
         }
 
-        return new SymbolIndex(index);
+        return new SymbolIndex(index, catalogueIndex);
     }
 
     internal SymbolKeyResolution Resolve(SymbolKey key)
     {
         var lookupKey = (key.Kind, key.ContainingModuleId, key.SymbolId);
 
-        if (!_index.TryGetValue(lookupKey, out var candidates) || candidates.Count == 0)
+        if (_index.TryGetValue(lookupKey, out var candidates) && candidates.Count > 0)
         {
-            return SymbolKeyResolution.Missing();
-        }
-
-        if (candidates.Count == 1)
-        {
-            return SymbolKeyResolution.Resolved(candidates[0]);
-        }
-
-        // Multiple matches — try to disambiguate via ContainingEntryId.
-        if (key.ContainingEntryId is not null)
-        {
-            var filtered = candidates
-                .Where(s => GetContainingEntryId(s) == key.ContainingEntryId)
-                .ToList();
-            if (filtered.Count == 1)
+            if (candidates.Count == 1)
             {
-                return SymbolKeyResolution.Resolved(filtered[0]);
+                return SymbolKeyResolution.Resolved(candidates[0]);
             }
-            if (filtered.Count > 1)
+
+            // Multiple matches — try to disambiguate via ContainingEntryId.
+            if (key.ContainingEntryId is not null)
             {
-                return SymbolKeyResolution.Ambiguous([.. filtered]);
+                var filtered = candidates
+                    .Where(s => GetContainingEntryId(s) == key.ContainingEntryId)
+                    .ToList();
+                if (filtered.Count == 1)
+                {
+                    return SymbolKeyResolution.Resolved(filtered[0]);
+                }
+                if (filtered.Count > 1)
+                {
+                    return SymbolKeyResolution.Ambiguous([.. filtered]);
+                }
             }
+
+            return SymbolKeyResolution.Ambiguous([.. candidates]);
         }
 
-        return SymbolKeyResolution.Ambiguous([.. candidates]);
+        // Fall back to catalogue index for roster compilations.
+        if (_catalogueIndex is not null)
+        {
+            return _catalogueIndex.Resolve(key);
+        }
+
+        return SymbolKeyResolution.Missing();
     }
 
     private static string? GetContainingEntryId(ISymbol symbol)

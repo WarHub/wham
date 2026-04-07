@@ -127,6 +127,37 @@ In the incremental model, a roster-only compilation:
    `SelectionSymbol` — which are a tiny fraction of total symbols.
 4. **Diagnostics aggregate lazily** — catalogue diagnostics are read from the
    referenced compilation, not recomputed.
+5. **SymbolIndex uses layered lookup** — the roster compilation's `SymbolIndex`
+   only indexes roster symbols, falling back to the catalogue compilation's
+   shared index for catalogue symbol resolution. This avoids re-walking all
+   catalogue entries on every roster index build.
+
+### SymbolIndex Layered Lookup
+
+`SymbolIndex` supports incremental compilation via a composite pattern:
+
+```
+Roster Compilation's SymbolIndex
+├── Local dictionary (roster symbols only: forces, selections, costs)
+└── Fallback → Catalogue Compilation's SymbolIndex (shared, built once)
+```
+
+Cross-layer key collisions are structurally impossible because the index key
+includes `ContainingModuleId` — catalogue children have the catalogue's ID,
+roster children have the roster's ID.
+
+**Memory savings (Dry run, Synth50 dataset — 50 entries with profiles/rules):**
+
+| Scenario | Monolithic (old) | Layered (new) | Reduction |
+|----------|-----------------|---------------|-----------|
+| Single roster index build | 66,608 B | 384 B | **99.4%** |
+| 10-roster multi-roster build | 666,080 B | 3,840 B | **99.4%** |
+
+To run SymbolIndex-specific benchmarks:
+
+```bash
+dotnet run -c Release -- --filter "*SymbolIndex*"
+```
 
 ## Running the Benchmarks
 

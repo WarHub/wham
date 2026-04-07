@@ -19,6 +19,7 @@
   <ItemGroup>
     <InternalsVisibleTo Include="WarHub.ArmouryModel.RosterEngine.Spec" />
     <InternalsVisibleTo Include="WarHub.ArmouryModel.Concrete.Extensions.Tests" />
+    <InternalsVisibleTo Include="WarHub.ArmouryModel.Benchmarks" />
   </ItemGroup>
 
   <ItemGroup>
