@@ -20,8 +20,9 @@ With incremental compilation it takes **~25 µs** and allocates **~17 KB** — a
 ## Design: CatalogueReference Model
 
 Rather than separate `CatalogueCompilation`/`RosterCompilation` subclasses,
-`WhamCompilation` has a `CatalogueReference` property (analogous to Roslyn's
-`ProjectReference`):
+`Compilation` has a `CatalogueReference` property (analogous to Roslyn's
+`ProjectReference`), with `WhamCompilation` providing the concrete covariant
+override:
 
 ```
 Catalogue Compilation                Roster Compilation
@@ -41,14 +42,15 @@ Catalogue Compilation                Roster Compilation
 
 **Key properties:**
 
-- **Catalogue compilation** = `WhamCompilation` with catalogue/gamesystem trees,
+- **Catalogue compilation** = compilation with catalogue/gamesystem trees,
   no `CatalogueReference`, no roster trees.
-- **Roster compilation** = `WhamCompilation` with roster tree(s), references
+- **Roster compilation** = compilation with roster tree(s), references
   exactly one catalogue compilation. **Options are always inherited** from the
   catalogue reference (structurally enforced — the roster constructor has no
   options parameter).
-- `CatalogueReference` is a single nullable `WhamCompilation?`, making multiple
-  references structurally impossible.
+- `CatalogueReference` is defined on abstract `Compilation` as `virtual Compilation?`
+  (defaults to `null`). `WhamCompilation` overrides with covariant return
+  `WhamCompilation?`, making multiple references structurally impossible.
 - Catalogue symbols are **shared by object reference** — not duplicated.
 - Catalogue symbols' `DeclaringCompilation` always points to the catalogue
   compilation (through the `ContainingNamespace` chain).

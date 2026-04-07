@@ -4,6 +4,7 @@ namespace WarHub.ArmouryModel.Concrete;
 
 public class WhamCompilation : Compilation
 {
+    private readonly WhamCompilation? _catalogueReference;
     private SourceGlobalNamespaceSymbol? lazyGlobalNamespace;
     private Binder? lazyGlobalNamespaceBinder;
     private DiagnosticBag? lazyDeclarationDiagnostics;
@@ -20,7 +21,7 @@ public class WhamCompilation : Compilation
         CompilationOptions options)
         : base(name, sourceTrees, options)
     {
-        CatalogueReference = null;
+        _catalogueReference = null;
         ValidateInvariants();
     }
 
@@ -33,7 +34,7 @@ public class WhamCompilation : Compilation
         WhamCompilation catalogueReference)
         : base(name, rosterTrees, catalogueReference.Options)
     {
-        CatalogueReference = catalogueReference;
+        _catalogueReference = catalogueReference;
         ValidateInvariants();
     }
 
@@ -46,22 +47,7 @@ public class WhamCompilation : Compilation
     /// Roster compilations always inherit <see cref="Compilation.Options"/> from their catalogue reference.
     /// </para>
     /// </summary>
-    public WhamCompilation? CatalogueReference { get; }
-
-    /// <summary>
-    /// <see langword="true"/> when this is a roster compilation (has a catalogue reference).
-    /// </summary>
-    public bool HasCatalogueReference => CatalogueReference is not null;
-
-    /// <summary>
-    /// Gets all source trees, including those from the <see cref="CatalogueReference"/>.
-    /// For catalogue compilations, this is the same as <see cref="Compilation.SourceTrees"/>.
-    /// For roster compilations, this includes both the catalogue's trees and the roster's own trees.
-    /// </summary>
-    public ImmutableArray<SourceTree> AllSourceTrees =>
-        CatalogueReference is { } catRef
-            ? catRef.SourceTrees.AddRange(SourceTrees)
-            : SourceTrees;
+    public override WhamCompilation? CatalogueReference => _catalogueReference;
 
     public override IGamesystemNamespaceSymbol GlobalNamespace => SourceGlobalNamespace;
 
@@ -192,13 +178,7 @@ public class WhamCompilation : Compilation
         return Update(SourceTrees.AddRange(trees));
     }
 
-    /// <summary>
-    /// Adds roster trees to this compilation.
-    /// If this is a catalogue compilation, creates a new roster compilation referencing
-    /// this as the catalogue. If this is already a roster compilation, adds to the
-    /// existing roster trees.
-    /// </summary>
-    public WhamCompilation AddRosterTrees(params SourceTree[] rosterTrees)
+    public override WhamCompilation AddRosterTrees(params SourceTree[] rosterTrees)
     {
         ValidateAllAreRosterTrees(rosterTrees, nameof(rosterTrees));
         if (CatalogueReference is not null)
@@ -230,20 +210,6 @@ public class WhamCompilation : Compilation
         }
         var trees = newTree is null ? SourceTrees.Remove(oldTree) : SourceTrees.Replace(oldTree, newTree);
         return Update(trees);
-    }
-
-    public override SourceTree? FindSourceTree(SourceNode rootNode)
-    {
-        var tree = base.FindSourceTree(rootNode);
-        if (tree is not null)
-            return tree;
-        if (CatalogueReference is { } catRef)
-        {
-            tree = catRef.FindSourceTree(rootNode);
-            if (tree is not null)
-                return tree;
-        }
-        return null;
     }
 
     private WhamCompilation Update(ImmutableArray<SourceTree> trees)

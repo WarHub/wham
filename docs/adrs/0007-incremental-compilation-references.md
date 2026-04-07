@@ -52,9 +52,11 @@ diagnostics aggregation, completion ordering, and consumer API assumptions.
 The references model achieves the same safety with runtime invariants in a
 single type, with significantly less code churn.
 
-The `References` property lives on `WhamCompilation` (not abstract
-`Compilation`) until the semantics are proven through Phase 3 (workspace
-layer).
+The `CatalogueReference` property was initially defined only on `WhamCompilation`
+until the semantics were proven through Phase 3 (workspace layer). With the
+workspace layer implemented and validated, `CatalogueReference`, `HasCatalogueReference`,
+`AllSourceTrees`, and `AddRosterTrees` have been promoted to the abstract
+`Compilation` base class, with `WhamCompilation` providing covariant overrides.
 
 ## Consequences
 
