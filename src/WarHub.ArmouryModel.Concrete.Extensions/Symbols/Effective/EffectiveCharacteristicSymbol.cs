@@ -22,20 +22,21 @@ internal sealed class EffectiveCharacteristicSymbol : ICharacteristicSymbol
     public ResourceKind ResourceKind => OriginalCharacteristic.ResourceKind;
     public IResourceDefinitionSymbol? Type => OriginalCharacteristic.Type;
 
-    // Delegated from IEntrySymbol
+    // Standalone effective values (not delegated — effective resources are never links)
     public bool IsHidden => OriginalCharacteristic.IsHidden;
-    public bool IsReference => OriginalCharacteristic.IsReference;
+    public bool IsReference => false;
     public IPublicationReferenceSymbol? PublicationReference => OriginalCharacteristic.PublicationReference;
-    public ImmutableArray<IEffectSymbol> Effects => OriginalCharacteristic.Effects;
-    public ImmutableArray<IResourceEntrySymbol> Resources => OriginalCharacteristic.Resources;
+    public ImmutableArray<IEffectSymbol> Effects => ImmutableArray<IEffectSymbol>.Empty;
+    public ImmutableArray<IResourceEntrySymbol> Resources => ImmutableArray<IResourceEntrySymbol>.Empty;
 
     // IResourceEntrySymbol.ReferencedEntry (explicit for `new` member)
-    IResourceEntrySymbol? IResourceEntrySymbol.ReferencedEntry => OriginalCharacteristic.ReferencedEntry;
+    IResourceEntrySymbol? IResourceEntrySymbol.ReferencedEntry => null;
 
     // IEntrySymbol.ReferencedEntry
-    IEntrySymbol? IEntrySymbol.ReferencedEntry => ((IEntrySymbol)OriginalCharacteristic).ReferencedEntry;
+    IEntrySymbol? IEntrySymbol.ReferencedEntry => null;
 
-    // Delegated from ISymbol
+    // ISymbol
+    public ISymbol OriginalDefinition => OriginalCharacteristic;
     public SymbolKind Kind => OriginalCharacteristic.Kind;
     public string? Id => OriginalCharacteristic.Id;
     public string Name => OriginalCharacteristic.Name;

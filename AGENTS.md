@@ -55,6 +55,7 @@ dotnet pack                                            # NuGet packages (Release
 | `src/WarHub.ArmouryModel.Concrete.Extensions/Symbols/Effective/EffectiveConstraintSymbol.cs` | Wraps IConstraintSymbol with effective Query ReferenceValue |
 | `src/WarHub.ArmouryModel.Concrete.Extensions/Symbols/Effective/EffectiveCostSymbol.cs` | Wraps ICostSymbol with effective Value |
 | `src/WarHub.ArmouryModel.Concrete.Extensions/Symbols/Effective/EffectiveQuerySymbol.cs` | Wraps IQuerySymbol with effective ReferenceValue |
+| `src/WarHub.ArmouryModel.Concrete.Extensions/Symbols/Effective/EffectiveForceEntrySymbol.cs` | Wraps IForceEntrySymbol with effective Resources (profiles+rules) |
 | `src/WarHub.ArmouryModel.Concrete.Extensions/Symbols/Effective/EffectiveEntryCache.cs` | Lazy cache + 4-pass resource resolution; owns ModifierEvaluator, self-initializing on RosterSymbol |
 | `src/WarHub.ArmouryModel.Concrete.Extensions/Symbols/Effective/EffectiveEntryKey.cs` | Cache key: (entry, selection?, force?) |
 | `src/WarHub.ArmouryModel.Concrete.Extensions/Symbols/Effective/ModifierEvaluator.cs` | Modifier application, condition eval, scope resolution (internal to Compilation) |

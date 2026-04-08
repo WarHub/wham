@@ -31,19 +31,20 @@ internal sealed class EffectiveProfileSymbol : IProfileSymbol
     public ResourceKind ResourceKind => OriginalProfile.ResourceKind;
     public IResourceDefinitionSymbol? Type => OriginalProfile.Type;
 
-    // Delegated from IEntrySymbol
-    public bool IsReference => OriginalProfile.IsReference;
+    // Standalone effective values (not delegated — effective resources are never links)
+    public bool IsReference => false;
     public IPublicationReferenceSymbol? PublicationReference => OriginalProfile.PublicationReference;
-    public ImmutableArray<IEffectSymbol> Effects => OriginalProfile.Effects;
-    public ImmutableArray<IResourceEntrySymbol> Resources => OriginalProfile.Resources;
+    public ImmutableArray<IEffectSymbol> Effects => ImmutableArray<IEffectSymbol>.Empty;
+    public ImmutableArray<IResourceEntrySymbol> Resources => ImmutableArray<IResourceEntrySymbol>.Empty;
 
     // IResourceEntrySymbol.ReferencedEntry (explicit for `new` member)
-    IResourceEntrySymbol? IResourceEntrySymbol.ReferencedEntry => OriginalProfile.ReferencedEntry;
+    IResourceEntrySymbol? IResourceEntrySymbol.ReferencedEntry => null;
 
     // IEntrySymbol.ReferencedEntry
-    IEntrySymbol? IEntrySymbol.ReferencedEntry => ((IEntrySymbol)OriginalProfile).ReferencedEntry;
+    IEntrySymbol? IEntrySymbol.ReferencedEntry => null;
 
-    // Delegated from ISymbol
+    // ISymbol
+    public ISymbol OriginalDefinition => OriginalProfile;
     public SymbolKind Kind => OriginalProfile.Kind;
     public string? Id => OriginalProfile.Id;
     public string? Comment => OriginalProfile.Comment;

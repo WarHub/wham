@@ -18,7 +18,8 @@ internal sealed class EffectiveQuerySymbol : IQuerySymbol
     // Overridden
     public decimal? ReferenceValue { get; }
 
-    // Delegated
+    // ISymbol
+    public ISymbol OriginalDefinition => OriginalQuery;
     public SymbolKind Kind => OriginalQuery.Kind;
     public string? Id => OriginalQuery.Id;
     public string Name => OriginalQuery.Name;

@@ -86,10 +86,10 @@ public class EffectiveSymbolEdgeCaseTests
         var effectiveEntry = roster.Forces[0].Selections[0].EffectiveSourceEntry;
 
         // 4-pass traversal: direct profiles (1), linked profiles (3), group profiles (4)
-        effectiveEntry.EffectiveProfiles.Select(p => p.Name)
+        effectiveEntry.Resources.OfType<IProfileSymbol>().Select(p => p.Name)
             .Should().ContainInOrder("Direct Profile", "Linked Profile", "Group Profile");
 
-        effectiveEntry.EffectiveRules.Should().ContainSingle()
+        effectiveEntry.Resources.OfType<IRuleSymbol>().Should().ContainSingle()
             .Which.Name.Should().Be("Direct Rule");
     }
 
@@ -145,9 +145,9 @@ public class EffectiveSymbolEdgeCaseTests
 
         var effectiveEntry = roster.Forces[0].Selections[0].EffectiveSourceEntry;
 
-        effectiveEntry.EffectiveProfiles.Should().ContainSingle()
+        effectiveEntry.Resources.OfType<IProfileSymbol>().Should().ContainSingle()
             .Which.Name.Should().Be("Target Profile");
-        effectiveEntry.EffectiveRules.Should().ContainSingle()
+        effectiveEntry.Resources.OfType<IRuleSymbol>().Should().ContainSingle()
             .Which.Name.Should().Be("Target Rule");
     }
 
@@ -203,7 +203,7 @@ public class EffectiveSymbolEdgeCaseTests
         state.Compilation.GetDiagnostics(cts.Token);
 
         var profile = roster.Forces[0].Selections[0].EffectiveSourceEntry
-            .EffectiveProfiles.Single();
+            .Resources.OfType<IProfileSymbol>().Single();
 
         profile.Page.Should().Be("42");
         profile.PublicationReference.Should().NotBeNull();
@@ -246,7 +246,7 @@ public class EffectiveSymbolEdgeCaseTests
         state.Compilation.GetDiagnostics(cts.Token);
 
         var force = roster.Forces[0];
-        force.EffectiveProfiles.Should().ContainSingle()
+        force.EffectiveSourceEntry.Resources.OfType<IProfileSymbol>().Should().ContainSingle()
             .Which.Name.Should().Be("Force Profile");
     }
 }

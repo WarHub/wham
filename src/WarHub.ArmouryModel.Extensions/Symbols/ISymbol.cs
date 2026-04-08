@@ -39,6 +39,13 @@ public interface ISymbol
     /// </summary>
     IGamesystemNamespaceSymbol? ContainingNamespace { get; }
 
+    /// <summary>
+    /// Gets the original (non-effective) definition of this symbol.
+    /// Returns <see langword="null"/> for symbols that are not effective (computed) symbols.
+    /// For effective symbols (modifier-applied wrappers), returns the declared original.
+    /// </summary>
+    ISymbol? OriginalDefinition => null;
+
     void Accept(SymbolVisitor visitor);
 
     TResult Accept<TResult>(SymbolVisitor<TResult> visitor);

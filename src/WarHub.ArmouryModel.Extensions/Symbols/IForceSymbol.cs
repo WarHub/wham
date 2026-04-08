@@ -35,14 +35,10 @@ public interface IForceSymbol : ISelectionContainerSymbol, IForceContainerSymbol
         ISelectionEntryContainerSymbol declaredEntry);
 
     /// <summary>
-    /// Profiles with modifier-applied values, collected from the force entry's resource graph.
-    /// Empty when effective entry computation is not available.
+    /// The force entry with modifiers applied in this roster context.
+    /// Effective resources (profiles, rules) are available via <see cref="IEntrySymbol.Resources"/>
+    /// on the returned symbol. When modifier evaluation is not available,
+    /// returns the declared <see cref="IEntryInstanceSymbol.SourceEntry"/> as-is.
     /// </summary>
-    ImmutableArray<IProfileSymbol> EffectiveProfiles => ImmutableArray<IProfileSymbol>.Empty;
-
-    /// <summary>
-    /// Rules with modifier-applied values, collected from the force entry's resource graph.
-    /// Empty when effective entry computation is not available.
-    /// </summary>
-    ImmutableArray<IRuleSymbol> EffectiveRules => ImmutableArray<IRuleSymbol>.Empty;
+    IForceEntrySymbol EffectiveSourceEntry { get; }
 }

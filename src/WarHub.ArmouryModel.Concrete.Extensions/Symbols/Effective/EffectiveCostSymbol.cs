@@ -22,20 +22,21 @@ internal sealed class EffectiveCostSymbol : ICostSymbol
     public ResourceKind ResourceKind => OriginalCost.ResourceKind;
     public IResourceDefinitionSymbol? Type => OriginalCost.Type;
 
-    // Delegated from IEntrySymbol
+    // Standalone effective values (not delegated — effective resources are never links)
     public bool IsHidden => OriginalCost.IsHidden;
-    public bool IsReference => OriginalCost.IsReference;
+    public bool IsReference => false;
     public IPublicationReferenceSymbol? PublicationReference => OriginalCost.PublicationReference;
-    public ImmutableArray<IEffectSymbol> Effects => OriginalCost.Effects;
-    public ImmutableArray<IResourceEntrySymbol> Resources => OriginalCost.Resources;
+    public ImmutableArray<IEffectSymbol> Effects => ImmutableArray<IEffectSymbol>.Empty;
+    public ImmutableArray<IResourceEntrySymbol> Resources => ImmutableArray<IResourceEntrySymbol>.Empty;
 
     // IResourceEntrySymbol.ReferencedEntry (explicit for `new` member)
-    IResourceEntrySymbol? IResourceEntrySymbol.ReferencedEntry => OriginalCost.ReferencedEntry;
+    IResourceEntrySymbol? IResourceEntrySymbol.ReferencedEntry => null;
 
     // IEntrySymbol.ReferencedEntry
-    IEntrySymbol? IEntrySymbol.ReferencedEntry => ((IEntrySymbol)OriginalCost).ReferencedEntry;
+    IEntrySymbol? IEntrySymbol.ReferencedEntry => null;
 
-    // Delegated from ISymbol
+    // ISymbol
+    public ISymbol OriginalDefinition => OriginalCost;
     public SymbolKind Kind => OriginalCost.Kind;
     public string? Id => OriginalCost.Id;
     public string Name => OriginalCost.Name;

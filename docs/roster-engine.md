@@ -68,7 +68,9 @@ Wrapper symbols in `Concrete.Extensions/Symbols/Effective/` that implement the
 same public interfaces but return modifier-applied values:
 
 - **EffectiveEntrySymbol**: Wraps `ISelectionEntryContainerSymbol` — overrides
-  Name, IsHidden, Constraints, Costs, Categories, EffectiveProfiles, EffectiveRules, PublicationReference.
+  Name, IsHidden, Constraints, Costs, Resources (effective profiles+rules+costs), Categories, PublicationReference.
+- **EffectiveForceEntrySymbol**: Wraps `IForceEntrySymbol` — overrides Resources
+  (effective profiles+rules). Accessed via `IForceSymbol.EffectiveSourceEntry`.
 - **EffectiveProfileSymbol**: `IProfileSymbol` wrapper with modifier-applied characteristics.
 - **EffectiveRuleSymbol**: `IRuleSymbol` wrapper with modifier-applied description.
 - **EffectiveCharacteristicSymbol**: Wraps `ICharacteristicSymbol` with effective Value.
@@ -83,13 +85,18 @@ Access patterns:
 var sel = roster.Forces[0].Selections[0];
 var effectiveName = sel.EffectiveSourceEntry.Name;     // modifier-applied
 var effectiveCosts = sel.EffectiveSourceEntry.Costs;   // modifier-applied
+var profiles = sel.EffectiveSourceEntry.Resources.OfType<IProfileSymbol>(); // effective profiles
+var rules = sel.EffectiveSourceEntry.Resources.OfType<IRuleSymbol>();       // effective rules
+
+// From IForceSymbol → effective force entry with effective resources
+var force = roster.Forces[0];
+var forceProfiles = force.EffectiveSourceEntry.Resources.OfType<IProfileSymbol>();
+
+// OriginalDefinition navigates back to the declared symbol
+var original = sel.EffectiveSourceEntry.OriginalDefinition; // non-null for effective symbols
 
 // From IForceSymbol → effective entry for force-context lookups
-var force = roster.Forces[0];
 var effectiveEntry = force.GetEffectiveEntry(catalogueEntry);
-
-// From IRosterSymbol → general effective entry lookup
-var effective = roster.GetEffectiveEntry(declaredEntry, selection, force);
 ```
 
 Caching is handled by `EffectiveEntryCache` (ConcurrentDictionary-based), which

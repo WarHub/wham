@@ -31,19 +31,20 @@ internal sealed class EffectiveRuleSymbol : IRuleSymbol
     public ResourceKind ResourceKind => OriginalRule.ResourceKind;
     public IResourceDefinitionSymbol? Type => OriginalRule.Type;
 
-    // Delegated from IEntrySymbol
-    public bool IsReference => OriginalRule.IsReference;
+    // Standalone effective values (not delegated — effective resources are never links)
+    public bool IsReference => false;
     public IPublicationReferenceSymbol? PublicationReference => OriginalRule.PublicationReference;
-    public ImmutableArray<IEffectSymbol> Effects => OriginalRule.Effects;
-    public ImmutableArray<IResourceEntrySymbol> Resources => OriginalRule.Resources;
+    public ImmutableArray<IEffectSymbol> Effects => ImmutableArray<IEffectSymbol>.Empty;
+    public ImmutableArray<IResourceEntrySymbol> Resources => ImmutableArray<IResourceEntrySymbol>.Empty;
 
     // IResourceEntrySymbol.ReferencedEntry (explicit for `new` member)
-    IResourceEntrySymbol? IResourceEntrySymbol.ReferencedEntry => OriginalRule.ReferencedEntry;
+    IResourceEntrySymbol? IResourceEntrySymbol.ReferencedEntry => null;
 
     // IEntrySymbol.ReferencedEntry
-    IEntrySymbol? IEntrySymbol.ReferencedEntry => ((IEntrySymbol)OriginalRule).ReferencedEntry;
+    IEntrySymbol? IEntrySymbol.ReferencedEntry => null;
 
-    // Delegated from ISymbol
+    // ISymbol
+    public ISymbol OriginalDefinition => OriginalRule;
     public SymbolKind Kind => OriginalRule.Kind;
     public string? Id => OriginalRule.Id;
     public string? Comment => OriginalRule.Comment;

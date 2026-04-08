@@ -22,7 +22,8 @@ internal sealed class EffectivePublicationReferenceSymbol : IPublicationReferenc
     public string? PublicationId => OriginalReference.PublicationId;
     public IPublicationSymbol? Publication => OriginalReference.Publication;
 
-    // Delegated from ISymbol
+    // ISymbol
+    public ISymbol OriginalDefinition => OriginalReference;
     public SymbolKind Kind => OriginalReference.Kind;
     public string? Id => OriginalReference.Id;
     public string Name => OriginalReference.Name;

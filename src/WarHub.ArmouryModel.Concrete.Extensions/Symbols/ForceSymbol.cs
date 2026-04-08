@@ -5,8 +5,7 @@ namespace WarHub.ArmouryModel.Concrete;
 internal sealed class ForceSymbol : ContainerSymbol, IForceSymbol, INodeDeclaredSymbol<ForceNode>
 {
     private IForceEntrySymbol? lazyForceEntry;
-    private ImmutableArray<IProfileSymbol> lazyEffectiveProfiles;
-    private ImmutableArray<IRuleSymbol> lazyEffectiveRules;
+    private IForceEntrySymbol? lazyEffectiveSourceEntry;
 
     public ForceSymbol(
         ISymbol? containingSymbol,
@@ -62,48 +61,27 @@ internal sealed class ForceSymbol : ContainerSymbol, IForceSymbol, INodeDeclared
             ?? declaredEntry;
     }
 
-    ImmutableArray<IProfileSymbol> IForceSymbol.EffectiveProfiles
+    IForceEntrySymbol IForceSymbol.EffectiveSourceEntry
     {
         get
         {
-            EnsureEffectiveResources();
-            return lazyEffectiveProfiles;
+            if (lazyEffectiveSourceEntry is { } cached)
+                return cached;
+            var roster = GetRosterSymbol();
+            IForceEntrySymbol result;
+            if (roster is not null)
+            {
+                var cache = roster.GetOrCreateEffectiveEntryCache();
+                var (profiles, rules) = cache.CollectEffectiveResources(SourceEntry, selection: null, force: null);
+                result = new EffectiveForceEntrySymbol(SourceEntry, profiles, rules);
+            }
+            else
+            {
+                result = SourceEntry;
+            }
+            Interlocked.CompareExchange(ref lazyEffectiveSourceEntry, result, null);
+            return lazyEffectiveSourceEntry;
         }
-    }
-
-    ImmutableArray<IRuleSymbol> IForceSymbol.EffectiveRules
-    {
-        get
-        {
-            EnsureEffectiveResources();
-            return lazyEffectiveRules;
-        }
-    }
-
-    private void EnsureEffectiveResources()
-    {
-        if (!lazyEffectiveProfiles.IsDefault)
-            return;
-
-        var roster = GetRosterSymbol();
-        ImmutableArray<IProfileSymbol> profiles;
-        ImmutableArray<IRuleSymbol> rules;
-        if (roster is not null)
-        {
-            // Force-level resources are resolved with null selection/force context
-            // matching BattleScribe behavior (force entry modifiers don't have selection context).
-            var cache = roster.GetOrCreateEffectiveEntryCache();
-            (profiles, rules) = cache.CollectEffectiveResources(SourceEntry, selection: null, force: null);
-        }
-        else
-        {
-            profiles = ImmutableArray<IProfileSymbol>.Empty;
-            rules = ImmutableArray<IRuleSymbol>.Empty;
-        }
-        // Thread-safe initialization: use InterlockedInitialize to avoid races
-        // in parallel test execution.
-        ImmutableInterlocked.InterlockedInitialize(ref lazyEffectiveRules, rules);
-        ImmutableInterlocked.InterlockedInitialize(ref lazyEffectiveProfiles, profiles);
     }
 
     protected override void BindReferencesCore(Binder binder, BindingDiagnosticBag diagnostics)

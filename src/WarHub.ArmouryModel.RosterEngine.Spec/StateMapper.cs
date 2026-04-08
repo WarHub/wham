@@ -50,8 +50,8 @@ internal sealed class StateMapper
             selections.Add(MapSelection(sel));
         }
 
-        var profiles = MapProfiles(force.EffectiveProfiles);
-        var rules = MapRules(force.EffectiveRules);
+        var profiles = MapProfiles(force.EffectiveSourceEntry.Resources);
+        var rules = MapRules(force.EffectiveSourceEntry.Resources);
 
         return new ForceState(
             Name: force.Name,
@@ -82,9 +82,9 @@ internal sealed class StateMapper
         // Categories from effective entry (modifier-applied, includes group-inherited)
         var categories = MapCategories(eff);
 
-        // Profiles and rules from effective entry
-        var profiles = MapProfiles(eff.EffectiveProfiles);
-        var rules = MapRules(eff.EffectiveRules);
+        // Profiles and rules from effective entry's Resources
+        var profiles = MapProfiles(eff.Resources);
+        var rules = MapRules(eff.Resources);
 
         // Page from effective entry's publication reference (includes modifier-applied page)
         var page = eff.Page;
@@ -117,11 +117,13 @@ internal sealed class StateMapper
     //  Profile / Rule mapping from effective symbols
     // ──────────────────────────────────────────────────────────────────
 
-    private static List<ProfileState> MapProfiles(ImmutableArray<IProfileSymbol> effectiveProfiles)
+    private static List<ProfileState> MapProfiles(ImmutableArray<IResourceEntrySymbol> resources)
     {
-        var result = new List<ProfileState>(effectiveProfiles.Length);
-        foreach (var p in effectiveProfiles)
+        var result = new List<ProfileState>();
+        foreach (var resource in resources)
         {
+            if (resource is not IProfileSymbol p)
+                continue;
             var chars = new List<CharacteristicState>(p.Characteristics.Length);
             foreach (var ch in p.Characteristics)
             {
@@ -142,11 +144,13 @@ internal sealed class StateMapper
         return result;
     }
 
-    private static List<RuleState> MapRules(ImmutableArray<IRuleSymbol> effectiveRules)
+    private static List<RuleState> MapRules(ImmutableArray<IResourceEntrySymbol> resources)
     {
-        var result = new List<RuleState>(effectiveRules.Length);
-        foreach (var r in effectiveRules)
+        var result = new List<RuleState>();
+        foreach (var resource in resources)
         {
+            if (resource is not IRuleSymbol r)
+                continue;
             result.Add(new RuleState(
                 Name: r.Name ?? "",
                 Description: r.DescriptionText,

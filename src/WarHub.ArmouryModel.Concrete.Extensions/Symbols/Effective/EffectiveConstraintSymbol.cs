@@ -18,7 +18,8 @@ internal sealed class EffectiveConstraintSymbol : IConstraintSymbol
     // Overridden
     public IQuerySymbol Query { get; }
 
-    // Delegated
+    // ISymbol
+    public ISymbol OriginalDefinition => OriginalConstraint;
     public SymbolKind Kind => OriginalConstraint.Kind;
     public string? Id => OriginalConstraint.Id;
     public string Name => OriginalConstraint.Name;

@@ -48,8 +48,7 @@ internal sealed class EffectiveEntrySymbol : ISelectionEntryContainerSymbol
         PrimaryCategory = effectivePrimaryCategory;
         Constraints = BuildEffectiveConstraints(original.Constraints, effectiveConstraintValues);
         Costs = BuildEffectiveCosts(original.Costs, effectiveCostValues);
-        EffectiveProfiles = effectiveProfiles;
-        EffectiveRules = effectiveRules;
+        Resources = BuildEffectiveResources(effectiveProfiles, effectiveRules, Costs);
         PublicationReference = effectivePublicationReference;
     }
 
@@ -65,28 +64,27 @@ internal sealed class EffectiveEntrySymbol : ISelectionEntryContainerSymbol
     public ImmutableArray<ICostSymbol> Costs { get; }
     public ImmutableArray<ICategoryEntrySymbol> Categories { get; }
     public ICategoryEntrySymbol? PrimaryCategory { get; }
-    public ImmutableArray<IProfileSymbol> EffectiveProfiles { get; }
-    public ImmutableArray<IRuleSymbol> EffectiveRules { get; }
     public IPublicationReferenceSymbol? PublicationReference { get; }
 
     // Delegated from ISelectionEntryContainerSymbol
     public ImmutableArray<ISelectionEntryContainerSymbol> ChildSelectionEntries => OriginalEntry.ChildSelectionEntries;
 
     // ISelectionEntryContainerSymbol.ReferencedEntry (explicit for `new` member)
-    ISelectionEntryContainerSymbol? ISelectionEntryContainerSymbol.ReferencedEntry => OriginalEntry.ReferencedEntry;
+    ISelectionEntryContainerSymbol? ISelectionEntryContainerSymbol.ReferencedEntry => null;
 
     // Delegated from IContainerEntrySymbol
     public ContainerKind ContainerKind => OriginalEntry.ContainerKind;
 
-    // Delegated from IEntrySymbol
-    public bool IsReference => OriginalEntry.IsReference;
-    public ImmutableArray<IEffectSymbol> Effects => OriginalEntry.Effects;
-    public ImmutableArray<IResourceEntrySymbol> Resources => OriginalEntry.Resources;
+    // Standalone effective values (not delegated — effective entry is never a link)
+    public bool IsReference => false;
+    public ImmutableArray<IEffectSymbol> Effects => ImmutableArray<IEffectSymbol>.Empty;
+    public ImmutableArray<IResourceEntrySymbol> Resources { get; }
 
     // IEntrySymbol.ReferencedEntry
-    IEntrySymbol? IEntrySymbol.ReferencedEntry => ((IEntrySymbol)OriginalEntry).ReferencedEntry;
+    IEntrySymbol? IEntrySymbol.ReferencedEntry => null;
 
-    // Delegated from ISymbol
+    // ISymbol
+    public ISymbol OriginalDefinition => OriginalEntry;
     public SymbolKind Kind => OriginalEntry.Kind;
     public string? Id => OriginalEntry.Id;
     public string? Comment => OriginalEntry.Comment;
@@ -97,6 +95,19 @@ internal sealed class EffectiveEntrySymbol : ISelectionEntryContainerSymbol
     public void Accept(SymbolVisitor visitor) => visitor.VisitContainerEntry(this);
     public TResult Accept<TResult>(SymbolVisitor<TResult> visitor) => visitor.VisitContainerEntry(this);
     public TResult Accept<TArgument, TResult>(SymbolVisitor<TArgument, TResult> visitor, TArgument argument) => visitor.VisitContainerEntry(this, argument);
+
+    private static ImmutableArray<IResourceEntrySymbol> BuildEffectiveResources(
+        ImmutableArray<IProfileSymbol> profiles,
+        ImmutableArray<IRuleSymbol> rules,
+        ImmutableArray<ICostSymbol> costs)
+    {
+        var builder = ImmutableArray.CreateBuilder<IResourceEntrySymbol>(
+            profiles.Length + rules.Length + costs.Length);
+        foreach (var p in profiles) builder.Add(p);
+        foreach (var r in rules) builder.Add(r);
+        foreach (var c in costs) builder.Add(c);
+        return builder.MoveToImmutable();
+    }
 
     private static ImmutableArray<IConstraintSymbol> BuildEffectiveConstraints(
         ImmutableArray<IConstraintSymbol> originalConstraints,
