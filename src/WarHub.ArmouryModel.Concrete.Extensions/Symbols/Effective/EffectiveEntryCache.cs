@@ -100,9 +100,7 @@ internal sealed class EffectiveEntryCache
 
         var effectiveResources = CollectEffectiveResources(entry, selection, force);
 
-        // Build effective publication reference with modifier-applied page
-        var effectivePage = Evaluator.GetEffectivePage(entry, selection, force) ?? entry.Page;
-        var effectivePubRef = BuildEffectivePublicationReference(entry.PublicationReference, effectivePage);
+        var effectivePubRef = BuildEffectivePublicationReference(entry, selection, force);
 
         return new EffectiveEntrySymbol(
             entry,
@@ -314,15 +312,17 @@ internal sealed class EffectiveEntryCache
     }
 
     /// <summary>
-    /// Wraps the original publication reference with an effective page if the page changed,
+    /// Wraps the original publication reference with an effective page if modifiers changed it,
     /// or returns the original reference as-is when page is unchanged.
     /// </summary>
-    private static IPublicationReferenceSymbol? BuildEffectivePublicationReference(
-        IPublicationReferenceSymbol? originalPubRef,
-        string? effectivePage)
+    private IPublicationReferenceSymbol? BuildEffectivePublicationReference(
+        IEntrySymbol entry,
+        ISelectionSymbol? selection,
+        IForceSymbol? force)
     {
-        if (originalPubRef is null)
+        if (entry.PublicationReference is not { } originalPubRef)
             return null;
+        var effectivePage = Evaluator.GetEffectivePage(entry, selection, force) ?? entry.Page;
         if (effectivePage == originalPubRef.Page)
             return originalPubRef;
         return new EffectivePublicationReferenceSymbol(originalPubRef, effectivePage);
