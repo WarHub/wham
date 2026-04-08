@@ -46,27 +46,30 @@ internal sealed class EffectiveEntryCache
     }
 
     /// <summary>
-    /// Collects and returns effective resources (profiles, rules, and optionally costs)
+    /// Collects and returns effective resources (profiles, rules, costs)
     /// from an entry's resource graph as a flat list.
     /// For entry links, resolves through to the shared target's resources.
     /// Uses a 3-pass traversal: (1) direct resources (profiles, rules, costs),
     /// (2) InfoLinks, (3) inline InfoGroups.
+    /// Cost values are computed internally via the evaluator.
     /// </summary>
     public ImmutableArray<IResourceEntrySymbol>
         CollectEffectiveResources(
             IEntrySymbol entry,
             ISelectionSymbol? selection,
-            IForceSymbol? force,
-            IReadOnlyDictionary<string, decimal>? effectiveCostValues = null)
+            IForceSymbol? force)
     {
         // For entry links, resolve through to the shared target's resources
         var resolvedEntry = entry.ReferencedEntry ?? entry;
+        var costValues = entry is ISelectionEntryContainerSymbol containerEntry
+            ? Evaluator.GetEffectiveCosts(containerEntry, selection, force)
+            : null;
         var resources = new List<IResourceEntrySymbol>();
         CollectFromResources(
             resolvedEntry.Resources,
             viaInfoLink: null,
             containingGroup: null,
-            selection, force, visited: null, effectiveCostValues, resources);
+            selection, force, visited: null, costValues, resources);
         return resources.ToImmutableArray();
     }
 
@@ -78,7 +81,6 @@ internal sealed class EffectiveEntryCache
         var name = Evaluator.GetEffectiveName(entry, selection, force);
         var hidden = Evaluator.GetEffectiveHidden(entry, selection, force);
         var constraintValues = Evaluator.GetEffectiveConstraintValues(entry, selection, force);
-        var costValues = Evaluator.GetEffectiveCosts(entry, selection, force);
 
         // When a selection is present, start from the selection's runtime categories
         // (which include group-inherited categories). Otherwise use entry's declared categories.
@@ -102,7 +104,7 @@ internal sealed class EffectiveEntryCache
         }
         var (effectiveCategories, effectivePrimary) = ResolveCategorySymbols(catResult.CategoryIds, catResult.PrimaryCategoryId);
 
-        var effectiveResources = CollectEffectiveResources(entry, selection, force, costValues);
+        var effectiveResources = CollectEffectiveResources(entry, selection, force);
 
         // Build effective publication reference with modifier-applied page
         var effectivePage = Evaluator.GetEffectivePage(entry, selection, force) ?? entry.Page;
