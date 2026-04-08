@@ -14,8 +14,8 @@ public interface IPublicationReferenceSymbol : ISymbol
     string? PublicationId { get; }
 
     /// <summary>
-    /// The resolved publication symbol. Null when <see cref="PublicationId"/> is null
-    /// or when binding failed (e.g. the referenced publication doesn't exist).
+    /// The resolved publication symbol. Null only when <see cref="PublicationId"/> is null.
+    /// When binding fails, returns an error symbol.
     /// </summary>
     IPublicationSymbol? Publication { get; }
 
