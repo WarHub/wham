@@ -235,6 +235,8 @@ internal sealed class EffectiveEntryCache
         ISelectionSymbol? selection,
         IForceSymbol? force)
     {
+        if (entry.Effects.IsEmpty)
+            return cost;
         var effectiveValue = Evaluator.GetEffectiveCostValue(cost, entry, selection, force);
         if (effectiveValue != cost.Value)
             return new EffectiveCostSymbol(cost, effectiveValue);
@@ -256,6 +258,34 @@ internal sealed class EffectiveEntryCache
         ISelectionSymbol? selection,
         IForceSymbol? force)
     {
+        // Determine name and hidden from link/group overrides (property-based, not effect-based).
+        bool hidden;
+        string name;
+        if (linkOverridesProfile && link is not null)
+        {
+            // MapProfileNodeWithOverrides: link.Hidden || (group?.Hidden ?? profile.Hidden)
+            var baseHidden = group?.IsHidden ?? profile.IsHidden;
+            hidden = link.IsHidden || baseHidden;
+            name = !string.IsNullOrEmpty(link.Name) ? link.Name : profile.Name ?? "";
+        }
+        else
+        {
+            // MapProfileNode: group?.Hidden ?? profile.Hidden; name from profile only
+            hidden = group?.IsHidden ?? profile.IsHidden;
+            name = profile.Name ?? "";
+        }
+
+        // Short-circuit: when no entry in the chain has effects, skip characteristic evaluation.
+        var chainHasEffects = !profile.Effects.IsEmpty
+            || (link is not null && !link.Effects.IsEmpty)
+            || (group is not null && !group.Effects.IsEmpty);
+        if (!chainHasEffects)
+        {
+            if (name == profile.Name && hidden == profile.IsHidden)
+                return profile;
+            return new EffectiveProfileSymbol(profile, name, hidden, profile.Characteristics);
+        }
+
         // Build characteristics with modifier chain: profile → link → group.
         var anyCharChanged = false;
         var chars = ImmutableArray.CreateBuilder<ICharacteristicSymbol>(profile.Characteristics.Length);
@@ -280,22 +310,6 @@ internal sealed class EffectiveEntryCache
             }
         }
 
-        bool hidden;
-        string name;
-        if (linkOverridesProfile && link is not null)
-        {
-            // MapProfileNodeWithOverrides: link.Hidden || (group?.Hidden ?? profile.Hidden)
-            var baseHidden = group?.IsHidden ?? profile.IsHidden;
-            hidden = link.IsHidden || baseHidden;
-            name = !string.IsNullOrEmpty(link.Name) ? link.Name : profile.Name ?? "";
-        }
-        else
-        {
-            // MapProfileNode: group?.Hidden ?? profile.Hidden; name from profile only
-            hidden = group?.IsHidden ?? profile.IsHidden;
-            name = profile.Name ?? "";
-        }
-
         if (!anyCharChanged && name == profile.Name && hidden == profile.IsHidden)
             return profile;
 
@@ -318,14 +332,7 @@ internal sealed class EffectiveEntryCache
         ISelectionSymbol? selection,
         IForceSymbol? force)
     {
-        // Apply description modifiers: rule → link → group.
-        var desc = rule.DescriptionText;
-        desc = Evaluator.GetEffectiveRuleDescription(rule, desc, selection, force);
-        if (link is not null)
-            desc = Evaluator.GetEffectiveRuleDescription(link, desc, selection, force);
-        if (group is not null)
-            desc = Evaluator.GetEffectiveRuleDescription(group, desc, selection, force);
-
+        // Determine name and hidden from link/group overrides (property-based, not effect-based).
         bool hidden;
         string name;
         if (linkOverridesProfile && link is not null)
@@ -339,6 +346,25 @@ internal sealed class EffectiveEntryCache
             hidden = group?.IsHidden ?? rule.IsHidden;
             name = rule.Name ?? "";
         }
+
+        // Short-circuit: when no entry in the chain has effects, skip description evaluation.
+        var chainHasEffects = !rule.Effects.IsEmpty
+            || (link is not null && !link.Effects.IsEmpty)
+            || (group is not null && !group.Effects.IsEmpty);
+        if (!chainHasEffects)
+        {
+            if (name == rule.Name && hidden == rule.IsHidden)
+                return rule;
+            return new EffectiveRuleSymbol(rule, name, hidden, rule.DescriptionText);
+        }
+
+        // Apply description modifiers: rule → link → group.
+        var desc = rule.DescriptionText;
+        desc = Evaluator.GetEffectiveRuleDescription(rule, desc, selection, force);
+        if (link is not null)
+            desc = Evaluator.GetEffectiveRuleDescription(link, desc, selection, force);
+        if (group is not null)
+            desc = Evaluator.GetEffectiveRuleDescription(group, desc, selection, force);
 
         if (desc == rule.DescriptionText && name == rule.Name && hidden == rule.IsHidden)
             return rule;

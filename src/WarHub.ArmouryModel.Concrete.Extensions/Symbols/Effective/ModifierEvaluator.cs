@@ -37,6 +37,8 @@ internal sealed class ModifierEvaluator
     public string GetEffectiveName(IEntrySymbol entry, ISelectionSymbol? selection, IForceSymbol? force)
     {
         var name = entry.Name ?? "";
+        if (entry.Effects.IsEmpty)
+            return name;
         var context = new EvalContext(selection, force, entry);
         foreach (var effect in entry.Effects)
         {
@@ -51,6 +53,8 @@ internal sealed class ModifierEvaluator
     public bool GetEffectiveHidden(IEntrySymbol entry, ISelectionSymbol? selection, IForceSymbol? force)
     {
         var hidden = entry.IsHidden;
+        if (entry.Effects.IsEmpty)
+            return hidden;
         var context = new EvalContext(selection, force, entry);
         foreach (var effect in entry.Effects)
         {
@@ -74,6 +78,8 @@ internal sealed class ModifierEvaluator
             if (constraint.Id is not null)
                 values[constraint.Id] = constraint.Query.ReferenceValue ?? 0m;
         }
+        if (entry.Effects.IsEmpty)
+            return values;
         var context = new EvalContext(selection, force, entry);
         foreach (var effect in entry.Effects)
         {
@@ -92,7 +98,7 @@ internal sealed class ModifierEvaluator
         IForceSymbol? force)
     {
         var typeId = cost.Type?.Id;
-        if (typeId is null)
+        if (typeId is null || entry.Effects.IsEmpty)
             return cost.Value;
         var value = cost.Value;
         var context = new EvalContext(selection, force, entry);
@@ -113,6 +119,8 @@ internal sealed class ModifierEvaluator
         ISelectionSymbol? selection,
         IForceSymbol? force)
     {
+        if (profileEntry.Effects.IsEmpty)
+            return currentValue;
         var value = currentValue;
         var context = new EvalContext(selection, force, profileEntry);
         foreach (var effect in profileEntry.Effects)
@@ -128,6 +136,8 @@ internal sealed class ModifierEvaluator
     /// </summary>
     public string? GetEffectivePage(IEntrySymbol entry, ISelectionSymbol? selection, IForceSymbol? force)
     {
+        if (entry.Effects.IsEmpty)
+            return null;
         string? page = null;
         var context = new EvalContext(selection, force, entry);
         foreach (var effect in entry.Effects)
@@ -169,6 +179,8 @@ internal sealed class ModifierEvaluator
         ISelectionSymbol? selection,
         IForceSymbol? force)
     {
+        if (ruleEntry.Effects.IsEmpty)
+            return currentDescription;
         var desc = currentDescription;
         var context = new EvalContext(selection, force, ruleEntry);
         foreach (var effect in ruleEntry.Effects)
@@ -224,6 +236,8 @@ internal sealed class ModifierEvaluator
         if (primarySym is not null)
             primaryId = primarySym.ReferencedEntry?.Id ?? primarySym.Id;
 
+        if (entry.Effects.IsEmpty)
+            return (categories, primaryId);
         var context = new EvalContext(selection, force, entry);
         foreach (var effect in entry.Effects)
         {
@@ -246,6 +260,8 @@ internal sealed class ModifierEvaluator
         var categories = new List<string>(initialCategoryIds);
         string? primaryId = initialPrimaryId;
 
+        if (entry.Effects.IsEmpty)
+            return (categories, primaryId);
         var context = new EvalContext(selection, force, entry);
         foreach (var effect in entry.Effects)
         {
