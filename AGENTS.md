@@ -49,7 +49,8 @@ dotnet pack                                            # NuGet packages (Release
 
 | Path | What |
 |------|------|
-| `src/WarHub.ArmouryModel.Concrete.Extensions/Symbols/Effective/EffectiveEntrySymbol.cs` | Wraps ISelectionEntryContainerSymbol with effective Name/Hidden/Costs/Constraints/Profiles/Rules/Page |
+| `src/WarHub.ArmouryModel.Concrete.Extensions/Symbols/Effective/EffectiveContainerEntrySymbol.cs` | Abstract base for effective container entries (shared Name/Hidden/Costs/Constraints/Resources/Page) |
+| `src/WarHub.ArmouryModel.Concrete.Extensions/Symbols/Effective/EffectiveEntrySymbol.cs` | Selection entry effective wrapper, extends EffectiveContainerEntrySymbol with Categories/PrimaryCategory |
 | `src/WarHub.ArmouryModel.Concrete.Extensions/Symbols/Effective/EffectiveProfileSymbol.cs` | IEffectiveProfileSymbol impl — effective name, hidden, characteristics, page, publicationId |
 | `src/WarHub.ArmouryModel.Concrete.Extensions/Symbols/Effective/EffectiveRuleSymbol.cs` | IEffectiveRuleSymbol impl — effective name, description, hidden, page, publicationId |
 | `src/WarHub.ArmouryModel.Concrete.Extensions/Symbols/Effective/EffectiveConstraintSymbol.cs` | Wraps IConstraintSymbol with effective Query ReferenceValue |
@@ -132,7 +133,9 @@ constraint evaluation via `CompletionPart` phases:
 ```
 WhamRosterEngine (IRosterEngine)
 ├── EntryResolver      — flatten entries, merge links, resolve info
-└── EffectiveEntrySymbol (Concrete.Extensions) — Roslyn-style wrapper symbols
+└── EffectiveContainerEntrySymbol (abstract base)
+    ├── EffectiveSelectionEntrySymbol — selection entry effective wrapper
+    └── EffectiveForceEntrySymbol    — force entry effective wrapper
     ├── EffectiveEntryCache — lazy cache, owns ModifierEvaluator
     │   └── CollectEffectiveResources() — single-pass resource resolution
     ├── EffectiveProfileSymbol — IEffectiveProfileSymbol with modifier-applied characteristics

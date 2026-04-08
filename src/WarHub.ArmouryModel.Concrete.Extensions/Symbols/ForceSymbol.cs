@@ -72,8 +72,7 @@ internal sealed class ForceSymbol : ContainerSymbol, IForceSymbol, INodeDeclared
             if (roster is not null)
             {
                 var cache = roster.GetOrCreateEffectiveEntryCache();
-                var resources = cache.CollectEffectiveResources(SourceEntry, selection: null, force: null);
-                result = new EffectiveForceEntrySymbol(SourceEntry, resources);
+                result = cache.CreateEffectiveForceEntry(SourceEntry, this);
             }
             else
             {

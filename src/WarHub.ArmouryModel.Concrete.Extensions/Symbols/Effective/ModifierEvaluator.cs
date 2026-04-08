@@ -32,9 +32,9 @@ internal sealed class ModifierEvaluator
     }
 
     /// <summary>
-    /// Gets the effective name for a selection entry after applying modifiers.
+    /// Gets the effective name for an entry after applying modifiers.
     /// </summary>
-    public string GetEffectiveName(ISelectionEntryContainerSymbol entry, ISelectionSymbol? selection, IForceSymbol? force)
+    public string GetEffectiveName(IEntrySymbol entry, ISelectionSymbol? selection, IForceSymbol? force)
     {
         var name = entry.Name ?? "";
         var context = new EvalContext(selection, force, entry);
@@ -83,12 +83,11 @@ internal sealed class ModifierEvaluator
     }
 
     /// <summary>
-    /// <summary>
     /// Gets the effective value of a single cost after applying modifiers.
     /// </summary>
     public decimal GetEffectiveCostValue(
         ICostSymbol cost,
-        ISelectionEntryContainerSymbol entry,
+        IEntrySymbol entry,
         ISelectionSymbol? selection,
         IForceSymbol? force)
     {

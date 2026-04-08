@@ -67,10 +67,12 @@ Adapter bridging TestKit's `IRosterEngine` to the ISymbol engine:
 Wrapper symbols in `Concrete.Extensions/Symbols/Effective/` that implement the
 same public interfaces but return modifier-applied values:
 
-- **EffectiveEntrySymbol**: Wraps `ISelectionEntryContainerSymbol` — overrides
-  Name, IsHidden, Constraints, Costs, Resources (effective profiles+rules+costs), Categories, PublicationReference.
-- **EffectiveForceEntrySymbol**: Wraps `IForceEntrySymbol` — overrides Resources
-  (effective profiles+rules). Accessed via `IForceSymbol.EffectiveSourceEntry`.
+- **EffectiveContainerEntrySymbol**: Abstract base for effective container entries — provides
+  shared Name, IsHidden, Constraints, Costs, Resources, PublicationReference, standalone flags.
+- **EffectiveSelectionEntrySymbol**: Extends base, wraps `ISelectionEntryContainerSymbol` — adds
+  Categories, PrimaryCategory. Accessed via `EffectiveEntryCache.GetEffectiveEntry`.
+- **EffectiveForceEntrySymbol**: Extends base, wraps `IForceEntrySymbol` — full effective
+  computation. Accessed via `IForceSymbol.EffectiveSourceEntry`.
 - **EffectiveProfileSymbol**: `IProfileSymbol` wrapper with modifier-applied characteristics.
 - **EffectiveRuleSymbol**: `IRuleSymbol` wrapper with modifier-applied description.
 - **EffectiveCharacteristicSymbol**: Wraps `ICharacteristicSymbol` with effective Value.
@@ -228,7 +230,9 @@ The binder resolves this into `SourceEntryPath = [link, resolvedTarget]`:
 
 ```
 src/WarHub.ArmouryModel.Concrete.Extensions/Symbols/Effective/
-├── EffectiveEntrySymbol.cs       (wrapper: entry with effective values)
+├── EffectiveContainerEntrySymbol.cs (abstract base: shared container entry effective logic)
+├── EffectiveEntrySymbol.cs       (selection entry effective wrapper)
+├── EffectiveForceEntrySymbol.cs  (force entry effective wrapper)
 ├── EffectiveConstraintSymbol.cs  (wrapper: constraint with effective query)
 ├── EffectiveQuerySymbol.cs       (wrapper: query with effective ReferenceValue)
 ├── EffectiveCostSymbol.cs        (wrapper: cost with effective Value)

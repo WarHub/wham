@@ -3,7 +3,7 @@ using System.Collections.Concurrent;
 namespace WarHub.ArmouryModel.Concrete;
 
 /// <summary>
-/// Thread-safe cache of <see cref="EffectiveEntrySymbol"/> instances keyed by
+/// Thread-safe cache of <see cref="EffectiveSelectionEntrySymbol"/> instances keyed by
 /// (entry, selection context, force context). Lazily computes effective entries
 /// on first access using an internal <see cref="ModifierEvaluator"/>.
 /// <para>
@@ -13,7 +13,7 @@ namespace WarHub.ArmouryModel.Concrete;
 /// </summary>
 internal sealed class EffectiveEntryCache
 {
-    private readonly ConcurrentDictionary<EffectiveEntryKey, EffectiveEntrySymbol> _cache = new();
+    private readonly ConcurrentDictionary<EffectiveEntryKey, EffectiveSelectionEntrySymbol> _cache = new();
     private readonly WhamCompilation _compilation;
 
     /// <summary>
@@ -35,7 +35,7 @@ internal sealed class EffectiveEntryCache
     /// <summary>
     /// Gets or lazily computes the effective entry for the given key.
     /// </summary>
-    public EffectiveEntrySymbol GetEffectiveEntry(
+    public EffectiveSelectionEntrySymbol GetEffectiveEntry(
         ISelectionEntryContainerSymbol entry,
         ISelectionSymbol? selection,
         IForceSymbol? force)
@@ -43,6 +43,30 @@ internal sealed class EffectiveEntryCache
         return _cache.GetOrAdd(
             new EffectiveEntryKey(entry, selection, force),
             key => CreateEffectiveEntry(key.Entry, key.Selection, key.Force));
+    }
+
+    /// <summary>
+    /// Creates a fully effective force entry symbol with modifier-applied
+    /// name, hidden, constraints, costs, resources, and publication reference.
+    /// Caching is handled externally (e.g. by <see cref="ForceSymbol"/>).
+    /// </summary>
+    public EffectiveForceEntrySymbol CreateEffectiveForceEntry(
+        IForceEntrySymbol entry,
+        IForceSymbol? force)
+    {
+        var name = Evaluator.GetEffectiveName(entry, selection: null, force);
+        var hidden = Evaluator.GetEffectiveHidden(entry, selection: null, force);
+        var constraintValues = Evaluator.GetEffectiveConstraintValues(entry, selection: null, force);
+        var effectiveResources = CollectEffectiveResources(entry, selection: null, force);
+        var effectivePubRef = BuildEffectivePublicationReference(entry, selection: null, force);
+
+        return new EffectiveForceEntrySymbol(
+            entry,
+            name,
+            hidden,
+            constraintValues,
+            effectiveResources,
+            effectivePubRef);
     }
 
     /// <summary>
@@ -67,7 +91,7 @@ internal sealed class EffectiveEntryCache
         return resources.ToImmutableArray();
     }
 
-    private EffectiveEntrySymbol CreateEffectiveEntry(
+    private EffectiveSelectionEntrySymbol CreateEffectiveEntry(
         ISelectionEntryContainerSymbol entry,
         ISelectionSymbol? selection,
         IForceSymbol? force)
@@ -102,7 +126,7 @@ internal sealed class EffectiveEntryCache
 
         var effectivePubRef = BuildEffectivePublicationReference(entry, selection, force);
 
-        return new EffectiveEntrySymbol(
+        return new EffectiveSelectionEntrySymbol(
             entry,
             name,
             hidden,
@@ -211,12 +235,9 @@ internal sealed class EffectiveEntryCache
         ISelectionSymbol? selection,
         IForceSymbol? force)
     {
-        if (entry is ISelectionEntryContainerSymbol containerEntry)
-        {
-            var effectiveValue = Evaluator.GetEffectiveCostValue(cost, containerEntry, selection, force);
-            if (effectiveValue != cost.Value)
-                return new EffectiveCostSymbol(cost, effectiveValue);
-        }
+        var effectiveValue = Evaluator.GetEffectiveCostValue(cost, entry, selection, force);
+        if (effectiveValue != cost.Value)
+            return new EffectiveCostSymbol(cost, effectiveValue);
         return cost;
     }
 
