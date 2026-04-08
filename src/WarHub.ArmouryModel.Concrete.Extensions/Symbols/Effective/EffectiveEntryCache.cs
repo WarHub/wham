@@ -49,8 +49,6 @@ internal sealed class EffectiveEntryCache
     /// Collects and returns effective resources (profiles, rules, costs)
     /// from an entry's resource graph as a flat list.
     /// For entry links, resolves through to the shared target's resources.
-    /// Uses a 3-pass traversal: (1) direct resources (profiles, rules, costs),
-    /// (2) InfoLinks, (3) inline InfoGroups.
     /// </summary>
     public ImmutableArray<IResourceEntrySymbol>
         CollectEffectiveResources(
@@ -119,9 +117,9 @@ internal sealed class EffectiveEntryCache
 
     /// <summary>
     /// Walks the resource graph collecting resources into a flat list using a 3-pass traversal:
-    /// (1) direct resources (profiles, rules, costs — anything non-link, non-group),
-    /// (2) InfoLinks (profile, rule, and group links),
-    /// (3) inline InfoGroups.
+    /// Walks the resource graph collecting effective resources in a single pass.
+    /// For each resource in source order: direct profiles/rules/costs are wrapped with
+    /// effective values; links resolve through to their targets; groups recurse.
     /// Tracks context symbols for modifier chains:
     /// <paramref name="viaInfoLink"/> (the link to the containing group, for characteristic modifiers only)
     /// and <paramref name="containingGroup"/> (the immediately containing group, for modifiers + hidden fallback).
@@ -137,78 +135,73 @@ internal sealed class EffectiveEntryCache
         HashSet<object>? visited,
         List<IResourceEntrySymbol> result)
     {
-        // Pass 1: Direct resources (profiles, rules, costs)
         foreach (var resource in resources)
         {
-            if (resource.IsReference || resource.ResourceKind == ResourceKind.Group)
-                continue;
-
-            switch (resource)
+            if (resource.IsReference)
             {
-                case IProfileSymbol directProfile:
-                    result.Add(BuildEffectiveProfile(
-                        directProfile, link: viaInfoLink, linkOverridesProfile: false,
-                        containingGroup, selection, force));
-                    break;
+                // Link — resolve through to target
+                if (resource.ReferencedEntry is not { } target)
+                    continue;
 
-                case IRuleSymbol directRule:
-                    result.Add(BuildEffectiveRule(
-                        directRule, link: viaInfoLink, linkOverridesProfile: false,
-                        containingGroup, selection, force));
-                    break;
+                switch (target)
+                {
+                    case IProfileSymbol profile:
+                        result.Add(BuildEffectiveProfile(
+                            profile, link: resource, linkOverridesProfile: true,
+                            containingGroup, selection, force));
+                        break;
 
-                case ICostSymbol cost:
-                    result.Add(BuildEffectiveCost(cost, entry, selection, force));
-                    break;
-            }
-        }
+                    case IRuleSymbol rule:
+                        result.Add(BuildEffectiveRule(
+                            rule, link: resource, linkOverridesProfile: true,
+                            containingGroup, selection, force));
+                        break;
 
-        // Pass 2: InfoLinks (profile links, rule links, group links)
-        foreach (var resource in resources)
-        {
-            if (!resource.IsReference || resource.ReferencedEntry is not { } target)
-                continue;
-
-            switch (target)
-            {
-                case IProfileSymbol profile:
-                    result.Add(BuildEffectiveProfile(
-                        profile, link: resource, linkOverridesProfile: true,
-                        containingGroup, selection, force));
-                    break;
-
-                case IRuleSymbol rule:
-                    result.Add(BuildEffectiveRule(
-                        rule, link: resource, linkOverridesProfile: true,
-                        containingGroup, selection, force));
-                    break;
-
-                default:
-                    if (target.ResourceKind == ResourceKind.Group)
-                    {
-                        visited ??= new HashSet<object>(ReferenceEqualityComparer.Instance);
-                        if (visited.Add(resource))
+                    default:
+                        if (target.ResourceKind == ResourceKind.Group)
                         {
-                            CollectFromResources(target.Resources,
-                                viaInfoLink: resource, containingGroup: target,
-                                entry, selection, force, visited, result);
+                            visited ??= new HashSet<object>(ReferenceEqualityComparer.Instance);
+                            if (visited.Add(resource))
+                            {
+                                CollectFromResources(target.Resources,
+                                    viaInfoLink: resource, containingGroup: target,
+                                    entry, selection, force, visited, result);
+                            }
                         }
-                    }
-                    break;
+                        break;
+                }
             }
-        }
-
-        // Pass 3: Inline InfoGroups
-        foreach (var resource in resources)
-        {
-            if (resource.ResourceKind == ResourceKind.Group && !resource.IsReference)
+            else if (resource.ResourceKind == ResourceKind.Group)
             {
+                // Inline group — recurse
                 visited ??= new HashSet<object>(ReferenceEqualityComparer.Instance);
                 if (visited.Add(resource))
                 {
                     CollectFromResources(resource.Resources,
                         viaInfoLink: null, containingGroup: resource,
                         entry, selection, force, visited, result);
+                }
+            }
+            else
+            {
+                // Direct resource (profile, rule, cost)
+                switch (resource)
+                {
+                    case IProfileSymbol directProfile:
+                        result.Add(BuildEffectiveProfile(
+                            directProfile, link: viaInfoLink, linkOverridesProfile: false,
+                            containingGroup, selection, force));
+                        break;
+
+                    case IRuleSymbol directRule:
+                        result.Add(BuildEffectiveRule(
+                            directRule, link: viaInfoLink, linkOverridesProfile: false,
+                            containingGroup, selection, force));
+                        break;
+
+                    case ICostSymbol cost:
+                        result.Add(BuildEffectiveCost(cost, entry, selection, force));
+                        break;
                 }
             }
         }

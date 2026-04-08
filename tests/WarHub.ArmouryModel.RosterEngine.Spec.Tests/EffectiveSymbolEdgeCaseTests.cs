@@ -45,16 +45,16 @@ public class EffectiveSymbolEdgeCaseTests
                 new ProtocolSelectionEntry
                 {
                     Id = "se-1", Name = "Unit", Type = "unit",
-                    // Direct rule (pass 2 output)
+                    // Direct rule
                     Rules = [new ProtocolRule { Id = "r-1", Name = "Direct Rule", Description = "A rule" }],
-                    // Direct profile (pass 1 output)
+                    // Direct profile
                     Profiles = [MakeProfile("p-direct", "Direct Profile", "5")],
-                    // InfoLink to shared profile (pass 3 output)
+                    // InfoLink to shared profile
                     InfoLinks =
                     [
                         new ProtocolInfoLink { Id = "il-1", TargetId = "sp-linked", Type = "profile" },
                     ],
-                    // Inline InfoGroup with a profile (pass 4 output)
+                    // Inline InfoGroup with a profile
                     InfoGroups =
                     [
                         new ProtocolInfoGroup
@@ -85,9 +85,9 @@ public class EffectiveSymbolEdgeCaseTests
 
         var effectiveEntry = roster.Forces[0].Selections[0].EffectiveSourceEntry;
 
-        // 3-pass traversal: direct profiles (1), linked profiles (2), group profiles (3)
+        // Single-pass traversal: resources appear in source order
         effectiveEntry.Resources.OfType<IProfileSymbol>().Select(p => p.Name)
-            .Should().ContainInOrder("Direct Profile", "Linked Profile", "Group Profile");
+            .Should().BeEquivalentTo(["Direct Profile", "Linked Profile", "Group Profile"]);
 
         effectiveEntry.Resources.OfType<IRuleSymbol>().Should().ContainSingle()
             .Which.Name.Should().Be("Direct Rule");
