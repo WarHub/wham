@@ -37,11 +37,6 @@ internal sealed class EffectiveProfileSymbol : IProfileSymbol
     public ImmutableArray<IEffectSymbol> Effects => OriginalProfile.Effects;
     public ImmutableArray<IResourceEntrySymbol> Resources => OriginalProfile.Resources;
 
-    // Page must be explicitly delegated because IEntrySymbol.Page default impl
-    // uses PublicationReference?.Page which is null when publicationId is absent.
-    // Concrete symbols read Page from the declaration node directly.
-    string? IEntrySymbol.Page => ((IEntrySymbol)OriginalProfile).Page;
-
     // IResourceEntrySymbol.ReferencedEntry (explicit for `new` member)
     IResourceEntrySymbol? IResourceEntrySymbol.ReferencedEntry => OriginalProfile.ReferencedEntry;
 

@@ -58,7 +58,7 @@ internal sealed class StateMapper
             CatalogueId: force.CatalogueReference.Catalogue.Id,
             Selections: selections,
             AvailableEntryCount: availableEntryCount,
-            PublicationId: force.PublicationReference?.Publication?.Id,
+            PublicationId: force.PublicationReference?.PublicationId,
             Page: force.Page)
         {
             Profiles = profiles.Count > 0 ? profiles : [],
@@ -86,8 +86,8 @@ internal sealed class StateMapper
         var profiles = MapProfiles(eff.EffectiveProfiles);
         var rules = MapRules(eff.EffectiveRules);
 
-        // Page: effective page (includes entry's declared page as fallback)
-        var page = eff.EffectivePage ?? sel.Page;
+        // Page from effective entry's publication reference (includes modifier-applied page)
+        var page = eff.Page;
 
         var type = sel.EntryKind switch
         {
@@ -109,7 +109,7 @@ internal sealed class StateMapper
             Rules: rules.Count > 0 ? rules : null,
             Categories: categories.Count > 0 ? categories : null,
             Page: page,
-            PublicationId: sel.PublicationReference?.Publication?.Id,
+            PublicationId: sel.PublicationReference?.PublicationId,
             PublicationName: sel.PublicationReference?.Publication?.Name);
     }
 
@@ -137,7 +137,7 @@ internal sealed class StateMapper
                 Hidden: p.IsHidden,
                 Characteristics: chars,
                 Page: p.Page,
-                PublicationId: GetPublicationId(p)));
+                PublicationId: p.PublicationReference?.PublicationId));
         }
         return result;
     }
@@ -152,27 +152,9 @@ internal sealed class StateMapper
                 Description: r.DescriptionText,
                 Hidden: r.IsHidden,
                 Page: r.Page,
-                PublicationId: GetPublicationId(r)));
+                PublicationId: r.PublicationReference?.PublicationId));
         }
         return result;
-    }
-
-    /// <summary>
-    /// Gets the publication ID from an entry's publication reference.
-    /// Falls back to the raw declaration ID when the publication symbol binding failed
-    /// (e.g. the publicationId references a publication not in the catalogue).
-    /// </summary>
-    private static string? GetPublicationId(IEntrySymbol entry)
-    {
-        var pubRef = entry.PublicationReference;
-        if (pubRef is null)
-            return null;
-        var id = pubRef.Publication?.Id;
-        if (id is not null)
-            return id;
-        if (pubRef is Concrete.PublicationReferenceSymbol concrete)
-            return concrete.PublicationRefDeclaration.PublicationId;
-        return null;
     }
 
     // ──────────────────────────────────────────────────────────────────

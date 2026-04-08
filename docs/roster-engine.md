@@ -68,9 +68,11 @@ Wrapper symbols in `Concrete.Extensions/Symbols/Effective/` that implement the
 same public interfaces but return modifier-applied values:
 
 - **EffectiveEntrySymbol**: Wraps `ISelectionEntryContainerSymbol` — overrides
-  Name, IsHidden, Constraints, Costs, Categories, EffectiveProfiles, EffectiveRules, EffectivePage.
-- **EffectiveProfileSymbol**: `IEffectiveProfileSymbol` with modifier-applied characteristics.
-- **EffectiveRuleSymbol**: `IEffectiveRuleSymbol` with modifier-applied description.
+  Name, IsHidden, Constraints, Costs, Categories, EffectiveProfiles, EffectiveRules, PublicationReference.
+- **EffectiveProfileSymbol**: `IProfileSymbol` wrapper with modifier-applied characteristics.
+- **EffectiveRuleSymbol**: `IRuleSymbol` wrapper with modifier-applied description.
+- **EffectiveCharacteristicSymbol**: Wraps `ICharacteristicSymbol` with effective Value.
+- **EffectivePublicationReferenceSymbol**: Wraps `IPublicationReferenceSymbol` with effective Page.
 - **EffectiveConstraintSymbol**: Wraps `IConstraintSymbol` with effective Query.
 - **EffectiveQuerySymbol**: Wraps `IQuerySymbol` with effective ReferenceValue.
 - **EffectiveCostSymbol**: Wraps `ICostSymbol` with effective Value.

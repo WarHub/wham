@@ -39,7 +39,7 @@ internal sealed class EffectiveEntrySymbol : ISelectionEntryContainerSymbol
         ICategoryEntrySymbol? effectivePrimaryCategory,
         ImmutableArray<IProfileSymbol> effectiveProfiles,
         ImmutableArray<IRuleSymbol> effectiveRules,
-        string? effectivePage)
+        IPublicationReferenceSymbol? effectivePublicationReference)
     {
         OriginalEntry = original;
         Name = effectiveName;
@@ -50,7 +50,7 @@ internal sealed class EffectiveEntrySymbol : ISelectionEntryContainerSymbol
         Costs = BuildEffectiveCosts(original.Costs, effectiveCostValues);
         EffectiveProfiles = effectiveProfiles;
         EffectiveRules = effectiveRules;
-        EffectivePage = effectivePage;
+        PublicationReference = effectivePublicationReference;
     }
 
     /// <summary>
@@ -67,7 +67,7 @@ internal sealed class EffectiveEntrySymbol : ISelectionEntryContainerSymbol
     public ICategoryEntrySymbol? PrimaryCategory { get; }
     public ImmutableArray<IProfileSymbol> EffectiveProfiles { get; }
     public ImmutableArray<IRuleSymbol> EffectiveRules { get; }
-    public string? EffectivePage { get; }
+    public IPublicationReferenceSymbol? PublicationReference { get; }
 
     // Delegated from ISelectionEntryContainerSymbol
     public ImmutableArray<ISelectionEntryContainerSymbol> ChildSelectionEntries => OriginalEntry.ChildSelectionEntries;
@@ -80,7 +80,6 @@ internal sealed class EffectiveEntrySymbol : ISelectionEntryContainerSymbol
 
     // Delegated from IEntrySymbol
     public bool IsReference => OriginalEntry.IsReference;
-    public IPublicationReferenceSymbol? PublicationReference => OriginalEntry.PublicationReference;
     public ImmutableArray<IEffectSymbol> Effects => OriginalEntry.Effects;
     public ImmutableArray<IResourceEntrySymbol> Resources => OriginalEntry.Resources;
 

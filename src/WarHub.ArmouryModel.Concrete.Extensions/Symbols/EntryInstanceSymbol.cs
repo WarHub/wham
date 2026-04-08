@@ -28,8 +28,6 @@ internal abstract class EntryInstanceSymbol : SourceDeclaredSymbol, IEntryInstan
 
     IPublicationReferenceSymbol? IEntryInstanceSymbol.PublicationReference => PublicationReference;
 
-    string? IEntryInstanceSymbol.Page => (Declaration as IPublicationReferencingNode)?.Page;
-
     ImmutableArray<IResourceSymbol> IEntryInstanceSymbol.Resources =>
         Resources.Cast<RosterResourceBaseSymbol, IResourceSymbol>();
 

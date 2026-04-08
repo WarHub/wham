@@ -4,6 +4,8 @@ namespace WarHub.ArmouryModel.Concrete;
 
 /// <summary>
 /// Separate symbol that is essentially a child of <see cref="EntrySymbol"/>.
+/// Always created for entries with an <see cref="IPublicationReferencingNode"/> declaration,
+/// even when <see cref="PublicationId"/> is null.
 /// </summary>
 internal sealed class PublicationReferenceSymbol : SourceDeclaredSymbol, IPublicationReferenceSymbol
 {
@@ -11,21 +13,10 @@ internal sealed class PublicationReferenceSymbol : SourceDeclaredSymbol, IPublic
 
     private PublicationReferenceSymbol(
         SourceDeclaredSymbol containingSymbol,
-        IPublicationReferencingNode declaration,
-        DiagnosticBag diagnostics)
+        IPublicationReferencingNode declaration)
         : base(containingSymbol, (SourceNode)declaration)
     {
         PublicationRefDeclaration = declaration;
-        if (declaration.PublicationId is null)
-        {
-            // that's not what should happen, if publicationId is null,
-            // the containing symbol should set its IPublicationRefernceSymbol property to null
-            diagnostics.Add(
-                ErrorCode.ERR_GenericError,
-                containingSymbol.Declaration.GetLocation(),
-                symbols: ImmutableArray.Create<Symbol>(this),
-                args: "Publication reference must have a non-null publication ID.");
-        }
     }
 
     public static PublicationReferenceSymbol? Create(
@@ -33,8 +24,8 @@ internal sealed class PublicationReferenceSymbol : SourceDeclaredSymbol, IPublic
         SourceNode declaration,
         DiagnosticBag diagnostics)
     {
-        return declaration is IPublicationReferencingNode { PublicationId: { } pubId } node
-            ? new PublicationReferenceSymbol(containingSymbol, node, diagnostics)
+        return declaration is IPublicationReferencingNode node
+            ? new PublicationReferenceSymbol(containingSymbol, node)
             : null;
     }
 
@@ -48,9 +39,12 @@ internal sealed class PublicationReferenceSymbol : SourceDeclaredSymbol, IPublic
 
     public override string? Comment => null;
 
-    public IPublicationSymbol Publication => GetBoundField(ref lazyPublication);
+    public string? PublicationId => PublicationRefDeclaration.PublicationId;
 
-    public string Page => PublicationRefDeclaration.Page ?? string.Empty;
+    public IPublicationSymbol? Publication =>
+        PublicationRefDeclaration.PublicationId is not null ? GetBoundField(ref lazyPublication) : null;
+
+    public string? Page => PublicationRefDeclaration.Page;
 
     public sealed override void Accept(SymbolVisitor visitor) =>
         visitor.VisitPublicationReference(this);
@@ -64,6 +58,9 @@ internal sealed class PublicationReferenceSymbol : SourceDeclaredSymbol, IPublic
     protected override void BindReferencesCore(Binder binder, BindingDiagnosticBag diagnostics)
     {
         base.BindReferencesCore(binder, diagnostics);
-        lazyPublication = binder.BindPublicationSymbol(PublicationRefDeclaration, diagnostics);
+        if (PublicationRefDeclaration.PublicationId is not null)
+        {
+            lazyPublication = binder.BindPublicationSymbol(PublicationRefDeclaration, diagnostics);
+        }
     }
 }

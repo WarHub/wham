@@ -29,10 +29,6 @@ internal sealed class EffectiveCharacteristicSymbol : ICharacteristicSymbol
     public ImmutableArray<IEffectSymbol> Effects => OriginalCharacteristic.Effects;
     public ImmutableArray<IResourceEntrySymbol> Resources => OriginalCharacteristic.Resources;
 
-    // Page must be explicitly delegated because IEntrySymbol.Page default impl
-    // uses PublicationReference?.Page which is null when publicationId is absent.
-    string? IEntrySymbol.Page => ((IEntrySymbol)OriginalCharacteristic).Page;
-
     // IResourceEntrySymbol.ReferencedEntry (explicit for `new` member)
     IResourceEntrySymbol? IResourceEntrySymbol.ReferencedEntry => OriginalCharacteristic.ReferencedEntry;
 

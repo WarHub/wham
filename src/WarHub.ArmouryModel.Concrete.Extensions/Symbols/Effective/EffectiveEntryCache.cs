@@ -102,7 +102,10 @@ internal sealed class EffectiveEntryCache
         var (effectiveCategories, effectivePrimary) = ResolveCategorySymbols(catResult.CategoryIds, catResult.PrimaryCategoryId);
 
         var (effectiveProfiles, effectiveRules) = CollectEffectiveResources(entry, selection, force);
+
+        // Build effective publication reference with modifier-applied page
         var effectivePage = Evaluator.GetEffectivePage(entry, selection, force) ?? entry.Page;
+        var effectivePubRef = BuildEffectivePublicationReference(entry.PublicationReference, effectivePage);
 
         return new EffectiveEntrySymbol(
             entry,
@@ -114,7 +117,7 @@ internal sealed class EffectiveEntryCache
             effectivePrimary,
             effectiveProfiles,
             effectiveRules,
-            effectivePage);
+            effectivePubRef);
     }
 
     /// <summary>
@@ -298,6 +301,21 @@ internal sealed class EffectiveEntryCache
             name,
             hidden,
             desc);
+    }
+
+    /// <summary>
+    /// Wraps the original publication reference with an effective page if the page changed,
+    /// or returns the original reference as-is when page is unchanged.
+    /// </summary>
+    private static IPublicationReferenceSymbol? BuildEffectivePublicationReference(
+        IPublicationReferenceSymbol? originalPubRef,
+        string? effectivePage)
+    {
+        if (originalPubRef is null)
+            return null;
+        if (effectivePage == originalPubRef.Page)
+            return originalPubRef;
+        return new EffectivePublicationReferenceSymbol(originalPubRef, effectivePage);
     }
 
     private (ImmutableArray<ICategoryEntrySymbol> Categories, ICategoryEntrySymbol? Primary) ResolveCategorySymbols(

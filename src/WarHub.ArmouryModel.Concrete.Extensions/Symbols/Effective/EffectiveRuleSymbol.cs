@@ -37,11 +37,6 @@ internal sealed class EffectiveRuleSymbol : IRuleSymbol
     public ImmutableArray<IEffectSymbol> Effects => OriginalRule.Effects;
     public ImmutableArray<IResourceEntrySymbol> Resources => OriginalRule.Resources;
 
-    // Page must be explicitly delegated because IEntrySymbol.Page default impl
-    // uses PublicationReference?.Page which is null when publicationId is absent.
-    // Concrete symbols read Page from the declaration node directly.
-    string? IEntrySymbol.Page => ((IEntrySymbol)OriginalRule).Page;
-
     // IResourceEntrySymbol.ReferencedEntry (explicit for `new` member)
     IResourceEntrySymbol? IResourceEntrySymbol.ReferencedEntry => OriginalRule.ReferencedEntry;
 
