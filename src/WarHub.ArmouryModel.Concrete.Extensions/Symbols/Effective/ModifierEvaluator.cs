@@ -83,28 +83,25 @@ internal sealed class ModifierEvaluator
     }
 
     /// <summary>
-    /// Gets the effective costs for a selection entry after applying modifiers.
-    /// Returns a dictionary of costTypeId -> value.
+    /// <summary>
+    /// Gets the effective value of a single cost after applying modifiers.
     /// </summary>
-    public Dictionary<string, decimal> GetEffectiveCosts(
+    public decimal GetEffectiveCostValue(
+        ICostSymbol cost,
         ISelectionEntryContainerSymbol entry,
         ISelectionSymbol? selection,
         IForceSymbol? force)
     {
-        var costs = new Dictionary<string, decimal>(StringComparer.Ordinal);
-        foreach (var cost in entry.Costs)
-        {
-            var typeId = cost.Type?.Id;
-            if (typeId is not null)
-                costs[typeId] = cost.Value;
-        }
-
+        var typeId = cost.Type?.Id;
+        if (typeId is null)
+            return cost.Value;
+        var value = cost.Value;
         var context = new EvalContext(selection, force, entry);
         foreach (var effect in entry.Effects)
         {
-            ApplyCostEffect(effect, costs, context);
+            value = ApplyCostEffect(effect, typeId, value, context);
         }
-        return costs;
+        return value;
     }
 
     /// <summary>
@@ -355,19 +352,17 @@ internal sealed class ModifierEvaluator
         _ => null
     };
 
-    private void ApplyCostEffect(IEffectSymbol effect, Dictionary<string, decimal> costs, EvalContext context)
+    private decimal ApplyCostEffect(IEffectSymbol effect, string targetTypeId, decimal value, EvalContext context)
     {
-        if (effect.TargetKind == EffectTargetKind.Member && ResolveResourceTypeId(effect.TargetMember) is { } typeId)
+        if (effect.TargetKind == EffectTargetKind.Member && ResolveResourceTypeId(effect.TargetMember) == targetTypeId)
         {
             if (EvaluateEffectCondition(effect, context))
             {
                 var repeatCount = GetRepeatCount(effect, context);
-                costs.TryGetValue(typeId, out var current);
                 for (int r = 0; r < repeatCount; r++)
                 {
-                    current = ApplyNumericOperation(effect.FunctionKind, current, ParseDecimal(effect.OperandValue));
+                    value = ApplyNumericOperation(effect.FunctionKind, value, ParseDecimal(effect.OperandValue));
                 }
-                costs[typeId] = current;
             }
         }
         // Process children
@@ -380,10 +375,11 @@ internal sealed class ModifierEvaluator
             {
                 foreach (var child in children)
                 {
-                    ApplyCostEffect(child, costs, context);
+                    value = ApplyCostEffect(child, targetTypeId, value, context);
                 }
             }
         }
+        return value;
     }
 
     private string ApplyCharacteristicEffect(

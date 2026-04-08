@@ -51,7 +51,6 @@ internal sealed class EffectiveEntryCache
     /// For entry links, resolves through to the shared target's resources.
     /// Uses a 3-pass traversal: (1) direct resources (profiles, rules, costs),
     /// (2) InfoLinks, (3) inline InfoGroups.
-    /// Cost values are computed internally via the evaluator.
     /// </summary>
     public ImmutableArray<IResourceEntrySymbol>
         CollectEffectiveResources(
@@ -61,15 +60,12 @@ internal sealed class EffectiveEntryCache
     {
         // For entry links, resolve through to the shared target's resources
         var resolvedEntry = entry.ReferencedEntry ?? entry;
-        var costValues = entry is ISelectionEntryContainerSymbol containerEntry
-            ? Evaluator.GetEffectiveCosts(containerEntry, selection, force)
-            : null;
         var resources = new List<IResourceEntrySymbol>();
         CollectFromResources(
             resolvedEntry.Resources,
             viaInfoLink: null,
             containingGroup: null,
-            selection, force, visited: null, costValues, resources);
+            entry, selection, force, visited: null, resources);
         return resources.ToImmutableArray();
     }
 
@@ -129,16 +125,16 @@ internal sealed class EffectiveEntryCache
     /// Tracks context symbols for modifier chains:
     /// <paramref name="viaInfoLink"/> (the link to the containing group, for characteristic modifiers only)
     /// and <paramref name="containingGroup"/> (the immediately containing group, for modifiers + hidden fallback).
-    /// When <paramref name="effectiveCostValues"/> is provided, costs are wrapped with effective values.
+    /// <paramref name="entry"/> is the top-level entry whose effects apply to cost modifiers.
     /// </summary>
     private void CollectFromResources(
         ImmutableArray<IResourceEntrySymbol> resources,
         IEntrySymbol? viaInfoLink,
         IEntrySymbol? containingGroup,
+        IEntrySymbol entry,
         ISelectionSymbol? selection,
         IForceSymbol? force,
         HashSet<object>? visited,
-        IReadOnlyDictionary<string, decimal>? effectiveCostValues,
         List<IResourceEntrySymbol> result)
     {
         // Pass 1: Direct resources (profiles, rules, costs)
@@ -162,7 +158,7 @@ internal sealed class EffectiveEntryCache
                     break;
 
                 case ICostSymbol cost:
-                    result.Add(BuildEffectiveCost(cost, effectiveCostValues));
+                    result.Add(BuildEffectiveCost(cost, entry, selection, force));
                     break;
             }
         }
@@ -195,7 +191,7 @@ internal sealed class EffectiveEntryCache
                         {
                             CollectFromResources(target.Resources,
                                 viaInfoLink: resource, containingGroup: target,
-                                selection, force, visited, effectiveCostValues, result);
+                                entry, selection, force, visited, result);
                         }
                     }
                     break;
@@ -212,21 +208,23 @@ internal sealed class EffectiveEntryCache
                 {
                     CollectFromResources(resource.Resources,
                         viaInfoLink: null, containingGroup: resource,
-                        selection, force, visited, effectiveCostValues, result);
+                        entry, selection, force, visited, result);
                 }
             }
         }
     }
 
-    private static IResourceEntrySymbol BuildEffectiveCost(
+    private IResourceEntrySymbol BuildEffectiveCost(
         ICostSymbol cost,
-        IReadOnlyDictionary<string, decimal>? effectiveCostValues)
+        IEntrySymbol entry,
+        ISelectionSymbol? selection,
+        IForceSymbol? force)
     {
-        if (effectiveCostValues is not null
-            && cost.Type?.Id is { } typeId
-            && effectiveCostValues.TryGetValue(typeId, out var effectiveValue))
+        if (entry is ISelectionEntryContainerSymbol containerEntry)
         {
-            return new EffectiveCostSymbol(cost, effectiveValue);
+            var effectiveValue = Evaluator.GetEffectiveCostValue(cost, containerEntry, selection, force);
+            if (effectiveValue != cost.Value)
+                return new EffectiveCostSymbol(cost, effectiveValue);
         }
         return cost;
     }
