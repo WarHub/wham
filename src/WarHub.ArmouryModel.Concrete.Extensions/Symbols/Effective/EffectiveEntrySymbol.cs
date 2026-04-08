@@ -115,11 +115,15 @@ internal sealed class EffectiveEntrySymbol : ISelectionEntryContainerSymbol
         {
             return originalConstraints;
         }
+        var anyChanged = false;
         var builder = ImmutableArray.CreateBuilder<IConstraintSymbol>(originalConstraints.Length);
         foreach (var constraint in originalConstraints)
         {
-            if (constraint.Id is { } id && effectiveValues.TryGetValue(id, out var effectiveValue))
+            if (constraint.Id is { } id
+                && effectiveValues.TryGetValue(id, out var effectiveValue)
+                && effectiveValue != constraint.Query.ReferenceValue)
             {
+                anyChanged = true;
                 builder.Add(new EffectiveConstraintSymbol(constraint, effectiveValue));
             }
             else
@@ -127,7 +131,7 @@ internal sealed class EffectiveEntrySymbol : ISelectionEntryContainerSymbol
                 builder.Add(constraint);
             }
         }
-        return builder.MoveToImmutable();
+        return anyChanged ? builder.MoveToImmutable() : originalConstraints;
     }
 
 }

@@ -225,6 +225,7 @@ internal sealed class EffectiveEntryCache
     /// When <paramref name="linkOverridesProfile"/> is true (link directly targets the profile),
     /// the link's name and hidden flags override the target. When false (link targets the
     /// containing group), only characteristic modifiers from the link are applied.
+    /// Returns the original profile when no modifiers change anything.
     /// </summary>
     private IProfileSymbol BuildEffectiveProfile(
         IProfileSymbol profile,
@@ -235,17 +236,27 @@ internal sealed class EffectiveEntryCache
         IForceSymbol? force)
     {
         // Build characteristics with modifier chain: profile → link → group.
+        var anyCharChanged = false;
         var chars = ImmutableArray.CreateBuilder<ICharacteristicSymbol>(profile.Characteristics.Length);
         foreach (var ch in profile.Characteristics)
         {
             var typeId = ch.Type?.Id ?? "";
-            var value = ch.Value ?? "";
+            var originalValue = ch.Value ?? "";
+            var value = originalValue;
             value = Evaluator.GetEffectiveCharacteristic(profile, typeId, value, selection, force);
             if (link is not null)
                 value = Evaluator.GetEffectiveCharacteristic(link, typeId, value, selection, force);
             if (group is not null)
                 value = Evaluator.GetEffectiveCharacteristic(group, typeId, value, selection, force);
-            chars.Add(new EffectiveCharacteristicSymbol(ch, value));
+            if (value != originalValue)
+            {
+                anyCharChanged = true;
+                chars.Add(new EffectiveCharacteristicSymbol(ch, value));
+            }
+            else
+            {
+                chars.Add(ch);
+            }
         }
 
         bool hidden;
@@ -264,15 +275,19 @@ internal sealed class EffectiveEntryCache
             name = profile.Name ?? "";
         }
 
+        if (!anyCharChanged && name == profile.Name && hidden == profile.IsHidden)
+            return profile;
+
         return new EffectiveProfileSymbol(
             profile,
             name,
             hidden,
-            chars.MoveToImmutable());
+            anyCharChanged ? chars.MoveToImmutable() : profile.Characteristics);
     }
 
     /// <summary>
     /// Builds an effective rule. Same modifier/override semantics as profiles.
+    /// Returns the original rule when no modifiers change anything.
     /// </summary>
     private IRuleSymbol BuildEffectiveRule(
         IRuleSymbol rule,
@@ -303,6 +318,9 @@ internal sealed class EffectiveEntryCache
             hidden = group?.IsHidden ?? rule.IsHidden;
             name = rule.Name ?? "";
         }
+
+        if (desc == rule.DescriptionText && name == rule.Name && hidden == rule.IsHidden)
+            return rule;
 
         return new EffectiveRuleSymbol(
             rule,
