@@ -47,7 +47,7 @@ internal sealed class EffectiveEntrySymbol : ISelectionEntryContainerSymbol
         PrimaryCategory = effectivePrimaryCategory;
         Constraints = BuildEffectiveConstraints(original.Constraints, effectiveConstraintValues);
         Resources = effectiveResources;
-        Costs = ExtractCosts(effectiveResources);
+        Costs = ExtractCosts(effectiveResources, original.Costs.Length);
         PublicationReference = effectivePublicationReference;
     }
 
@@ -96,15 +96,15 @@ internal sealed class EffectiveEntrySymbol : ISelectionEntryContainerSymbol
     public TResult Accept<TArgument, TResult>(SymbolVisitor<TArgument, TResult> visitor, TArgument argument) => visitor.VisitContainerEntry(this, argument);
 
     private static ImmutableArray<ICostSymbol> ExtractCosts(
-        ImmutableArray<IResourceEntrySymbol> resources)
+        ImmutableArray<IResourceEntrySymbol> resources, int capacityHint)
     {
-        var builder = ImmutableArray.CreateBuilder<ICostSymbol>();
+        var builder = ImmutableArray.CreateBuilder<ICostSymbol>(capacityHint);
         foreach (var r in resources)
         {
             if (r is ICostSymbol cost)
                 builder.Add(cost);
         }
-        return builder.ToImmutable();
+        return builder.DrainToImmutable();
     }
 
     private static ImmutableArray<IConstraintSymbol> BuildEffectiveConstraints(
