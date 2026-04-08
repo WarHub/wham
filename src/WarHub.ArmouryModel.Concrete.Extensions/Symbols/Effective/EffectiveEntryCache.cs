@@ -46,27 +46,28 @@ internal sealed class EffectiveEntryCache
     }
 
     /// <summary>
-    /// Collects and returns effective profiles and rules from an entry's resource graph.
+    /// Collects and returns effective resources (profiles, rules, and optionally costs)
+    /// from an entry's resource graph as a flat list.
     /// For entry links, resolves through to the shared target's resources.
-    /// Uses a 4-pass traversal matching BattleScribe's output ordering:
-    /// (1) direct profiles, (2) direct rules, (3) InfoLinks, (4) inline InfoGroups.
+    /// Uses a 3-pass traversal: (1) direct resources (profiles, rules, costs),
+    /// (2) InfoLinks, (3) inline InfoGroups.
     /// </summary>
-    public (ImmutableArray<IProfileSymbol> Profiles, ImmutableArray<IRuleSymbol> Rules)
+    public ImmutableArray<IResourceEntrySymbol>
         CollectEffectiveResources(
             IEntrySymbol entry,
             ISelectionSymbol? selection,
-            IForceSymbol? force)
+            IForceSymbol? force,
+            IReadOnlyDictionary<string, decimal>? effectiveCostValues = null)
     {
         // For entry links, resolve through to the shared target's resources
         var resolvedEntry = entry.ReferencedEntry ?? entry;
-        var profiles = new List<IProfileSymbol>();
-        var rules = new List<IRuleSymbol>();
+        var resources = new List<IResourceEntrySymbol>();
         CollectFromResources(
             resolvedEntry.Resources,
             viaInfoLink: null,
             containingGroup: null,
-            selection, force, visited: null, profiles, rules);
-        return (profiles.ToImmutableArray(), rules.ToImmutableArray());
+            selection, force, visited: null, effectiveCostValues, resources);
+        return resources.ToImmutableArray();
     }
 
     private EffectiveEntrySymbol CreateEffectiveEntry(
@@ -101,7 +102,7 @@ internal sealed class EffectiveEntryCache
         }
         var (effectiveCategories, effectivePrimary) = ResolveCategorySymbols(catResult.CategoryIds, catResult.PrimaryCategoryId);
 
-        var (effectiveProfiles, effectiveRules) = CollectEffectiveResources(entry, selection, force);
+        var effectiveResources = CollectEffectiveResources(entry, selection, force, costValues);
 
         // Build effective publication reference with modifier-applied page
         var effectivePage = Evaluator.GetEffectivePage(entry, selection, force) ?? entry.Page;
@@ -112,21 +113,21 @@ internal sealed class EffectiveEntryCache
             name,
             hidden,
             constraintValues,
-            costValues,
+            effectiveResources,
             effectiveCategories,
             effectivePrimary,
-            effectiveProfiles,
-            effectiveRules,
             effectivePubRef);
     }
 
     /// <summary>
-    /// Walks the resource graph collecting profiles and rules using a 4-pass traversal
-    /// that matches BattleScribe's output ordering: (1) direct profiles, (2) direct rules,
-    /// (3) InfoLinks (profile, rule, and group links), (4) inline InfoGroups.
+    /// Walks the resource graph collecting resources into a flat list using a 3-pass traversal:
+    /// (1) direct resources (profiles, rules, costs — anything non-link, non-group),
+    /// (2) InfoLinks (profile, rule, and group links),
+    /// (3) inline InfoGroups.
     /// Tracks context symbols for modifier chains:
     /// <paramref name="viaInfoLink"/> (the link to the containing group, for characteristic modifiers only)
     /// and <paramref name="containingGroup"/> (the immediately containing group, for modifiers + hidden fallback).
+    /// When <paramref name="effectiveCostValues"/> is provided, costs are wrapped with effective values.
     /// </summary>
     private void CollectFromResources(
         ImmutableArray<IResourceEntrySymbol> resources,
@@ -135,68 +136,71 @@ internal sealed class EffectiveEntryCache
         ISelectionSymbol? selection,
         IForceSymbol? force,
         HashSet<object>? visited,
-        List<IProfileSymbol> profiles,
-        List<IRuleSymbol> rules)
+        IReadOnlyDictionary<string, decimal>? effectiveCostValues,
+        List<IResourceEntrySymbol> result)
     {
-        // Pass 1: Direct profiles
+        // Pass 1: Direct resources (profiles, rules, costs)
         foreach (var resource in resources)
         {
-            if (resource.ResourceKind == ResourceKind.Profile && !resource.IsReference
-                && resource is IProfileSymbol directProfile)
+            if (resource.IsReference || resource.ResourceKind == ResourceKind.Group)
+                continue;
+
+            switch (resource)
             {
-                profiles.Add(BuildEffectiveProfile(
-                    directProfile, link: viaInfoLink, linkOverridesProfile: false,
-                    containingGroup, selection, force));
+                case IProfileSymbol directProfile:
+                    result.Add(BuildEffectiveProfile(
+                        directProfile, link: viaInfoLink, linkOverridesProfile: false,
+                        containingGroup, selection, force));
+                    break;
+
+                case IRuleSymbol directRule:
+                    result.Add(BuildEffectiveRule(
+                        directRule, link: viaInfoLink, linkOverridesProfile: false,
+                        containingGroup, selection, force));
+                    break;
+
+                case ICostSymbol cost:
+                    result.Add(BuildEffectiveCost(cost, effectiveCostValues));
+                    break;
             }
         }
 
-        // Pass 2: Direct rules
-        foreach (var resource in resources)
-        {
-            if (resource.ResourceKind == ResourceKind.Rule && !resource.IsReference
-                && resource is IRuleSymbol directRule)
-            {
-                rules.Add(BuildEffectiveRule(
-                    directRule, link: viaInfoLink, linkOverridesProfile: false,
-                    containingGroup, selection, force));
-            }
-        }
-
-        // Pass 3: InfoLinks (profile links, rule links, group links)
+        // Pass 2: InfoLinks (profile links, rule links, group links)
         foreach (var resource in resources)
         {
             if (!resource.IsReference || resource.ReferencedEntry is not { } target)
                 continue;
 
-            switch (target.ResourceKind)
+            switch (target)
             {
-                case ResourceKind.Profile when target is IProfileSymbol profile:
-                    // Link directly targets profile → link name/hidden overrides apply
-                    profiles.Add(BuildEffectiveProfile(
+                case IProfileSymbol profile:
+                    result.Add(BuildEffectiveProfile(
                         profile, link: resource, linkOverridesProfile: true,
                         containingGroup, selection, force));
                     break;
 
-                case ResourceKind.Rule when target is IRuleSymbol rule:
-                    rules.Add(BuildEffectiveRule(
+                case IRuleSymbol rule:
+                    result.Add(BuildEffectiveRule(
                         rule, link: resource, linkOverridesProfile: true,
                         containingGroup, selection, force));
                     break;
 
-                case ResourceKind.Group:
-                    // Link to group → recurse. Link becomes viaInfoLink; target becomes containingGroup.
-                    visited ??= new HashSet<object>(ReferenceEqualityComparer.Instance);
-                    if (visited.Add(resource))
+                default:
+                    if (target.ResourceKind == ResourceKind.Group)
                     {
-                        CollectFromResources(target.Resources,
-                            viaInfoLink: resource, containingGroup: target,
-                            selection, force, visited, profiles, rules);
+                        visited ??= new HashSet<object>(ReferenceEqualityComparer.Instance);
+                        if (visited.Add(resource))
+                        {
+                            CollectFromResources(target.Resources,
+                                viaInfoLink: resource, containingGroup: target,
+                                selection, force, visited, effectiveCostValues, result);
+                        }
                     }
                     break;
             }
         }
 
-        // Pass 4: Inline InfoGroups
+        // Pass 3: Inline InfoGroups
         foreach (var resource in resources)
         {
             if (resource.ResourceKind == ResourceKind.Group && !resource.IsReference)
@@ -206,10 +210,23 @@ internal sealed class EffectiveEntryCache
                 {
                     CollectFromResources(resource.Resources,
                         viaInfoLink: null, containingGroup: resource,
-                        selection, force, visited, profiles, rules);
+                        selection, force, visited, effectiveCostValues, result);
                 }
             }
         }
+    }
+
+    private static IResourceEntrySymbol BuildEffectiveCost(
+        ICostSymbol cost,
+        IReadOnlyDictionary<string, decimal>? effectiveCostValues)
+    {
+        if (effectiveCostValues is not null
+            && cost.Type?.Id is { } typeId
+            && effectiveCostValues.TryGetValue(typeId, out var effectiveValue))
+        {
+            return new EffectiveCostSymbol(cost, effectiveValue);
+        }
+        return cost;
     }
 
     /// <summary>

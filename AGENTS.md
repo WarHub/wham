@@ -56,7 +56,7 @@ dotnet pack                                            # NuGet packages (Release
 | `src/WarHub.ArmouryModel.Concrete.Extensions/Symbols/Effective/EffectiveCostSymbol.cs` | Wraps ICostSymbol with effective Value |
 | `src/WarHub.ArmouryModel.Concrete.Extensions/Symbols/Effective/EffectiveQuerySymbol.cs` | Wraps IQuerySymbol with effective ReferenceValue |
 | `src/WarHub.ArmouryModel.Concrete.Extensions/Symbols/Effective/EffectiveForceEntrySymbol.cs` | Wraps IForceEntrySymbol with effective Resources (profiles+rules) |
-| `src/WarHub.ArmouryModel.Concrete.Extensions/Symbols/Effective/EffectiveEntryCache.cs` | Lazy cache + 4-pass resource resolution; owns ModifierEvaluator, self-initializing on RosterSymbol |
+| `src/WarHub.ArmouryModel.Concrete.Extensions/Symbols/Effective/EffectiveEntryCache.cs` | Lazy cache + 3-pass resource resolution; owns ModifierEvaluator, self-initializing on RosterSymbol |
 | `src/WarHub.ArmouryModel.Concrete.Extensions/Symbols/Effective/EffectiveEntryKey.cs` | Cache key: (entry, selection?, force?) |
 | `src/WarHub.ArmouryModel.Concrete.Extensions/Symbols/Effective/ModifierEvaluator.cs` | Modifier application, condition eval, scope resolution (internal to Compilation) |
 
@@ -134,9 +134,9 @@ WhamRosterEngine (IRosterEngine)
 ├── EntryResolver      — flatten entries, merge links, resolve info
 └── EffectiveEntrySymbol (Concrete.Extensions) — Roslyn-style wrapper symbols
     ├── EffectiveEntryCache — lazy cache, owns ModifierEvaluator
-    │   └── CollectEffectiveResources() — 4-pass profile/rule resolution
-    │       Pass 1: direct profiles, Pass 2: direct rules,
-    │       Pass 3: InfoLinks, Pass 4: inline InfoGroups
+    │   └── CollectEffectiveResources() — 3-pass resource resolution (direct, links, groups)
+    │       Pass 1: direct resources (profiles, rules, costs),
+    │       Pass 2: InfoLinks, Pass 3: inline InfoGroups
     ├── EffectiveProfileSymbol — IEffectiveProfileSymbol with modifier-applied characteristics
     ├── EffectiveRuleSymbol    — IEffectiveRuleSymbol with modifier-applied description
     └── ModifierEvaluator      — apply modifiers, evaluate conditions, resolve scopes

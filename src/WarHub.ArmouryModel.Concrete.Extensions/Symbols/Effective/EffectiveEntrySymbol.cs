@@ -23,9 +23,10 @@ internal sealed class EffectiveEntrySymbol : ISelectionEntryContainerSymbol
     /// Map of constraint ID → effective ReferenceValue. Constraints not in
     /// the dictionary keep their declared value.
     /// </param>
-    /// <param name="effectiveCostValues">
-    /// Map of cost type ID → effective cost value. Costs whose type ID is not
-    /// in the dictionary keep their declared value.
+    /// <param name="effectiveResources">
+    /// Flat collection of effective resources (profiles, rules, costs) already
+    /// computed by the cache. Costs are extracted from this array for the
+    /// <see cref="Costs"/> property.
     /// </param>
     /// <param name="effectiveCategories">Category entry symbols after applying modifiers.</param>
     /// <param name="effectivePrimaryCategory">Primary category after applying modifiers.</param>
@@ -34,11 +35,9 @@ internal sealed class EffectiveEntrySymbol : ISelectionEntryContainerSymbol
         string effectiveName,
         bool effectiveIsHidden,
         IReadOnlyDictionary<string, decimal> effectiveConstraintValues,
-        IReadOnlyDictionary<string, decimal> effectiveCostValues,
+        ImmutableArray<IResourceEntrySymbol> effectiveResources,
         ImmutableArray<ICategoryEntrySymbol> effectiveCategories,
         ICategoryEntrySymbol? effectivePrimaryCategory,
-        ImmutableArray<IProfileSymbol> effectiveProfiles,
-        ImmutableArray<IRuleSymbol> effectiveRules,
         IPublicationReferenceSymbol? effectivePublicationReference)
     {
         OriginalEntry = original;
@@ -47,8 +46,8 @@ internal sealed class EffectiveEntrySymbol : ISelectionEntryContainerSymbol
         Categories = effectiveCategories;
         PrimaryCategory = effectivePrimaryCategory;
         Constraints = BuildEffectiveConstraints(original.Constraints, effectiveConstraintValues);
-        Costs = BuildEffectiveCosts(original.Costs, effectiveCostValues);
-        Resources = BuildEffectiveResources(effectiveProfiles, effectiveRules, Costs);
+        Resources = effectiveResources;
+        Costs = ExtractCosts(effectiveResources);
         PublicationReference = effectivePublicationReference;
     }
 
@@ -96,17 +95,16 @@ internal sealed class EffectiveEntrySymbol : ISelectionEntryContainerSymbol
     public TResult Accept<TResult>(SymbolVisitor<TResult> visitor) => visitor.VisitContainerEntry(this);
     public TResult Accept<TArgument, TResult>(SymbolVisitor<TArgument, TResult> visitor, TArgument argument) => visitor.VisitContainerEntry(this, argument);
 
-    private static ImmutableArray<IResourceEntrySymbol> BuildEffectiveResources(
-        ImmutableArray<IProfileSymbol> profiles,
-        ImmutableArray<IRuleSymbol> rules,
-        ImmutableArray<ICostSymbol> costs)
+    private static ImmutableArray<ICostSymbol> ExtractCosts(
+        ImmutableArray<IResourceEntrySymbol> resources)
     {
-        var builder = ImmutableArray.CreateBuilder<IResourceEntrySymbol>(
-            profiles.Length + rules.Length + costs.Length);
-        foreach (var p in profiles) builder.Add(p);
-        foreach (var r in rules) builder.Add(r);
-        foreach (var c in costs) builder.Add(c);
-        return builder.MoveToImmutable();
+        var builder = ImmutableArray.CreateBuilder<ICostSymbol>();
+        foreach (var r in resources)
+        {
+            if (r is ICostSymbol cost)
+                builder.Add(cost);
+        }
+        return builder.ToImmutable();
     }
 
     private static ImmutableArray<IConstraintSymbol> BuildEffectiveConstraints(
@@ -132,26 +130,4 @@ internal sealed class EffectiveEntrySymbol : ISelectionEntryContainerSymbol
         return builder.MoveToImmutable();
     }
 
-    private static ImmutableArray<ICostSymbol> BuildEffectiveCosts(
-        ImmutableArray<ICostSymbol> originalCosts,
-        IReadOnlyDictionary<string, decimal> effectiveValues)
-    {
-        if (effectiveValues.Count == 0)
-        {
-            return originalCosts;
-        }
-        var builder = ImmutableArray.CreateBuilder<ICostSymbol>(originalCosts.Length);
-        foreach (var cost in originalCosts)
-        {
-            if (cost.Type?.Id is { } typeId && effectiveValues.TryGetValue(typeId, out var effectiveValue))
-            {
-                builder.Add(new EffectiveCostSymbol(cost, effectiveValue));
-            }
-            else
-            {
-                builder.Add(cost);
-            }
-        }
-        return builder.MoveToImmutable();
-    }
 }

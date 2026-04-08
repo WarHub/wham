@@ -10,11 +10,10 @@ internal sealed class EffectiveForceEntrySymbol : IForceEntrySymbol
 {
     public EffectiveForceEntrySymbol(
         IForceEntrySymbol original,
-        ImmutableArray<IProfileSymbol> effectiveProfiles,
-        ImmutableArray<IRuleSymbol> effectiveRules)
+        ImmutableArray<IResourceEntrySymbol> effectiveResources)
     {
         OriginalForceEntry = original;
-        Resources = BuildEffectiveResources(effectiveProfiles, effectiveRules);
+        Resources = effectiveResources;
     }
 
     public IForceEntrySymbol OriginalForceEntry { get; }
@@ -53,16 +52,4 @@ internal sealed class EffectiveForceEntrySymbol : IForceEntrySymbol
     public void Accept(SymbolVisitor visitor) => visitor.VisitContainerEntry(this);
     public TResult Accept<TResult>(SymbolVisitor<TResult> visitor) => visitor.VisitContainerEntry(this);
     public TResult Accept<TArgument, TResult>(SymbolVisitor<TArgument, TResult> visitor, TArgument argument) => visitor.VisitContainerEntry(this, argument);
-
-    private static ImmutableArray<IResourceEntrySymbol> BuildEffectiveResources(
-        ImmutableArray<IProfileSymbol> profiles,
-        ImmutableArray<IRuleSymbol> rules)
-    {
-        if (profiles.Length == 0 && rules.Length == 0)
-            return ImmutableArray<IResourceEntrySymbol>.Empty;
-        var builder = ImmutableArray.CreateBuilder<IResourceEntrySymbol>(profiles.Length + rules.Length);
-        foreach (var p in profiles) builder.Add(p);
-        foreach (var r in rules) builder.Add(r);
-        return builder.MoveToImmutable();
-    }
 }

@@ -85,7 +85,7 @@ public class EffectiveSymbolEdgeCaseTests
 
         var effectiveEntry = roster.Forces[0].Selections[0].EffectiveSourceEntry;
 
-        // 4-pass traversal: direct profiles (1), linked profiles (3), group profiles (4)
+        // 3-pass traversal: direct profiles (1), linked profiles (2), group profiles (3)
         effectiveEntry.Resources.OfType<IProfileSymbol>().Select(p => p.Name)
             .Should().ContainInOrder("Direct Profile", "Linked Profile", "Group Profile");
 
