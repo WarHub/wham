@@ -174,9 +174,7 @@ EffectiveEntryCache                         ← per-roster, thread-safe
   │     evaluates IEffectSymbol conditions
   │     resolves scopes (parent, ancestor, force, roster)
   │     applies operations (set, increment, decrement, append)
-  │     ⚠ casts to concrete SelectionSymbol in several places
-  │       (ModifierEvaluator.cs:619-631, 790-793, 944-949, 1088-1090)
-  │       — effective evaluation is NOT truly abstract over ISelectionSymbol
+  │     operates purely on ISelectionSymbol/ICategorySymbol interfaces
   │
   └── CollectEffectiveResources()           ← 4-pass resource traversal
         (1) direct profiles
@@ -528,13 +526,11 @@ SelectionView
 within `EditorServices` as a `Views/` namespace. Views reference only the public ISymbol
 API (`Extensions` project) — no dependency on `Concrete.Extensions` internals.
 
-> **Concrete coupling risk**: While views target the public `ISymbol` API,
-> `ModifierEvaluator` internally casts to concrete `SelectionSymbol` in several places
-> (see §3c). This means effective evaluation is not truly abstract over `ISelectionSymbol`.
-> Refactoring views around "public ISymbol only" is safe for **reading** effective values,
-> but any future alternative symbol implementations would need to address
-> `ModifierEvaluator`'s concrete dependencies. For now this is acceptable since there is
-> only one concrete symbol implementation.
+> **Concrete coupling resolved**: `ModifierEvaluator` now operates purely through
+> the `ISelectionSymbol` and `ICategorySymbol` interfaces (including `EntryId`,
+> `EntryGroupId`, `Categories`, and `PrimaryCategory`). Effective evaluation is
+> fully abstract over the public symbol API, so alternative symbol implementations
+> would work without changes to `ModifierEvaluator`.
 
 > **Why views carry locators, not raw `ISymbol` refs**: Every edit creates a new
 > `WhamCompilation` (`RosterState.ReplaceRoster()`), and effective-symbol caches are only

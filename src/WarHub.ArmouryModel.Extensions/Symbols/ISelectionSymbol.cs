@@ -17,6 +17,12 @@ public interface ISelectionSymbol : ISelectionContainerSymbol
     string? EntryId { get; }
 
     /// <summary>
+    /// The entry group ID string as stored in the roster, identifying the
+    /// selection entry group this selection belongs to (if any).
+    /// </summary>
+    string? EntryGroupId { get; }
+
+    /// <summary>
     /// Selection count (number of times that selection is "taken").
     /// </summary>
     int SelectedCount { get; }

@@ -10,8 +10,8 @@ namespace WarHub.ArmouryModel.Concrete;
 /// <b>Reentrancy safety:</b> This evaluator runs during compilation and must NOT access
 /// lazily-bound roster-level symbol properties (SourceEntry, SourceEntryPath, ICategorySymbol.SourceEntry,
 /// ICostSymbol.Type on roster selections) as these trigger binder reentrancy → deadlocks.
-/// Instead, use <c>SelectionSymbol.Declaration</c> node properties for EntryId, EntryGroupId,
-/// Categories, and Costs.
+/// Instead, use reentrancy-safe interface properties (ISelectionSymbol.EntryId/EntryGroupId/Categories,
+/// ICategorySymbol.EntryId/IsPrimaryCategory) which read from constructor-initialized data.
 /// </para>
 /// <para>
 /// Catalogue-level lazy properties (IQuerySymbol.FilterSymbol/ScopeSymbol/ValueTypeSymbol,
@@ -616,18 +616,12 @@ internal sealed class ModifierEvaluator
         if (filterId is null)
             return false;
 
-        // Use Declaration properties to avoid triggering lazy binding
-        // (SourceEntry/SourceEntryPath access the binder, which can re-enter evaluation)
-        Debug.Assert(selection is SelectionSymbol, "Expected concrete SelectionSymbol in ModifierEvaluator");
-        if (selection is SelectionSymbol ss)
+        if (selection.EntryId == filterId)
+            return true;
+        foreach (var cat in selection.Categories)
         {
-            if (ss.Declaration.EntryId == filterId)
+            if (cat.EntryId == filterId)
                 return true;
-            foreach (var cat in ss.Declaration.Categories)
-            {
-                if (cat.EntryId == filterId)
-                    return true;
-            }
         }
 
         return false;
@@ -787,10 +781,7 @@ internal sealed class ModifierEvaluator
         if (context.Selection is null || context.Force is null)
             yield break;
 
-        Debug.Assert(context.Selection is null or SelectionSymbol, "Expected concrete SelectionSymbol in ModifierEvaluator");
-        var primaryCat = context.Selection is SelectionSymbol ss
-            ? ss.Declaration.Categories.FirstOrDefault(c => c.Primary)?.EntryId
-            : null;
+        var primaryCat = context.Selection.PrimaryCategory?.EntryId;
 
         if (primaryCat is null)
             yield break;
@@ -940,15 +931,10 @@ internal sealed class ModifierEvaluator
     private static bool SelectionHasCategory(ISelectionSymbol sel, string? categoryId)
     {
         if (categoryId is null) return false;
-        // Use Declaration.Categories to avoid triggering lazy symbol binding
-        Debug.Assert(sel is SelectionSymbol, "Expected concrete SelectionSymbol in ModifierEvaluator");
-        if (sel is SelectionSymbol ss)
+        foreach (var cat in sel.Categories)
         {
-            foreach (var cat in ss.Declaration.Categories)
-            {
-                if (cat.EntryId == categoryId)
-                    return true;
-            }
+            if (cat.EntryId == categoryId)
+                return true;
         }
         return false;
     }
@@ -1080,14 +1066,9 @@ internal sealed class ModifierEvaluator
 
     /// <summary>
     /// Checks if a selection matches a given entry or entry group ID.
-    /// Uses Declaration properties to avoid triggering lazy binding
-    /// (SourceEntryPath is lazily bound and would cause binder reentrancy).
     /// </summary>
     private static bool MatchesEntryOrGroup(ISelectionSymbol sel, string id)
     {
-        Debug.Assert(sel is SelectionSymbol, "Expected concrete SelectionSymbol in ModifierEvaluator");
-        if (sel is SelectionSymbol ss)
-            return ss.Declaration.EntryId == id || ss.Declaration.EntryGroupId == id;
-        return false;
+        return sel.EntryId == id || sel.EntryGroupId == id;
     }
 }

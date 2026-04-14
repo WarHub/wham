@@ -21,6 +21,8 @@ internal sealed class CategorySymbol : ContainerSymbol, ICategorySymbol, INodeDe
 
     public override ContainerKind ContainerKind => ContainerKind.Category;
 
+    public string? EntryId => Declaration.EntryId;
+
     public bool IsPrimaryCategory => Declaration.Primary;
 
     protected override void BindReferencesCore(Binder binder, BindingDiagnosticBag diagnostics)
