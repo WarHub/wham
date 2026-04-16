@@ -31,6 +31,8 @@ internal sealed class RosterCostSymbol : SourceDeclaredSymbol, IRosterCostSymbol
 
     public override SymbolKind Kind => SymbolKind.ResourceEntry;
 
+    public string? TypeId => CostDeclaration.TypeId;
+
     public decimal Value => CostDeclaration.Value;
 
     public decimal? Limit

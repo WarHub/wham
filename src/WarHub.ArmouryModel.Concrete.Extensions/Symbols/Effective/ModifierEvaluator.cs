@@ -1,4 +1,3 @@
-using System.Diagnostics;
 using WarHub.ArmouryModel.Source; // SelectionEntryKind enum
 
 namespace WarHub.ArmouryModel.Concrete;
@@ -9,9 +8,10 @@ namespace WarHub.ArmouryModel.Concrete;
 /// <para>
 /// <b>Reentrancy safety:</b> This evaluator runs during compilation and must NOT access
 /// lazily-bound roster-level symbol properties (SourceEntry, SourceEntryPath, ICategorySymbol.SourceEntry,
-/// ICostSymbol.Type on roster selections) as these trigger binder reentrancy → deadlocks.
+/// ICostSymbol.Type on roster selections, IRosterCostSymbol.CostType) as these trigger binder reentrancy → deadlocks.
 /// Instead, use reentrancy-safe interface properties (ISelectionSymbol.EntryId/EntryGroupId/Categories,
-/// ICategorySymbol.EntryId/IsPrimaryCategory) which read from constructor-initialized data.
+/// ICategorySymbol.EntryId/IsPrimaryCategory, ICostSymbol.TypeId, IRosterCostSymbol.TypeId)
+/// which read from constructor-initialized or declaration-sourced data.
 /// </para>
 /// <para>
 /// Catalogue-level lazy properties (IQuerySymbol.FilterSymbol/ScopeSymbol/ValueTypeSymbol,
@@ -851,16 +851,11 @@ internal sealed class ModifierEvaluator
         {
             if (MatchesFilter(sel, query))
             {
-                // Use Declaration.Costs to avoid triggering lazy symbol binding
-                Debug.Assert(sel is SelectionSymbol, "Expected concrete SelectionSymbol in ModifierEvaluator");
-                if (sel is SelectionSymbol ss)
+                foreach (var cost in sel.Costs)
                 {
-                    foreach (var cost in ss.Declaration.Costs)
+                    if (cost.TypeId == valueTypeId)
                     {
-                        if (cost.TypeId == valueTypeId)
-                        {
-                            sum += cost.Value;
-                        }
+                        sum += cost.Value;
                     }
                 }
             }
@@ -873,15 +868,10 @@ internal sealed class ModifierEvaluator
         var valueTypeId = query.ValueTypeSymbol?.Id;
         if (valueTypeId is null) return 0m;
 
-        // Use Declaration.CostLimits to avoid triggering lazy symbol binding
-        Debug.Assert(_roster is RosterSymbol, "Expected concrete RosterSymbol in ModifierEvaluator");
-        if (_roster is RosterSymbol rs)
+        foreach (var rosterCost in _roster.Costs)
         {
-            foreach (var limit in rs.Declaration.CostLimits)
-            {
-                if (limit.TypeId == valueTypeId)
-                    return limit.Value;
-            }
+            if (rosterCost.TypeId == valueTypeId && rosterCost.Limit is { } limit)
+                return limit;
         }
         return -1m; // No limit
     }

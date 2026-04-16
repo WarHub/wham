@@ -114,6 +114,7 @@ internal static class ErrorSymbols
 
     internal sealed record ErrorCostSymbol : ErrorResourceEntrySymbol, ICostSymbol
     {
+        string? ICostSymbol.TypeId => null;
         decimal ICostSymbol.Value => default;
     }
 

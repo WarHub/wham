@@ -19,6 +19,7 @@ internal sealed class EffectiveCostSymbol : ICostSymbol
     public decimal Value { get; }
 
     // Delegated from ICostSymbol : IResourceEntrySymbol
+    public string? TypeId => OriginalCost.TypeId;
     public ResourceKind ResourceKind => OriginalCost.ResourceKind;
     public IResourceDefinitionSymbol? Type => OriginalCost.Type;
 

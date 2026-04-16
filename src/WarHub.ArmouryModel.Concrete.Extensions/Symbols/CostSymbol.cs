@@ -19,6 +19,8 @@ internal sealed class CostSymbol : ResourceEntryBaseSymbol, ICostSymbol, INodeDe
 
     public override ResourceKind ResourceKind => ResourceKind.Cost;
 
+    public string? TypeId => Declaration.TypeId;
+
     public override IResourceDefinitionSymbol Type => GetBoundField(ref lazyTypeSymbol);
 
     public decimal Value => Declaration.Value;

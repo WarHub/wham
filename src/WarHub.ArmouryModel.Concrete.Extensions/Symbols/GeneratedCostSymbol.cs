@@ -18,6 +18,8 @@ internal sealed class GeneratedCostSymbol : Symbol, ICostSymbol
 
     public override ISymbol? ContainingSymbol { get; }
 
+    public string? TypeId => Type.Id;
+
     public decimal Value => 0m;
 
     public ResourceKind ResourceKind => ResourceKind.Cost;
