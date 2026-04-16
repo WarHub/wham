@@ -1,5 +1,4 @@
 using System.Diagnostics;
-using System.Runtime.CompilerServices;
 using WarHub.ArmouryModel.Source;
 
 namespace WarHub.ArmouryModel.Concrete;
@@ -8,13 +7,6 @@ internal abstract class SourceDeclaredSymbol : Symbol, INodeDeclaredSymbol<Sourc
 {
     protected SymbolCompletionState state;
     private ImmutableArray<Symbol> lazyMembers;
-
-    /// <summary>
-    /// Thread-local set of symbols currently in <see cref="BindReferences"/>.
-    /// Used to detect reentrancy when <see cref="CompilationOptions.DetectBindingReentrancy"/> is enabled.
-    /// </summary>
-    [ThreadStatic]
-    private static HashSet<SourceDeclaredSymbol>? t_bindingSymbols;
 
     protected SourceDeclaredSymbol(
         ISymbol? containingSymbol,
@@ -60,10 +52,6 @@ internal abstract class SourceDeclaredSymbol : Symbol, INodeDeclaredSymbol<Sourc
             {
                 case CompletionPart.None:
                     return;
-                case CompletionPart.StartBindingReferences:
-                case CompletionPart.FinishBindingReferences:
-                    BindReferences();
-                    break;
                 case CompletionPart.Members:
                     GetMembersCore();
                     break;
@@ -82,9 +70,13 @@ internal abstract class SourceDeclaredSymbol : Symbol, INodeDeclaredSymbol<Sourc
                 case CompletionPart.FinishEffectiveEntries:
                     ComputeEffectiveEntries();
                     break;
-                case CompletionPart.StartConstraints:
-                case CompletionPart.FinishConstraints:
-                    EvaluateConstraints();
+                case CompletionPart.StartCheckReferences:
+                case CompletionPart.FinishCheckReferences:
+                    CheckReferences();
+                    break;
+                case CompletionPart.StartCheckConstraints:
+                case CompletionPart.FinishCheckConstraints:
+                    CheckConstraints();
                     break;
                 default:
                     // This assert will trigger if we forgot to handle any of the completion parts
@@ -129,63 +121,6 @@ internal abstract class SourceDeclaredSymbol : Symbol, INodeDeclaredSymbol<Sourc
     protected virtual ImmutableArray<Symbol> MakeAllMembers(BindingDiagnosticBag diagnostics) =>
         ImmutableArray<Symbol>.Empty;
 
-    protected void BindReferences()
-    {
-        if (state.HasComplete(CompletionPart.ReferencesCompleted))
-        {
-            return;
-        }
-        if (DeclaringCompilation.Options.DetectBindingReentrancy)
-        {
-            BindReferencesWithReentrancyDetection();
-            return;
-        }
-        BindReferencesCore();
-    }
-
-    [MethodImpl(MethodImplOptions.NoInlining)]
-    private void BindReferencesWithReentrancyDetection()
-    {
-        var binding = t_bindingSymbols ??= [];
-        if (!binding.Add(this))
-        {
-            ThrowReentrancyDetected(binding);
-        }
-        try
-        {
-            BindReferencesCore();
-        }
-        finally
-        {
-            binding.Remove(this);
-        }
-    }
-
-    [MethodImpl(MethodImplOptions.NoInlining)]
-    private void ThrowReentrancyDetected(HashSet<SourceDeclaredSymbol> binding)
-    {
-        throw new InvalidOperationException(
-            $"Binding reentrancy detected on symbol '{Name}' ({GetType().Name}, Id='{Id}'). " +
-            $"This symbol is already being bound on this thread. " +
-            $"Currently binding: [{string.Join(", ", binding.Select(s => $"{s.GetType().Name}('{s.Name}')"))}]");
-    }
-
-    private void BindReferencesCore()
-    {
-        if (state.NotePartComplete(CompletionPart.StartBindingReferences))
-        {
-            var diagnostics = BindingDiagnosticBag.GetInstance();
-            BindReferencesCore(DeclaringCompilation.GetBinder(Declaration, ContainingSymbol), diagnostics);
-            AddDeclarationDiagnostics(diagnostics);
-            state.NotePartComplete(CompletionPart.FinishBindingReferences);
-        }
-        state.SpinWaitComplete(CompletionPart.ReferencesCompleted, default);
-    }
-
-    protected virtual void BindReferencesCore(Binder binder, BindingDiagnosticBag diagnostics)
-    {
-    }
-
     /// <summary>
     /// Computes effective entries (name/hidden/costs/constraints after modifier application).
     /// Only meaningful for RosterSymbol; base auto-completes.
@@ -196,39 +131,69 @@ internal abstract class SourceDeclaredSymbol : Symbol, INodeDeclaredSymbol<Sourc
     }
 
     /// <summary>
+    /// Inspects self-completed bound fields and reports diagnostics for errors.
+    /// The base implementation calls <see cref="CheckReferencesCore"/> wrapped in the
+    /// Start/Finish completion pattern.
+    /// </summary>
+    protected void CheckReferences()
+    {
+        if (state.NotePartComplete(CompletionPart.StartCheckReferences))
+        {
+            CheckReferencesCore();
+            state.NotePartComplete(CompletionPart.FinishCheckReferences);
+        }
+        state.SpinWaitComplete(CompletionPart.CheckReferencesCompleted, default);
+    }
+
+    /// <summary>
+    /// Override to access all lazy bound fields, ensuring their binding diagnostics
+    /// are reported before <c>GetDiagnostics()</c> returns.
+    /// </summary>
+    protected virtual void CheckReferencesCore()
+    {
+    }
+
+    /// <summary>
     /// Evaluates constraints (min/max selection count, cost limits, etc.).
     /// Only meaningful for RosterSymbol; base auto-completes.
     /// </summary>
-    protected virtual void EvaluateConstraints()
+    protected virtual void CheckConstraints()
     {
-        state.NotePartComplete(CompletionPart.ConstraintsCompleted);
+        state.NotePartComplete(CompletionPart.CheckConstraintsCompleted);
     }
 
-    protected T GetBoundField<T>(ref T? field) where T : notnull
+    /// <summary>
+    /// Self-completing bound field accessor. Each field binds itself independently
+    /// on first access via <see cref="Interlocked.CompareExchange{T}"/>.
+    /// </summary>
+    protected T GetBoundField<T>(ref T? field, Func<Binder, BindingDiagnosticBag, T> bind) where T : class
     {
-        if (!state.HasComplete(CompletionPart.ReferencesCompleted))
+        if (field is not null) return field;
+        var binder = DeclaringCompilation.GetBinder(Declaration, ContainingSymbol);
+        var diagnostics = BindingDiagnosticBag.GetInstance();
+        var result = bind(binder, diagnostics);
+        if (Interlocked.CompareExchange(ref field, result, null) is null)
         {
-            BindReferences();
+            AddDeclarationDiagnostics(diagnostics);
         }
-        return field ?? throw new InvalidOperationException("Bound field was null after binding.");
+        diagnostics.Free();
+        return field;
     }
 
-    protected ImmutableArray<T> GetBoundField<T>(ref ImmutableArray<T> field)
+    /// <summary>
+    /// Self-completing bound field accessor for <see cref="ImmutableArray{T}"/> fields.
+    /// </summary>
+    protected ImmutableArray<T> GetBoundField<T>(ref ImmutableArray<T> field, Func<Binder, BindingDiagnosticBag, ImmutableArray<T>> bind)
     {
-        if (!state.HasComplete(CompletionPart.ReferencesCompleted))
+        if (!field.IsDefault) return field;
+        var binder = DeclaringCompilation.GetBinder(Declaration, ContainingSymbol);
+        var diagnostics = BindingDiagnosticBag.GetInstance();
+        var result = bind(binder, diagnostics);
+        if (ImmutableInterlocked.InterlockedCompareExchange(ref field, result, default).IsDefault)
         {
-            BindReferences();
+            AddDeclarationDiagnostics(diagnostics);
         }
-        return !field.IsDefault ? field : throw new InvalidOperationException("Bound field still had default value after binding.");
-    }
-
-
-    protected T? GetOptionalBoundField<T>(ref T? field)
-    {
-        if (!state.HasComplete(CompletionPart.ReferencesCompleted))
-        {
-            BindReferences();
-        }
+        diagnostics.Free();
         return field;
     }
 }

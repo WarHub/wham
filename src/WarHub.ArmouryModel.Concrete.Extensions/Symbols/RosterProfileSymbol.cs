@@ -16,7 +16,10 @@ internal sealed class RosterProfileSymbol : RosterResourceBaseSymbol, IRosterPro
 
     public override ResourceKind ResourceKind => ResourceKind.Profile;
 
-    public IResourceDefinitionSymbol Type => GetBoundField(ref lazyType);
+    public IResourceDefinitionSymbol Type =>
+        GetBoundField(ref lazyType, (b, d) => b.BindProfileTypeSymbol(Declaration, d));
+
+    protected override void CheckReferencesCore() => _ = Type;
 
     public ImmutableArray<CharacteristicSymbol> Characteristics { get; }
 
@@ -24,12 +27,6 @@ internal sealed class RosterProfileSymbol : RosterResourceBaseSymbol, IRosterPro
 
     ImmutableArray<ICharacteristicSymbol> IRosterProfileSymbol.Characteristics =>
         Characteristics.Cast<CharacteristicSymbol, ICharacteristicSymbol>();
-
-    protected override void BindReferencesCore(Binder binder, BindingDiagnosticBag diagnostics)
-    {
-        base.BindReferencesCore(binder, diagnostics);
-        lazyType = binder.BindProfileTypeSymbol(Declaration, diagnostics);
-    }
 
     protected override ImmutableArray<Symbol> MakeAllMembers(BindingDiagnosticBag diagnostics) =>
         base.MakeAllMembers(diagnostics)

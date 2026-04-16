@@ -19,15 +19,15 @@ internal sealed class SelectionEntryGroupSymbol : SelectionEntryBaseSymbol, ISel
 
     public override ContainerKind ContainerKind => ContainerKind.SelectionGroup;
 
-    public ISelectionEntryContainerSymbol? DefaultSelectionEntry => GetOptionalBoundField(ref lazyDefaultEntry);
-
-    protected override void BindReferencesCore(Binder binder, BindingDiagnosticBag diagnostics)
+    public ISelectionEntryContainerSymbol? DefaultSelectionEntry
     {
-        base.BindReferencesCore(binder, diagnostics);
-
-        if (Declaration.DefaultSelectionEntryId is not null)
+        get
         {
-            lazyDefaultEntry = binder.BindSelectionEntryGroupDefaultEntrySymbol(Declaration, this, diagnostics);
+            if (Declaration.DefaultSelectionEntryId is not null)
+                return GetBoundField(ref lazyDefaultEntry, (b, d) => b.BindSelectionEntryGroupDefaultEntrySymbol(Declaration, this, d));
+            return null;
         }
     }
+
+    protected override void CheckReferencesCore() => _ = DefaultSelectionEntry;
 }

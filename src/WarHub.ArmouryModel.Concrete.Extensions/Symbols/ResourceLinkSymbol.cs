@@ -33,12 +33,8 @@ internal sealed class ResourceLinkSymbol : ResourceEntryBaseSymbol, IResourceEnt
 
     public override ResourceKind ResourceKind { get; }
 
-    public override IResourceEntrySymbol ReferencedEntry => GetBoundField(ref lazyReferencedEntry);
+    public override IResourceEntrySymbol ReferencedEntry =>
+        GetBoundField(ref lazyReferencedEntry, (b, d) => b.BindSharedResourceEntrySymbol(Declaration, d));
 
-    protected override void BindReferencesCore(Binder binder, BindingDiagnosticBag diagnostics)
-    {
-        base.BindReferencesCore(binder, diagnostics);
-
-        lazyReferencedEntry = binder.BindSharedResourceEntrySymbol(Declaration, diagnostics);
-    }
+    protected override void CheckReferencesCore() => _ = ReferencedEntry;
 }

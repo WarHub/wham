@@ -46,7 +46,10 @@ internal sealed class RosterSymbol : SourceDeclaredSymbol, IRosterSymbol, INodeD
 
     public string? CustomNotes => Declaration.CustomNotes;
 
-    public ICatalogueSymbol Gamesystem => GetBoundField(ref lazyGamesystem);
+    public ICatalogueSymbol Gamesystem =>
+        GetBoundField(ref lazyGamesystem, (b, d) => b.BindGamesystemSymbol(Declaration, d));
+
+    protected override void CheckReferencesCore() => _ = Gamesystem;
 
     /// <summary>
     /// Gets or lazily creates the effective entry cache for this roster.
@@ -89,12 +92,6 @@ internal sealed class RosterSymbol : SourceDeclaredSymbol, IRosterSymbol, INodeD
 
     public override TResult Accept<TArgument, TResult>(SymbolVisitor<TArgument, TResult> visitor, TArgument argument) =>
         visitor.VisitRoster(this, argument);
-
-    protected override void BindReferencesCore(Binder binder, BindingDiagnosticBag diagnostics)
-    {
-        base.BindReferencesCore(binder, diagnostics);
-        lazyGamesystem = binder.BindGamesystemSymbol(Declaration, diagnostics);
-    }
 
     protected override void ComputeEffectiveEntries()
     {
@@ -162,19 +159,19 @@ internal sealed class RosterSymbol : SourceDeclaredSymbol, IRosterSymbol, INodeD
         }
     }
 
-    protected override void EvaluateConstraints()
+    protected override void CheckConstraints()
     {
-        if (state.HasComplete(CompletionPart.ConstraintsCompleted))
+        if (state.HasComplete(CompletionPart.CheckConstraintsCompleted))
             return;
-        if (state.NotePartComplete(CompletionPart.StartConstraints))
+        if (state.NotePartComplete(CompletionPart.StartCheckConstraints))
         {
             var diagnostics = DiagnosticBag.GetInstance();
             ConstraintEvaluator.Evaluate(this, (WhamCompilation)DeclaringCompilation, diagnostics);
             AddConstraintDiagnostics(diagnostics);
             diagnostics.Free();
-            state.NotePartComplete(CompletionPart.FinishConstraints);
+            state.NotePartComplete(CompletionPart.FinishCheckConstraints);
         }
-        state.SpinWaitComplete(CompletionPart.ConstraintsCompleted, default);
+        state.SpinWaitComplete(CompletionPart.CheckConstraintsCompleted, default);
     }
 
     protected override ImmutableArray<Symbol> MakeAllMembers(BindingDiagnosticBag diagnostics) =>

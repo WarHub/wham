@@ -8,19 +8,17 @@ namespace WarHub.ArmouryModel;
 public class ReentrancyDetectionTests
 {
     [Fact]
-    public void DetectBindingReentrancy_enabled_normal_compilation_succeeds()
+    public void Compilation_with_entry_links_succeeds()
     {
-        // A normal compilation should work fine even with reentrancy detection on.
+        // Self-completing properties should handle entry links without reentrancy issues.
         var gst = NodeFactory.Gamesystem("gst");
         var cat = NodeFactory.Catalogue(gst, "cat")
             .AddSharedSelectionEntries(
                 NodeFactory.SelectionEntry("entry").Tee(out var entry))
             .AddEntryLinks(
                 NodeFactory.EntryLink(entry));
-        var options = new WhamCompilationOptions { DetectBindingReentrancy = true };
         var compilation = WhamCompilation.Create(
-            [SourceTree.CreateForRoot(gst), SourceTree.CreateForRoot(cat)],
-            options);
+            [SourceTree.CreateForRoot(gst), SourceTree.CreateForRoot(cat)]);
 
         var diagnostics = compilation.GetDiagnostics();
 
@@ -29,12 +27,5 @@ public class ReentrancyDetectionTests
         catalogue.RootContainerEntries.Should().ContainSingle()
             .Which.ReferencedEntry
             .Should().Be(catalogue.SharedSelectionEntryContainers.Single());
-    }
-
-    [Fact]
-    public void DetectBindingReentrancy_default_is_false()
-    {
-        var options = new WhamCompilationOptions();
-        options.DetectBindingReentrancy.Should().BeFalse();
     }
 }

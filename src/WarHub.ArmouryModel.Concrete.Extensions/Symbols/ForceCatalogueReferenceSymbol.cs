@@ -27,7 +27,10 @@ internal sealed class ForceCatalogueReferenceSymbol : SourceDeclaredSymbol, ICat
 
     public bool ImportsRootEntries => false;
 
-    public ICatalogueSymbol Catalogue => GetBoundField(ref lazyCatalogue);
+    public ICatalogueSymbol Catalogue =>
+        GetBoundField(ref lazyCatalogue, (b, d) => b.BindCatalogueSymbol(Declaration, d));
+
+    protected override void CheckReferencesCore() => _ = Catalogue;
 
     public override void Accept(SymbolVisitor visitor) =>
         visitor.VisitCatalogueReference(this);
@@ -37,10 +40,4 @@ internal sealed class ForceCatalogueReferenceSymbol : SourceDeclaredSymbol, ICat
 
     public override TResult Accept<TArgument, TResult>(SymbolVisitor<TArgument, TResult> visitor, TArgument argument) =>
         visitor.VisitCatalogueReference(this, argument);
-
-    protected override void BindReferencesCore(Binder binder, BindingDiagnosticBag diagnostics)
-    {
-        base.BindReferencesCore(binder, diagnostics);
-        lazyCatalogue = binder.BindCatalogueSymbol(Declaration, diagnostics);
-    }
 }

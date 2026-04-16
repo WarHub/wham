@@ -69,8 +69,9 @@ WhamRosterEngine (IRosterEngine)
     └── ModifierEvaluator      — apply modifiers, evaluate conditions, resolve scopes
 
 Symbol completion pipeline (CompletionPart phases):
-  BindReferences → Members → EffectiveEntries → Constraints
-  (RosterSymbol overrides EffectiveEntries + Constraints phases)
+  Members → MembersCompleted → EffectiveEntries → CheckReferences → CheckConstraints
+  (Bound reference fields are self-completing via Interlocked.CompareExchange)
+  (RosterSymbol overrides EffectiveEntries + CheckConstraints phases)
 
 ConstraintEvaluator (Concrete.Extensions) — symbol-layer constraint validation
 StateMapper (RosterEngine.Spec) — thin Symbol→Protocol mapper (~140 LOC)

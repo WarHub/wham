@@ -109,17 +109,50 @@ internal abstract class QueryBaseSymbol : LogicBaseSymbol, IQuerySymbol
 
     public QueryValueKind ValueKind { get; }
 
-    public ISymbol? ValueTypeSymbol => GetOptionalBoundField(ref lazyValueType);
+    public ISymbol? ValueTypeSymbol
+    {
+        get
+        {
+            if (ValueKind is QueryValueKind.MemberValue)
+                return GetBoundField(ref lazyValueType, (b, d) => b.BindCostTypeSymbol(Declaration, Declaration.Field, d));
+            if (ValueKind is QueryValueKind.MemberValueLimit)
+                return GetBoundField(ref lazyValueType, (b, d) => b.BindCostTypeSymbol(Declaration, Declaration.Field?["limit::".Length..], d));
+            return null;
+        }
+    }
 
     public QueryScopeKind ScopeKind { get; }
 
-    public ISymbol? ScopeSymbol => GetOptionalBoundField(ref lazyScope);
+    public ISymbol? ScopeSymbol
+    {
+        get
+        {
+            if (ScopeKind is QueryScopeKind.ReferencedEntry)
+                return GetBoundField(ref lazyScope, (b, d) => b.BindScopeEntrySymbol(Declaration, Declaration.Scope, d));
+            return null;
+        }
+    }
 
     public QueryFilterKind ValueFilterKind { get; }
 
-    public ISymbol? FilterSymbol => GetOptionalBoundField(ref lazyFilter);
+    public ISymbol? FilterSymbol
+    {
+        get
+        {
+            if (ValueFilterKind is QueryFilterKind.SpecifiedEntry)
+                return GetBoundField(ref lazyFilter, (b, d) => b.BindFilterEntrySymbol(Declaration, ((QueryFilteredBaseNode)Declaration).ChildId, ScopeKind, d));
+            return null;
+        }
+    }
 
     public QueryOptions Options { get; }
+
+    protected override void CheckReferencesCore()
+    {
+        _ = ValueTypeSymbol;
+        _ = ScopeSymbol;
+        _ = FilterSymbol;
+    }
 
     public static QueryBaseSymbol Create(ISymbol containingSymbol, QueryBaseNode declaration, DiagnosticBag diagnostics)
     {
@@ -140,28 +173,6 @@ internal abstract class QueryBaseSymbol : LogicBaseSymbol, IQuerySymbol
 
     public sealed override TResult Accept<TArgument, TResult>(SymbolVisitor<TArgument, TResult> visitor, TArgument argument) =>
         visitor.VisitQuery(this, argument);
-
-    protected override void BindReferencesCore(Binder binder, BindingDiagnosticBag diagnostics)
-    {
-        base.BindReferencesCore(binder, diagnostics);
-        if (ValueKind is QueryValueKind.MemberValue)
-        {
-            lazyValueType = binder.BindCostTypeSymbol(Declaration, Declaration.Field, diagnostics);
-        }
-        else if (ValueKind is QueryValueKind.MemberValueLimit)
-        {
-            // limit:: prefix (e.g. limit::abc-123) is used to describe roster cost limit
-            lazyValueType = binder.BindCostTypeSymbol(Declaration, Declaration.Field?["limit::".Length..], diagnostics);
-        }
-        if (ScopeKind is QueryScopeKind.ReferencedEntry)
-        {
-            lazyScope = binder.BindScopeEntrySymbol(Declaration, Declaration.Scope, diagnostics);
-        }
-        if (ValueFilterKind is QueryFilterKind.SpecifiedEntry)
-        {
-            lazyFilter = binder.BindFilterEntrySymbol(Declaration, ((QueryFilteredBaseNode)Declaration).ChildId, ScopeKind, diagnostics);
-        }
-    }
 
     internal sealed class ConditionQuerySymbol : QueryBaseSymbol
     {

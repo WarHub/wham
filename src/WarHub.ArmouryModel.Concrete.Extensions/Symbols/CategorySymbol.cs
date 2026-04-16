@@ -17,15 +17,12 @@ internal sealed class CategorySymbol : ContainerSymbol, ICategorySymbol, INodeDe
 
     public new CategoryNode Declaration { get; }
 
-    public override ICategoryEntrySymbol SourceEntry => GetBoundField(ref lazyCategoryEntry);
+    public override ICategoryEntrySymbol SourceEntry =>
+        GetBoundField(ref lazyCategoryEntry, (b, d) => b.BindCategoryEntrySymbol(Declaration, d));
+
+    protected override void CheckReferencesCore() => _ = SourceEntry;
 
     public override ContainerKind ContainerKind => ContainerKind.Category;
 
     public bool IsPrimaryCategory => Declaration.Primary;
-
-    protected override void BindReferencesCore(Binder binder, BindingDiagnosticBag diagnostics)
-    {
-        base.BindReferencesCore(binder, diagnostics);
-        lazyCategoryEntry = binder.BindCategoryEntrySymbol(Declaration, diagnostics);
-    }
 }

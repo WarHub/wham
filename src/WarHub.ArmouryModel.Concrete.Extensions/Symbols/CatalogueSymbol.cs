@@ -30,16 +30,12 @@ internal sealed class CatalogueSymbol : CatalogueBaseSymbol, INodeDeclaredSymbol
 
     public override bool IsGamesystem => false;
 
-    public override ICatalogueSymbol Gamesystem => GetBoundField(ref lazyGamesystem);
+    public override ICatalogueSymbol Gamesystem =>
+        GetBoundField(ref lazyGamesystem, (b, d) => b.BindGamesystemSymbol(Declaration, d));
+
+    protected override void CheckReferencesCore() => _ = Gamesystem;
 
     public override ImmutableArray<CatalogueReferenceSymbol> CatalogueReferences { get; }
 
     CatalogueNode INodeDeclaredSymbol<CatalogueNode>.Declaration => Declaration;
-
-    protected override void BindReferencesCore(Binder binder, BindingDiagnosticBag diagnostics)
-    {
-        base.BindReferencesCore(binder, diagnostics);
-
-        lazyGamesystem = binder.BindGamesystemSymbol(Declaration, diagnostics);
-    }
 }
