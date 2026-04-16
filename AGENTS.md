@@ -3,13 +3,11 @@
 > **Keeping docs current**: If you discover that information in this file,
 > in `docs/`, or in `docs/adrs/` is outdated, incomplete, or contradicts
 > the actual codebase, **propose updates** as part of your changeset.
-> This applies to file paths, project lists, build commands, conventions,
-> architecture descriptions, and any other factual claims. Documentation
-> should stay in sync with the code — treat it as a living reference,
-> not a frozen snapshot.
+> Documentation should stay in sync with the code — treat it as a living
+> reference, not a frozen snapshot.
 
 wham — foundational .NET library (`WarHub.ArmouryModel`) and CLI tool for wargame
-datafile management, with a BattleScribe-spec conformant roster engine (304/304 specs).
+datafile management, with a BattleScribe-spec conformant roster engine.
 
 ## Stability & compatibility
 
@@ -25,99 +23,10 @@ surface.
 ```bash
 git submodule update --init                            # first time (required)
 dotnet restore && dotnet build                         # build all
-dotnet test                                            # all tests (628)
-dotnet test tests/WarHub.ArmouryModel.RosterEngine.Tests/  # conformance only (304)
+dotnet test                                            # all tests
+dotnet test tests/WarHub.ArmouryModel.RosterEngine.Tests/  # conformance only
 dotnet pack                                            # NuGet packages (Release mode)
 ```
-
-## Key files
-
-### Build & configuration
-
-| Path | What |
-|------|------|
-| `wham.sln` | Solution file (14 src + 10 test projects) |
-| `Directory.Build.props` | Shared build properties, analysis, packaging |
-| `Directory.Packages.props` | Central Package Management — all NuGet versions |
-| `global.json` | .NET SDK version (10.0) |
-| `nuget.config` | NuGet feed configuration |
-| `.editorconfig` | Code style (4-space C#, 2-space XML/JSON) |
-| `version.json` | Nerdbank.GitVersioning configuration |
-
-### Roster engine (conformance-tested)
-
-| Path | What |
-|------|------|
-| `src/WarHub.ArmouryModel.RosterEngine/WhamRosterEngine.cs` | IRosterEngine impl — setup, forces, selections, state |
-| `src/WarHub.ArmouryModel.RosterEngine/EntryResolver.cs` | Entry/link resolution, merging, flattening, cycle detection |
-| `src/WarHub.ArmouryModel.Concrete.Extensions/Symbols/ConstraintEvaluator.cs` | Symbol-layer constraint validation, produces WhamDiagnostics |
-| `src/WarHub.ArmouryModel.RosterEngine.Spec/StateMapper.cs` | Thin Symbol→Protocol mapper (~140 LOC), reads only public Symbol API |
-| `tests/WarHub.ArmouryModel.RosterEngine.Tests/ConformanceTests.cs` | Runs all 304 BattleScribe-spec conformance specs |
-
-### Effective entry symbols (Roslyn-style wrappers)
-
-| Path | What |
-|------|------|
-| `src/WarHub.ArmouryModel.Concrete.Extensions/Symbols/Effective/EffectiveContainerEntrySymbol.cs` | Abstract base for effective container entries (shared Name/Hidden/Costs/Constraints/Resources/Page) |
-| `src/WarHub.ArmouryModel.Concrete.Extensions/Symbols/Effective/EffectiveEntrySymbol.cs` | Selection entry effective wrapper, extends EffectiveContainerEntrySymbol with Categories/PrimaryCategory |
-| `src/WarHub.ArmouryModel.Concrete.Extensions/Symbols/Effective/EffectiveProfileSymbol.cs` | IEffectiveProfileSymbol impl — effective name, hidden, characteristics, page, publicationId |
-| `src/WarHub.ArmouryModel.Concrete.Extensions/Symbols/Effective/EffectiveRuleSymbol.cs` | IEffectiveRuleSymbol impl — effective name, description, hidden, page, publicationId |
-| `src/WarHub.ArmouryModel.Concrete.Extensions/Symbols/Effective/EffectiveConstraintSymbol.cs` | Wraps IConstraintSymbol with effective Query ReferenceValue |
-| `src/WarHub.ArmouryModel.Concrete.Extensions/Symbols/Effective/EffectiveCostSymbol.cs` | Wraps ICostSymbol with effective Value |
-| `src/WarHub.ArmouryModel.Concrete.Extensions/Symbols/Effective/EffectiveQuerySymbol.cs` | Wraps IQuerySymbol with effective ReferenceValue |
-| `src/WarHub.ArmouryModel.Concrete.Extensions/Symbols/Effective/EffectiveForceEntrySymbol.cs` | Wraps IForceEntrySymbol with effective Resources (profiles+rules) |
-| `src/WarHub.ArmouryModel.Concrete.Extensions/Symbols/Effective/EffectiveEntryCache.cs` | Lazy cache + single-pass resource resolution; owns ModifierEvaluator, self-initializing on RosterSymbol |
-| `src/WarHub.ArmouryModel.Concrete.Extensions/Symbols/Effective/EffectiveEntryKey.cs` | Cache key: (entry, selection?, force?) |
-| `src/WarHub.ArmouryModel.Concrete.Extensions/Symbols/Effective/ModifierEvaluator.cs` | Modifier application, condition eval, scope resolution (internal to Compilation) |
-
-### Source model (DTO and immutable trees)
-
-| Path | What |
-|------|------|
-| `src/WarHub.ArmouryModel.Source/` | DTO (`*Core` types), immutable `SourceNode` wrappers, code-generated |
-| `src/WarHub.ArmouryModel.Source.BattleScribe/` | BattleScribe XML (de)serialization |
-| `src/WarHub.ArmouryModel.Source.CodeGeneration/` | C# Source Generator for `*Core` → `SourceNode` |
-
-### Ported compilation model (from phalanx, non-packable)
-
-| Path | What |
-|------|------|
-| `src/WarHub.ArmouryModel.Extensions/` | ISymbol public API (40+ interfaces), Binder, Diagnostics |
-| `src/WarHub.ArmouryModel.Concrete.Extensions/` | Symbol implementations (89 files), lazy binding |
-| `src/WarHub.ArmouryModel.EditorServices/` | Roster operations, undo/redo, formatting, workspace |
-
-### Workspace layer (multi-roster management)
-
-| Path | What |
-|------|------|
-| `src/WarHub.ArmouryModel.EditorServices/WhamWorkspace.cs` | Central workspace: catalogue + multi-roster management, owns all mutations, change events |
-| `src/WarHub.ArmouryModel.EditorServices/CompilationTracker.cs` | Internal lazy per-roster compilation via `CreateRosterCompilation()` |
-| `src/WarHub.ArmouryModel.EditorServices/DocumentId.cs` | Synthetic GUID for stable source tree identity |
-| `src/WarHub.ArmouryModel.EditorServices/WorkspaceChangeKind.cs` | Enum for workspace change event kinds |
-| `src/WarHub.ArmouryModel.EditorServices/WorkspaceChangedEventArgs.cs` | Versioned event args for workspace change notifications |
-
-### External dependency
-
-| Path | What |
-|------|------|
-| `lib/battlescribe-spec/` | Git submodule — conformance specs + TestKit |
-| `lib/battlescribe-spec/specs/{category}/{id}.yaml` | 304 YAML conformance specs |
-| `lib/battlescribe-spec/src/BattleScribeSpec.TestKit/` | TestKit: IRosterEngine, SpecRunner, Protocol types |
-
-### Documentation
-
-| Path | What |
-|------|------|
-| `docs/roster-engine.md` | Roster engine architecture overview |
-| `docs/incremental-compilation.md` | Incremental compilation design and benchmark results |
-| `docs/latent-issues-plan.md` | Plan for addressing known latent issues |
-| `docs/adrs/` | Architecture Decision Records (8 ADRs) |
-
-### Benchmarks
-
-| Path | What |
-|------|------|
-| `tests/WarHub.ArmouryModel.Benchmarks/` | BenchmarkDotNet project — compilation performance |
 
 ## Architecture
 
@@ -133,7 +42,15 @@ XML file → DTO (*Core) → SourceNode tree → SourceTree
                   ISymbol public API
 ```
 
-### Roster engine (protocol-based)
+| Layer | Path |
+|-------|------|
+| DTO + immutable trees | `src/WarHub.ArmouryModel.Source/` |
+| BattleScribe XML (de)serialization | `src/WarHub.ArmouryModel.Source.BattleScribe/` |
+| Source Generator (`*Core` → `SourceNode`) | `src/WarHub.ArmouryModel.Source.CodeGeneration/` |
+| ISymbol public API, Binder, Diagnostics | `src/WarHub.ArmouryModel.Extensions/` |
+| Symbol implementations, lazy binding | `src/WarHub.ArmouryModel.Concrete.Extensions/` |
+
+### Roster engine (protocol-based, conformance-tested)
 
 Works directly with `Protocol*` types from BattleScribeSpec.TestKit, not with
 SourceNode/ISymbol. The compilation pipeline integrates effective entries and
@@ -143,12 +60,12 @@ constraint evaluation via `CompletionPart` phases:
 WhamRosterEngine (IRosterEngine)
 ├── EntryResolver      — flatten entries, merge links, resolve info
 └── EffectiveContainerEntrySymbol (abstract base)
-    ├── EffectiveSelectionEntrySymbol — selection entry effective wrapper
-    └── EffectiveForceEntrySymbol    — force entry effective wrapper
+    ├── EffectiveEntrySymbol        — selection entry effective wrapper
+    └── EffectiveForceEntrySymbol   — force entry effective wrapper
     ├── EffectiveEntryCache — lazy cache, owns ModifierEvaluator
     │   └── CollectEffectiveResources() — single-pass resource resolution
-    ├── EffectiveProfileSymbol — IEffectiveProfileSymbol with modifier-applied characteristics
-    ├── EffectiveRuleSymbol    — IEffectiveRuleSymbol with modifier-applied description
+    ├── EffectiveProfileSymbol — IProfileSymbol with modifier-applied characteristics
+    ├── EffectiveRuleSymbol    — IRuleSymbol with modifier-applied description
     └── ModifierEvaluator      — apply modifiers, evaluate conditions, resolve scopes
 
 Symbol completion pipeline (CompletionPart phases):
@@ -159,6 +76,15 @@ ConstraintEvaluator (Concrete.Extensions) — symbol-layer constraint validation
 StateMapper (RosterEngine.Spec) — thin Symbol→Protocol mapper (~140 LOC)
   Reads only the public Symbol API surface — no SourceNode access.
 ```
+
+| Component | Path |
+|-----------|------|
+| WhamRosterEngine | `src/WarHub.ArmouryModel.RosterEngine/WhamRosterEngine.cs` |
+| EntryResolver | `src/WarHub.ArmouryModel.RosterEngine/EntryResolver.cs` |
+| ConstraintEvaluator | `src/WarHub.ArmouryModel.Concrete.Extensions/Symbols/ConstraintEvaluator.cs` |
+| StateMapper | `src/WarHub.ArmouryModel.RosterEngine.Spec/StateMapper.cs` |
+| Effective symbols | `src/WarHub.ArmouryModel.Concrete.Extensions/Symbols/Effective/` |
+| Conformance tests | `tests/WarHub.ArmouryModel.RosterEngine.Tests/ConformanceTests.cs` |
 
 ### Workspace layer (multi-roster management)
 
@@ -179,6 +105,16 @@ Workspace owns all roster mutations — no public `GetEditor()`. Consumers use
 `ApplyOperation()`, `Undo()`, `Redo()` on the workspace. This ensures all
 state changes fire events and prevents stale editor references.
 
+Path: `src/WarHub.ArmouryModel.EditorServices/`
+
+### External dependency
+
+| Path | What |
+|------|------|
+| `lib/battlescribe-spec/` | Git submodule — conformance specs + TestKit |
+| `lib/battlescribe-spec/specs/{category}/{id}.yaml` | YAML conformance specs |
+| `lib/battlescribe-spec/src/BattleScribeSpec.TestKit/` | TestKit: IRosterEngine, SpecRunner, Protocol types |
+
 ## Code conventions
 
 - **C# latest**, nullable enabled, implicit usings
@@ -193,26 +129,16 @@ state changes fire events and prevents stale editor references.
 ## Project groups
 
 **NuGet packages** (IsPackable=true, strict analysis):
-- WarHub.ArmouryModel.Source
-- WarHub.ArmouryModel.Source.BattleScribe
-- WarHub.ArmouryModel.ProjectModel
-- WarHub.ArmouryModel.Workspaces.BattleScribe
-- WarHub.ArmouryModel.Workspaces.Gitree
-- WarHub.ArmouryModel.CliTool (`wham` dotnet tool)
+Source, Source.BattleScribe, ProjectModel, Workspaces.BattleScribe, Workspaces.Gitree, CliTool (`wham` dotnet tool)
 
 **Internal** (IsPackable=false, relaxed analysis):
-- WarHub.ArmouryModel.Extensions
-- WarHub.ArmouryModel.Concrete.Extensions
-- WarHub.ArmouryModel.EditorServices
-- WarHub.ArmouryModel.RosterEngine
-- Phalanx.SampleDataset
+Extensions, Concrete.Extensions, EditorServices, RosterEngine, RosterEngine.Spec, Phalanx.SampleDataset
 
-**External submodule**:
-- BattleScribeSpec.TestKit (from `lib/battlescribe-spec`)
+**External submodule**: BattleScribeSpec.TestKit (from `lib/battlescribe-spec`)
 
 ## Conformance testing
 
-- **304 specs** in `lib/battlescribe-spec/specs/{category}/{id}.yaml`
+- Specs in `lib/battlescribe-spec/specs/{category}/{id}.yaml`
 - Engine name: **"wham"** (registered in `ConformanceTests.cs`)
 - Per-engine overrides: specs can have `engines.wham:` section for wham-specific expectations
 - Error format: `on='ownerType ownerEntryId', from='entryId/constraintId'`
@@ -223,7 +149,7 @@ state changes fire events and prevents stale editor references.
 
 **Fix a conformance test failure:**
 1. Read the failing spec YAML in `lib/battlescribe-spec/specs/`
-2. Trace through WhamRosterEngine → EntryResolver/ModifierEvaluator/ConstraintValidator
+2. Trace through WhamRosterEngine → EntryResolver/ModifierEvaluator/ConstraintEvaluator
 3. Fix the engine code; run `dotnet test tests/WarHub.ArmouryModel.RosterEngine.Tests/`
 
 **Add a NuGet dependency:**
@@ -253,3 +179,10 @@ state changes fire events and prevents stale editor references.
   `SourceEntryPath = [link, target]` with `SourceEntry` = resolved target.
   Single-segment `entryId = "linkId"` causes `InvalidCastException` in
   `SelectionSymbol.SourceEntry`.
+
+## Documentation
+
+- `docs/roster-engine.md` — Roster engine architecture overview
+- `docs/incremental-compilation.md` — Incremental compilation design and benchmark results
+- `docs/latent-issues-plan.md` — Plan for addressing known latent issues
+- `docs/adrs/` — Architecture Decision Records
