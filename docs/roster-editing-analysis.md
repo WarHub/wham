@@ -174,7 +174,9 @@ EffectiveEntryCache                         ← per-roster, thread-safe
   │     evaluates IEffectSymbol conditions
   │     resolves scopes (parent, ancestor, force, roster)
   │     applies operations (set, increment, decrement, append)
-  │     operates purely on ISelectionSymbol/ICategorySymbol interfaces
+  │     operates on ISelectionSymbol/ICategorySymbol/IForceSymbol interfaces
+  │     (one concrete cast remains: SumMemberValues uses Declaration.Costs
+  │     to avoid lazy binding reentrancy and get raw cost values)
   │
   └── CollectEffectiveResources()           ← 4-pass resource traversal
         (1) direct profiles
@@ -526,11 +528,13 @@ SelectionView
 within `EditorServices` as a `Views/` namespace. Views reference only the public ISymbol
 API (`Extensions` project) — no dependency on `Concrete.Extensions` internals.
 
-> **Concrete coupling resolved**: `ModifierEvaluator` now operates purely through
-> the `ISelectionSymbol` and `ICategorySymbol` interfaces (including `EntryId`,
-> `EntryGroupId`, `Categories`, and `PrimaryCategory`). Effective evaluation is
-> fully abstract over the public symbol API, so alternative symbol implementations
-> would work without changes to `ModifierEvaluator`.
+> **Concrete coupling mostly resolved**: `ModifierEvaluator` now operates through
+> the `ISelectionSymbol`, `ICategorySymbol`, and `IForceSymbol` interfaces
+> (including `EntryId`, `EntryGroupId`, `Categories`, and `PrimaryCategory`).
+> One concrete cast remains: `SumMemberValues` accesses `SelectionSymbol.Declaration.Costs`
+> to read raw cost values without triggering lazy symbol binding (reentrancy safety).
+> `ISelectionSymbol.Costs` cannot be used there because it returns effective costs
+> (multiplied by `SelectedCount`) and may trigger reentrancy during modifier evaluation.
 
 > **Why views carry locators, not raw `ISymbol` refs**: Every edit creates a new
 > `WhamCompilation` (`RosterState.ReplaceRoster()`), and effective-symbol caches are only

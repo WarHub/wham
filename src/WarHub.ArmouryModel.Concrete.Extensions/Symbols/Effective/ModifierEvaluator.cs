@@ -835,8 +835,7 @@ internal sealed class ModifierEvaluator
 
         foreach (var force in _roster.Forces)
         {
-            Debug.Assert(force is ForceSymbol, "Expected concrete ForceSymbol in ModifierEvaluator");
-            if (filterId is null || (force is ForceSymbol fs && fs.Declaration.EntryId == filterId))
+            if (filterId is null || force.EntryId == filterId)
                 count++;
         }
         return count;
