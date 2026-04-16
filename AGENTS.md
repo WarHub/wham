@@ -11,6 +11,15 @@
 wham — foundational .NET library (`WarHub.ArmouryModel`) and CLI tool for wargame
 datafile management, with a BattleScribe-spec conformant roster engine (304/304 specs).
 
+## Stability & compatibility
+
+This project is **experimental**. Breaking changes to public APIs, interfaces,
+and project structure are expected and encouraged when they improve the design.
+There is **no backwards compatibility requirement** — do not hesitate to rename,
+remove, or restructure types, methods, or namespaces when it makes the codebase
+cleaner or more correct. Prefer the right design over preserving the current API
+surface.
+
 ## Build & test
 
 ```bash
