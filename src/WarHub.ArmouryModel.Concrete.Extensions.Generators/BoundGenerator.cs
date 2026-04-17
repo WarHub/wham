@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Text;
@@ -41,15 +42,19 @@ public sealed class BoundGenerator : IIncrementalGenerator
                 }
                 list.Add(item.PropertyName);
             }
+            var sortedKeys = new List<string>(groups.Keys);
+            sortedKeys.Sort(StringComparer.Ordinal);
             var result = ImmutableArray.CreateBuilder<BoundClassModel>(groups.Count);
-            foreach (var kvp in groups)
+            foreach (var key in sortedKeys)
             {
                 ct.ThrowIfCancellationRequested();
-                var info = typeInfos[kvp.Key];
+                var info = typeInfos[key];
+                var props = groups[key];
+                props.Sort(StringComparer.Ordinal);
                 result.Add(new BoundClassModel(
                     info.Namespace,
                     info.ClassName,
-                    kvp.Value.ToImmutableArray(),
+                    props.ToImmutableArray(),
                     info.IsSealed));
             }
             return result.ToImmutable();

@@ -1,7 +1,3 @@
-using System;
-using System.Collections.Immutable;
-using Microsoft.CodeAnalysis;
-
 namespace WarHub.ArmouryModel.Concrete.Generators;
 
 internal static class AttributeSources
