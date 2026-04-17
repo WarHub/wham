@@ -29,7 +29,8 @@ decision record.
 │   Concrete.Extensions (symbols + effective wrappers)     │
 │   ModifierEvaluator + EffectiveEntryCache (internal)     │
 │   ConstraintEvaluator (internal)                         │
-│   CompletionPart pipeline (EffectiveEntries, Constraints)│
+│   CompletionPart pipeline (Members, EffectiveEntries,    │
+│     CheckReferences, CheckConstraints)                   │
 │   Extensions (public ISymbol interfaces)                 │
 │   Source (DTO types, SourceNode trees)                   │
 └──────────────────────────────────────────────────────────┘
@@ -134,7 +135,7 @@ Evaluates modifiers and conditions using IEffectSymbol/IConditionSymbol:
 
 > **Note**: `ConstraintValidator` in RosterEngine.Spec is the legacy node-layer
 > validator. Constraint evaluation is now performed by `ConstraintEvaluator` in
-> Concrete.Extensions as part of the `CompletionPart.Constraints` phase.
+> Concrete.Extensions as part of the `CompletionPart.CheckConstraints` phase.
 > The adapter's `GetValidationErrors()` reads from
 > `compilation.GetConstraintDiagnostics()`.
 
@@ -170,13 +171,19 @@ flags enum. Each phase has `Start`/`Finish` pairs with CAS-protected
 once-only execution:
 
 ```
-Phase 0-1: BindReferences     — resolve IDs to symbols (all symbols)
-Phase 2-3: Members             — compute GetMembers() (all symbols)
-Phase 4-5: EffectiveEntries    — compute effective entry symbols (RosterSymbol only)
-Phase 6-7: Constraints         — evaluate constraint diagnostics (RosterSymbol only)
+Phase 0-1: Members             — compute GetMembers() (all symbols)
+Phase 2-3: EffectiveEntries    — compute effective entry symbols (RosterSymbol only)
+Phase 4-5: CheckReferences     — force-access bound fields, report diagnostics (all symbols)
+Phase 6-7: CheckConstraints    — evaluate constraint diagnostics (RosterSymbol only)
 ```
 
-Non-roster symbols auto-complete phases 4-7 in the base virtual methods.
+Bound reference fields (e.g. `Type`, `Publication`, `SourceEntry`) are
+**self-completing**: each property getter lazily binds on first access using
+`Interlocked.CompareExchange`, so there is no separate `BindReferences` phase.
+The `CheckReferences` phase force-accesses all bound fields to ensure binding
+diagnostics are reported during `ForceComplete`.
+
+Non-roster symbols auto-complete phases 2-7 in the base virtual methods.
 `RosterSymbol` overrides `ComputeEffectiveEntries()` and
 `EvaluateConstraints()` to perform actual work.
 
@@ -185,7 +192,7 @@ Non-roster symbols auto-complete phases 4-7 in the base virtual methods.
 2. Create `EffectiveEntryCache` for the roster
 3. Walk force→selection tree, eagerly populate `SelectionSymbol.lazyEffectiveSourceEntry`
 
-**Constraints phase** (`RosterSymbol.EvaluateConstraints`):
+**CheckConstraints phase** (`RosterSymbol.EvaluateConstraints`):
 1. Call `ConstraintEvaluator.Evaluate(roster, compilation, diagnosticBag)`
 2. Diagnostics are stored in `WhamCompilation.ConstraintDiagnostics`
 3. Accessed via `compilation.GetConstraintDiagnostics()`
@@ -244,7 +251,7 @@ src/WarHub.ArmouryModel.Concrete.Extensions/Symbols/
 └── ConstraintEvaluator.cs        (~810 lines, internal, symbol-layer constraints)
 
 src/WarHub.ArmouryModel.Concrete.Extensions/Utilities/
-└── CompletionPart.cs             (8-bit flags enum, phases 0-7)
+└── CompletionPart.cs             (8-bit flags enum: Members, EffectiveEntries, CheckReferences, CheckConstraints)
 
 src/WarHub.ArmouryModel.RosterEngine/
 ├── WhamRosterEngine.cs      (~790 lines)
