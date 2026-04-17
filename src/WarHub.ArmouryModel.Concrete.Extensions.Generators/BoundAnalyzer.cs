@@ -1,5 +1,7 @@
 using System.Collections.Immutable;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Operations;
 
@@ -16,8 +18,16 @@ public sealed class BoundAnalyzer : DiagnosticAnalyzer
         defaultSeverity: DiagnosticSeverity.Warning,
         isEnabledByDefault: true);
 
+    public static readonly DiagnosticDescriptor GetBoundFieldNonStaticLambda = new(
+        id: "WHAM002",
+        title: "GetBoundField called with non-static lambda",
+        messageFormat: "GetBoundField lambda should be static to avoid delegate allocation on every access. Add the 'static' modifier.",
+        category: "WarHub.ArmouryModel",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: true);
+
     public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } =
-        ImmutableArray.Create(GetBoundFieldWithoutBoundAttribute);
+        ImmutableArray.Create(GetBoundFieldWithoutBoundAttribute, GetBoundFieldNonStaticLambda);
 
     public override void Initialize(AnalysisContext context)
     {
@@ -33,6 +43,12 @@ public sealed class BoundAnalyzer : DiagnosticAnalyzer
         if (invocation.TargetMethod.Name != "GetBoundField")
             return;
 
+        CheckBoundAttribute(context, invocation);
+        CheckStaticLambda(context, invocation);
+    }
+
+    private static void CheckBoundAttribute(OperationAnalysisContext context, IInvocationOperation invocation)
+    {
         // Walk up to find the containing property
         var containingSymbol = context.ContainingSymbol;
         if (containingSymbol is not IMethodSymbol { AssociatedSymbol: IPropertySymbol property })
@@ -57,6 +73,39 @@ public sealed class BoundAnalyzer : DiagnosticAnalyzer
                 invocation.Syntax.GetLocation(),
                 property.Name);
             context.ReportDiagnostic(diagnostic);
+        }
+    }
+
+    private static void CheckStaticLambda(OperationAnalysisContext context, IInvocationOperation invocation)
+    {
+        // The last argument to GetBoundField is the binding lambda
+        var args = invocation.Arguments;
+        if (args.Length < 3)
+            return;
+
+        var lambdaArg = args[args.Length - 1];
+        if (lambdaArg.Value is not IDelegateCreationOperation delegateCreation)
+            return;
+
+        if (delegateCreation.Target is not IAnonymousFunctionOperation anonymousFunc)
+            return;
+
+        // Check the syntax node for the 'static' modifier
+        var syntax = anonymousFunc.Syntax;
+        bool isStatic = false;
+        if (syntax is LambdaExpressionSyntax lambda)
+        {
+            isStatic = lambda.Modifiers.Any(SyntaxKind.StaticKeyword);
+        }
+        else if (syntax is AnonymousMethodExpressionSyntax anonymousMethod)
+        {
+            isStatic = anonymousMethod.Modifiers.Any(SyntaxKind.StaticKeyword);
+        }
+
+        if (!isStatic)
+        {
+            context.ReportDiagnostic(
+                Diagnostic.Create(GetBoundFieldNonStaticLambda, syntax.GetLocation()));
         }
     }
 }

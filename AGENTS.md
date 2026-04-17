@@ -177,6 +177,7 @@ Extensions, Concrete.Extensions, Concrete.Extensions.Generators, EditorServices,
   - `[GenerateSymbol(SymbolKind.X)]` — generates `Kind` property + 3 `Accept` overloads
   - `[Bound]` on properties — generates `CheckReferencesCore` accessing all bound properties
   - `WHAM001` analyzer — warns when `GetBoundField` is called without `[Bound]`
+  - `WHAM002` analyzer — warns when `GetBoundField` lambda is not `static`
   - Symbol classes using these must be `partial`
 - **BattleScribe quirks**: some spec default expectations match BattleScribe bugs rather than
   "correct" behavior; wham uses engine-specific overrides for these (documented in
