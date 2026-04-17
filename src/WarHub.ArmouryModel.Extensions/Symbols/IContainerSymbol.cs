@@ -5,7 +5,7 @@ namespace WarHub.ArmouryModel;
 /// BS BaseSelectable.
 /// WHAM <see cref="Source.RosterElementBaseNode"/>.
 /// </summary>
-public interface IContainerEntryInstanceSymbol : IEntryInstanceSymbol
+public interface IContainerSymbol : IEntryInstanceSymbol
 {
     ContainerKind ContainerKind { get; }
 

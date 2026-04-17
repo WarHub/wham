@@ -1,3 +1,5 @@
+using System.Diagnostics.CodeAnalysis;
+
 namespace WarHub.ArmouryModel;
 
 /// <summary>
@@ -13,6 +15,7 @@ public interface IEntrySymbol : ISymbol
     /// If true, this entry is also a reference to another entry in addition to having it's own children.
     /// <see cref="ReferencedEntry" /> then contains the entry that this one references.
     /// </summary>
+    [MemberNotNullWhen(true, nameof(ReferencedEntry))]
     bool IsReference { get; }
 
     /// <summary>

@@ -2,7 +2,8 @@ using WarHub.ArmouryModel.Source;
 
 namespace WarHub.ArmouryModel.Concrete;
 
-internal sealed class RepeatEffectSymbol : LogicBaseSymbol, IEffectSymbol, INodeDeclaredSymbol<RepeatNode>
+[GenerateSymbol(SymbolKind.Effect)]
+internal sealed partial class RepeatEffectSymbol : LogicBaseSymbol, IEffectSymbol, INodeDeclaredSymbol<RepeatNode>
 {
     public RepeatEffectSymbol(
         ISymbol? containingSymbol,
@@ -15,8 +16,6 @@ internal sealed class RepeatEffectSymbol : LogicBaseSymbol, IEffectSymbol, INode
     }
 
     public new RepeatNode Declaration { get; }
-
-    public sealed override SymbolKind Kind => SymbolKind.Effect;
 
     public int Repetitions => Declaration.RepeatCount;
 
@@ -44,15 +43,6 @@ internal sealed class RepeatEffectSymbol : LogicBaseSymbol, IEffectSymbol, INode
 
     ImmutableArray<IEffectSymbol> IEffectSymbol.ChildrenWhenUnsatisfied =>
         ImmutableArray<IEffectSymbol>.Empty;
-
-    public sealed override void Accept(SymbolVisitor visitor) =>
-        visitor.VisitEffect(this);
-
-    public sealed override TResult Accept<TResult>(SymbolVisitor<TResult> visitor) =>
-        visitor.VisitEffect(this);
-
-    public sealed override TResult Accept<TArgument, TResult>(SymbolVisitor<TArgument, TResult> visitor, TArgument argument) =>
-        visitor.VisitEffect(this, argument);
 
     protected override ImmutableArray<Symbol> MakeAllMembers(BindingDiagnosticBag diagnostics) =>
         base.MakeAllMembers(diagnostics)

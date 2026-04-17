@@ -11,7 +11,8 @@ namespace WarHub.ArmouryModel.Concrete;
 /// Standalone: <see cref="IsReference"/>=false, <see cref="Effects"/>=empty.
 /// All other members delegate to <see cref="OriginalContainerEntry"/>.
 /// </summary>
-internal abstract class EffectiveContainerEntrySymbol : IContainerEntrySymbol
+[GenerateSymbol(SymbolKind.ContainerEntry)]
+internal abstract partial class EffectiveContainerEntrySymbol : IContainerEntrySymbol
 {
     protected EffectiveContainerEntrySymbol(
         IContainerEntrySymbol original,
@@ -61,10 +62,6 @@ internal abstract class EffectiveContainerEntrySymbol : IContainerEntrySymbol
     public ISymbol? ContainingSymbol => OriginalContainerEntry.ContainingSymbol;
     public IModuleSymbol? ContainingModule => OriginalContainerEntry.ContainingModule;
     public IGamesystemNamespaceSymbol? ContainingNamespace => OriginalContainerEntry.ContainingNamespace;
-
-    public void Accept(SymbolVisitor visitor) => visitor.VisitContainerEntry(this);
-    public TResult Accept<TResult>(SymbolVisitor<TResult> visitor) => visitor.VisitContainerEntry(this);
-    public TResult Accept<TArgument, TResult>(SymbolVisitor<TArgument, TResult> visitor, TArgument argument) => visitor.VisitContainerEntry(this, argument);
 
     protected static ImmutableArray<ICostSymbol> ExtractCosts(
         ImmutableArray<IResourceEntrySymbol> resources, int capacityHint)

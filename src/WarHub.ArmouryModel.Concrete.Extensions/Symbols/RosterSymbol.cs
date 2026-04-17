@@ -2,7 +2,8 @@ using WarHub.ArmouryModel.Source;
 
 namespace WarHub.ArmouryModel.Concrete;
 
-internal sealed class RosterSymbol : SourceDeclaredSymbol, IRosterSymbol, INodeDeclaredSymbol<RosterNode>
+[GenerateSymbol(SymbolKind.Roster)]
+internal sealed partial class RosterSymbol : SourceDeclaredSymbol, IRosterSymbol, INodeDeclaredSymbol<RosterNode>
 {
     private ICatalogueSymbol? lazyGamesystem;
     private EffectiveEntryCache? effectiveEntryCache;
@@ -42,14 +43,11 @@ internal sealed class RosterSymbol : SourceDeclaredSymbol, IRosterSymbol, INodeD
 
     public override IModuleSymbol? ContainingModule => null;
 
-    public override SymbolKind Kind => SymbolKind.Roster;
-
     public string? CustomNotes => Declaration.CustomNotes;
 
+    [Bound]
     public ICatalogueSymbol Gamesystem =>
         GetBoundField(ref lazyGamesystem, Declaration, static (b, d, decl) => b.BindGamesystemSymbol(decl, d));
-
-    protected override void CheckReferencesCore() => _ = Gamesystem;
 
     /// <summary>
     /// Gets or lazily creates the effective entry cache for this roster.
@@ -83,15 +81,6 @@ internal sealed class RosterSymbol : SourceDeclaredSymbol, IRosterSymbol, INodeD
         var cache = GetOrCreateEffectiveEntryCache();
         return cache.GetEffectiveEntry(declaredEntry, selection, force);
     }
-
-    public override void Accept(SymbolVisitor visitor) =>
-        visitor.VisitRoster(this);
-
-    public override TResult Accept<TResult>(SymbolVisitor<TResult> visitor) =>
-        visitor.VisitRoster(this);
-
-    public override TResult Accept<TArgument, TResult>(SymbolVisitor<TArgument, TResult> visitor, TArgument argument) =>
-        visitor.VisitRoster(this, argument);
 
     protected override void ComputeEffectiveEntries()
     {

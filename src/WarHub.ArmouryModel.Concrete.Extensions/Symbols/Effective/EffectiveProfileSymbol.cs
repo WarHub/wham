@@ -6,7 +6,8 @@ namespace WarHub.ArmouryModel.Concrete;
 /// and <see cref="Characteristics"/>. Delegates all other properties to the
 /// <see cref="OriginalProfile"/>.
 /// </summary>
-internal sealed class EffectiveProfileSymbol : IProfileSymbol
+[GenerateSymbol(SymbolKind.ResourceEntry)]
+internal sealed partial class EffectiveProfileSymbol : IProfileSymbol
 {
     public EffectiveProfileSymbol(
         IProfileSymbol original,
@@ -51,8 +52,4 @@ internal sealed class EffectiveProfileSymbol : IProfileSymbol
     public ISymbol? ContainingSymbol => OriginalProfile.ContainingSymbol;
     public IModuleSymbol? ContainingModule => OriginalProfile.ContainingModule;
     public IGamesystemNamespaceSymbol? ContainingNamespace => OriginalProfile.ContainingNamespace;
-
-    public void Accept(SymbolVisitor visitor) => visitor.VisitResourceEntry(this);
-    public TResult Accept<TResult>(SymbolVisitor<TResult> visitor) => visitor.VisitResourceEntry(this);
-    public TResult Accept<TArgument, TResult>(SymbolVisitor<TArgument, TResult> visitor, TArgument argument) => visitor.VisitResourceEntry(this, argument);
 }

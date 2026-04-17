@@ -25,6 +25,7 @@ git submodule update --init                            # first time (required)
 dotnet restore && dotnet build                         # build all
 dotnet test                                            # all tests
 dotnet test tests/WarHub.ArmouryModel.RosterEngine.Tests/  # conformance only
+dotnet test tests/WarHub.ArmouryModel.Concrete.Extensions.Generators.Tests/  # generator/analyzer tests
 dotnet pack                                            # NuGet packages (Release mode)
 ```
 
@@ -49,6 +50,7 @@ XML file → DTO (*Core) → SourceNode tree → SourceTree
 | Source Generator (`*Core` → `SourceNode`) | `src/WarHub.ArmouryModel.Source.CodeGeneration/` |
 | ISymbol public API, Binder, Diagnostics | `src/WarHub.ArmouryModel.Extensions/` |
 | Symbol implementations, lazy binding | `src/WarHub.ArmouryModel.Concrete.Extensions/` |
+| Symbol source generators + analyzer | `src/WarHub.ArmouryModel.Concrete.Extensions.Generators/` |
 
 ### Roster engine (protocol-based, conformance-tested)
 
@@ -133,7 +135,7 @@ Path: `src/WarHub.ArmouryModel.EditorServices/`
 Source, Source.BattleScribe, ProjectModel, Workspaces.BattleScribe, Workspaces.Gitree, CliTool (`wham` dotnet tool)
 
 **Internal** (IsPackable=false, relaxed analysis):
-Extensions, Concrete.Extensions, EditorServices, RosterEngine, RosterEngine.Spec, Phalanx.SampleDataset
+Extensions, Concrete.Extensions, Concrete.Extensions.Generators, EditorServices, RosterEngine, RosterEngine.Spec, Phalanx.SampleDataset
 
 **External submodule**: BattleScribeSpec.TestKit (from `lib/battlescribe-spec`)
 
@@ -161,6 +163,13 @@ Extensions, Concrete.Extensions, EditorServices, RosterEngine, RosterEngine.Spec
 - `.github/workflows/ci.yml` — main CI (build, test, pack)
 - `.github/workflows/publish.yml` — NuGet publishing
 
+**Modify generators/analyzers (Concrete.Extensions.Generators):**
+1. Generator project is netstandard2.0 (Roslyn requirement) — no records, no
+   `ImmutableArray` collection expressions, explicit `using` directives needed
+2. Make changes in `src/WarHub.ArmouryModel.Concrete.Extensions.Generators/`
+3. Run generator tests: `dotnet test tests/WarHub.ArmouryModel.Concrete.Extensions.Generators.Tests/`
+4. Run consuming project tests: `dotnet test tests/WarHub.ArmouryModel.Concrete.Extensions.Tests/`
+
 ## Known gotchas
 
 - **Submodule required**: `git submodule update --init` before building
@@ -172,6 +181,12 @@ Extensions, Concrete.Extensions, EditorServices, RosterEngine, RosterEngine.Spec
   marked IsPackable=false to avoid failures
 - **Code generation**: `WarHub.ArmouryModel.Source` uses a C# Source Generator —
   changes to `*Core` types require regeneration
+- **Concrete.Extensions generators**: `Concrete.Extensions.Generators` provides:
+  - `[GenerateSymbol(SymbolKind.X)]` — generates `Kind` property + 3 `Accept` overloads
+  - `[Bound]` on properties — generates `CheckReferencesCore` accessing all bound properties
+  - `WHAM001` analyzer — warns when `GetBoundField` is called without `[Bound]`
+  - `WHAM002` analyzer — warns when `GetBoundField` lambda is not `static`
+  - Symbol classes using these must be `partial`
 - **BattleScribe quirks**: some spec default expectations match BattleScribe bugs rather than
   "correct" behavior; wham uses engine-specific overrides for these (documented in
   `docs/adrs/0004-battlescribe-spec-conformance-testing.md`)

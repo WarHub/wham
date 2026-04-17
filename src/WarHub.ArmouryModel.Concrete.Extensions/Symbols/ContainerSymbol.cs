@@ -2,7 +2,8 @@ using WarHub.ArmouryModel.Source;
 
 namespace WarHub.ArmouryModel.Concrete;
 
-internal abstract class ContainerSymbol : EntryInstanceSymbol, IContainerEntryInstanceSymbol
+[GenerateSymbol(SymbolKind.Container)]
+internal abstract partial class ContainerSymbol : EntryInstanceSymbol, IContainerSymbol
 {
     protected ContainerSymbol(
         ISymbol? containingSymbol,
@@ -28,8 +29,6 @@ internal abstract class ContainerSymbol : EntryInstanceSymbol, IContainerEntryIn
 
     public new RosterElementBaseNode Declaration { get; }
 
-    public sealed override SymbolKind Kind => SymbolKind.Container;
-
     /// <summary>
     /// Walks the <see cref="Symbol.ContainingSymbol"/> chain to find the
     /// containing <see cref="RosterSymbol"/>. Returns <c>null</c> if not
@@ -53,12 +52,4 @@ internal abstract class ContainerSymbol : EntryInstanceSymbol, IContainerEntryIn
 
     public override ImmutableArray<RosterResourceBaseSymbol> Resources { get; }
 
-    public sealed override void Accept(SymbolVisitor visitor) =>
-        visitor.VisitContainerEntryInstance(this);
-
-    public sealed override TResult Accept<TResult>(SymbolVisitor<TResult> visitor) =>
-        visitor.VisitContainerEntryInstance(this);
-
-    public sealed override TResult Accept<TArgument, TResult>(SymbolVisitor<TArgument, TResult> visitor, TArgument argument) =>
-        visitor.VisitContainerEntryInstance(this, argument);
 }

@@ -36,7 +36,7 @@ public abstract class SymbolVisitor
     public virtual void VisitContainerEntry(IContainerEntrySymbol symbol) =>
         DefaultVisit(symbol);
 
-    public virtual void VisitContainerEntryInstance(IContainerEntryInstanceSymbol symbol) =>
+    public virtual void VisitContainer(IContainerSymbol symbol) =>
         DefaultVisit(symbol);
 
     public virtual void VisitCatalogueReference(ICatalogueReferenceSymbol symbol) =>
@@ -103,7 +103,7 @@ public abstract class SymbolVisitor<TResult>
     public virtual TResult VisitContainerEntry(IContainerEntrySymbol symbol) =>
         DefaultVisit(symbol);
 
-    public virtual TResult VisitContainerEntryInstance(IContainerEntryInstanceSymbol symbol) =>
+    public virtual TResult VisitContainer(IContainerSymbol symbol) =>
         DefaultVisit(symbol);
 
     public virtual TResult VisitCatalogueReference(ICatalogueReferenceSymbol symbol) =>
@@ -171,7 +171,7 @@ public abstract class SymbolVisitor<TArgument, TResult>
     public virtual TResult VisitContainerEntry(IContainerEntrySymbol symbol, TArgument argument) =>
         DefaultVisit(symbol, argument);
 
-    public virtual TResult VisitContainerEntryInstance(IContainerEntryInstanceSymbol symbol, TArgument argument) =>
+    public virtual TResult VisitContainer(IContainerSymbol symbol, TArgument argument) =>
         DefaultVisit(symbol, argument);
 
     public virtual TResult VisitCatalogueReference(ICatalogueReferenceSymbol symbol, TArgument argument) =>

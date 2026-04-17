@@ -2,7 +2,7 @@ using WarHub.ArmouryModel.Source;
 
 namespace WarHub.ArmouryModel.Concrete;
 
-internal sealed class CategorySymbol : ContainerSymbol, ICategorySymbol, INodeDeclaredSymbol<CategoryNode>
+internal sealed partial class CategorySymbol : ContainerSymbol, ICategorySymbol, INodeDeclaredSymbol<CategoryNode>
 {
     private ICategoryEntrySymbol? lazyCategoryEntry;
 
@@ -17,10 +17,9 @@ internal sealed class CategorySymbol : ContainerSymbol, ICategorySymbol, INodeDe
 
     public new CategoryNode Declaration { get; }
 
+    [Bound]
     public override ICategoryEntrySymbol SourceEntry =>
         GetBoundField(ref lazyCategoryEntry, Declaration, static (b, d, decl) => b.BindCategoryEntrySymbol(decl, d));
-
-    protected override void CheckReferencesCore() => _ = SourceEntry;
 
     public override ContainerKind ContainerKind => ContainerKind.Category;
 

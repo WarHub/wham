@@ -2,7 +2,8 @@ using WarHub.ArmouryModel.Source;
 
 namespace WarHub.ArmouryModel.Concrete;
 
-internal sealed class ForceCatalogueReferenceSymbol : SourceDeclaredSymbol, ICatalogueReferenceSymbol
+[GenerateSymbol(SymbolKind.CatalogueReference)]
+internal sealed partial class ForceCatalogueReferenceSymbol : SourceDeclaredSymbol, ICatalogueReferenceSymbol
 {
     private ICatalogueSymbol? lazyCatalogue;
 
@@ -17,8 +18,6 @@ internal sealed class ForceCatalogueReferenceSymbol : SourceDeclaredSymbol, ICat
 
     public override ForceNode Declaration { get; }
 
-    public override SymbolKind Kind => SymbolKind.Link;
-
     public override string? Id => Declaration.CatalogueId;
 
     public override string Name => Declaration.CatalogueName ?? string.Empty;
@@ -27,17 +26,7 @@ internal sealed class ForceCatalogueReferenceSymbol : SourceDeclaredSymbol, ICat
 
     public bool ImportsRootEntries => false;
 
+    [Bound]
     public ICatalogueSymbol Catalogue =>
         GetBoundField(ref lazyCatalogue, Declaration, static (b, d, decl) => b.BindCatalogueSymbol(decl, d));
-
-    protected override void CheckReferencesCore() => _ = Catalogue;
-
-    public override void Accept(SymbolVisitor visitor) =>
-        visitor.VisitCatalogueReference(this);
-
-    public override TResult Accept<TResult>(SymbolVisitor<TResult> visitor) =>
-        visitor.VisitCatalogueReference(this);
-
-    public override TResult Accept<TArgument, TResult>(SymbolVisitor<TArgument, TResult> visitor, TArgument argument) =>
-        visitor.VisitCatalogueReference(this, argument);
 }

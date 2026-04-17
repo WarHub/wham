@@ -2,7 +2,7 @@ using WarHub.ArmouryModel.Source;
 
 namespace WarHub.ArmouryModel.Concrete;
 
-internal sealed class CostSymbol : ResourceEntryBaseSymbol, ICostSymbol, INodeDeclaredSymbol<CostNode>
+internal sealed partial class CostSymbol : ResourceEntryBaseSymbol, ICostSymbol, INodeDeclaredSymbol<CostNode>
 {
     private IResourceDefinitionSymbol? lazyTypeSymbol;
 
@@ -19,10 +19,9 @@ internal sealed class CostSymbol : ResourceEntryBaseSymbol, ICostSymbol, INodeDe
 
     public override ResourceKind ResourceKind => ResourceKind.Cost;
 
+    [Bound]
     public override IResourceDefinitionSymbol Type =>
         GetBoundField(ref lazyTypeSymbol, Declaration, static (b, d, decl) => b.BindCostTypeSymbol(decl, d));
-
-    protected override void CheckReferencesCore() => _ = Type;
 
     public decimal Value => Declaration.Value;
 }

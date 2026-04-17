@@ -67,7 +67,7 @@ public readonly record struct SymbolKey
                 // Catalogue/Roster module boundary — no containing entry.
                 case SymbolKind.Catalogue:
                 case SymbolKind.Roster:
-                case SymbolKind.Namespace:
+                case SymbolKind.GamesystemNamespace:
                     return null;
 
                 // Immediate parent is an entry or container — use its ID.

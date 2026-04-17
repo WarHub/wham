@@ -3,7 +3,8 @@ using WarHub.ArmouryModel.Source;
 
 namespace WarHub.ArmouryModel.Concrete;
 
-internal sealed class SourceGlobalNamespaceSymbol : Symbol, IGamesystemNamespaceSymbol
+[GenerateSymbol(SymbolKind.GamesystemNamespace)]
+internal sealed partial class SourceGlobalNamespaceSymbol : Symbol, IGamesystemNamespaceSymbol
 {
     private SymbolCompletionState state;
 
@@ -103,8 +104,6 @@ internal sealed class SourceGlobalNamespaceSymbol : Symbol, IGamesystemNamespace
         state.NotePartComplete(CompletionPart.Members);
     }
 
-    public override SymbolKind Kind => SymbolKind.Namespace;
-
     public override string? Id => RootCatalogue.Id;
 
     public override string Name => RootCatalogue.Name;
@@ -189,12 +188,4 @@ internal sealed class SourceGlobalNamespaceSymbol : Symbol, IGamesystemNamespace
         throw new InvalidOperationException("Unreachable code.");
     }
 
-    public override void Accept(SymbolVisitor visitor) =>
-        visitor.VisitGamesystemNamespace(this);
-
-    public override TResult Accept<TResult>(SymbolVisitor<TResult> visitor) =>
-        visitor.VisitGamesystemNamespace(this);
-
-    public override TResult Accept<TArgument, TResult>(SymbolVisitor<TArgument, TResult> visitor, TArgument argument) =>
-        visitor.VisitGamesystemNamespace(this, argument);
 }

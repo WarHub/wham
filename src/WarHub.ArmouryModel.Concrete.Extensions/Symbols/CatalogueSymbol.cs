@@ -2,7 +2,7 @@ using WarHub.ArmouryModel.Source;
 
 namespace WarHub.ArmouryModel.Concrete;
 
-internal sealed class CatalogueSymbol : CatalogueBaseSymbol, INodeDeclaredSymbol<CatalogueNode>
+internal sealed partial class CatalogueSymbol : CatalogueBaseSymbol, INodeDeclaredSymbol<CatalogueNode>
 {
     private ICatalogueSymbol? lazyGamesystem;
 
@@ -30,10 +30,9 @@ internal sealed class CatalogueSymbol : CatalogueBaseSymbol, INodeDeclaredSymbol
 
     public override bool IsGamesystem => false;
 
+    [Bound]
     public override ICatalogueSymbol Gamesystem =>
         GetBoundField(ref lazyGamesystem, Declaration, static (b, d, decl) => b.BindGamesystemSymbol(decl, d));
-
-    protected override void CheckReferencesCore() => _ = Gamesystem;
 
     public override ImmutableArray<CatalogueReferenceSymbol> CatalogueReferences { get; }
 

@@ -2,7 +2,8 @@ using WarHub.ArmouryModel.Source;
 
 namespace WarHub.ArmouryModel.Concrete;
 
-internal abstract class QueryBaseSymbol : LogicBaseSymbol, IQuerySymbol
+[GenerateSymbol(SymbolKind.Query)]
+internal abstract partial class QueryBaseSymbol : LogicBaseSymbol, IQuerySymbol
 {
     private ISymbol? lazyValueType;
     private ISymbol? lazyScope;
@@ -101,14 +102,13 @@ internal abstract class QueryBaseSymbol : LogicBaseSymbol, IQuerySymbol
 
     public new QueryBaseNode Declaration { get; }
 
-    public sealed override SymbolKind Kind => SymbolKind.Query;
-
     public abstract QueryComparisonType Comparison { get; }
 
     public decimal? ReferenceValue => Declaration.Value;
 
     public QueryValueKind ValueKind { get; }
 
+    [Bound]
     public ISymbol? ValueTypeSymbol
     {
         get
@@ -123,6 +123,7 @@ internal abstract class QueryBaseSymbol : LogicBaseSymbol, IQuerySymbol
 
     public QueryScopeKind ScopeKind { get; }
 
+    [Bound]
     public ISymbol? ScopeSymbol
     {
         get
@@ -135,6 +136,7 @@ internal abstract class QueryBaseSymbol : LogicBaseSymbol, IQuerySymbol
 
     public QueryFilterKind ValueFilterKind { get; }
 
+    [Bound]
     public ISymbol? FilterSymbol
     {
         get
@@ -147,13 +149,6 @@ internal abstract class QueryBaseSymbol : LogicBaseSymbol, IQuerySymbol
 
     public QueryOptions Options { get; }
 
-    protected override void CheckReferencesCore()
-    {
-        _ = ValueTypeSymbol;
-        _ = ScopeSymbol;
-        _ = FilterSymbol;
-    }
-
     public static QueryBaseSymbol Create(ISymbol containingSymbol, QueryBaseNode declaration, DiagnosticBag diagnostics)
     {
         return declaration switch
@@ -164,15 +159,6 @@ internal abstract class QueryBaseSymbol : LogicBaseSymbol, IQuerySymbol
             _ => throw new InvalidOperationException("Unsupported declaration type.")
         };
     }
-
-    public sealed override void Accept(SymbolVisitor visitor) =>
-        visitor.VisitQuery(this);
-
-    public sealed override TResult Accept<TResult>(SymbolVisitor<TResult> visitor) =>
-        visitor.VisitQuery(this);
-
-    public sealed override TResult Accept<TArgument, TResult>(SymbolVisitor<TArgument, TResult> visitor, TArgument argument) =>
-        visitor.VisitQuery(this, argument);
 
     internal sealed class ConditionQuerySymbol : QueryBaseSymbol
     {

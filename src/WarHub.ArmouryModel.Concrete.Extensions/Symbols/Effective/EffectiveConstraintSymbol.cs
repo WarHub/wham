@@ -5,7 +5,8 @@ namespace WarHub.ArmouryModel.Concrete;
 /// <see cref="IQuerySymbol.ReferenceValue"/> has been computed by applying modifiers.
 /// Delegates all other properties to the <see cref="OriginalConstraint"/>.
 /// </summary>
-internal sealed class EffectiveConstraintSymbol : IConstraintSymbol
+[GenerateSymbol(SymbolKind.Constraint)]
+internal sealed partial class EffectiveConstraintSymbol : IConstraintSymbol
 {
     public EffectiveConstraintSymbol(IConstraintSymbol original, decimal? effectiveReferenceValue)
     {
@@ -27,8 +28,4 @@ internal sealed class EffectiveConstraintSymbol : IConstraintSymbol
     public ISymbol? ContainingSymbol => OriginalConstraint.ContainingSymbol;
     public IModuleSymbol? ContainingModule => OriginalConstraint.ContainingModule;
     public IGamesystemNamespaceSymbol? ContainingNamespace => OriginalConstraint.ContainingNamespace;
-
-    public void Accept(SymbolVisitor visitor) => visitor.VisitConstraint(this);
-    public TResult Accept<TResult>(SymbolVisitor<TResult> visitor) => visitor.VisitConstraint(this);
-    public TResult Accept<TArgument, TResult>(SymbolVisitor<TArgument, TResult> visitor, TArgument argument) => visitor.VisitConstraint(this, argument);
 }

@@ -17,7 +17,7 @@ internal abstract class Symbol : ISymbol
 
     public virtual IGamesystemNamespaceSymbol? ContainingNamespace => ContainingSymbol switch
     {
-        { Kind: SymbolKind.Namespace } => throw new InvalidOperationException("Namespace child must override ContainingNamespace."),
+        { Kind: SymbolKind.GamesystemNamespace } => throw new InvalidOperationException("Namespace child must override ContainingNamespace."),
         _ => ContainingSymbol?.ContainingNamespace,
     };
 
@@ -30,7 +30,7 @@ internal abstract class Symbol : ISymbol
 
     internal virtual WhamCompilation? DeclaringCompilation => Kind switch
     {
-        SymbolKind.Namespace => throw new InvalidOperationException("Namespace must override DeclaringCompilation."),
+        SymbolKind.GamesystemNamespace => throw new InvalidOperationException("Namespace must override DeclaringCompilation."),
         _ => (ContainingNamespace as SourceGlobalNamespaceSymbol)?.DeclaringCompilation
     };
 

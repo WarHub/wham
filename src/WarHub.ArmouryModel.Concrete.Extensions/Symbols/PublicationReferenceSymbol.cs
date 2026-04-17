@@ -7,7 +7,8 @@ namespace WarHub.ArmouryModel.Concrete;
 /// Always created for entries with an <see cref="IPublicationReferencingNode"/> declaration,
 /// even when <see cref="PublicationId"/> is null.
 /// </summary>
-internal sealed class PublicationReferenceSymbol : SourceDeclaredSymbol, IPublicationReferenceSymbol
+[GenerateSymbol(SymbolKind.PublicationReference)]
+internal sealed partial class PublicationReferenceSymbol : SourceDeclaredSymbol, IPublicationReferenceSymbol
 {
     private IPublicationSymbol? lazyPublication;
 
@@ -31,8 +32,6 @@ internal sealed class PublicationReferenceSymbol : SourceDeclaredSymbol, IPublic
 
     public IPublicationReferencingNode PublicationRefDeclaration { get; }
 
-    public sealed override SymbolKind Kind => SymbolKind.Link;
-
     public override string? Id => null;
 
     public override string Name => string.Empty;
@@ -41,6 +40,7 @@ internal sealed class PublicationReferenceSymbol : SourceDeclaredSymbol, IPublic
 
     public string? PublicationId => PublicationRefDeclaration.PublicationId;
 
+    [Bound]
     public IPublicationSymbol? Publication
     {
         get
@@ -53,14 +53,4 @@ internal sealed class PublicationReferenceSymbol : SourceDeclaredSymbol, IPublic
 
     public string? Page => PublicationRefDeclaration.Page;
 
-    protected override void CheckReferencesCore() => _ = Publication;
-
-    public sealed override void Accept(SymbolVisitor visitor) =>
-        visitor.VisitPublicationReference(this);
-
-    public sealed override TResult Accept<TResult>(SymbolVisitor<TResult> visitor) =>
-        visitor.VisitPublicationReference(this);
-
-    public sealed override TResult Accept<TArgument, TResult>(SymbolVisitor<TArgument, TResult> visitor, TArgument argument) =>
-        visitor.VisitPublicationReference(this, argument);
 }

@@ -2,7 +2,7 @@ using WarHub.ArmouryModel.Source;
 
 namespace WarHub.ArmouryModel.Concrete;
 
-internal sealed class ModifierEffectSymbol : ModifierEffectBaseSymbol, IEffectSymbol, INodeDeclaredSymbol<ModifierNode>
+internal sealed partial class ModifierEffectSymbol : ModifierEffectBaseSymbol, IEffectSymbol, INodeDeclaredSymbol<ModifierNode>
 {
     private ISymbol? lazyOperand;
     private ISymbol? lazyTargetMember;
@@ -49,6 +49,7 @@ internal sealed class ModifierEffectSymbol : ModifierEffectBaseSymbol, IEffectSy
 
     public override EffectTargetKind TargetKind { get; }
 
+    [Bound]
     public override ISymbol? TargetMember
     {
         get
@@ -63,6 +64,7 @@ internal sealed class ModifierEffectSymbol : ModifierEffectBaseSymbol, IEffectSy
 
     public override string? OperandValue => Declaration.Value;
 
+    [Bound]
     public override ISymbol? OperandSymbol
     {
         get
@@ -75,10 +77,4 @@ internal sealed class ModifierEffectSymbol : ModifierEffectBaseSymbol, IEffectSy
 
     public override ImmutableArray<ModifierEffectBaseSymbol> ChildrenWhenSatisfied =>
         ImmutableArray<ModifierEffectBaseSymbol>.Empty;
-
-    protected override void CheckReferencesCore()
-    {
-        _ = TargetMember;
-        _ = OperandSymbol;
-    }
 }

@@ -5,7 +5,8 @@ namespace WarHub.ArmouryModel.Concrete;
 /// computed by applying modifiers in a roster context.
 /// Delegates all other properties to the <see cref="OriginalCharacteristic"/>.
 /// </summary>
-internal sealed class EffectiveCharacteristicSymbol : ICharacteristicSymbol
+[GenerateSymbol(SymbolKind.ResourceEntry)]
+internal sealed partial class EffectiveCharacteristicSymbol : ICharacteristicSymbol
 {
     public EffectiveCharacteristicSymbol(ICharacteristicSymbol original, string effectiveValue)
     {
@@ -44,8 +45,4 @@ internal sealed class EffectiveCharacteristicSymbol : ICharacteristicSymbol
     public ISymbol? ContainingSymbol => OriginalCharacteristic.ContainingSymbol;
     public IModuleSymbol? ContainingModule => OriginalCharacteristic.ContainingModule;
     public IGamesystemNamespaceSymbol? ContainingNamespace => OriginalCharacteristic.ContainingNamespace;
-
-    public void Accept(SymbolVisitor visitor) => visitor.VisitResourceEntry(this);
-    public TResult Accept<TResult>(SymbolVisitor<TResult> visitor) => visitor.VisitResourceEntry(this);
-    public TResult Accept<TArgument, TResult>(SymbolVisitor<TArgument, TResult> visitor, TArgument argument) => visitor.VisitResourceEntry(this, argument);
 }

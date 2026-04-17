@@ -1,14 +1,13 @@
 namespace WarHub.ArmouryModel.Concrete;
 
-internal sealed class GeneratedCostSymbol : Symbol, ICostSymbol
+[GenerateSymbol(SymbolKind.ResourceEntry)]
+internal sealed partial class GeneratedCostSymbol : Symbol, ICostSymbol
 {
     public GeneratedCostSymbol(ISymbol? containingSymbol, IResourceDefinitionSymbol type)
     {
         ContainingSymbol = containingSymbol;
         Type = type;
     }
-
-    public override SymbolKind Kind => SymbolKind.ResourceEntry;
 
     public override string? Id => null;
 
@@ -38,18 +37,4 @@ internal sealed class GeneratedCostSymbol : Symbol, ICostSymbol
 
     IEntrySymbol? IEntrySymbol.ReferencedEntry => null;
 
-    public override void Accept(SymbolVisitor visitor)
-    {
-        visitor.VisitResourceEntry(this);
-    }
-
-    public override TResult Accept<TResult>(SymbolVisitor<TResult> visitor)
-    {
-        return visitor.VisitResourceEntry(this);
-    }
-
-    public override TResult Accept<TArgument, TResult>(SymbolVisitor<TArgument, TResult> visitor, TArgument argument)
-    {
-        return visitor.VisitResourceEntry(this, argument);
-    }
 }
