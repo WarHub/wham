@@ -19,7 +19,7 @@ internal abstract class QueryBaseSymbol : LogicBaseSymbol, IQuerySymbol
         {
             "forces" => QueryValueKind.ForceCount,
             "selections" => QueryValueKind.SelectionCount,
-            { } id when id.StartsWith("limit::", StringComparison.Ordinal) => QueryValueKind.MemberValueLimit,
+            { } id when LimitField.IsMatch(id) => QueryValueKind.MemberValueLimit,
             { } id when !string.IsNullOrWhiteSpace(id) => QueryValueKind.MemberValue,
             _ => QueryValueKind.Unknown
         };
@@ -116,7 +116,7 @@ internal abstract class QueryBaseSymbol : LogicBaseSymbol, IQuerySymbol
             if (ValueKind is QueryValueKind.MemberValue)
                 return GetBoundField(ref lazyValueType, Declaration, static (b, d, decl) => b.BindCostTypeSymbol(decl, decl.Field, d));
             if (ValueKind is QueryValueKind.MemberValueLimit)
-                return GetBoundField(ref lazyValueType, Declaration, static (b, d, decl) => b.BindCostTypeSymbol(decl, decl.Field?["limit::".Length..], d));
+                return GetBoundField(ref lazyValueType, Declaration, static (b, d, decl) => b.BindCostTypeSymbol(decl, LimitField.GetCostTypeId(decl.Field), d));
             return null;
         }
     }
@@ -239,5 +239,16 @@ internal abstract class QueryBaseSymbol : LogicBaseSymbol, IQuerySymbol
         }
 
         public override QueryComparisonType Comparison => QueryComparisonType.None;
+    }
+
+    private static class LimitField
+    {
+        private const string Prefix = "limit::";
+
+        public static bool IsMatch(string field) =>
+            field.StartsWith(Prefix, StringComparison.Ordinal);
+
+        public static string? GetCostTypeId(string? field) =>
+            field?[Prefix.Length..];
     }
 }
