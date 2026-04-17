@@ -305,7 +305,7 @@ public class SymbolKeyTests
 
         var key = SymbolKey.Create(selection);
 
-        key.Kind.Should().Be(SymbolKind.Container);
+        key.Kind.Should().Be(SymbolKind.ContainerEntryInstance);
         key.SymbolId.Should().Be(selection.Id);
         key.ContainingModuleId.Should().Be(roster.Id);
         key.ContainingEntryId.Should().Be(force.Id, "Selection's containing entry is the force");

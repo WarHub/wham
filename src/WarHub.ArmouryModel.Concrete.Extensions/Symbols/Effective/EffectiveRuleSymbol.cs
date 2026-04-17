@@ -6,7 +6,8 @@ namespace WarHub.ArmouryModel.Concrete;
 /// and <see cref="DescriptionText"/>. Delegates all other properties to the
 /// <see cref="OriginalRule"/>.
 /// </summary>
-internal sealed class EffectiveRuleSymbol : IRuleSymbol
+[GenerateSymbol(SymbolKind.ResourceEntry)]
+internal sealed partial class EffectiveRuleSymbol : IRuleSymbol
 {
     public EffectiveRuleSymbol(
         IRuleSymbol original,
@@ -51,8 +52,4 @@ internal sealed class EffectiveRuleSymbol : IRuleSymbol
     public ISymbol? ContainingSymbol => OriginalRule.ContainingSymbol;
     public IModuleSymbol? ContainingModule => OriginalRule.ContainingModule;
     public IGamesystemNamespaceSymbol? ContainingNamespace => OriginalRule.ContainingNamespace;
-
-    public void Accept(SymbolVisitor visitor) => visitor.VisitResourceEntry(this);
-    public TResult Accept<TResult>(SymbolVisitor<TResult> visitor) => visitor.VisitResourceEntry(this);
-    public TResult Accept<TArgument, TResult>(SymbolVisitor<TArgument, TResult> visitor, TArgument argument) => visitor.VisitResourceEntry(this, argument);
 }

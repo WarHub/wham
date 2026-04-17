@@ -2,7 +2,7 @@ using WarHub.ArmouryModel.Source;
 
 namespace WarHub.ArmouryModel.Concrete;
 
-internal sealed class ForceSymbol : ContainerSymbol, IForceSymbol, INodeDeclaredSymbol<ForceNode>
+internal sealed partial class ForceSymbol : ContainerSymbol, IForceSymbol, INodeDeclaredSymbol<ForceNode>
 {
     private IForceEntrySymbol? lazyForceEntry;
     private IForceEntrySymbol? lazyEffectiveSourceEntry;
@@ -27,10 +27,9 @@ internal sealed class ForceSymbol : ContainerSymbol, IForceSymbol, INodeDeclared
 
     public string? EntryId => Declaration.EntryId;
 
+    [Bound]
     public override IForceEntrySymbol SourceEntry =>
         GetBoundField(ref lazyForceEntry, Declaration, static (b, d, decl) => b.BindForceEntrySymbol(decl, d));
-
-    protected override void CheckReferencesCore() => _ = SourceEntry;
 
     public ImmutableArray<ForceSymbol> Forces { get; }
 

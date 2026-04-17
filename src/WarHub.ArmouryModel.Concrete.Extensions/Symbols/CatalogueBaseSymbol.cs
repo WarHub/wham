@@ -2,7 +2,8 @@ using WarHub.ArmouryModel.Source;
 
 namespace WarHub.ArmouryModel.Concrete;
 
-internal abstract class CatalogueBaseSymbol : SourceDeclaredSymbol, ICatalogueSymbol
+[GenerateSymbol(SymbolKind.Catalogue)]
+internal abstract partial class CatalogueBaseSymbol : SourceDeclaredSymbol, ICatalogueSymbol
 {
     protected CatalogueBaseSymbol(
         SourceGlobalNamespaceSymbol containingSymbol,
@@ -90,8 +91,6 @@ internal abstract class CatalogueBaseSymbol : SourceDeclaredSymbol, ICatalogueSy
 
     public override CatalogueBaseNode Declaration { get; }
 
-    public override SymbolKind Kind => SymbolKind.Catalogue;
-
     public override SourceGlobalNamespaceSymbol ContainingNamespace { get; }
 
     public override IModuleSymbol? ContainingModule => null;
@@ -135,15 +134,6 @@ internal abstract class CatalogueBaseSymbol : SourceDeclaredSymbol, ICatalogueSy
 
     ImmutableArray<IResourceDefinitionSymbol> ICatalogueSymbol.ResourceDefinitions =>
         ResourceDefinitions.Cast<ResourceDefinitionBaseSymbol, IResourceDefinitionSymbol>();
-
-    public override void Accept(SymbolVisitor visitor) =>
-        visitor.VisitCatalogue(this);
-
-    public override TResult Accept<TResult>(SymbolVisitor<TResult> visitor) =>
-        visitor.VisitCatalogue(this);
-
-    public override TResult Accept<TArgument, TResult>(SymbolVisitor<TArgument, TResult> visitor, TArgument argument) =>
-        visitor.VisitCatalogue(this, argument);
 
     protected sealed override ImmutableArray<Symbol> MakeAllMembers(BindingDiagnosticBag diagnostics) =>
         base.MakeAllMembers(diagnostics)

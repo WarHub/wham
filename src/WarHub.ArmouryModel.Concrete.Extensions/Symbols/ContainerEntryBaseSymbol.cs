@@ -2,7 +2,8 @@ using WarHub.ArmouryModel.Source;
 
 namespace WarHub.ArmouryModel.Concrete;
 
-internal abstract class ContainerEntryBaseSymbol : EntrySymbol, IContainerEntrySymbol
+[GenerateSymbol(SymbolKind.ContainerEntry)]
+internal abstract partial class ContainerEntryBaseSymbol : EntrySymbol, IContainerEntrySymbol
 {
     protected ContainerEntryBaseSymbol(
         ISymbol containingSymbol,
@@ -61,8 +62,6 @@ internal abstract class ContainerEntryBaseSymbol : EntrySymbol, IContainerEntryS
         }
     }
 
-    public sealed override SymbolKind Kind => SymbolKind.ContainerEntry;
-
     public abstract ContainerKind ContainerKind { get; }
 
     public ImmutableArray<ConstraintSymbol> Constraints { get; }
@@ -76,15 +75,6 @@ internal abstract class ContainerEntryBaseSymbol : EntrySymbol, IContainerEntryS
 
     ImmutableArray<ICostSymbol> IContainerEntrySymbol.Costs =>
         Costs.Cast<CostSymbol, ICostSymbol>();
-
-    public override void Accept(SymbolVisitor visitor) =>
-        visitor.VisitContainerEntry(this);
-
-    public override TResult Accept<TResult>(SymbolVisitor<TResult> visitor) =>
-        visitor.VisitContainerEntry(this);
-
-    public override TResult Accept<TArgument, TResult>(SymbolVisitor<TArgument, TResult> visitor, TArgument argument) =>
-        visitor.VisitContainerEntry(this, argument);
 
     protected override ImmutableArray<Symbol> MakeAllMembers(BindingDiagnosticBag diagnostics) =>
         base.MakeAllMembers(diagnostics)

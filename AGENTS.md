@@ -49,6 +49,7 @@ XML file → DTO (*Core) → SourceNode tree → SourceTree
 | Source Generator (`*Core` → `SourceNode`) | `src/WarHub.ArmouryModel.Source.CodeGeneration/` |
 | ISymbol public API, Binder, Diagnostics | `src/WarHub.ArmouryModel.Extensions/` |
 | Symbol implementations, lazy binding | `src/WarHub.ArmouryModel.Concrete.Extensions/` |
+| Symbol source generators + analyzer | `src/WarHub.ArmouryModel.Concrete.Extensions.Generators/` |
 
 ### Roster engine (protocol-based, conformance-tested)
 
@@ -133,7 +134,7 @@ Path: `src/WarHub.ArmouryModel.EditorServices/`
 Source, Source.BattleScribe, ProjectModel, Workspaces.BattleScribe, Workspaces.Gitree, CliTool (`wham` dotnet tool)
 
 **Internal** (IsPackable=false, relaxed analysis):
-Extensions, Concrete.Extensions, EditorServices, RosterEngine, RosterEngine.Spec, Phalanx.SampleDataset
+Extensions, Concrete.Extensions, Concrete.Extensions.Generators, EditorServices, RosterEngine, RosterEngine.Spec, Phalanx.SampleDataset
 
 **External submodule**: BattleScribeSpec.TestKit (from `lib/battlescribe-spec`)
 
@@ -172,6 +173,11 @@ Extensions, Concrete.Extensions, EditorServices, RosterEngine, RosterEngine.Spec
   marked IsPackable=false to avoid failures
 - **Code generation**: `WarHub.ArmouryModel.Source` uses a C# Source Generator —
   changes to `*Core` types require regeneration
+- **Concrete.Extensions generators**: `Concrete.Extensions.Generators` provides:
+  - `[GenerateSymbol(SymbolKind.X)]` — generates `Kind` property + 3 `Accept` overloads
+  - `[Bound]` on properties — generates `CheckReferencesCore` accessing all bound properties
+  - `WHAM001` analyzer — warns when `GetBoundField` is called without `[Bound]`
+  - Symbol classes using these must be `partial`
 - **BattleScribe quirks**: some spec default expectations match BattleScribe bugs rather than
   "correct" behavior; wham uses engine-specific overrides for these (documented in
   `docs/adrs/0004-battlescribe-spec-conformance-testing.md`)

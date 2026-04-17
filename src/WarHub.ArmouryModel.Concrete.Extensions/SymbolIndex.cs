@@ -90,10 +90,10 @@ internal sealed class SymbolIndex
             {
                 case SymbolKind.Catalogue:
                 case SymbolKind.Roster:
-                case SymbolKind.Namespace:
+                case SymbolKind.GamesystemNamespace:
                     return null;
                 case SymbolKind.ContainerEntry:
-                case SymbolKind.Container:
+                case SymbolKind.ContainerEntryInstance:
                     return parent.Id;
             }
         }

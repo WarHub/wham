@@ -10,7 +10,7 @@ public static class ISymbolExtensions
     public static bool IsContainerKind(this ISymbol symbol, ContainerKind kind) => symbol switch
     {
         { Kind: SymbolKind.ContainerEntry } and IContainerEntrySymbol { ContainerKind: var x } => x == kind,
-        { Kind: SymbolKind.Container } and IContainerEntryInstanceSymbol { ContainerKind: var x } => x == kind,
+        { Kind: SymbolKind.ContainerEntryInstance } and IContainerEntryInstanceSymbol { ContainerKind: var x } => x == kind,
         _ => false,
     };
 

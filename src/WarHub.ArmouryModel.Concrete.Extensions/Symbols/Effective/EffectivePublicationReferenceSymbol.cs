@@ -5,7 +5,8 @@ namespace WarHub.ArmouryModel.Concrete;
 /// computed by applying modifiers in a roster context.
 /// Delegates all other properties to the <see cref="OriginalReference"/>.
 /// </summary>
-internal sealed class EffectivePublicationReferenceSymbol : IPublicationReferenceSymbol
+[GenerateSymbol(SymbolKind.PublicationReference)]
+internal sealed partial class EffectivePublicationReferenceSymbol : IPublicationReferenceSymbol
 {
     public EffectivePublicationReferenceSymbol(IPublicationReferenceSymbol original, string? effectivePage)
     {
@@ -31,8 +32,4 @@ internal sealed class EffectivePublicationReferenceSymbol : IPublicationReferenc
     public ISymbol? ContainingSymbol => OriginalReference.ContainingSymbol;
     public IModuleSymbol? ContainingModule => OriginalReference.ContainingModule;
     public IGamesystemNamespaceSymbol? ContainingNamespace => OriginalReference.ContainingNamespace;
-
-    public void Accept(SymbolVisitor visitor) => visitor.VisitPublicationReference(this);
-    public TResult Accept<TResult>(SymbolVisitor<TResult> visitor) => visitor.VisitPublicationReference(this);
-    public TResult Accept<TArgument, TResult>(SymbolVisitor<TArgument, TResult> visitor, TArgument argument) => visitor.VisitPublicationReference(this, argument);
 }

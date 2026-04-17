@@ -15,7 +15,7 @@ public enum SymbolKind
     /// Namespace - group of elements belonging to a single gamesystem, commonly the root symbol.
     /// <see cref="IGamesystemNamespaceSymbol"/>.
     /// </summary>
-    Namespace,
+    GamesystemNamespace,
 
     /// <summary>
     /// Catalogue module (including root catalogue aka gamesystem).
@@ -55,10 +55,10 @@ public enum SymbolKind
     ContainerEntry,
 
     /// <summary>
-    /// Container instance. Further discriminated by <see cref="ContainerKind"/>.
+    /// Container entry instance. Further discriminated by <see cref="ContainerKind"/>.
     /// Includes entry instances in roster: force, category, selection.
     /// </summary>
-    Container,
+    ContainerEntryInstance,
 
     /// <summary>
     /// Constraint that creates boundaries of allowed counts.
@@ -81,11 +81,22 @@ public enum SymbolKind
     Query,
 
     /// <summary>
-    /// Symbol referring to some other element.
-    /// Includes all kinds of links (references): catalogue reference,
-    /// publication reference, entry path reference.
+    /// Catalogue reference (link to another catalogue module).
+    /// <see cref="ICatalogueReferenceSymbol"/>.
     /// </summary>
-    Link,
+    CatalogueReference,
+
+    /// <summary>
+    /// Publication reference (link to a publication).
+    /// <see cref="IPublicationReferenceSymbol"/>.
+    /// </summary>
+    PublicationReference,
+
+    /// <summary>
+    /// Entry reference path (link to source entries).
+    /// <see cref="IEntryReferencePathSymbol"/>.
+    /// </summary>
+    EntryReferencePath,
 
     /// <summary>
     /// Special cost symbol, includes an optional limit.

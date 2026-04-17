@@ -2,7 +2,7 @@ using WarHub.ArmouryModel.Source;
 
 namespace WarHub.ArmouryModel.Concrete;
 
-internal sealed class SelectionEntryGroupSymbol : SelectionEntryBaseSymbol, ISelectionEntryGroupSymbol, INodeDeclaredSymbol<SelectionEntryGroupNode>
+internal sealed partial class SelectionEntryGroupSymbol : SelectionEntryBaseSymbol, ISelectionEntryGroupSymbol, INodeDeclaredSymbol<SelectionEntryGroupNode>
 {
     private ISelectionEntryContainerSymbol? lazyDefaultEntry;
 
@@ -19,6 +19,7 @@ internal sealed class SelectionEntryGroupSymbol : SelectionEntryBaseSymbol, ISel
 
     public override ContainerKind ContainerKind => ContainerKind.SelectionGroup;
 
+    [Bound]
     public ISelectionEntryContainerSymbol? DefaultSelectionEntry
     {
         get
@@ -28,6 +29,4 @@ internal sealed class SelectionEntryGroupSymbol : SelectionEntryBaseSymbol, ISel
             return null;
         }
     }
-
-    protected override void CheckReferencesCore() => _ = DefaultSelectionEntry;
 }

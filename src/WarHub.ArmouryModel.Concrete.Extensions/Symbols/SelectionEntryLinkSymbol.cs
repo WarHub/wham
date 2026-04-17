@@ -2,7 +2,7 @@ using WarHub.ArmouryModel.Source;
 
 namespace WarHub.ArmouryModel.Concrete;
 
-internal sealed class SelectionEntryLinkSymbol : SelectionEntryBaseSymbol, INodeDeclaredSymbol<EntryLinkNode>
+internal sealed partial class SelectionEntryLinkSymbol : SelectionEntryBaseSymbol, INodeDeclaredSymbol<EntryLinkNode>
 {
     private ISelectionEntryContainerSymbol? lazyReference;
 
@@ -32,8 +32,7 @@ internal sealed class SelectionEntryLinkSymbol : SelectionEntryBaseSymbol, INode
 
     public override ContainerKind ContainerKind { get; }
 
+    [Bound]
     public override ISelectionEntryContainerSymbol ReferencedEntry =>
         GetBoundField(ref lazyReference, Declaration, static (b, d, decl) => b.BindSelectionEntrySymbol(decl, d));
-
-    protected override void CheckReferencesCore() => _ = ReferencedEntry;
 }

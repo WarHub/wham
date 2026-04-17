@@ -24,6 +24,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\WarHub.ArmouryModel.Extensions\WarHub.ArmouryModel.Extensions.csproj" />
+    <ProjectReference Include="..\WarHub.ArmouryModel.Concrete.Extensions.Generators\WarHub.ArmouryModel.Concrete.Extensions.Generators.csproj" ReferenceOutputAssembly="false" OutputItemType="Analyzer" />
   </ItemGroup>
 
 </Project>

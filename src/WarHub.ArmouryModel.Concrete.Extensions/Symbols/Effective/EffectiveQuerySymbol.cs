@@ -5,7 +5,8 @@ namespace WarHub.ArmouryModel.Concrete;
 /// computed by applying modifiers in a roster context.
 /// Delegates all other properties to the <see cref="OriginalQuery"/>.
 /// </summary>
-internal sealed class EffectiveQuerySymbol : IQuerySymbol
+[GenerateSymbol(SymbolKind.Query)]
+internal sealed partial class EffectiveQuerySymbol : IQuerySymbol
 {
     public EffectiveQuerySymbol(IQuerySymbol original, decimal? effectiveReferenceValue)
     {
@@ -35,8 +36,4 @@ internal sealed class EffectiveQuerySymbol : IQuerySymbol
     public QueryFilterKind ValueFilterKind => OriginalQuery.ValueFilterKind;
     public ISymbol? FilterSymbol => OriginalQuery.FilterSymbol;
     public QueryOptions Options => OriginalQuery.Options;
-
-    public void Accept(SymbolVisitor visitor) => visitor.VisitQuery(this);
-    public TResult Accept<TResult>(SymbolVisitor<TResult> visitor) => visitor.VisitQuery(this);
-    public TResult Accept<TArgument, TResult>(SymbolVisitor<TArgument, TResult> visitor, TArgument argument) => visitor.VisitQuery(this, argument);
 }

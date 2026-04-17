@@ -2,7 +2,8 @@ using WarHub.ArmouryModel.Source;
 
 namespace WarHub.ArmouryModel.Concrete;
 
-internal abstract class ConditionBaseSymbol : LogicBaseSymbol, IConditionSymbol
+[GenerateSymbol(SymbolKind.Condition)]
+internal abstract partial class ConditionBaseSymbol : LogicBaseSymbol, IConditionSymbol
 {
     protected ConditionBaseSymbol(
         ISymbol containingSymbol,
@@ -10,8 +11,6 @@ internal abstract class ConditionBaseSymbol : LogicBaseSymbol, IConditionSymbol
         : base(containingSymbol, declaration)
     {
     }
-
-    public sealed override SymbolKind Kind => SymbolKind.Condition;
 
     public abstract QueryBaseSymbol? Query { get; }
 
@@ -23,15 +22,6 @@ internal abstract class ConditionBaseSymbol : LogicBaseSymbol, IConditionSymbol
 
     ImmutableArray<IConditionSymbol> IConditionSymbol.Children =>
         Children.Cast<ConditionBaseSymbol, IConditionSymbol>();
-
-    public sealed override void Accept(SymbolVisitor visitor) =>
-        visitor.VisitCondition(this);
-
-    public sealed override TResult Accept<TResult>(SymbolVisitor<TResult> visitor) =>
-        visitor.VisitCondition(this);
-
-    public sealed override TResult Accept<TArgument, TResult>(SymbolVisitor<TArgument, TResult> visitor, TArgument argument) =>
-        visitor.VisitCondition(this, argument);
 
     protected override ImmutableArray<Symbol> MakeAllMembers(BindingDiagnosticBag diagnostics) =>
         base.MakeAllMembers(diagnostics)

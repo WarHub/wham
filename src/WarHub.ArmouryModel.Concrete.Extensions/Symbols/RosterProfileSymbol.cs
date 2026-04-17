@@ -2,7 +2,7 @@ using WarHub.ArmouryModel.Source;
 
 namespace WarHub.ArmouryModel.Concrete;
 
-internal sealed class RosterProfileSymbol : RosterResourceBaseSymbol, IRosterProfileSymbol, INodeDeclaredSymbol<ProfileNode>
+internal sealed partial class RosterProfileSymbol : RosterResourceBaseSymbol, IRosterProfileSymbol, INodeDeclaredSymbol<ProfileNode>
 {
     private IResourceDefinitionSymbol? lazyType;
 
@@ -16,10 +16,9 @@ internal sealed class RosterProfileSymbol : RosterResourceBaseSymbol, IRosterPro
 
     public override ResourceKind ResourceKind => ResourceKind.Profile;
 
+    [Bound]
     public IResourceDefinitionSymbol Type =>
         GetBoundField(ref lazyType, Declaration, static (b, d, decl) => b.BindProfileTypeSymbol(decl, d));
-
-    protected override void CheckReferencesCore() => _ = Type;
 
     public ImmutableArray<CharacteristicSymbol> Characteristics { get; }
 

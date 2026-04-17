@@ -187,6 +187,7 @@ public sealed class WhamRosterEngine
     /// <param name="forceIndex">Zero-based index of the force containing the parent selection.</param>
     /// <param name="selectionIndex">Zero-based index of the parent selection within the force.</param>
     /// <param name="childEntry">The child entry symbol to select.</param>
+    /// <param name="sourceGroup">The group this entry was flattened from, if any.</param>
     /// <returns>A new <see cref="RosterState"/> with the child selection appended.</returns>
     public RosterState SelectChildEntry(
         RosterState state,

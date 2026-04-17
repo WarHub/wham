@@ -5,7 +5,8 @@ namespace WarHub.ArmouryModel.Concrete;
 /// computed by applying modifiers in a roster context.
 /// Delegates all other properties to the <see cref="OriginalCost"/>.
 /// </summary>
-internal sealed class EffectiveCostSymbol : ICostSymbol
+[GenerateSymbol(SymbolKind.ResourceEntry)]
+internal sealed partial class EffectiveCostSymbol : ICostSymbol
 {
     public EffectiveCostSymbol(ICostSymbol original, decimal effectiveValue)
     {
@@ -44,8 +45,4 @@ internal sealed class EffectiveCostSymbol : ICostSymbol
     public ISymbol? ContainingSymbol => OriginalCost.ContainingSymbol;
     public IModuleSymbol? ContainingModule => OriginalCost.ContainingModule;
     public IGamesystemNamespaceSymbol? ContainingNamespace => OriginalCost.ContainingNamespace;
-
-    public void Accept(SymbolVisitor visitor) => visitor.VisitResourceEntry(this);
-    public TResult Accept<TResult>(SymbolVisitor<TResult> visitor) => visitor.VisitResourceEntry(this);
-    public TResult Accept<TArgument, TResult>(SymbolVisitor<TArgument, TResult> visitor, TArgument argument) => visitor.VisitResourceEntry(this, argument);
 }

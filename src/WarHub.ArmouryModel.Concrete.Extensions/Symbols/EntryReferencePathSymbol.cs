@@ -2,7 +2,8 @@ using WarHub.ArmouryModel.Source;
 
 namespace WarHub.ArmouryModel.Concrete;
 
-internal abstract class EntryReferencePathBaseSymbol : SourceDeclaredSymbol, IEntryReferencePathSymbol
+[GenerateSymbol(SymbolKind.EntryReferencePath)]
+internal abstract partial class EntryReferencePathBaseSymbol : SourceDeclaredSymbol, IEntryReferencePathSymbol
 {
     private ImmutableArray<IEntrySymbol> lazySourceEntries;
 
@@ -20,21 +21,9 @@ internal abstract class EntryReferencePathBaseSymbol : SourceDeclaredSymbol, IEn
         _ => throw new InvalidOperationException("Unknown reference path declaration.")
     };
 
-    public sealed override SymbolKind Kind => SymbolKind.Link;
-
+    [Bound]
     public ImmutableArray<IEntrySymbol> SourceEntries =>
         GetBoundField(ref lazySourceEntries, this, static (b, d, self) => self.BindSourceEntries(b, d));
-
-    protected sealed override void CheckReferencesCore() => _ = SourceEntries;
-
-    public sealed override void Accept(SymbolVisitor visitor) =>
-        visitor.VisitEntryReferencePath(this);
-
-    public sealed override TResult Accept<TResult>(SymbolVisitor<TResult> visitor) =>
-        visitor.VisitEntryReferencePath(this);
-
-    public sealed override TResult Accept<TArgument, TResult>(SymbolVisitor<TArgument, TResult> visitor, TArgument argument) =>
-        visitor.VisitEntryReferencePath(this, argument);
 
     protected abstract ImmutableArray<IEntrySymbol> BindSourceEntries(Binder binder, BindingDiagnosticBag diagnostics);
 

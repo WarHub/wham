@@ -2,7 +2,8 @@ using WarHub.ArmouryModel.Source;
 
 namespace WarHub.ArmouryModel.Concrete;
 
-internal sealed class RosterCostSymbol : SourceDeclaredSymbol, IRosterCostSymbol
+[GenerateSymbol(SymbolKind.RosterCost)]
+internal sealed partial class RosterCostSymbol : SourceDeclaredSymbol, IRosterCostSymbol
 {
     private IResourceDefinitionSymbol? lazyType;
 
@@ -29,8 +30,6 @@ internal sealed class RosterCostSymbol : SourceDeclaredSymbol, IRosterCostSymbol
 
     public CostLimitNode? LimitDeclaration { get; }
 
-    public override SymbolKind Kind => SymbolKind.ResourceEntry;
-
     public decimal Value => CostDeclaration.Value;
 
     public decimal? Limit
@@ -42,17 +41,7 @@ internal sealed class RosterCostSymbol : SourceDeclaredSymbol, IRosterCostSymbol
         }
     }
 
+    [Bound]
     public IResourceDefinitionSymbol CostType =>
         GetBoundField(ref lazyType, CostDeclaration, static (b, d, decl) => b.BindCostTypeSymbol(decl, d));
-
-    protected override void CheckReferencesCore() => _ = CostType;
-
-    public override void Accept(SymbolVisitor visitor) =>
-        visitor.VisitRosterCost(this);
-
-    public override TResult Accept<TResult>(SymbolVisitor<TResult> visitor) =>
-        visitor.VisitRosterCost(this);
-
-    public override TResult Accept<TArgument, TResult>(SymbolVisitor<TArgument, TResult> visitor, TArgument argument) =>
-        visitor.VisitRosterCost(this, argument);
 }

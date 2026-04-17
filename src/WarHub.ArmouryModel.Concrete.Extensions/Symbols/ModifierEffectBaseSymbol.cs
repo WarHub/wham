@@ -2,7 +2,8 @@ using WarHub.ArmouryModel.Source;
 
 namespace WarHub.ArmouryModel.Concrete;
 
-internal abstract class ModifierEffectBaseSymbol : LogicBaseSymbol, IEffectSymbol, INodeDeclaredSymbol<ModifierBaseNode>
+[GenerateSymbol(SymbolKind.Effect)]
+internal abstract partial class ModifierEffectBaseSymbol : LogicBaseSymbol, IEffectSymbol, INodeDeclaredSymbol<ModifierBaseNode>
 {
     protected ModifierEffectBaseSymbol(
         ISymbol? containingSymbol,
@@ -20,8 +21,6 @@ internal abstract class ModifierEffectBaseSymbol : LogicBaseSymbol, IEffectSymbo
     }
 
     public new ModifierBaseNode Declaration { get; }
-
-    public sealed override SymbolKind Kind => SymbolKind.Effect;
 
     public ConditionGroupingBaseSymbol? Condition { get; }
 
@@ -63,15 +62,6 @@ internal abstract class ModifierEffectBaseSymbol : LogicBaseSymbol, IEffectSymbo
             ModifierGroupNode x => new ModifierGroupEffectSymbol(containingSymbol, x, diagnostics),
             _ => throw new InvalidOperationException("Unknown declaration type.")
         };
-
-    public sealed override void Accept(SymbolVisitor visitor) =>
-        visitor.VisitEffect(this);
-
-    public sealed override TResult Accept<TResult>(SymbolVisitor<TResult> visitor) =>
-        visitor.VisitEffect(this);
-
-    public sealed override TResult Accept<TArgument, TResult>(SymbolVisitor<TArgument, TResult> visitor, TArgument argument) =>
-        visitor.VisitEffect(this, argument);
 
     protected override ImmutableArray<Symbol> MakeAllMembers(BindingDiagnosticBag diagnostics) =>
         base.MakeAllMembers(diagnostics)
