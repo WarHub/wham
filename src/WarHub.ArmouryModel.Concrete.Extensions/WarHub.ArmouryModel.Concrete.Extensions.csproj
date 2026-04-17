@@ -1,0 +1,30 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>$(CommonTargetFramework)</TargetFramework>
+    <RootNamespace>WarHub.ArmouryModel.Concrete</RootNamespace>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <IsPackable>false</IsPackable>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <AnalysisMode>Default</AnalysisMode>
+    <!-- Ported project: suppress pre-existing 'new' keyword warning from TreatWarningsAsErrors in Release.
+         Nullable warnings (CS8604, CS8619, CS8620) are suppressed locally in affected files. -->
+    <WarningsNotAsErrors>CS0109</WarningsNotAsErrors>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Using Include="System.Collections.Immutable" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="WarHub.ArmouryModel.RosterEngine.Spec" />
+    <InternalsVisibleTo Include="WarHub.ArmouryModel.Concrete.Extensions.Tests" />
+    <InternalsVisibleTo Include="WarHub.ArmouryModel.Benchmarks" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\WarHub.ArmouryModel.Extensions\WarHub.ArmouryModel.Extensions.csproj" />
+    <ProjectReference Include="..\WarHub.ArmouryModel.Concrete.Extensions.Generators\WarHub.ArmouryModel.Concrete.Extensions.Generators.csproj" ReferenceOutputAssembly="false" OutputItemType="Analyzer" />
+  </ItemGroup>
+
+</Project>

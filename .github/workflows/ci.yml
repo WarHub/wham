@@ -1,5 +1,8 @@
 name: CI
-on: [push, pull_request]
+on:
+  push:
+    branches: [main]
+  pull_request:
 jobs:
   build:
     strategy:
@@ -9,9 +12,19 @@ jobs:
       DOTNET_NOLOGO: 1
     runs-on: ${{ matrix.os }}
     steps:
+      - name: Generate GitHub App token
+        id: app-token
+        uses: actions/create-github-app-token@v3
+        with:
+          app-id: ${{ vars.WARHUB_BOT_APP_ID }}
+          private-key: ${{ secrets.WARHUB_BOT_PRIVATE_KEY }}
+          owner: WarHub
+          repositories: battlescribe-spec
       - uses: actions/checkout@v6
         with:
           fetch-depth: 0 # all history
+          token: ${{ steps.app-token.outputs.token }}
+          submodules: true
       - uses: actions/setup-dotnet@v5
         with:
           dotnet-version: '10.0.x'
