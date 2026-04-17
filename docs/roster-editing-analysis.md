@@ -144,17 +144,22 @@ conditioned on roster state).
 Symbol completion follows a 4-phase pipeline managed by `SymbolCompletionState`:
 
 ```
-Phase 1: BindReferences          ← resolve IDs via Binder chain
-Phase 2: Members                 ← collect/initialize child symbols
-Phase 3: EffectiveEntries        ← compute modifier-applied values (roster-only)
-Phase 4: Constraints             ← evaluate constraint diagnostics (roster-only)
+Phase 1: Members                 ← collect/initialize child symbols
+Phase 2: EffectiveEntries        ← compute modifier-applied values (roster-only)
+Phase 3: CheckReferences         ← force-access bound fields, report diagnostics
+Phase 4: CheckConstraints        ← evaluate constraint diagnostics (roster-only)
 ```
 
-Phases 3–4 are **roster-only** — catalogue symbols auto-complete these phases immediately
-since effective entries require roster context for condition evaluation.
+Bound reference fields (e.g. `Type`, `Publication`, `SourceEntry`) are
+**self-completing** — each property getter lazily binds on first access using
+`Interlocked.CompareExchange`. There is no separate `BindReferences` phase.
+`CheckReferences` force-accesses all bound fields to ensure diagnostics are reported.
+
+Phases 2 and 4 are **roster-only** — catalogue symbols auto-complete these phases
+immediately since effective entries require roster context for condition evaluation.
 
 **Trigger**: `ForceComplete()` on any symbol cascades through all phases. Accessing
-`ISelectionSymbol.EffectiveSourceEntry` triggers completion up through Phase 3.
+`ISelectionSymbol.EffectiveSourceEntry` triggers completion up through Phase 2.
 `GetDiagnostics()` triggers full completion including Phase 4.
 
 #### 3c. EffectiveEntryCache Architecture

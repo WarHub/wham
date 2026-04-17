@@ -26,7 +26,10 @@ internal sealed class ProfileSymbol : ResourceEntryBaseSymbol, IProfileSymbol, I
 
     public override ProfileNode Declaration { get; }
 
-    public override IResourceDefinitionSymbol Type => GetBoundField(ref lazyType);
+    public override IResourceDefinitionSymbol Type =>
+        GetBoundField(ref lazyType, Declaration, static (b, d, decl) => b.BindProfileTypeSymbol(decl, d));
+
+    protected override void CheckReferencesCore() => _ = Type;
 
     public override ResourceKind ResourceKind => ResourceKind.Profile;
 
@@ -40,11 +43,4 @@ internal sealed class ProfileSymbol : ResourceEntryBaseSymbol, IProfileSymbol, I
 
     ImmutableArray<ICharacteristicSymbol> IProfileSymbol.Characteristics =>
         Characteristics.Cast<CharacteristicSymbol, ICharacteristicSymbol>();
-
-    protected override void BindReferencesCore(Binder binder, BindingDiagnosticBag diagnostics)
-    {
-        base.BindReferencesCore(binder, diagnostics);
-
-        lazyType = binder.BindProfileTypeSymbol(Declaration, diagnostics);
-    }
 }

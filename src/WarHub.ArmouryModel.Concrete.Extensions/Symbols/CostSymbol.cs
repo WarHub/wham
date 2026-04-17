@@ -19,14 +19,10 @@ internal sealed class CostSymbol : ResourceEntryBaseSymbol, ICostSymbol, INodeDe
 
     public override ResourceKind ResourceKind => ResourceKind.Cost;
 
-    public override IResourceDefinitionSymbol Type => GetBoundField(ref lazyTypeSymbol);
+    public override IResourceDefinitionSymbol Type =>
+        GetBoundField(ref lazyTypeSymbol, Declaration, static (b, d, decl) => b.BindCostTypeSymbol(decl, d));
+
+    protected override void CheckReferencesCore() => _ = Type;
 
     public decimal Value => Declaration.Value;
-
-    protected override void BindReferencesCore(Binder binder, BindingDiagnosticBag diagnostics)
-    {
-        base.BindReferencesCore(binder, diagnostics);
-
-        lazyTypeSymbol = binder.BindCostTypeSymbol(Declaration, diagnostics);
-    }
 }

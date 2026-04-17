@@ -49,27 +49,36 @@ internal sealed class ModifierEffectSymbol : ModifierEffectBaseSymbol, IEffectSy
 
     public override EffectTargetKind TargetKind { get; }
 
-    public override ISymbol? TargetMember => GetOptionalBoundField(ref lazyTargetMember);
+    public override ISymbol? TargetMember
+    {
+        get
+        {
+            if (TargetKind is EffectTargetKind.Member)
+                return GetBoundField(ref lazyTargetMember, Declaration, static (b, d, decl) => b.BindEffectTargetMemberSymbol(decl, decl.Field, d));
+            return null;
+        }
+    }
 
     public override EffectOperation FunctionKind { get; }
 
     public override string? OperandValue => Declaration.Value;
 
-    public override ISymbol? OperandSymbol => GetOptionalBoundField(ref lazyOperand);
+    public override ISymbol? OperandSymbol
+    {
+        get
+        {
+            if (TargetKind is EffectTargetKind.EntryCategory)
+                return GetBoundField(ref lazyOperand, Declaration, static (b, d, decl) => b.BindCategoryEntrySymbol(decl, decl.Value, d));
+            return null;
+        }
+    }
 
     public override ImmutableArray<ModifierEffectBaseSymbol> ChildrenWhenSatisfied =>
         ImmutableArray<ModifierEffectBaseSymbol>.Empty;
 
-    protected override void BindReferencesCore(Binder binder, BindingDiagnosticBag diagnostics)
+    protected override void CheckReferencesCore()
     {
-        base.BindReferencesCore(binder, diagnostics);
-        if (TargetKind is EffectTargetKind.EntryCategory)
-        {
-            lazyOperand = binder.BindCategoryEntrySymbol(Declaration, Declaration.Value, diagnostics);
-        }
-        else if (TargetKind is EffectTargetKind.Member)
-        {
-            lazyTargetMember = binder.BindEffectTargetMemberSymbol(Declaration, Declaration.Field, diagnostics);
-        }
+        _ = TargetMember;
+        _ = OperandSymbol;
     }
 }

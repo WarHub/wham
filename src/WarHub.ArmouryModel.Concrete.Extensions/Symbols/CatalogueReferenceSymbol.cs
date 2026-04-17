@@ -18,7 +18,10 @@ internal sealed class CatalogueReferenceSymbol : SourceDeclaredSymbol, ICatalogu
 
     public int CatalogueRevision => default;
 
-    public ICatalogueSymbol Catalogue => GetBoundField(ref lazyCatalogue);
+    public ICatalogueSymbol Catalogue =>
+        GetBoundField(ref lazyCatalogue, Declaration, static (b, d, decl) => b.BindCatalogueSymbol(decl, d));
+
+    protected override void CheckReferencesCore() => _ = Catalogue;
 
     public override CatalogueLinkNode Declaration { get; }
 
@@ -30,11 +33,4 @@ internal sealed class CatalogueReferenceSymbol : SourceDeclaredSymbol, ICatalogu
 
     public override TResult Accept<TArgument, TResult>(SymbolVisitor<TArgument, TResult> visitor, TArgument argument) =>
         visitor.VisitCatalogueReference(this, argument);
-
-    protected override void BindReferencesCore(Binder binder, BindingDiagnosticBag diagnostics)
-    {
-        base.BindReferencesCore(binder, diagnostics);
-
-        lazyCatalogue = binder.BindCatalogueSymbol(Declaration, diagnostics);
-    }
 }

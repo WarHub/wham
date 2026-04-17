@@ -32,12 +32,8 @@ internal sealed class SelectionEntryLinkSymbol : SelectionEntryBaseSymbol, INode
 
     public override ContainerKind ContainerKind { get; }
 
-    public override ISelectionEntryContainerSymbol ReferencedEntry => GetBoundField(ref lazyReference);
+    public override ISelectionEntryContainerSymbol ReferencedEntry =>
+        GetBoundField(ref lazyReference, Declaration, static (b, d, decl) => b.BindSelectionEntrySymbol(decl, d));
 
-    protected override void BindReferencesCore(Binder binder, BindingDiagnosticBag diagnostics)
-    {
-        base.BindReferencesCore(binder, diagnostics);
-
-        lazyReference = binder.BindSelectionEntrySymbol(Declaration, diagnostics);
-    }
+    protected override void CheckReferencesCore() => _ = ReferencedEntry;
 }

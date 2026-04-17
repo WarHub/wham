@@ -41,9 +41,19 @@ internal sealed class PublicationReferenceSymbol : SourceDeclaredSymbol, IPublic
 
     public string? PublicationId => PublicationRefDeclaration.PublicationId;
 
-    public IPublicationSymbol? Publication => GetOptionalBoundField(ref lazyPublication);
+    public IPublicationSymbol? Publication
+    {
+        get
+        {
+            if (PublicationRefDeclaration.PublicationId is not null)
+                return GetBoundField(ref lazyPublication, PublicationRefDeclaration, static (b, d, decl) => b.BindPublicationSymbol(decl, d));
+            return null;
+        }
+    }
 
     public string? Page => PublicationRefDeclaration.Page;
+
+    protected override void CheckReferencesCore() => _ = Publication;
 
     public sealed override void Accept(SymbolVisitor visitor) =>
         visitor.VisitPublicationReference(this);
@@ -53,13 +63,4 @@ internal sealed class PublicationReferenceSymbol : SourceDeclaredSymbol, IPublic
 
     public sealed override TResult Accept<TArgument, TResult>(SymbolVisitor<TArgument, TResult> visitor, TArgument argument) =>
         visitor.VisitPublicationReference(this, argument);
-
-    protected override void BindReferencesCore(Binder binder, BindingDiagnosticBag diagnostics)
-    {
-        base.BindReferencesCore(binder, diagnostics);
-        if (PublicationRefDeclaration.PublicationId is not null)
-        {
-            lazyPublication = binder.BindPublicationSymbol(PublicationRefDeclaration, diagnostics);
-        }
-    }
 }

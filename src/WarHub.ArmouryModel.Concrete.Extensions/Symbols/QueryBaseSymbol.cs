@@ -19,7 +19,7 @@ internal abstract class QueryBaseSymbol : LogicBaseSymbol, IQuerySymbol
         {
             "forces" => QueryValueKind.ForceCount,
             "selections" => QueryValueKind.SelectionCount,
-            { } id when id.StartsWith("limit::", StringComparison.Ordinal) => QueryValueKind.MemberValueLimit,
+            { } id when LimitField.IsMatch(id) => QueryValueKind.MemberValueLimit,
             { } id when !string.IsNullOrWhiteSpace(id) => QueryValueKind.MemberValue,
             _ => QueryValueKind.Unknown
         };
@@ -109,17 +109,50 @@ internal abstract class QueryBaseSymbol : LogicBaseSymbol, IQuerySymbol
 
     public QueryValueKind ValueKind { get; }
 
-    public ISymbol? ValueTypeSymbol => GetOptionalBoundField(ref lazyValueType);
+    public ISymbol? ValueTypeSymbol
+    {
+        get
+        {
+            if (ValueKind is QueryValueKind.MemberValue)
+                return GetBoundField(ref lazyValueType, Declaration, static (b, d, decl) => b.BindCostTypeSymbol(decl, decl.Field, d));
+            if (ValueKind is QueryValueKind.MemberValueLimit)
+                return GetBoundField(ref lazyValueType, Declaration, static (b, d, decl) => b.BindCostTypeSymbol(decl, LimitField.GetCostTypeId(decl.Field), d));
+            return null;
+        }
+    }
 
     public QueryScopeKind ScopeKind { get; }
 
-    public ISymbol? ScopeSymbol => GetOptionalBoundField(ref lazyScope);
+    public ISymbol? ScopeSymbol
+    {
+        get
+        {
+            if (ScopeKind is QueryScopeKind.ReferencedEntry)
+                return GetBoundField(ref lazyScope, Declaration, static (b, d, decl) => b.BindScopeEntrySymbol(decl, decl.Scope, d));
+            return null;
+        }
+    }
 
     public QueryFilterKind ValueFilterKind { get; }
 
-    public ISymbol? FilterSymbol => GetOptionalBoundField(ref lazyFilter);
+    public ISymbol? FilterSymbol
+    {
+        get
+        {
+            if (ValueFilterKind is QueryFilterKind.SpecifiedEntry)
+                return GetBoundField(ref lazyFilter, this, static (b, d, self) => b.BindFilterEntrySymbol(self.Declaration, ((QueryFilteredBaseNode)self.Declaration).ChildId, self.ScopeKind, d));
+            return null;
+        }
+    }
 
     public QueryOptions Options { get; }
+
+    protected override void CheckReferencesCore()
+    {
+        _ = ValueTypeSymbol;
+        _ = ScopeSymbol;
+        _ = FilterSymbol;
+    }
 
     public static QueryBaseSymbol Create(ISymbol containingSymbol, QueryBaseNode declaration, DiagnosticBag diagnostics)
     {
@@ -140,28 +173,6 @@ internal abstract class QueryBaseSymbol : LogicBaseSymbol, IQuerySymbol
 
     public sealed override TResult Accept<TArgument, TResult>(SymbolVisitor<TArgument, TResult> visitor, TArgument argument) =>
         visitor.VisitQuery(this, argument);
-
-    protected override void BindReferencesCore(Binder binder, BindingDiagnosticBag diagnostics)
-    {
-        base.BindReferencesCore(binder, diagnostics);
-        if (ValueKind is QueryValueKind.MemberValue)
-        {
-            lazyValueType = binder.BindCostTypeSymbol(Declaration, Declaration.Field, diagnostics);
-        }
-        else if (ValueKind is QueryValueKind.MemberValueLimit)
-        {
-            // limit:: prefix (e.g. limit::abc-123) is used to describe roster cost limit
-            lazyValueType = binder.BindCostTypeSymbol(Declaration, Declaration.Field?["limit::".Length..], diagnostics);
-        }
-        if (ScopeKind is QueryScopeKind.ReferencedEntry)
-        {
-            lazyScope = binder.BindScopeEntrySymbol(Declaration, Declaration.Scope, diagnostics);
-        }
-        if (ValueFilterKind is QueryFilterKind.SpecifiedEntry)
-        {
-            lazyFilter = binder.BindFilterEntrySymbol(Declaration, ((QueryFilteredBaseNode)Declaration).ChildId, ScopeKind, diagnostics);
-        }
-    }
 
     internal sealed class ConditionQuerySymbol : QueryBaseSymbol
     {
@@ -228,5 +239,16 @@ internal abstract class QueryBaseSymbol : LogicBaseSymbol, IQuerySymbol
         }
 
         public override QueryComparisonType Comparison => QueryComparisonType.None;
+    }
+
+    private static class LimitField
+    {
+        private const string Prefix = "limit::";
+
+        public static bool IsMatch(string field) =>
+            field.StartsWith(Prefix, StringComparison.Ordinal);
+
+        public static string? GetCostTypeId(string? field) =>
+            field?[Prefix.Length..];
     }
 }

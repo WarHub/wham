@@ -42,7 +42,10 @@ internal sealed class RosterCostSymbol : SourceDeclaredSymbol, IRosterCostSymbol
         }
     }
 
-    public IResourceDefinitionSymbol CostType => GetBoundField(ref lazyType);
+    public IResourceDefinitionSymbol CostType =>
+        GetBoundField(ref lazyType, CostDeclaration, static (b, d, decl) => b.BindCostTypeSymbol(decl, d));
+
+    protected override void CheckReferencesCore() => _ = CostType;
 
     public override void Accept(SymbolVisitor visitor) =>
         visitor.VisitRosterCost(this);
@@ -52,10 +55,4 @@ internal sealed class RosterCostSymbol : SourceDeclaredSymbol, IRosterCostSymbol
 
     public override TResult Accept<TArgument, TResult>(SymbolVisitor<TArgument, TResult> visitor, TArgument argument) =>
         visitor.VisitRosterCost(this, argument);
-
-    protected override void BindReferencesCore(Binder binder, BindingDiagnosticBag diagnostics)
-    {
-        base.BindReferencesCore(binder, diagnostics);
-        lazyType = binder.BindCostTypeSymbol(CostDeclaration, diagnostics);
-    }
 }

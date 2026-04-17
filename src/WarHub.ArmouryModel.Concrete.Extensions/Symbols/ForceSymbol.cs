@@ -27,7 +27,10 @@ internal sealed class ForceSymbol : ContainerSymbol, IForceSymbol, INodeDeclared
 
     public string? EntryId => Declaration.EntryId;
 
-    public override IForceEntrySymbol SourceEntry => GetBoundField(ref lazyForceEntry);
+    public override IForceEntrySymbol SourceEntry =>
+        GetBoundField(ref lazyForceEntry, Declaration, static (b, d, decl) => b.BindForceEntrySymbol(decl, d));
+
+    protected override void CheckReferencesCore() => _ = SourceEntry;
 
     public ImmutableArray<ForceSymbol> Forces { get; }
 
@@ -81,12 +84,6 @@ internal sealed class ForceSymbol : ContainerSymbol, IForceSymbol, INodeDeclared
             Interlocked.CompareExchange(ref lazyEffectiveSourceEntry, result, null);
             return lazyEffectiveSourceEntry;
         }
-    }
-
-    protected override void BindReferencesCore(Binder binder, BindingDiagnosticBag diagnostics)
-    {
-        base.BindReferencesCore(binder, diagnostics);
-        lazyForceEntry = binder.BindForceEntrySymbol(Declaration, diagnostics);
     }
 
     protected override ImmutableArray<Symbol> MakeAllMembers(BindingDiagnosticBag diagnostics) =>
