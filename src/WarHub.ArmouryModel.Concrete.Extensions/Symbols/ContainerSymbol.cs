@@ -2,8 +2,8 @@ using WarHub.ArmouryModel.Source;
 
 namespace WarHub.ArmouryModel.Concrete;
 
-[GenerateSymbol(SymbolKind.ContainerEntryInstance)]
-internal abstract partial class ContainerSymbol : EntryInstanceSymbol, IContainerEntryInstanceSymbol
+[GenerateSymbol(SymbolKind.Container)]
+internal abstract partial class ContainerSymbol : EntryInstanceSymbol, IContainerSymbol
 {
     protected ContainerSymbol(
         ISymbol? containingSymbol,

@@ -55,10 +55,10 @@ public enum SymbolKind
     ContainerEntry,
 
     /// <summary>
-    /// Container entry instance. Further discriminated by <see cref="ContainerKind"/>.
+    /// Container instance. Further discriminated by <see cref="ContainerKind"/>.
     /// Includes entry instances in roster: force, category, selection.
     /// </summary>
-    ContainerEntryInstance,
+    Container,
 
     /// <summary>
     /// Constraint that creates boundaries of allowed counts.

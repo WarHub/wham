@@ -72,7 +72,7 @@ public readonly record struct SymbolKey
 
                 // Immediate parent is an entry or container — use its ID.
                 case SymbolKind.ContainerEntry:
-                case SymbolKind.ContainerEntryInstance:
+                case SymbolKind.Container:
                     return parent.Id;
             }
         }

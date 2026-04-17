@@ -93,7 +93,7 @@ internal sealed class SymbolIndex
                 case SymbolKind.GamesystemNamespace:
                     return null;
                 case SymbolKind.ContainerEntry:
-                case SymbolKind.ContainerEntryInstance:
+                case SymbolKind.Container:
                     return parent.Id;
             }
         }
