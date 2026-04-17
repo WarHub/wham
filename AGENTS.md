@@ -25,6 +25,7 @@ git submodule update --init                            # first time (required)
 dotnet restore && dotnet build                         # build all
 dotnet test                                            # all tests
 dotnet test tests/WarHub.ArmouryModel.RosterEngine.Tests/  # conformance only
+dotnet test tests/WarHub.ArmouryModel.Concrete.Extensions.Generators.Tests/  # generator/analyzer tests
 dotnet pack                                            # NuGet packages (Release mode)
 ```
 
@@ -161,6 +162,13 @@ Extensions, Concrete.Extensions, Concrete.Extensions.Generators, EditorServices,
 **Modify CI:**
 - `.github/workflows/ci.yml` — main CI (build, test, pack)
 - `.github/workflows/publish.yml` — NuGet publishing
+
+**Modify generators/analyzers (Concrete.Extensions.Generators):**
+1. Generator project is netstandard2.0 (Roslyn requirement) — no records, no
+   `ImmutableArray` collection expressions, explicit `using` directives needed
+2. Make changes in `src/WarHub.ArmouryModel.Concrete.Extensions.Generators/`
+3. Run generator tests: `dotnet test tests/WarHub.ArmouryModel.Concrete.Extensions.Generators.Tests/`
+4. Run consuming project tests: `dotnet test tests/WarHub.ArmouryModel.Concrete.Extensions.Tests/`
 
 ## Known gotchas
 
