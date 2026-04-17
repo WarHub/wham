@@ -23,7 +23,7 @@ internal abstract class EntryReferencePathBaseSymbol : SourceDeclaredSymbol, IEn
     public sealed override SymbolKind Kind => SymbolKind.Link;
 
     public ImmutableArray<IEntrySymbol> SourceEntries =>
-        GetBoundField(ref lazySourceEntries, BindSourceEntries);
+        GetBoundField(ref lazySourceEntries, this, static (b, d, self) => self.BindSourceEntries(b, d));
 
     protected sealed override void CheckReferencesCore() => _ = SourceEntries;
 

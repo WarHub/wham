@@ -28,7 +28,7 @@ internal sealed class ForceSymbol : ContainerSymbol, IForceSymbol, INodeDeclared
     public string? EntryId => Declaration.EntryId;
 
     public override IForceEntrySymbol SourceEntry =>
-        GetBoundField(ref lazyForceEntry, (b, d) => b.BindForceEntrySymbol(Declaration, d));
+        GetBoundField(ref lazyForceEntry, Declaration, static (b, d, decl) => b.BindForceEntrySymbol(decl, d));
 
     protected override void CheckReferencesCore() => _ = SourceEntry;
 

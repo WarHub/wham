@@ -17,7 +17,7 @@ internal sealed class RosterProfileSymbol : RosterResourceBaseSymbol, IRosterPro
     public override ResourceKind ResourceKind => ResourceKind.Profile;
 
     public IResourceDefinitionSymbol Type =>
-        GetBoundField(ref lazyType, (b, d) => b.BindProfileTypeSymbol(Declaration, d));
+        GetBoundField(ref lazyType, Declaration, static (b, d, decl) => b.BindProfileTypeSymbol(decl, d));
 
     protected override void CheckReferencesCore() => _ = Type;
 

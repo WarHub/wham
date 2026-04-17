@@ -24,7 +24,7 @@ internal sealed class SelectionEntryGroupSymbol : SelectionEntryBaseSymbol, ISel
         get
         {
             if (Declaration.DefaultSelectionEntryId is not null)
-                return GetBoundField(ref lazyDefaultEntry, (b, d) => b.BindSelectionEntryGroupDefaultEntrySymbol(Declaration, this, d));
+                return GetBoundField(ref lazyDefaultEntry, this, static (b, d, self) => b.BindSelectionEntryGroupDefaultEntrySymbol(self.Declaration, self, d));
             return null;
         }
     }

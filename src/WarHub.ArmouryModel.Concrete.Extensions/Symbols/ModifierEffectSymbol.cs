@@ -54,7 +54,7 @@ internal sealed class ModifierEffectSymbol : ModifierEffectBaseSymbol, IEffectSy
         get
         {
             if (TargetKind is EffectTargetKind.Member)
-                return GetBoundField(ref lazyTargetMember, (b, d) => b.BindEffectTargetMemberSymbol(Declaration, Declaration.Field, d));
+                return GetBoundField(ref lazyTargetMember, Declaration, static (b, d, decl) => b.BindEffectTargetMemberSymbol(decl, decl.Field, d));
             return null;
         }
     }
@@ -68,7 +68,7 @@ internal sealed class ModifierEffectSymbol : ModifierEffectBaseSymbol, IEffectSy
         get
         {
             if (TargetKind is EffectTargetKind.EntryCategory)
-                return GetBoundField(ref lazyOperand, (b, d) => b.BindCategoryEntrySymbol(Declaration, Declaration.Value, d));
+                return GetBoundField(ref lazyOperand, Declaration, static (b, d, decl) => b.BindCategoryEntrySymbol(decl, decl.Value, d));
             return null;
         }
     }

@@ -18,7 +18,7 @@ internal sealed class CategorySymbol : ContainerSymbol, ICategorySymbol, INodeDe
     public new CategoryNode Declaration { get; }
 
     public override ICategoryEntrySymbol SourceEntry =>
-        GetBoundField(ref lazyCategoryEntry, (b, d) => b.BindCategoryEntrySymbol(Declaration, d));
+        GetBoundField(ref lazyCategoryEntry, Declaration, static (b, d, decl) => b.BindCategoryEntrySymbol(decl, d));
 
     protected override void CheckReferencesCore() => _ = SourceEntry;
 

@@ -43,7 +43,7 @@ internal sealed class RosterCostSymbol : SourceDeclaredSymbol, IRosterCostSymbol
     }
 
     public IResourceDefinitionSymbol CostType =>
-        GetBoundField(ref lazyType, (b, d) => b.BindCostTypeSymbol(CostDeclaration, d));
+        GetBoundField(ref lazyType, CostDeclaration, static (b, d, decl) => b.BindCostTypeSymbol(decl, d));
 
     protected override void CheckReferencesCore() => _ = CostType;
 

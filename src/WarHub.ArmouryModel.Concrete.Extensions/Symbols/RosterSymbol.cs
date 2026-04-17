@@ -47,7 +47,7 @@ internal sealed class RosterSymbol : SourceDeclaredSymbol, IRosterSymbol, INodeD
     public string? CustomNotes => Declaration.CustomNotes;
 
     public ICatalogueSymbol Gamesystem =>
-        GetBoundField(ref lazyGamesystem, (b, d) => b.BindGamesystemSymbol(Declaration, d));
+        GetBoundField(ref lazyGamesystem, Declaration, static (b, d, decl) => b.BindGamesystemSymbol(decl, d));
 
     protected override void CheckReferencesCore() => _ = Gamesystem;
 

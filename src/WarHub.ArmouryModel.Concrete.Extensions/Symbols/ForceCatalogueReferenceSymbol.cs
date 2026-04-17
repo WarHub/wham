@@ -28,7 +28,7 @@ internal sealed class ForceCatalogueReferenceSymbol : SourceDeclaredSymbol, ICat
     public bool ImportsRootEntries => false;
 
     public ICatalogueSymbol Catalogue =>
-        GetBoundField(ref lazyCatalogue, (b, d) => b.BindCatalogueSymbol(Declaration, d));
+        GetBoundField(ref lazyCatalogue, Declaration, static (b, d, decl) => b.BindCatalogueSymbol(decl, d));
 
     protected override void CheckReferencesCore() => _ = Catalogue;
 

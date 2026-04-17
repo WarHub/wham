@@ -20,7 +20,7 @@ internal sealed class CharacteristicSymbol : ResourceEntryBaseSymbol, ICharacter
     public override ResourceKind ResourceKind => ResourceKind.Characteristic;
 
     public override IResourceDefinitionSymbol Type =>
-        GetBoundField(ref lazyType, (b, d) => b.BindCharacteristicTypeSymbol(Declaration, d));
+        GetBoundField(ref lazyType, Declaration, static (b, d, decl) => b.BindCharacteristicTypeSymbol(decl, d));
 
     protected override void CheckReferencesCore() => _ = Type;
 

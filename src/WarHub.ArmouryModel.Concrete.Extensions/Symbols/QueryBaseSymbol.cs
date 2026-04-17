@@ -114,9 +114,9 @@ internal abstract class QueryBaseSymbol : LogicBaseSymbol, IQuerySymbol
         get
         {
             if (ValueKind is QueryValueKind.MemberValue)
-                return GetBoundField(ref lazyValueType, (b, d) => b.BindCostTypeSymbol(Declaration, Declaration.Field, d));
+                return GetBoundField(ref lazyValueType, Declaration, static (b, d, decl) => b.BindCostTypeSymbol(decl, decl.Field, d));
             if (ValueKind is QueryValueKind.MemberValueLimit)
-                return GetBoundField(ref lazyValueType, (b, d) => b.BindCostTypeSymbol(Declaration, Declaration.Field?["limit::".Length..], d));
+                return GetBoundField(ref lazyValueType, Declaration, static (b, d, decl) => b.BindCostTypeSymbol(decl, decl.Field?["limit::".Length..], d));
             return null;
         }
     }
@@ -128,7 +128,7 @@ internal abstract class QueryBaseSymbol : LogicBaseSymbol, IQuerySymbol
         get
         {
             if (ScopeKind is QueryScopeKind.ReferencedEntry)
-                return GetBoundField(ref lazyScope, (b, d) => b.BindScopeEntrySymbol(Declaration, Declaration.Scope, d));
+                return GetBoundField(ref lazyScope, Declaration, static (b, d, decl) => b.BindScopeEntrySymbol(decl, decl.Scope, d));
             return null;
         }
     }
@@ -140,7 +140,7 @@ internal abstract class QueryBaseSymbol : LogicBaseSymbol, IQuerySymbol
         get
         {
             if (ValueFilterKind is QueryFilterKind.SpecifiedEntry)
-                return GetBoundField(ref lazyFilter, (b, d) => b.BindFilterEntrySymbol(Declaration, ((QueryFilteredBaseNode)Declaration).ChildId, ScopeKind, d));
+                return GetBoundField(ref lazyFilter, this, static (b, d, self) => b.BindFilterEntrySymbol(self.Declaration, ((QueryFilteredBaseNode)self.Declaration).ChildId, self.ScopeKind, d));
             return null;
         }
     }

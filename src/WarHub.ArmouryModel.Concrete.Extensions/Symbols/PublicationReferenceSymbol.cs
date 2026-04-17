@@ -46,7 +46,7 @@ internal sealed class PublicationReferenceSymbol : SourceDeclaredSymbol, IPublic
         get
         {
             if (PublicationRefDeclaration.PublicationId is not null)
-                return GetBoundField(ref lazyPublication, (b, d) => b.BindPublicationSymbol(PublicationRefDeclaration, d));
+                return GetBoundField(ref lazyPublication, PublicationRefDeclaration, static (b, d, decl) => b.BindPublicationSymbol(decl, d));
             return null;
         }
     }

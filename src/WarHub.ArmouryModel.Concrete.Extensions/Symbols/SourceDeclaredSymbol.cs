@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using WarHub.ArmouryModel.Source;
 
 namespace WarHub.ArmouryModel.Concrete;
@@ -165,30 +166,43 @@ internal abstract class SourceDeclaredSymbol : Symbol, INodeDeclaredSymbol<Sourc
     /// <summary>
     /// Self-completing bound field accessor. Each field binds itself independently
     /// on first access via <see cref="Interlocked.CompareExchange{T}"/>.
+    /// Uses a state parameter so that callers can use <c>static</c> lambdas (zero-allocation).
     /// </summary>
-    protected T GetBoundField<T>(ref T? field, Func<Binder, BindingDiagnosticBag, T> bind) where T : class
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    protected T GetBoundField<T, TState>(ref T? field, TState state, Func<Binder, BindingDiagnosticBag, TState, T> bind) where T : class
     {
-        if (field is not null) return field;
-        var binder = DeclaringCompilation.GetBinder(Declaration, ContainingSymbol);
-        var diagnostics = BindingDiagnosticBag.GetInstance();
-        var result = bind(binder, diagnostics);
-        if (Interlocked.CompareExchange(ref field, result, null) is null)
-        {
-            AddDeclarationDiagnostics(diagnostics);
-        }
-        diagnostics.Free();
-        return field;
+        return field ?? BindField(ref field, state, bind);
     }
 
     /// <summary>
     /// Self-completing bound field accessor for <see cref="ImmutableArray{T}"/> fields.
     /// </summary>
-    protected ImmutableArray<T> GetBoundField<T>(ref ImmutableArray<T> field, Func<Binder, BindingDiagnosticBag, ImmutableArray<T>> bind)
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    protected ImmutableArray<T> GetBoundField<T, TState>(ref ImmutableArray<T> field, TState state, Func<Binder, BindingDiagnosticBag, TState, ImmutableArray<T>> bind)
     {
-        if (!field.IsDefault) return field;
+        return !field.IsDefault ? field : BindField(ref field, state, bind);
+    }
+
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private T BindField<T, TState>(ref T? field, TState state, Func<Binder, BindingDiagnosticBag, TState, T> bind) where T : class
+    {
         var binder = DeclaringCompilation.GetBinder(Declaration, ContainingSymbol);
         var diagnostics = BindingDiagnosticBag.GetInstance();
-        var result = bind(binder, diagnostics);
+        var result = bind(binder, diagnostics, state);
+        if (Interlocked.CompareExchange(ref field, result, null) is null)
+        {
+            AddDeclarationDiagnostics(diagnostics);
+        }
+        diagnostics.Free();
+        return field!;
+    }
+
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private ImmutableArray<T> BindField<T, TState>(ref ImmutableArray<T> field, TState state, Func<Binder, BindingDiagnosticBag, TState, ImmutableArray<T>> bind)
+    {
+        var binder = DeclaringCompilation.GetBinder(Declaration, ContainingSymbol);
+        var diagnostics = BindingDiagnosticBag.GetInstance();
+        var result = bind(binder, diagnostics, state);
         if (ImmutableInterlocked.InterlockedCompareExchange(ref field, result, default).IsDefault)
         {
             AddDeclarationDiagnostics(diagnostics);

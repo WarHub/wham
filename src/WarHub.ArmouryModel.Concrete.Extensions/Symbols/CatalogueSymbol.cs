@@ -31,7 +31,7 @@ internal sealed class CatalogueSymbol : CatalogueBaseSymbol, INodeDeclaredSymbol
     public override bool IsGamesystem => false;
 
     public override ICatalogueSymbol Gamesystem =>
-        GetBoundField(ref lazyGamesystem, (b, d) => b.BindGamesystemSymbol(Declaration, d));
+        GetBoundField(ref lazyGamesystem, Declaration, static (b, d, decl) => b.BindGamesystemSymbol(decl, d));
 
     protected override void CheckReferencesCore() => _ = Gamesystem;
 

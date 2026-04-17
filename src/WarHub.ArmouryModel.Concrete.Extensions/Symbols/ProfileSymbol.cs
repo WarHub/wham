@@ -27,7 +27,7 @@ internal sealed class ProfileSymbol : ResourceEntryBaseSymbol, IProfileSymbol, I
     public override ProfileNode Declaration { get; }
 
     public override IResourceDefinitionSymbol Type =>
-        GetBoundField(ref lazyType, (b, d) => b.BindProfileTypeSymbol(Declaration, d));
+        GetBoundField(ref lazyType, Declaration, static (b, d, decl) => b.BindProfileTypeSymbol(decl, d));
 
     protected override void CheckReferencesCore() => _ = Type;
 
