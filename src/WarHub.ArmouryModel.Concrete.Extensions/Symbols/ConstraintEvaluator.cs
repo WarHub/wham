@@ -172,7 +172,9 @@ internal static class ConstraintEvaluator
                 var linkId = entry.Id; // link's own ID (same as targetId if not a link)
 
                 // Hidden entry validation: if entry is hidden but has selections, error
-                if (IsEffectivelyHidden(entry))
+                // Only check entries with categories (BattleScribe generates hidden errors
+                // as part of category validation — entries without categories are skipped).
+                if (IsEffectivelyHidden(entry, force))
                 {
                     var cats = entry.Categories;
                     if (cats.IsEmpty && entry.ReferencedEntry is { } r)
@@ -628,11 +630,11 @@ internal static class ConstraintEvaluator
             return count;
         }
 
-        private static bool IsEffectivelyHidden(ISelectionEntryContainerSymbol entry)
+        private bool IsEffectivelyHidden(ISelectionEntryContainerSymbol entry, ForceSymbol force)
         {
-            if (entry.IsHidden) return true;
-            if (entry.ReferencedEntry is { IsHidden: true }) return true;
-            return false;
+            // Use modifier-applied hidden state from effective entry cache
+            var effectiveEntry = _effectiveCache.GetEffectiveEntry(entry, selection: null, force);
+            return effectiveEntry.IsHidden;
         }
 
         private static IEnumerable<SelectionSymbol> FlattenSelections(ImmutableArray<SelectionSymbol> selections)

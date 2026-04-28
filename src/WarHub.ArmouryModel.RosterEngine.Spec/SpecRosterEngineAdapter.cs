@@ -421,7 +421,7 @@ public sealed class SpecRosterEngineAdapter : IRosterEngine
             var catalogue = _forceCatalogues.GetValueOrDefault(force.Id!)
                 ?? ResolveForceCatalogue(state, force);
             var entries = _resolver.GetAvailableEntries(catalogue);
-            counts.Add(entries.Count);
+            counts.Add(_resolver.GetRootEntryCount(catalogue));
             foreach (var entry in entries)
             {
                 StateMapper.CollectReferencedCostTypes(entry.Symbol, referencedCostTypes);

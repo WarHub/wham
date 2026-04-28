@@ -236,13 +236,18 @@ internal sealed class ModifierEvaluator
         if (primarySym is not null)
             primaryId = primarySym.ReferencedEntry?.Id ?? primarySym.Id;
 
-        if (entry.Effects.IsEmpty)
-            return (categories, primaryId);
-        var context = new EvalContext(selection, force, entry);
-        foreach (var effect in entry.Effects)
+        if (!entry.Effects.IsEmpty)
         {
-            ApplyCategoryEffect(effect, categories, ref primaryId, context);
+            var context = new EvalContext(selection, force, entry);
+            foreach (var effect in entry.Effects)
+            {
+                ApplyCategoryEffect(effect, categories, ref primaryId, context);
+            }
         }
+
+        // Process modifiers on individual category links (e.g. set primary=true on a categoryLink)
+        ApplyCategoryLinkEffects(entry, selection, force, categories, ref primaryId);
+
         return (categories, primaryId);
     }
 
@@ -260,19 +265,81 @@ internal sealed class ModifierEvaluator
         var categories = new List<string>(initialCategoryIds);
         string? primaryId = initialPrimaryId;
 
-        if (entry.Effects.IsEmpty)
-            return (categories, primaryId);
-        var context = new EvalContext(selection, force, entry);
-        foreach (var effect in entry.Effects)
+        if (!entry.Effects.IsEmpty)
         {
-            ApplyCategoryEffect(effect, categories, ref primaryId, context);
+            var context = new EvalContext(selection, force, entry);
+            foreach (var effect in entry.Effects)
+            {
+                ApplyCategoryEffect(effect, categories, ref primaryId, context);
+            }
         }
+
+        // Process modifiers on individual category links
+        ApplyCategoryLinkEffects(entry, selection, force, categories, ref primaryId);
+
         return (categories, primaryId);
     }
 
     // ──────────────────────────────────────────────────────────────────
     //  Effect application
     // ──────────────────────────────────────────────────────────────────
+
+    private void ApplyCategoryLinkEffects(
+        ISelectionEntryContainerSymbol entry,
+        ISelectionSymbol? selection,
+        IForceSymbol? force,
+        List<string> categories,
+        ref string? primaryId)
+    {
+        foreach (var cat in entry.Categories)
+        {
+            if (cat.Effects.IsEmpty) continue;
+            var catId = cat.ReferencedEntry?.Id ?? cat.Id;
+            if (catId is null) continue;
+            var catContext = new EvalContext(selection, force, cat);
+            foreach (var effect in cat.Effects)
+            {
+                ApplyCategoryLinkPrimaryEffect(effect, catId, categories, ref primaryId, catContext);
+            }
+        }
+    }
+
+    private void ApplyCategoryLinkPrimaryEffect(
+        IEffectSymbol effect, string catId,
+        List<string> categories, ref string? primaryId, EvalContext context)
+    {
+        // A "set primary true/false" modifier on a category link:
+        // field: "primary" → TargetKind=Member (not a recognized special field),
+        // TargetMember binding fails → null or error symbol
+        if (effect.TargetKind == EffectTargetKind.Member &&
+            effect.FunctionKind == EffectOperation.SetValue &&
+            effect is ModifierEffectSymbol mes &&
+            mes.Declaration.Field == "primary" &&
+            EvaluateEffectCondition(effect, context))
+        {
+            if (ParseBool(effect.OperandValue))
+            {
+                primaryId = catId;
+                if (!categories.Contains(catId))
+                    categories.Add(catId);
+            }
+            else if (primaryId == catId)
+            {
+                primaryId = null;
+            }
+        }
+
+        // Process children (modifier groups)
+        if (effect.ChildrenWhenSatisfied.Length > 0 || effect.ChildrenWhenUnsatisfied.Length > 0)
+        {
+            var satisfied = EvaluateCondition(effect.Condition, context);
+            var children = satisfied ? effect.ChildrenWhenSatisfied : effect.ChildrenWhenUnsatisfied;
+            foreach (var child in children)
+            {
+                ApplyCategoryLinkPrimaryEffect(child, catId, categories, ref primaryId, context);
+            }
+        }
+    }
 
     private string ApplyNameEffect(IEffectSymbol effect, string name, EvalContext context)
     {
@@ -369,9 +436,13 @@ internal sealed class ModifierEvaluator
 
     private decimal ApplyCostEffect(IEffectSymbol effect, string targetTypeId, decimal value, EvalContext context)
     {
-        if (effect.TargetKind == EffectTargetKind.Member && ResolveResourceTypeId(effect.TargetMember) == targetTypeId)
+        if (effect.TargetKind == EffectTargetKind.Member)
         {
-            if (EvaluateEffectCondition(effect, context))
+            var resolvedId = ResolveResourceTypeId(effect.TargetMember);
+            // Fallback: when binding failed, use raw field ID from declaration
+            if (resolvedId is null && effect is ModifierEffectSymbol mes)
+                resolvedId = mes.Declaration.Field;
+            if (resolvedId == targetTypeId && EvaluateEffectCondition(effect, context))
             {
                 var repeatCount = GetRepeatCount(effect, context);
                 for (int r = 0; r < repeatCount; r++)
@@ -400,10 +471,17 @@ internal sealed class ModifierEvaluator
     private string ApplyCharacteristicEffect(
         IEffectSymbol effect, string characteristicTypeId, string value, EvalContext context)
     {
-        if (effect.TargetKind == EffectTargetKind.Member &&
-            ResolveResourceTypeId(effect.TargetMember) == characteristicTypeId)
+        if (effect.TargetKind == EffectTargetKind.Member)
         {
-            value = ApplyStringEffect(effect, value, context);
+            var resolvedId = ResolveResourceTypeId(effect.TargetMember);
+            // Fallback: when binding failed (e.g. characteristic type not found from current scope),
+            // use the raw field ID from the declaration
+            if (resolvedId is null && effect is ModifierEffectSymbol mes)
+                resolvedId = mes.Declaration.Field;
+            if (resolvedId == characteristicTypeId)
+            {
+                value = ApplyStringEffect(effect, value, context);
+            }
         }
         // Process children
         if (effect.ChildrenWhenSatisfied.Length > 0 || effect.ChildrenWhenUnsatisfied.Length > 0)
@@ -580,8 +658,6 @@ internal sealed class ModifierEvaluator
     {
         // "instanceOf" is a boolean type check, NOT a count.
         // It checks if the current selection (or ancestor) matches a specific entry/category.
-        // Only scope=self and scope=ancestor work; all other scopes return false
-        // (force, roster, primary-category etc. are not selection entries).
 
         if (query.ScopeKind == QueryScopeKind.Self)
         {
@@ -593,8 +669,33 @@ internal sealed class ModifierEvaluator
             return CheckAncestorInstanceOf(query, context);
         }
 
-        // Non-self, non-ancestor scopes: the scope element (force, roster, etc.)
-        // is never an instance of a selection entry, so instanceOf always returns false.
+        // scope=force/roster with category-based filter: check child selections.
+        // BattleScribe resolves scope=force/roster to the Force/Roster element itself
+        // (not a Selection), so type-based (unit/model/upgrade) and entry-based checks
+        // always return false. Only category-based checks can scan child selections.
+        if (query.ScopeKind is QueryScopeKind.ContainingForce or QueryScopeKind.ContainingRoster)
+        {
+            if (query.ValueFilterKind == QueryFilterKind.SpecifiedEntry
+                && query.FilterSymbol is ICategoryEntrySymbol)
+            {
+                var selections = query.ScopeKind == QueryScopeKind.ContainingForce
+                    ? GetForceSelections(context)
+                    : GetRosterSelections();
+                return CheckScopeInstanceOf(query, selections);
+            }
+            return false;
+        }
+
+        return false;
+    }
+
+    private bool CheckScopeInstanceOf(IQuerySymbol query, IEnumerable<ISelectionSymbol> selections)
+    {
+        foreach (var sel in selections)
+        {
+            if (CheckInstanceOf(query, sel))
+                return true;
+        }
         return false;
     }
 
@@ -613,6 +714,12 @@ internal sealed class ModifierEvaluator
 
         // Check by specific entry/category ID
         var filterId = query.FilterSymbol?.Id;
+        // When binding failed (error symbol), fall back to the raw childId from the declaration
+        if (filterId is null && query.FilterSymbol is { Kind: SymbolKind.Error } && query is QueryBaseSymbol qbs
+            && qbs.Declaration is QueryFilteredBaseNode filtered)
+        {
+            filterId = filtered.ChildId;
+        }
         if (filterId is null)
             return false;
 
@@ -913,10 +1020,13 @@ internal sealed class ModifierEvaluator
     private static bool MatchesSpecifiedEntry(ISelectionSymbol sel, IQuerySymbol query)
     {
         var filterSymbol = query.FilterSymbol;
-        // Error symbols (binding failures) or null → don't match anything
-        if (filterSymbol is null || filterSymbol.Kind == SymbolKind.Error)
-            return false;
-        var filterId = filterSymbol.Id;
+        var filterId = filterSymbol?.Id;
+        // When binding failed (error symbol), fall back to the raw childId from the declaration
+        if (filterId is null && filterSymbol is { Kind: SymbolKind.Error } && query is QueryBaseSymbol qbs
+            && qbs.Declaration is QueryFilteredBaseNode filtered)
+        {
+            filterId = filtered.ChildId;
+        }
         if (filterId is null)
             return false;
 

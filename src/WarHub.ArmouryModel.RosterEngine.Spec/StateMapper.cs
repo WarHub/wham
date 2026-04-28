@@ -48,6 +48,7 @@ internal sealed class StateMapper
 
     private readonly IRosterSymbol _roster;
     private readonly WhamCompilation _compilation;
+    private Dictionary<string, string>? _costTypeNames;
 
     public StateMapper(IRosterSymbol roster, WhamCompilation compilation)
     {
@@ -59,6 +60,15 @@ internal sealed class StateMapper
         IReadOnlyList<int> forceAvailableEntryCounts,
         IReadOnlySet<string> referencedCostTypeIds)
     {
+        // Build cost type ID → name map for filling missing costs on selections
+        _costTypeNames = new Dictionary<string, string>(StringComparer.Ordinal);
+        foreach (var rosterCost in _roster.Costs)
+        {
+            var typeId = rosterCost.CostType?.Id ?? "";
+            if (referencedCostTypeIds.Contains(typeId))
+                _costTypeNames.TryAdd(typeId, rosterCost.Name ?? "");
+        }
+
         var forces = new List<ForceState>();
         for (int i = 0; i < _roster.Forces.Length; i++)
         {
@@ -112,6 +122,14 @@ internal sealed class StateMapper
 
         var profiles = MapProfiles(force.EffectiveSourceEntry.Resources);
         var rules = MapRules(force.EffectiveSourceEntry.Resources);
+
+        // Collect force-level rules from catalogue and game system root resource entries
+        var catalogue = force.CatalogueReference.Catalogue;
+        var gamesystem = catalogue.Gamesystem;
+        AppendRootRules(catalogue, rules);
+        if (!catalogue.IsGamesystem)
+            AppendRootRules(gamesystem, rules);
+
         var categories = MapForceCategories(force);
         var publications = MapPublications(force);
         var childForces = MapChildForces(force);
@@ -250,6 +268,23 @@ internal sealed class StateMapper
         return result;
     }
 
+    private static void AppendRootRules(ICatalogueSymbol catalogue, List<RuleState> rules)
+    {
+        foreach (var resource in catalogue.RootResourceEntries)
+        {
+            if (resource is not IRuleSymbol rule)
+                continue;
+            if (rule.IsHidden)
+                continue;
+            rules.Add(new RuleState(
+                Name: rule.Name ?? "",
+                Description: rule.DescriptionText,
+                Hidden: rule.IsHidden,
+                Page: rule.Page,
+                PublicationId: rule.PublicationReference?.PublicationId));
+        }
+    }
+
     // ──────────────────────────────────────────────────────────────────
     //  Category mapping
     // ──────────────────────────────────────────────────────────────────
@@ -343,15 +378,32 @@ internal sealed class StateMapper
     //  Cost mapping
     // ──────────────────────────────────────────────────────────────────
 
-    private static List<CostState> MapSelectionCosts(ISelectionEntryContainerSymbol eff, int selectedCount)
+    private List<CostState> MapSelectionCosts(ISelectionEntryContainerSymbol eff, int selectedCount)
     {
         var costs = new List<CostState>();
+        var emittedTypeIds = new HashSet<string>(StringComparer.Ordinal);
         foreach (var cost in eff.Costs)
         {
+            var typeId = cost.Type?.Id ?? "";
+            emittedTypeIds.Add(typeId);
             costs.Add(new CostState(
                 Name: cost.Name ?? "",
-                TypeId: cost.Type?.Id ?? "",
+                TypeId: typeId,
                 Value: (double)(cost.Value * selectedCount)));
+        }
+        // BattleScribe emits all referenced cost types on every selection, filling 0 for missing ones
+        if (_costTypeNames is not null)
+        {
+            foreach (var (typeId, name) in _costTypeNames)
+            {
+                if (!emittedTypeIds.Contains(typeId))
+                {
+                    costs.Add(new CostState(
+                        Name: name,
+                        TypeId: typeId,
+                        Value: 0));
+                }
+            }
         }
         return costs;
     }
