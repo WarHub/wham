@@ -311,9 +311,30 @@ public sealed class WhamRosterEngine
 
         // Auto-select child entries that have a minimum constraint ≥ 1.
         var childEntries = _entryResolver.GetChildEntries(entry);
+
+        // Track which groups we've already auto-selected for (to avoid duplicates)
+        var autoSelectedGroups = new HashSet<string>(StringComparer.Ordinal);
+
         foreach (var child in childEntries)
         {
+            // Check 1: Does the individual entry have a min constraint?
             var autoCount = GetMinSelectionCount(child.Symbol);
+
+            // Check 2: Does the source group have a min constraint?
+            if (autoCount < 1 && child.SourceGroup is { } group)
+            {
+                var groupId = group.Id ?? "";
+                if (!autoSelectedGroups.Contains(groupId))
+                {
+                    var groupMin = GetGroupMinSelectionCount(group);
+                    if (groupMin >= 1 && IsDefaultEntryForGroup(child.Symbol, group))
+                    {
+                        autoCount = groupMin;
+                        autoSelectedGroups.Add(groupId);
+                    }
+                }
+            }
+
             if (autoCount < 1)
             {
                 continue;
@@ -329,6 +350,52 @@ public sealed class WhamRosterEngine
         }
 
         return selectionNode;
+    }
+
+    /// <summary>
+    /// Checks if a group has a minimum selection count constraint.
+    /// </summary>
+    private static int GetGroupMinSelectionCount(ISelectionEntryGroupSymbol group)
+    {
+        foreach (var constraint in GetEffectiveConstraints(group))
+        {
+            if (IsMinSelectionConstraint(constraint))
+            {
+                return (int)(constraint.Query.ReferenceValue ?? 0);
+            }
+        }
+        return 0;
+    }
+
+    /// <summary>
+    /// Checks if the given entry is the default entry for its group.
+    /// </summary>
+    private static bool IsDefaultEntryForGroup(
+        ISelectionEntryContainerSymbol entry,
+        ISelectionEntryGroupSymbol group)
+    {
+        // Check explicit default
+        var defaultEntry = group.DefaultSelectionEntry;
+        if (defaultEntry is not null)
+        {
+            var entryResolved = EntryResolver.ResolveEntry(entry);
+            var defaultResolved = EntryResolver.ResolveEntry(defaultEntry);
+            if (entryResolved.Id == defaultResolved.Id || entry.Id == defaultEntry.Id)
+                return true;
+            if (entry.ReferencedEntry?.Id == defaultEntry.Id ||
+                entry.ReferencedEntry?.Id == defaultResolved.Id)
+                return true;
+            return false;
+        }
+
+        // If no explicit default, check if this is the only entry in the group
+        var count = 0;
+        foreach (var _ in group.ChildSelectionEntries)
+        {
+            count++;
+            if (count > 1) return false;
+        }
+        return count == 1;
     }
 
     /// <summary>

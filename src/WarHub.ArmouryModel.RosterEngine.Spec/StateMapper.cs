@@ -84,10 +84,26 @@ internal sealed class StateMapper
 
     private ForceState MapForce(IForceSymbol force, int availableEntryCount)
     {
-        // Sort selections by original (pre-modifier) entry name with numeric awareness (NR canonical ordering)
+        // Build category order map for NR-style selection sorting
+        var categoryOrder = new Dictionary<string, int>(StringComparer.Ordinal);
+        for (int i = 0; i < force.Categories.Length; i++)
+        {
+            var catEntryId = force.Categories[i].SourceEntry?.Id;
+            if (catEntryId is not null)
+                categoryOrder[catEntryId] = i;
+        }
+
         var sortedSelections = force.Selections
-            .Order(Comparer<ISelectionSymbol>.Create(
-                (a, b) => NumericAwareComparison(a.SourceEntry?.Name ?? a.Name, b.SourceEntry?.Name ?? b.Name)));
+            .Order(Comparer<ISelectionSymbol>.Create((a, b) =>
+            {
+                var aCatId = a.PrimaryCategory?.SourceEntry?.Id;
+                var bCatId = b.PrimaryCategory?.SourceEntry?.Id;
+                int aOrder = aCatId is not null && categoryOrder.TryGetValue(aCatId, out var ao) ? ao : -1;
+                int bOrder = bCatId is not null && categoryOrder.TryGetValue(bCatId, out var bo) ? bo : -1;
+                var cmp = aOrder.CompareTo(bOrder);
+                if (cmp != 0) return cmp;
+                return NumericAwareComparison(a.SourceEntry?.Name ?? a.Name, b.SourceEntry?.Name ?? b.Name);
+            }));
         var selections = new List<SelectionState>();
         foreach (var sel in sortedSelections)
         {
@@ -126,8 +142,17 @@ internal sealed class StateMapper
     {
         // Sort child selections by original (pre-modifier) entry name with numeric awareness (NR canonical ordering)
         var sortedChildren = sel.Selections
-            .Order(Comparer<ISelectionSymbol>.Create(
-                (a, b) => NumericAwareComparison(a.SourceEntry?.Name ?? a.Name, b.SourceEntry?.Name ?? b.Name)));
+            .Order(Comparer<ISelectionSymbol>.Create((a, b) =>
+            {
+                try
+                {
+                    return NumericAwareComparison(a.SourceEntry?.Name ?? a.Name, b.SourceEntry?.Name ?? b.Name);
+                }
+                catch
+                {
+                    return NumericAwareComparison(a.Name, b.Name);
+                }
+            }));
         var children = new List<SelectionState>();
         foreach (var child in sortedChildren)
         {
@@ -184,6 +209,8 @@ internal sealed class StateMapper
         {
             if (resource is not IProfileSymbol p)
                 continue;
+            if (p.IsHidden)
+                continue;
             var chars = new List<CharacteristicState>(p.Characteristics.Length);
             foreach (var ch in p.Characteristics)
             {
@@ -210,6 +237,8 @@ internal sealed class StateMapper
         foreach (var resource in resources)
         {
             if (resource is not IRuleSymbol r)
+                continue;
+            if (r.IsHidden)
                 continue;
             result.Add(new RuleState(
                 Name: r.Name ?? "",
@@ -244,6 +273,13 @@ internal sealed class StateMapper
     private static List<CategoryState> MapForceCategories(IForceSymbol force)
     {
         var categories = new List<CategoryState>();
+        // Prepend synthetic "Uncategorised" category (BattleScribe convention)
+        categories.Add(new CategoryState(
+            Name: "Uncategorised",
+            EntryId: "(No Category)",
+            Primary: false,
+            PublicationId: null,
+            Page: null));
         foreach (var cat in force.Categories)
         {
             var entryId = cat.SourceEntry?.Id ?? cat.Id ?? "";
@@ -262,15 +298,30 @@ internal sealed class StateMapper
     //  Publication mapping
     // ──────────────────────────────────────────────────────────────────
 
-    private static List<PublicationState> MapPublications(IForceSymbol force)
+    private List<PublicationState> MapPublications(IForceSymbol force)
     {
         var result = new List<PublicationState>();
-        foreach (var pub in force.Publications)
+        var seen = new HashSet<string>(StringComparer.Ordinal);
+
+        // Catalogue-specific publications first
+        var catalogue = force.CatalogueReference.Catalogue;
+        if (!catalogue.IsGamesystem)
         {
-            result.Add(new PublicationState(
-                Id: pub.Id ?? "",
-                Name: pub.Name ?? ""));
+            foreach (var def in catalogue.ResourceDefinitions)
+            {
+                if (def is IPublicationSymbol pub && pub.Id is not null && seen.Add(pub.Id))
+                    result.Add(new PublicationState(Id: pub.Id, Name: pub.Name ?? ""));
+            }
         }
+
+        // Then game system publications
+        var gamesystem = catalogue.Gamesystem;
+        foreach (var def in gamesystem.ResourceDefinitions)
+        {
+            if (def is IPublicationSymbol pub && pub.Id is not null && seen.Add(pub.Id))
+                result.Add(new PublicationState(Id: pub.Id, Name: pub.Name ?? ""));
+        }
+
         return result;
     }
 

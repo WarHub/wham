@@ -27,8 +27,19 @@ internal sealed class SelectionSymbol : ContainerSymbol, ISelectionSymbol, INode
 
     public int SelectedCount => Declaration.Number;
 
-    public override ISelectionEntrySymbol SourceEntry =>
-        (ISelectionEntrySymbol)SourceEntryPath.SourceEntries.Last();
+    public override ISelectionEntrySymbol SourceEntry
+    {
+        get
+        {
+            var last = SourceEntryPath.SourceEntries.Last();
+            // If the last element is a link, resolve through to the target
+            if (last is ISelectionEntrySymbol entry)
+                return entry;
+            if (last is ISelectionEntryContainerSymbol { ReferencedEntry: ISelectionEntrySymbol target })
+                return target;
+            return (ISelectionEntrySymbol)last;
+        }
+    }
 
     public ISelectionEntryContainerSymbol EffectiveSourceEntry
     {

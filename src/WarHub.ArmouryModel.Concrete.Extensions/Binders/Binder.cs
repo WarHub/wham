@@ -202,8 +202,10 @@ internal class Binder
         }
         var qualifier = (Symbol?)parentSelection?.SourceEntry;
         var resultBuilder = ImmutableArray.CreateBuilder<IEntrySymbol>();
-        // copy over already resolved links from containing selection
-        if (parentSelection is { SourceEntryPath: { SourceEntries.Length: > 1 } path })
+        // copy over already resolved links from containing selection,
+        // but only when the child's entryId has enough segments to match the parent prefix
+        if (parentSelection is { SourceEntryPath: { SourceEntries.Length: > 1 } path }
+            && ids.Length > path.SourceEntries.Length - 1)
         {
             resultBuilder.AddRange(path.SourceEntries.SkipLast(1));
             qualifier = (Symbol?)path.SourceEntries[^2].ReferencedEntry;

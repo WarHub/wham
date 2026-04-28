@@ -725,6 +725,8 @@ public sealed class SpecRosterEngineAdapter : IRosterEngine
             ?? ResolveForceCatalogue(state, force);
         var available = _resolver.GetAvailableEntries(catalogue);
 
+        var autoSelectedGroups = new HashSet<string>(StringComparer.Ordinal);
+
         foreach (var avail in available)
         {
             var effectiveEntry = avail.Symbol.IsReference
@@ -732,6 +734,22 @@ public sealed class SpecRosterEngineAdapter : IRosterEngine
                 : avail.Symbol;
 
             var minCount = GetMinConstraintAutoSelect(effectiveEntry);
+
+            // Also check the source group's constraints
+            if (minCount < 1 && avail.SourceGroup is { } group)
+            {
+                var groupId = group.Id ?? "";
+                if (!autoSelectedGroups.Contains(groupId))
+                {
+                    var groupMin = GetGroupMinConstraintAutoSelect(group);
+                    if (groupMin >= 1 && IsDefaultEntryForGroup(avail, available, group))
+                    {
+                        minCount = groupMin;
+                        autoSelectedGroups.Add(groupId);
+                    }
+                }
+            }
+
             if (minCount < 1) continue;
 
             for (int i = 0; i < minCount; i++)
@@ -741,6 +759,52 @@ public sealed class SpecRosterEngineAdapter : IRosterEngine
         }
 
         _state = state;
+    }
+
+    private static int GetGroupMinConstraintAutoSelect(ISelectionEntryGroupSymbol group)
+    {
+        foreach (var constraint in group.Constraints)
+        {
+            var decl = constraint.GetDeclaration();
+            if (decl is null) continue;
+            if (decl.Type != ConstraintKind.Minimum) continue;
+            if (decl.Field is not "selections") continue;
+            if (decl.Scope is not ("parent" or "force")) continue;
+            if (decl.IsValuePercentage) continue;
+            var value = (int)decl.Value;
+            if (value >= 1) return value;
+        }
+        return 0;
+    }
+
+    private static bool IsDefaultEntryForGroup(
+        AvailableEntry avail,
+        IReadOnlyList<AvailableEntry> allEntries,
+        ISelectionEntryGroupSymbol group)
+    {
+        // Check explicit default
+        var defaultEntry = group.DefaultSelectionEntry;
+        if (defaultEntry is not null)
+        {
+            var entryId = avail.Symbol.Id;
+            var resolvedId = avail.Symbol.ReferencedEntry?.Id;
+            var defaultId = defaultEntry.Id;
+            var defaultResolvedId = defaultEntry.ReferencedEntry?.Id;
+
+            if (entryId == defaultId || entryId == defaultResolvedId ||
+                resolvedId == defaultId || resolvedId == defaultResolvedId)
+                return true;
+            return false;
+        }
+
+        // If no explicit default, check if this is the only entry from this group
+        var count = 0;
+        foreach (var entry in allEntries)
+        {
+            if (entry.SourceGroup == group) count++;
+            if (count > 1) return false;
+        }
+        return count == 1;
     }
 
     private static int GetMinConstraintAutoSelect(ISelectionEntryContainerSymbol entry)

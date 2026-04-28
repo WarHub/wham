@@ -372,10 +372,17 @@ internal static class ConstraintEvaluator
         {
             // Count children by entry ID
             var childCounts = new Dictionary<string, int>(StringComparer.Ordinal);
+            // Count children by entry group ID (for group constraints)
+            var childGroupCounts = new Dictionary<string, int>(StringComparer.Ordinal);
             foreach (var child in parent.ChildSelections)
             {
                 var id = child.Declaration.EntryId;
                 childCounts[id] = childCounts.GetValueOrDefault(id) + child.SelectedCount;
+                var groupId = child.Declaration.EntryGroupId;
+                if (groupId is not null)
+                {
+                    childGroupCounts[groupId] = childGroupCounts.GetValueOrDefault(groupId) + child.SelectedCount;
+                }
             }
 
             // Check constraints on child entries (scope=parent)
@@ -410,7 +417,17 @@ internal static class ConstraintEvaluator
                 {
                     var childId = GetTargetEntryId(childEntrySymbol);
                     if (childId is null) continue;
-                    if (childCounts.ContainsKey(childId)) continue; // already counted above
+
+                    // For groups, count by entryGroupId; for entries, count by entryId
+                    var isGroup = childEntrySymbol is ISelectionEntryGroupSymbol;
+                    if (isGroup)
+                    {
+                        if (childGroupCounts.ContainsKey(childId)) continue;
+                    }
+                    else
+                    {
+                        if (childCounts.ContainsKey(childId)) continue;
+                    }
 
                     var targetEntry = childEntrySymbol.ReferencedEntry ?? childEntrySymbol;
                     var effectiveAvailValues = GetEffectiveConstraintValues(targetEntry, null, force);
@@ -423,7 +440,10 @@ internal static class ConstraintEvaluator
 
                         var constraintId = constraint.Id ?? "";
                         var constraintValue = effectiveAvailValues.GetValueOrDefault(constraintId, query.ReferenceValue ?? 0m);
-                        CheckConstraint(query.Comparison, constraintValue, 0,
+                        var count = isGroup
+                            ? childGroupCounts.GetValueOrDefault(childId)
+                            : 0;
+                        CheckConstraint(query.Comparison, constraintValue, count,
                             childId, "selection", parent.Declaration.EntryId,
                             constraintId);
                     }
