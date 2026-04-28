@@ -11,6 +11,41 @@ namespace WarHub.ArmouryModel.RosterEngine.Spec;
 /// </summary>
 internal sealed class StateMapper
 {
+    /// <summary>
+    /// Numeric-aware string comparer matching NewRecruit's locale-aware ordering.
+    /// "Unit 2" sorts before "Unit 10" (numeric segment comparison).
+    /// </summary>
+    private static readonly Comparison<string?> NumericAwareComparison = static (a, b) =>
+    {
+        if (ReferenceEquals(a, b)) return 0;
+        if (a is null) return -1;
+        if (b is null) return 1;
+
+        int ia = 0, ib = 0;
+        while (ia < a.Length && ib < b.Length)
+        {
+            if (char.IsDigit(a[ia]) && char.IsDigit(b[ib]))
+            {
+                // Compare numeric segments by value
+                int startA = ia, startB = ib;
+                while (ia < a.Length && char.IsDigit(a[ia])) ia++;
+                while (ib < b.Length && char.IsDigit(b[ib])) ib++;
+                var numA = long.Parse(a.AsSpan(startA, ia - startA));
+                var numB = long.Parse(b.AsSpan(startB, ib - startB));
+                var cmp = numA.CompareTo(numB);
+                if (cmp != 0) return cmp;
+            }
+            else
+            {
+                var cmp = a[ia].CompareTo(b[ib]);
+                if (cmp != 0) return cmp;
+                ia++;
+                ib++;
+            }
+        }
+        return a.Length.CompareTo(b.Length);
+    };
+
     private readonly IRosterSymbol _roster;
     private readonly WhamCompilation _compilation;
 
@@ -30,63 +65,81 @@ internal sealed class StateMapper
             var count = i < forceAvailableEntryCounts.Count ? forceAvailableEntryCounts[i] : 0;
             forces.Add(MapForce(_roster.Forces[i], count));
         }
+        // Sort forces alphabetically by name (BattleScribe canonical ordering)
+        forces.Sort(static (a, b) => NumericAwareComparison(a.Name, b.Name));
 
         var costs = ComputeRosterCosts(forces, referencedCostTypeIds);
         var errors = GetConstraintErrors();
+        var costLimits = MapCostLimits();
 
         return new ProtocolRosterState(
             Name: _roster.Name ?? "New Roster",
             GameSystemId: _roster.ContainingNamespace?.RootCatalogue?.Id ?? "",
             Forces: forces,
             Costs: costs,
-            ValidationErrors: errors);
+            ValidationErrors: errors,
+            CostLimits: costLimits.Count > 0 ? costLimits : null,
+            GameSystemName: _roster.ContainingNamespace?.RootCatalogue?.Name);
     }
 
     private ForceState MapForce(IForceSymbol force, int availableEntryCount)
     {
+        // Sort selections by original (pre-modifier) entry name with numeric awareness (NR canonical ordering)
+        var sortedSelections = force.Selections
+            .Order(Comparer<ISelectionSymbol>.Create(
+                (a, b) => NumericAwareComparison(a.SourceEntry?.Name ?? a.Name, b.SourceEntry?.Name ?? b.Name)));
         var selections = new List<SelectionState>();
-        foreach (var sel in force.Selections)
+        foreach (var sel in sortedSelections)
         {
             selections.Add(MapSelection(sel));
         }
 
         var profiles = MapProfiles(force.EffectiveSourceEntry.Resources);
         var rules = MapRules(force.EffectiveSourceEntry.Resources);
+        var categories = MapForceCategories(force);
+        var publications = MapPublications(force);
+        var childForces = MapChildForces(force);
 
         return new ForceState(
+            Id: force.Id,
             Name: force.Name,
             CatalogueId: force.CatalogueReference.Catalogue.Id,
             Selections: selections,
             AvailableEntryCount: availableEntryCount,
+            Hidden: force.EffectiveSourceEntry.IsHidden,
             PublicationId: force.PublicationReference?.PublicationId,
-            Page: force.Page)
+            Page: force.Page,
+            EntryId: force.EntryId,
+            CatalogueName: force.CatalogueReference.Catalogue.Name,
+            CustomName: force.CustomName,
+            CustomNotes: force.CustomNotes)
         {
             Profiles = profiles.Count > 0 ? profiles : [],
             Rules = rules.Count > 0 ? rules : [],
+            Categories = categories.Count > 0 ? categories : [],
+            Publications = publications.Count > 0 ? publications : [],
+            ChildForces = childForces.Count > 0 ? childForces : [],
         };
     }
 
     private SelectionState MapSelection(ISelectionSymbol sel)
     {
+        // Sort child selections by original (pre-modifier) entry name with numeric awareness (NR canonical ordering)
+        var sortedChildren = sel.Selections
+            .Order(Comparer<ISelectionSymbol>.Create(
+                (a, b) => NumericAwareComparison(a.SourceEntry?.Name ?? a.Name, b.SourceEntry?.Name ?? b.Name)));
         var children = new List<SelectionState>();
-        foreach (var child in sel.Selections)
+        foreach (var child in sortedChildren)
         {
             children.Add(MapSelection(child));
         }
 
         var eff = sel.EffectiveSourceEntry;
 
-        // Costs: use effective (modifier-applied) per-unit costs × SelectedCount
         var costs = MapSelectionCosts(eff, sel.SelectedCount);
-
-        // Categories from effective entry (modifier-applied, includes group-inherited)
-        var categories = MapCategories(eff);
-
-        // Profiles and rules from effective entry's Resources
+        var categories = MapSelectionCategories(eff);
         var profiles = MapProfiles(eff.Resources);
         var rules = MapRules(eff.Resources);
-
-        // Page from effective entry's publication reference (includes modifier-applied page)
         var page = eff.Page;
 
         var type = sel.EntryKind switch
@@ -97,7 +150,11 @@ internal sealed class StateMapper
             _ => "upgrade",
         };
 
+        // Get the declaration to access EntryGroupId, CustomName, CustomNotes
+        var decl = sel.GetDeclaration();
+
         return new SelectionState(
+            Id: sel.Id,
             Name: eff.Name,
             EntryId: sel.EntryId,
             Type: type,
@@ -110,7 +167,10 @@ internal sealed class StateMapper
             Categories: categories.Count > 0 ? categories : null,
             Page: page,
             PublicationId: sel.PublicationReference?.PublicationId,
-            PublicationName: sel.PublicationReference?.Publication?.Name);
+            PublicationName: sel.PublicationReference?.Publication?.Name,
+            EntryGroupId: decl?.EntryGroupId,
+            CustomName: decl?.CustomName,
+            CustomNotes: decl?.CustomNotes);
     }
 
     // ──────────────────────────────────────────────────────────────────
@@ -162,10 +222,10 @@ internal sealed class StateMapper
     }
 
     // ──────────────────────────────────────────────────────────────────
-    //  Category mapping from effective entry
+    //  Category mapping
     // ──────────────────────────────────────────────────────────────────
 
-    private static List<CategoryState> MapCategories(ISelectionEntryContainerSymbol eff)
+    private static List<CategoryState> MapSelectionCategories(ISelectionEntryContainerSymbol eff)
     {
         var categories = new List<CategoryState>();
         foreach (var cat in eff.Categories)
@@ -174,9 +234,58 @@ internal sealed class StateMapper
             categories.Add(new CategoryState(
                 Name: cat.Name ?? "",
                 EntryId: entryId,
-                Primary: cat == eff.PrimaryCategory));
+                Primary: cat == eff.PrimaryCategory,
+                PublicationId: cat.PublicationReference?.PublicationId,
+                Page: cat.Page));
         }
         return categories;
+    }
+
+    private static List<CategoryState> MapForceCategories(IForceSymbol force)
+    {
+        var categories = new List<CategoryState>();
+        foreach (var cat in force.Categories)
+        {
+            var entryId = cat.SourceEntry?.Id ?? cat.Id ?? "";
+            categories.Add(new CategoryState(
+                Name: cat.Name ?? "",
+                EntryId: entryId,
+                Primary: cat.IsPrimaryCategory,
+                PublicationId: cat.PublicationReference?.PublicationId,
+                Page: cat.Page,
+                CustomNotes: cat.CustomNotes));
+        }
+        return categories;
+    }
+
+    // ──────────────────────────────────────────────────────────────────
+    //  Publication mapping
+    // ──────────────────────────────────────────────────────────────────
+
+    private static List<PublicationState> MapPublications(IForceSymbol force)
+    {
+        var result = new List<PublicationState>();
+        foreach (var pub in force.Publications)
+        {
+            result.Add(new PublicationState(
+                Id: pub.Id ?? "",
+                Name: pub.Name ?? ""));
+        }
+        return result;
+    }
+
+    // ──────────────────────────────────────────────────────────────────
+    //  Child force mapping
+    // ──────────────────────────────────────────────────────────────────
+
+    private List<ForceState> MapChildForces(IForceSymbol force)
+    {
+        var childForces = new List<ForceState>();
+        foreach (var child in force.Forces)
+        {
+            childForces.Add(MapForce(child, 0));
+        }
+        return childForces;
     }
 
     // ──────────────────────────────────────────────────────────────────
@@ -188,7 +297,6 @@ internal sealed class StateMapper
         var costs = new List<CostState>();
         foreach (var cost in eff.Costs)
         {
-            // Effective entry costs are per-unit (modifier-applied); multiply by count.
             costs.Add(new CostState(
                 Name: cost.Name ?? "",
                 TypeId: cost.Type?.Id ?? "",
@@ -201,14 +309,12 @@ internal sealed class StateMapper
         List<ForceState> mappedForces,
         IReadOnlySet<string> referencedCostTypeIds)
     {
-        // Sum costs from all mapped selections
         var totals = new Dictionary<string, double>(StringComparer.Ordinal);
         foreach (var force in mappedForces)
         {
             AggregateCostsFromSelections(force.Selections, totals);
         }
 
-        // Use roster's cost entries for name/typeId ordering, filter by referenced types
         var result = new List<CostState>();
         foreach (var rosterCost in _roster.Costs)
         {
@@ -219,6 +325,22 @@ internal sealed class StateMapper
                     Name: rosterCost.Name ?? "",
                     TypeId: typeId,
                     Value: totals.GetValueOrDefault(typeId, 0)));
+            }
+        }
+        return result;
+    }
+
+    private List<CostState> MapCostLimits()
+    {
+        var result = new List<CostState>();
+        foreach (var rosterCost in _roster.Costs)
+        {
+            if (rosterCost.Limit is { } limit && limit >= 0)
+            {
+                result.Add(new CostState(
+                    Name: rosterCost.Name ?? "",
+                    TypeId: rosterCost.CostType?.Id ?? "",
+                    Value: (double)limit));
             }
         }
         return result;
@@ -274,7 +396,6 @@ internal sealed class StateMapper
 
     /// <summary>
     /// Collects cost type IDs referenced by an entry and its children (recursive).
-    /// Used by the adapter to determine which cost types appear in the roster output.
     /// </summary>
     internal static void CollectReferencedCostTypes(
         ISelectionEntryContainerSymbol symbol,

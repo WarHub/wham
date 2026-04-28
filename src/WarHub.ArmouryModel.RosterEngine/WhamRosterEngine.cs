@@ -290,6 +290,18 @@ public sealed class WhamRosterEngine
     /// Creates a <see cref="SelectionNode"/> from an entry symbol, including costs,
     /// categories, and recursively auto-selected child entries (those with min ≥ 1
     /// constraints on <c>selections</c> in <c>parent</c> scope).
+    /// This public overload allows the adapter layer to create selections for nested forces
+    /// where the index-based engine API cannot be used directly.
+    /// </summary>
+    public SelectionNode CreateSelectionFromEntry(
+        ISelectionEntryContainerSymbol entry,
+        ISelectionEntryGroupSymbol? sourceGroup)
+        => CreateSelectionWithAutoChildren(entry, sourceGroup);
+
+    /// <summary>
+    /// Creates a <see cref="SelectionNode"/> from an entry symbol, including costs,
+    /// categories, and recursively auto-selected child entries (those with min ≥ 1
+    /// constraints on <c>selections</c> in <c>parent</c> scope).
     /// </summary>
     private SelectionNode CreateSelectionWithAutoChildren(
         ISelectionEntryContainerSymbol entry,

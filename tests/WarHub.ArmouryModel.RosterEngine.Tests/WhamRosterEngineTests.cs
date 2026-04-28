@@ -61,7 +61,8 @@ public class WhamRosterEngineTests
         using var engine = CreateEngine();
         var (gs, cats) = CreateBasicSetup();
         engine.Setup(gs, cats);
-        engine.AddForce(0);
+        var outputs = engine.AddForce("fe-1", "cat-1");
+        Assert.NotNull(outputs.ForceId);
         var state = engine.GetRosterState();
         Assert.Single(state.Forces);
         Assert.Equal("Detachment", state.Forces[0].Name);
@@ -74,8 +75,9 @@ public class WhamRosterEngineTests
         using var engine = CreateEngine();
         var (gs, cats) = CreateBasicSetup();
         engine.Setup(gs, cats);
-        engine.AddForce(0);
-        engine.SelectEntry(0, 0);
+        var forceOutputs = engine.AddForce("fe-1", "cat-1");
+        var selOutputs = engine.SelectEntry(forceOutputs.ForceId!, "se-a");
+        Assert.NotNull(selOutputs.SelectionId);
         var state = engine.GetRosterState();
         Assert.Single(state.Forces[0].Selections);
         Assert.Equal("Unit A", state.Forces[0].Selections[0].Name);
@@ -88,9 +90,9 @@ public class WhamRosterEngineTests
         using var engine = CreateEngine();
         var (gs, cats) = CreateBasicSetup();
         engine.Setup(gs, cats);
-        engine.AddForce(0);
-        engine.SelectEntry(0, 0); // 50 pts
-        engine.SelectEntry(0, 1); // 100 pts
+        var forceOutputs = engine.AddForce("fe-1", "cat-1");
+        engine.SelectEntry(forceOutputs.ForceId!, "se-a"); // 50 pts
+        engine.SelectEntry(forceOutputs.ForceId!, "se-b"); // 100 pts
         var state = engine.GetRosterState();
         var ptsCost = state.Costs.First(c => c.TypeId == "pts");
         Assert.Equal(150, ptsCost.Value);
@@ -129,7 +131,7 @@ public class WhamRosterEngineTests
 
         using var engine = CreateEngine();
         engine.Setup(gs, [cat]);
-        engine.AddForce(0);
+        engine.AddForce("fe-1", "cat-1");
         var state = engine.GetRosterState();
         Assert.Single(state.Forces[0].Selections);
         Assert.Equal("Mandatory Unit", state.Forces[0].Selections[0].Name);
@@ -141,9 +143,9 @@ public class WhamRosterEngineTests
         using var engine = CreateEngine();
         var (gs, cats) = CreateBasicSetup();
         engine.Setup(gs, cats);
-        engine.AddForce(0);
-        engine.SelectEntry(0, 0);
-        engine.DeselectSelection(0, 0);
+        var forceOutputs = engine.AddForce("fe-1", "cat-1");
+        var selOutputs = engine.SelectEntry(forceOutputs.ForceId!, "se-a");
+        engine.DeselectSelection(forceOutputs.ForceId!, selOutputs.SelectionId!);
         var state = engine.GetRosterState();
         Assert.Empty(state.Forces[0].Selections);
     }
@@ -154,28 +156,27 @@ public class WhamRosterEngineTests
         using var engine = CreateEngine();
         var (gs, cats) = CreateBasicSetup();
         engine.Setup(gs, cats);
-        engine.AddForce(0);
-        engine.SelectEntry(0, 0);
-        engine.DuplicateSelection(0, 0);
+        var forceOutputs = engine.AddForce("fe-1", "cat-1");
+        var selOutputs = engine.SelectEntry(forceOutputs.ForceId!, "se-a");
+        engine.DuplicateSelection(forceOutputs.ForceId!, selOutputs.SelectionId!);
         var state = engine.GetRosterState();
         Assert.Equal(2, state.Forces[0].Selections.Count);
         Assert.Equal("Unit A", state.Forces[0].Selections[1].Name);
     }
 
     [Fact]
-    public void SetSelectionCount_IsNoOpForRootEntries()
+    public void SetSelectionCount_UpdatesNumber()
     {
         using var engine = CreateEngine();
         var (gs, cats) = CreateBasicSetup();
         engine.Setup(gs, cats);
-        engine.AddForce(0);
-        engine.SelectEntry(0, 0);
-        engine.SetSelectionCount(0, 0, 3);
+        var forceOutputs = engine.AddForce("fe-1", "cat-1");
+        var selOutputs = engine.SelectEntry(forceOutputs.ForceId!, "se-a");
+        engine.SetSelectionCount(forceOutputs.ForceId!, selOutputs.SelectionId!, 3);
         var state = engine.GetRosterState();
-        // SetSelectionCount is a no-op for root entries
-        Assert.Equal(1, state.Forces[0].Selections[0].Number);
+        Assert.Equal(3, state.Forces[0].Selections[0].Number);
         var ptsCost = state.Costs.First(c => c.TypeId == "pts");
-        Assert.Equal(50, ptsCost.Value);
+        Assert.Equal(150, ptsCost.Value);
     }
 
     [Fact]
@@ -184,8 +185,8 @@ public class WhamRosterEngineTests
         using var engine = CreateEngine();
         var (gs, cats) = CreateBasicSetup();
         engine.Setup(gs, cats);
-        engine.AddForce(0);
-        engine.RemoveForce(0);
+        var forceOutputs = engine.AddForce("fe-1", "cat-1");
+        engine.RemoveForce(forceOutputs.ForceId!);
         var state = engine.GetRosterState();
         Assert.Empty(state.Forces);
     }
@@ -197,8 +198,8 @@ public class WhamRosterEngineTests
         var (gs, cats) = CreateBasicSetup();
         engine.Setup(gs, cats);
         engine.SetCostLimit("pts", 75);
-        engine.AddForce(0);
-        engine.SelectEntry(0, 1); // 100 pts, limit is 75
+        var forceOutputs = engine.AddForce("fe-1", "cat-1");
+        engine.SelectEntry(forceOutputs.ForceId!, "se-b"); // 100 pts, limit is 75
         var errors = engine.GetValidationErrors();
         Assert.Contains(errors, e => e.EntryId == "costLimits" && e.ConstraintId == "pts");
     }
