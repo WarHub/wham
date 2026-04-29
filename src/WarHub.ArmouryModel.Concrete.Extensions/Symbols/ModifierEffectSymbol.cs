@@ -35,6 +35,7 @@ internal sealed partial class ModifierEffectSymbol : ModifierEffectBaseSymbol, I
             "hidden" => EffectTargetKind.EntryHiddenState,
             "category" => EffectTargetKind.EntryCategory,
             "description" => EffectTargetKind.RuleDescription,
+            "primary" => EffectTargetKind.CategoryPrimary,
             { } id => EffectTargetKind.Member,
             null => EffectTargetKind.None,
         };

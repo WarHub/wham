@@ -50,6 +50,10 @@ internal class Binder
         BindSimple<IResourceDefinitionSymbol, ErrorSymbols.ErrorResourceDefinitionSymbol>(
             node, diagnostics, node.TypeId, LookupOptions.CharacteristicTypeOnly);
 
+    internal IResourceDefinitionSymbol BindCharacteristicTypeSymbol(SourceNode node, string? symbolId, BindingDiagnosticBag diagnostics) =>
+        BindSimple<IResourceDefinitionSymbol, ErrorSymbols.ErrorResourceDefinitionSymbol>(
+            node, diagnostics, symbolId, LookupOptions.CharacteristicTypeOnly);
+
     internal IForceEntrySymbol BindForceEntrySymbol(ForceNode node, BindingDiagnosticBag diagnostics) =>
         BindSimple<IForceEntrySymbol, ErrorSymbols.ErrorForceEntrySymbol>(
             node, diagnostics, node.EntryId, LookupOptions.ForceEntryOnly);
@@ -131,14 +135,30 @@ internal class Binder
             diagnostics.AddRangeAndFree(firstPassDiags);
             return initialResult;
         }
+        // Fallback: cost type definition (e.g. "pts", "PL")
         var costTypeDiags = BindingDiagnosticBag.GetInstance();
         var costType = BindCostTypeSymbol(node, symbolId, costTypeDiags);
-        if (costType.IsKind(SymbolKind.Error))
+        if (!costType.IsKind(SymbolKind.Error))
         {
-            diagnostics.AddRangeAndFree(firstPassDiags);
-            return initialResult;
+            firstPassDiags.Free();
+            costTypeDiags.Free();
+            return new GeneratedCostSymbol(ContainingEntrySymbol, costType);
         }
-        return new GeneratedCostSymbol(ContainingEntrySymbol, costType);
+        // Fallback: characteristic type definition (e.g. "M", "WS", "BS", "S", "T")
+        var charTypeDiags = BindingDiagnosticBag.GetInstance();
+        var charType = BindCharacteristicTypeSymbol(node, symbolId, charTypeDiags);
+        if (!charType.IsKind(SymbolKind.Error))
+        {
+            firstPassDiags.Free();
+            costTypeDiags.Free();
+            charTypeDiags.Free();
+            return charType;
+        }
+        // All fallbacks failed — report diagnostics from the first pass
+        diagnostics.AddRangeAndFree(firstPassDiags);
+        costTypeDiags.Free();
+        charTypeDiags.Free();
+        return initialResult;
     }
 
     internal ISymbol BindFilterEntrySymbol(SourceNode node, string? symbolId, QueryScopeKind scopeKind, BindingDiagnosticBag diagnostics)

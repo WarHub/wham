@@ -48,4 +48,11 @@ public enum EffectTargetKind
     /// of one of the <see cref="IContainerEntrySymbol.Constraints"/> is affected.
     /// </summary>
     Member,
+
+    /// <summary>
+    /// The primary flag of a category link is affected.
+    /// BS modifier field="primary" on a categoryLink.
+    /// No binding to a member is needed; handled directly by modifier evaluation.
+    /// </summary>
+    CategoryPrimary,
 }

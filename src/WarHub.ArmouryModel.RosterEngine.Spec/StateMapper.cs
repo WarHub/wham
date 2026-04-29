@@ -7,45 +7,11 @@ namespace WarHub.ArmouryModel.RosterEngine.Spec;
 
 /// <summary>
 /// Maps the ISymbol-based roster tree to BattleScribeSpec Protocol types.
-/// Reads only the public Symbol API surface — no SourceNode access, no internal helpers.
+/// Thin mapping layer — reads the public Symbol API surface and delegates
+/// ordering to <see cref="SelectionOrdering"/>.
 /// </summary>
 internal sealed class StateMapper
 {
-    /// <summary>
-    /// Numeric-aware string comparer matching NewRecruit's locale-aware ordering.
-    /// "Unit 2" sorts before "Unit 10" (numeric segment comparison).
-    /// </summary>
-    private static readonly Comparison<string?> NumericAwareComparison = static (a, b) =>
-    {
-        if (ReferenceEquals(a, b)) return 0;
-        if (a is null) return -1;
-        if (b is null) return 1;
-
-        int ia = 0, ib = 0;
-        while (ia < a.Length && ib < b.Length)
-        {
-            if (char.IsDigit(a[ia]) && char.IsDigit(b[ib]))
-            {
-                // Compare numeric segments by value
-                int startA = ia, startB = ib;
-                while (ia < a.Length && char.IsDigit(a[ia])) ia++;
-                while (ib < b.Length && char.IsDigit(b[ib])) ib++;
-                var numA = long.Parse(a.AsSpan(startA, ia - startA));
-                var numB = long.Parse(b.AsSpan(startB, ib - startB));
-                var cmp = numA.CompareTo(numB);
-                if (cmp != 0) return cmp;
-            }
-            else
-            {
-                var cmp = a[ia].CompareTo(b[ib]);
-                if (cmp != 0) return cmp;
-                ia++;
-                ib++;
-            }
-        }
-        return a.Length.CompareTo(b.Length);
-    };
-
     private readonly IRosterSymbol _roster;
     private readonly WhamCompilation _compilation;
     private Dictionary<string, string>? _costTypeNames;
@@ -76,7 +42,7 @@ internal sealed class StateMapper
             forces.Add(MapForce(_roster.Forces[i], count));
         }
         // Sort forces alphabetically by name (BattleScribe canonical ordering)
-        forces.Sort(static (a, b) => NumericAwareComparison(a.Name, b.Name));
+        forces.Sort((a, b) => SelectionOrdering.NaturalSort.Compare(a.Name, b.Name));
 
         var costs = ComputeRosterCosts(forces, referencedCostTypeIds);
         var errors = GetConstraintErrors();
@@ -94,31 +60,8 @@ internal sealed class StateMapper
 
     private ForceState MapForce(IForceSymbol force, int availableEntryCount)
     {
-        // Build category order map for NR-style selection sorting
-        var categoryOrder = new Dictionary<string, int>(StringComparer.Ordinal);
-        for (int i = 0; i < force.Categories.Length; i++)
-        {
-            var catEntryId = force.Categories[i].SourceEntry?.Id;
-            if (catEntryId is not null)
-                categoryOrder[catEntryId] = i;
-        }
-
-        var sortedSelections = force.Selections
-            .Order(Comparer<ISelectionSymbol>.Create((a, b) =>
-            {
-                var aCatId = a.PrimaryCategory?.SourceEntry?.Id;
-                var bCatId = b.PrimaryCategory?.SourceEntry?.Id;
-                int aOrder = aCatId is not null && categoryOrder.TryGetValue(aCatId, out var ao) ? ao : -1;
-                int bOrder = bCatId is not null && categoryOrder.TryGetValue(bCatId, out var bo) ? bo : -1;
-                var cmp = aOrder.CompareTo(bOrder);
-                if (cmp != 0) return cmp;
-                // Sort by original (pre-modifier) entry name, with effective name as tiebreaker
-                cmp = NumericAwareComparison(a.SourceEntry?.Name ?? a.Name, b.SourceEntry?.Name ?? b.Name);
-                if (cmp != 0) return cmp;
-                return NumericAwareComparison(a.EffectiveSourceEntry.Name, b.EffectiveSourceEntry.Name);
-            }));
         var selections = new List<SelectionState>();
-        foreach (var sel in sortedSelections)
+        foreach (var sel in SelectionOrdering.GetSortedSelections(force))
         {
             selections.Add(MapSelection(sel));
         }
@@ -161,16 +104,8 @@ internal sealed class StateMapper
 
     private SelectionState MapSelection(ISelectionSymbol sel)
     {
-        // Sort child selections by original (pre-modifier) entry name with numeric awareness (NR canonical ordering)
-        var sortedChildren = sel.Selections
-            .Order(Comparer<ISelectionSymbol>.Create((a, b) =>
-            {
-                var cmp = NumericAwareComparison(a.SourceEntry?.Name ?? a.Name, b.SourceEntry?.Name ?? b.Name);
-                if (cmp != 0) return cmp;
-                return NumericAwareComparison(a.EffectiveSourceEntry.Name, b.EffectiveSourceEntry.Name);
-            }));
         var children = new List<SelectionState>();
-        foreach (var child in sortedChildren)
+        foreach (var child in SelectionOrdering.GetSortedChildSelections(sel))
         {
             children.Add(MapSelection(child));
         }
@@ -191,9 +126,6 @@ internal sealed class StateMapper
             _ => "upgrade",
         };
 
-        // Get the declaration to access EntryGroupId, CustomName, CustomNotes
-        var decl = sel.GetDeclaration();
-
         return new SelectionState(
             Id: sel.Id,
             Name: eff.Name,
@@ -209,9 +141,9 @@ internal sealed class StateMapper
             Page: page,
             PublicationId: sel.PublicationReference?.PublicationId,
             PublicationName: sel.PublicationReference?.Publication?.Name,
-            EntryGroupId: decl?.EntryGroupId,
-            CustomName: decl?.CustomName,
-            CustomNotes: decl?.CustomNotes);
+            EntryGroupId: sel.EntryGroupId,
+            CustomName: sel.CustomName,
+            CustomNotes: sel.CustomNotes);
     }
 
     // ──────────────────────────────────────────────────────────────────
