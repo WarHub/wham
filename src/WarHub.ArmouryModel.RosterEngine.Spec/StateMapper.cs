@@ -112,7 +112,10 @@ internal sealed class StateMapper
                 int bOrder = bCatId is not null && categoryOrder.TryGetValue(bCatId, out var bo) ? bo : -1;
                 var cmp = aOrder.CompareTo(bOrder);
                 if (cmp != 0) return cmp;
-                return NumericAwareComparison(a.SourceEntry?.Name ?? a.Name, b.SourceEntry?.Name ?? b.Name);
+                // Sort by original (pre-modifier) entry name, with effective name as tiebreaker
+                cmp = NumericAwareComparison(a.SourceEntry?.Name ?? a.Name, b.SourceEntry?.Name ?? b.Name);
+                if (cmp != 0) return cmp;
+                return NumericAwareComparison(a.EffectiveSourceEntry.Name, b.EffectiveSourceEntry.Name);
             }));
         var selections = new List<SelectionState>();
         foreach (var sel in sortedSelections)
@@ -162,14 +165,9 @@ internal sealed class StateMapper
         var sortedChildren = sel.Selections
             .Order(Comparer<ISelectionSymbol>.Create((a, b) =>
             {
-                try
-                {
-                    return NumericAwareComparison(a.SourceEntry?.Name ?? a.Name, b.SourceEntry?.Name ?? b.Name);
-                }
-                catch
-                {
-                    return NumericAwareComparison(a.Name, b.Name);
-                }
+                var cmp = NumericAwareComparison(a.SourceEntry?.Name ?? a.Name, b.SourceEntry?.Name ?? b.Name);
+                if (cmp != 0) return cmp;
+                return NumericAwareComparison(a.EffectiveSourceEntry.Name, b.EffectiveSourceEntry.Name);
             }));
         var children = new List<SelectionState>();
         foreach (var child in sortedChildren)

@@ -172,22 +172,14 @@ internal static class ConstraintEvaluator
                 var linkId = entry.Id; // link's own ID (same as targetId if not a link)
 
                 // Hidden entry validation: if entry is hidden but has selections, error
-                // Only check entries with categories (BattleScribe generates hidden errors
-                // as part of category validation — entries without categories are skipped).
                 if (IsEffectivelyHidden(entry, force))
                 {
-                    var cats = entry.Categories;
-                    if (cats.IsEmpty && entry.ReferencedEntry is { } r)
-                        cats = r.Categories;
-                    if (!cats.IsEmpty)
+                    var hiddenCountId = isLink ? linkId! : targetId;
+                    var selCount = CountSelectionsInForce(hiddenCountId, force);
+                    if (selCount > 0)
                     {
-                        var hiddenCountId = isLink ? linkId! : targetId;
-                        var selCount = CountSelectionsInForce(hiddenCountId, force);
-                        if (selCount > 0)
-                        {
-                            _diagnostics.Add(ErrorCode.WRN_MaxSelectionCountViolation, Location.None,
-                                "selection", targetId, targetId, "hidden");
-                        }
+                        _diagnostics.Add(ErrorCode.WRN_MaxSelectionCountViolation, Location.None,
+                            "selection", targetId, targetId, "hidden");
                     }
                 }
 

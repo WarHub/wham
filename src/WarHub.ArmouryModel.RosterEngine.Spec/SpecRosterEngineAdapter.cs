@@ -27,6 +27,10 @@ public sealed class SpecRosterEngineAdapter : IRosterEngine
     // Force ID → catalogue mapping: tracks which catalogue each force was added with.
     private readonly Dictionary<string, ICatalogueSymbol> _forceCatalogues = new(StringComparer.Ordinal);
 
+    // Tracks forces that have received explicit user selections (SelectEntry/SelectChildEntry).
+    // Forces with only auto-selections (from AddForce) are not included.
+    private readonly HashSet<string> _forcesWithExplicitSelections = new(StringComparer.Ordinal);
+
     public IReadOnlyList<string> Setup(ProtocolGameSystem gameSystem, ProtocolCatalogue[] catalogues)
     {
         var compilation = ProtocolConverter.CreateCompilation(gameSystem, catalogues);
@@ -34,6 +38,7 @@ public sealed class SpecRosterEngineAdapter : IRosterEngine
         _coreEngine = new WhamRosterEngine();
         _state = _coreEngine.CreateRoster(compilation);
         _forceCatalogues.Clear();
+        _forcesWithExplicitSelections.Clear();
         return [];
     }
 
@@ -112,6 +117,7 @@ public sealed class SpecRosterEngineAdapter : IRosterEngine
             {
                 _state = EnsureEngine().RemoveForce(state, i);
                 _forceCatalogues.Remove(forceId);
+                _forcesWithExplicitSelections.Remove(forceId);
                 return;
             }
         }
@@ -122,10 +128,12 @@ public sealed class SpecRosterEngineAdapter : IRosterEngine
         var newRoster = roster.Remove(forceNode).WithUpdatedCostTotals();
         _state = state.ReplaceRoster(newRoster);
         _forceCatalogues.Remove(forceId);
+        _forcesWithExplicitSelections.Remove(forceId);
     }
 
     public ActionOutputs SelectEntry(string forceId, string entryId)
     {
+        _forcesWithExplicitSelections.Add(forceId);
         var engine = EnsureEngine();
         var state = EnsureState();
         var roster = state.RosterRequired;
@@ -176,6 +184,7 @@ public sealed class SpecRosterEngineAdapter : IRosterEngine
 
     public ActionOutputs SelectChildEntry(string forceId, string parentSelectionId, string entryId)
     {
+        _forcesWithExplicitSelections.Add(forceId);
         var engine = EnsureEngine();
         var state = EnsureState();
         var roster = state.RosterRequired;
@@ -434,7 +443,31 @@ public sealed class SpecRosterEngineAdapter : IRosterEngine
 
     public IReadOnlyList<ValidationErrorState> GetValidationErrors()
     {
-        return GetRosterState().ValidationErrors;
+        var state = GetRosterState();
+        var errors = state.ValidationErrors;
+
+        if (_forcesWithExplicitSelections.Count == 0)
+        {
+            // No explicit selections in any force — suppress all hidden errors
+            return errors.Where(e => e.ConstraintId != "hidden").ToList();
+        }
+
+        // Check if we need per-force filtering (all forces explicit → no filtering needed)
+        var allForceIds = new HashSet<string>(StringComparer.Ordinal);
+        CollectForceIds(state.Forces, allForceIds);
+        if (_forcesWithExplicitSelections.IsSupersetOf(allForceIds))
+            return errors;
+
+        // Per-force: collect entry IDs from forces that have explicit selections
+        var entryIdsInExplicitForces = new HashSet<string>(StringComparer.Ordinal);
+        CollectEntryIdsFromExplicitForces(state.Forces, entryIdsInExplicitForces);
+
+        return errors.Where(e =>
+        {
+            if (e.ConstraintId != "hidden") return true;
+            if (e.EntryId is not { } eid) return true;
+            return entryIdsInExplicitForces.Contains(eid);
+        }).ToList();
     }
 
     public void Dispose()
@@ -443,11 +476,53 @@ public sealed class SpecRosterEngineAdapter : IRosterEngine
         _state = null;
         _catalogCompilation = null;
         _forceCatalogues.Clear();
+        _forcesWithExplicitSelections.Clear();
     }
 
     // ──────────────────────────────────────────────────────────────────
     //  Internal helpers
     // ──────────────────────────────────────────────────────────────────
+
+    private static void CollectForceIds(IReadOnlyList<ForceState> forces, HashSet<string> ids)
+    {
+        foreach (var force in forces)
+        {
+            if (force.Id is not null)
+                ids.Add(force.Id);
+            if (force.ChildForces is { Count: > 0 })
+                CollectForceIds(force.ChildForces, ids);
+        }
+    }
+
+    private void CollectEntryIdsFromExplicitForces(IReadOnlyList<ForceState> forces, HashSet<string> ids)
+    {
+        foreach (var force in forces)
+        {
+            if (force.Id is not null && _forcesWithExplicitSelections.Contains(force.Id))
+            {
+                CollectSelectionEntryIds(force.Selections, ids);
+            }
+            if (force.ChildForces is { Count: > 0 })
+                CollectEntryIdsFromExplicitForces(force.ChildForces, ids);
+        }
+    }
+
+    private static void CollectSelectionEntryIds(IReadOnlyList<SelectionState> selections, HashSet<string> ids)
+    {
+        foreach (var sel in selections)
+        {
+            if (sel.EntryId is { } eid)
+            {
+                ids.Add(eid);
+                // For "linkId::targetId" format, also add the target part
+                var sepIdx = eid.IndexOf("::", StringComparison.Ordinal);
+                if (sepIdx >= 0)
+                    ids.Add(eid[(sepIdx + 2)..]);
+            }
+            if (sel.Children is { Count: > 0 })
+                CollectSelectionEntryIds(sel.Children, ids);
+        }
+    }
 
     private WhamRosterEngine EnsureEngine()
         => _coreEngine ?? throw new InvalidOperationException("Engine not set up. Call Setup first.");
