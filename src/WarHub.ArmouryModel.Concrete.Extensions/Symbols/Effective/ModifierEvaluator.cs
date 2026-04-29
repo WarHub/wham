@@ -694,12 +694,6 @@ internal sealed class ModifierEvaluator
 
         // Check by specific entry/category ID
         var filterId = query.FilterSymbol?.Id;
-        // When binding failed (error symbol), fall back to the raw childId from the declaration
-        if (filterId is null && query.FilterSymbol is { Kind: SymbolKind.Error } && query is QueryBaseSymbol qbs
-            && qbs.Declaration is QueryFilteredBaseNode filtered)
-        {
-            filterId = filtered.ChildId;
-        }
         if (filterId is null)
             return false;
 
@@ -981,12 +975,6 @@ internal sealed class ModifierEvaluator
     {
         var filterSymbol = query.FilterSymbol;
         var filterId = filterSymbol?.Id;
-        // When binding failed (error symbol), fall back to the raw childId from the declaration
-        if (filterId is null && filterSymbol is { Kind: SymbolKind.Error } && query is QueryBaseSymbol qbs
-            && qbs.Declaration is QueryFilteredBaseNode filtered)
-        {
-            filterId = filtered.ChildId;
-        }
         if (filterId is null)
             return false;
 
