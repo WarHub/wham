@@ -151,6 +151,7 @@ public sealed class SpecRosterEngineAdapter : IRosterEngine
     {
         var result = EnsureEngine().DuplicateSelectionById(EnsureState(), forceId, selectionId);
         _state = result.State;
+        _forcesWithExplicitSelections.Add(forceId);
         return new ActionOutputs { SelectionId = result.SelectionId };
     }
 
@@ -161,6 +162,9 @@ public sealed class SpecRosterEngineAdapter : IRosterEngine
         var newForceId = result.ForceId!;
         if (_forceCatalogues.TryGetValue(forceId, out var catalogue))
             _forceCatalogues[newForceId] = catalogue;
+        // Duplicated force inherits explicit status from original
+        if (_forcesWithExplicitSelections.Contains(forceId))
+            _forcesWithExplicitSelections.Add(newForceId);
         return new ActionOutputs { ForceId = newForceId };
     }
 
@@ -287,7 +291,7 @@ public sealed class SpecRosterEngineAdapter : IRosterEngine
             return catalogue;
 
         var roster = state.RosterRequired;
-        var force = FindForceNodeDeep(roster, forceId);
+        var force = WhamRosterEngine.FindForceDeep(roster, forceId);
         if (force is not null && force.CatalogueId is not null)
         {
             foreach (var cat in state.Compilation.GlobalNamespace.Catalogues)
@@ -296,59 +300,6 @@ public sealed class SpecRosterEngineAdapter : IRosterEngine
             }
         }
         return state.Compilation.GlobalNamespace.RootCatalogue;
-    }
-
-    /// <summary>
-    /// Finds a force node by its instance ID anywhere in the force tree.
-    /// </summary>
-    private static ForceNode? FindForceNodeDeep(RosterNode roster, string forceId)
-    {
-        foreach (var force in roster.Forces)
-        {
-            var found = FindForceNodeDeep(force, forceId);
-            if (found is not null) return found;
-        }
-        return null;
-    }
-
-    private static ForceNode? FindForceNodeDeep(ForceNode force, string forceId)
-    {
-        if (force.Id == forceId) return force;
-        foreach (var child in force.Forces)
-        {
-            var found = FindForceNodeDeep(child, forceId);
-            if (found is not null) return found;
-        }
-        return null;
-    }
-
-    /// <summary>
-    /// Recursively searches for a selection node by ID within a force's selection tree.
-    /// </summary>
-    private static SelectionNode? FindSelectionNodeDeep(ForceNode force, string selectionId)
-    {
-        foreach (var sel in force.Selections)
-        {
-            var found = FindSelectionNodeDeep(sel, selectionId);
-            if (found is not null) return found;
-        }
-        foreach (var childForce in force.Forces)
-        {
-            var found = FindSelectionNodeDeep(childForce, selectionId);
-            if (found is not null) return found;
-        }
-        return null;
-    }
-
-    private static SelectionNode? FindSelectionNodeDeep(SelectionNode sel, string selectionId)
-    {
-        if (sel.Id == selectionId) return sel;
-        foreach (var child in sel.Selections)
-        {
-            var found = FindSelectionNodeDeep(child, selectionId);
-            if (found is not null) return found;
-        }
-        return null;
     }
 
     /// <summary>
@@ -377,18 +328,18 @@ public sealed class SpecRosterEngineAdapter : IRosterEngine
         WhamRosterState state, string forceId, string selectionId)
     {
         var roster = state.RosterRequired;
-        var force = FindForceNodeDeep(roster, forceId);
+        var force = WhamRosterEngine.FindForceDeep(roster, forceId);
         if (force is null) return null;
-        var selNode = FindSelectionNodeDeep(force, selectionId);
+        var selNode = WhamRosterEngine.FindSelectionDeep(force, selectionId);
         if (selNode is null) return null;
 
         var entryId = selNode.EntryId;
         if (string.IsNullOrEmpty(entryId)) return null;
 
         var targetId = entryId;
-        var separatorIndex = entryId.IndexOf("::", StringComparison.Ordinal);
+        var separatorIndex = entryId.IndexOf(WhamRosterEngine.EntryLinkIdSeparator, StringComparison.Ordinal);
         if (separatorIndex >= 0)
-            targetId = entryId[(separatorIndex + 2)..];
+            targetId = entryId[(separatorIndex + WhamRosterEngine.EntryLinkIdSeparator.Length)..];
 
         foreach (var cat in state.Compilation.GlobalNamespace.Catalogues)
         {

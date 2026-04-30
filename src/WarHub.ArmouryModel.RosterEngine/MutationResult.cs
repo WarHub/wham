@@ -98,7 +98,7 @@ public sealed class MutationResult
     {
         var entryId = sel.EntryId;
         if (string.IsNullOrEmpty(entryId)) return null;
-        var separatorIndex = entryId.IndexOf("::", StringComparison.Ordinal);
-        return separatorIndex >= 0 ? entryId[(separatorIndex + 2)..] : entryId;
+        var separatorIndex = entryId.IndexOf(WhamRosterEngine.EntryLinkIdSeparator, StringComparison.Ordinal);
+        return separatorIndex >= 0 ? entryId[(separatorIndex + WhamRosterEngine.EntryLinkIdSeparator.Length)..] : entryId;
     }
 }

@@ -1,5 +1,6 @@
 using BattleScribeSpec;
 using BattleScribeSpec.Protocol;
+using WarHub.ArmouryModel.RosterEngine;
 
 namespace WarHub.ArmouryModel.RosterEngine.Spec;
 
@@ -20,6 +21,7 @@ namespace WarHub.ArmouryModel.RosterEngine.Spec;
 /// </summary>
 internal static class HiddenConstraintFilter
 {
+    private const string HiddenConstraintId = "hidden";
     /// <summary>
     /// Filters validation errors, suppressing hidden-constraint violations
     /// for forces that have not received explicit user selections.
@@ -39,7 +41,7 @@ internal static class HiddenConstraintFilter
         // Fast path: no explicit selections anywhere → suppress all hidden errors
         if (forcesWithExplicitSelections.Count == 0)
         {
-            return errors.Where(e => e.ConstraintId != "hidden").ToList();
+            return errors.Where(e => e.ConstraintId != HiddenConstraintId).ToList();
         }
 
         // Fast path: all forces have explicit selections → no filtering needed
@@ -55,7 +57,7 @@ internal static class HiddenConstraintFilter
 
         return errors.Where(e =>
         {
-            if (e.ConstraintId != "hidden") return true;
+            if (e.ConstraintId != HiddenConstraintId) return true;
             if (e.EntryId is not { } eid) return true;
             return entryIdsInExplicitForces.Contains(eid);
         }).ToList();
@@ -96,9 +98,9 @@ internal static class HiddenConstraintFilter
             if (!string.IsNullOrEmpty(eid))
             {
                 ids.Add(eid);
-                var sepIdx = eid.IndexOf("::", StringComparison.Ordinal);
+                var sepIdx = eid.IndexOf(WhamRosterEngine.EntryLinkIdSeparator, StringComparison.Ordinal);
                 if (sepIdx >= 0)
-                    ids.Add(eid[(sepIdx + 2)..]);
+                    ids.Add(eid[(sepIdx + WhamRosterEngine.EntryLinkIdSeparator.Length)..]);
             }
             if (sel.Children is { Count: > 0 })
                 CollectSelectionEntryIds(sel.Children, ids);

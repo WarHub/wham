@@ -39,7 +39,10 @@ internal sealed class SelectionSymbol : ContainerSymbol, ISelectionSymbol, INode
                 return entry;
             if (last is ISelectionEntryContainerSymbol { ReferencedEntry: ISelectionEntrySymbol target })
                 return target;
-            return (ISelectionEntrySymbol)last;
+            throw new InvalidOperationException(
+                $"Selection '{Declaration.Name}' (entryId='{Declaration.EntryId}'): " +
+                $"expected ISelectionEntrySymbol but SourceEntryPath resolved to {last.GetType().Name}. " +
+                "This typically means entryId uses a single-segment ID instead of the required 'linkId::targetId' format.");
         }
     }
 

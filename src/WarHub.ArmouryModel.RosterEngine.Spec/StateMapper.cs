@@ -14,7 +14,6 @@ internal sealed class StateMapper
 {
     private readonly IRosterSymbol _roster;
     private readonly WhamCompilation _compilation;
-    private Dictionary<string, string>? _costTypeNames;
 
     public StateMapper(IRosterSymbol roster, WhamCompilation compilation)
     {
@@ -27,19 +26,19 @@ internal sealed class StateMapper
         IReadOnlySet<string> referencedCostTypeIds)
     {
         // Build cost type ID → name map for filling missing costs on selections
-        _costTypeNames = new Dictionary<string, string>(StringComparer.Ordinal);
+        var costTypeNames = new Dictionary<string, string>(StringComparer.Ordinal);
         foreach (var rosterCost in _roster.Costs)
         {
             var typeId = rosterCost.CostType?.Id ?? "";
             if (referencedCostTypeIds.Contains(typeId))
-                _costTypeNames.TryAdd(typeId, rosterCost.Name ?? "");
+                costTypeNames.TryAdd(typeId, rosterCost.Name ?? "");
         }
 
         var forces = new List<ForceState>(_roster.Forces.Length);
         for (int i = 0; i < _roster.Forces.Length; i++)
         {
             var count = i < forceAvailableEntryCounts.Count ? forceAvailableEntryCounts[i] : 0;
-            forces.Add(MapForce(_roster.Forces[i], count));
+            forces.Add(MapForce(_roster.Forces[i], count, costTypeNames));
         }
         // Sort forces alphabetically by name (BattleScribe canonical ordering)
         forces.Sort((a, b) => SelectionOrdering.NaturalSort.Compare(a.Name, b.Name));
@@ -58,12 +57,12 @@ internal sealed class StateMapper
             GameSystemName: _roster.ContainingNamespace?.RootCatalogue?.Name);
     }
 
-    private ForceState MapForce(IForceSymbol force, int availableEntryCount)
+    private ForceState MapForce(IForceSymbol force, int availableEntryCount, IReadOnlyDictionary<string, string> costTypeNames)
     {
         var selections = new List<SelectionState>(force.Selections.Length);
         foreach (var sel in SelectionOrdering.GetSortedSelections(force))
         {
-            selections.Add(MapSelection(sel));
+            selections.Add(MapSelection(sel, costTypeNames));
         }
 
         var profiles = MapProfiles(force.EffectiveSourceEntry.Resources);
@@ -78,7 +77,7 @@ internal sealed class StateMapper
 
         var categories = MapForceCategories(force);
         var publications = MapPublications(force);
-        var childForces = MapChildForces(force);
+        var childForces = MapChildForces(force, costTypeNames);
 
         return new ForceState(
             Id: force.Id,
@@ -102,17 +101,17 @@ internal sealed class StateMapper
         };
     }
 
-    private SelectionState MapSelection(ISelectionSymbol sel)
+    private SelectionState MapSelection(ISelectionSymbol sel, IReadOnlyDictionary<string, string> costTypeNames)
     {
         var children = new List<SelectionState>(sel.Selections.Length);
         foreach (var child in SelectionOrdering.GetSortedChildSelections(sel))
         {
-            children.Add(MapSelection(child));
+            children.Add(MapSelection(child, costTypeNames));
         }
 
         var eff = sel.EffectiveSourceEntry;
 
-        var costs = MapSelectionCosts(eff, sel.SelectedCount);
+        var costs = MapSelectionCosts(eff, sel.SelectedCount, costTypeNames);
         var categories = MapSelectionCategories(eff);
         var profiles = MapProfiles(eff.Resources);
         var rules = MapRules(eff.Resources);
@@ -291,12 +290,12 @@ internal sealed class StateMapper
     //  Child force mapping
     // ──────────────────────────────────────────────────────────────────
 
-    private List<ForceState> MapChildForces(IForceSymbol force)
+    private List<ForceState> MapChildForces(IForceSymbol force, IReadOnlyDictionary<string, string> costTypeNames)
     {
         var childForces = new List<ForceState>(force.Forces.Length);
         foreach (var child in force.Forces)
         {
-            childForces.Add(MapForce(child, 0));
+            childForces.Add(MapForce(child, 0, costTypeNames));
         }
         return childForces;
     }
@@ -305,7 +304,9 @@ internal sealed class StateMapper
     //  Cost mapping
     // ──────────────────────────────────────────────────────────────────
 
-    private List<CostState> MapSelectionCosts(ISelectionEntryContainerSymbol eff, int selectedCount)
+    private static List<CostState> MapSelectionCosts(
+        ISelectionEntryContainerSymbol eff, int selectedCount,
+        IReadOnlyDictionary<string, string> costTypeNames)
     {
         var costs = new List<CostState>(eff.Costs.Length);
         var emittedTypeIds = new HashSet<string>(StringComparer.Ordinal);
@@ -319,17 +320,14 @@ internal sealed class StateMapper
                 Value: (double)(cost.Value * selectedCount)));
         }
         // BattleScribe emits all referenced cost types on every selection, filling 0 for missing ones
-        if (_costTypeNames is not null)
+        foreach (var (typeId, name) in costTypeNames)
         {
-            foreach (var (typeId, name) in _costTypeNames)
+            if (!emittedTypeIds.Contains(typeId))
             {
-                if (!emittedTypeIds.Contains(typeId))
-                {
-                    costs.Add(new CostState(
-                        Name: name,
-                        TypeId: typeId,
-                        Value: 0));
-                }
+                costs.Add(new CostState(
+                    Name: name,
+                    TypeId: typeId,
+                    Value: 0));
             }
         }
         return costs;

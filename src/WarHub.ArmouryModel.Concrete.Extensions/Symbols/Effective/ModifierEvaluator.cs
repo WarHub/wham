@@ -1005,7 +1005,9 @@ internal sealed class ModifierEvaluator
     private static bool MatchesSpecifiedEntry(ISelectionSymbol sel, IQuerySymbol query)
     {
         var filterSymbol = query.FilterSymbol;
-        var filterId = filterSymbol?.Id;
+        if (filterSymbol is null or IErrorSymbol)
+            return false;
+        var filterId = filterSymbol.Id;
         if (filterId is null)
             return false;
 
