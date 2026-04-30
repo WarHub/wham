@@ -18,6 +18,10 @@ public class ConformanceTests
         // Game system force entry modifier condition references childId defined in a catalogue.
         // Game system scope cannot access catalogue entries — likely a spec issue.
         "force-entry-with-modifier",
+        // Spec expects hidden constraint errors to be suppressed until user explicitly
+        // selects entries in a force. wham validates hidden constraints immediately.
+        // See: https://github.com/WarHub/battlescribe-spec/issues/163
+        "constraint-hidden-enforcement",
     };
 
     public static IEnumerable<object[]> AllSpecs()

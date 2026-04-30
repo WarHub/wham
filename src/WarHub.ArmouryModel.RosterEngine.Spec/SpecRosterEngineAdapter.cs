@@ -23,17 +23,12 @@ public sealed class SpecRosterEngineAdapter : IRosterEngine
     private WhamCompilation? _catalogCompilation;
     private readonly EntryResolver _resolver = new();
 
-    // Tracks forces that have received explicit user selections (SelectEntry/SelectChildEntry).
-    // Forces with only auto-selections (from AddForce) are not included.
-    private readonly HashSet<string> _forcesWithExplicitSelections = new(StringComparer.Ordinal);
-
     public IReadOnlyList<string> Setup(ProtocolGameSystem gameSystem, ProtocolCatalogue[] catalogues)
     {
         var compilation = ProtocolConverter.CreateCompilation(gameSystem, catalogues);
         _catalogCompilation = compilation;
         _coreEngine = new WhamRosterEngine();
         _state = _coreEngine.CreateRoster(compilation);
-        _forcesWithExplicitSelections.Clear();
         return [];
     }
 
@@ -75,12 +70,10 @@ public sealed class SpecRosterEngineAdapter : IRosterEngine
     {
         var engine = EnsureEngine();
         _state = engine.RemoveForceById(EnsureState(), forceId);
-        _forcesWithExplicitSelections.Remove(forceId);
     }
 
     public ActionOutputs SelectEntry(string forceId, string entryId)
     {
-        _forcesWithExplicitSelections.Add(forceId);
         var engine = EnsureEngine();
         var state = EnsureState();
 
@@ -100,7 +93,6 @@ public sealed class SpecRosterEngineAdapter : IRosterEngine
 
     public ActionOutputs SelectChildEntry(string forceId, string parentSelectionId, string entryId)
     {
-        _forcesWithExplicitSelections.Add(forceId);
         var engine = EnsureEngine();
         var state = EnsureState();
 
@@ -139,7 +131,6 @@ public sealed class SpecRosterEngineAdapter : IRosterEngine
     {
         var result = EnsureEngine().DuplicateSelectionById(EnsureState(), forceId, selectionId);
         _state = result.State;
-        _forcesWithExplicitSelections.Add(forceId);
         return new ActionOutputs { SelectionId = result.SelectionId };
     }
 
@@ -148,9 +139,6 @@ public sealed class SpecRosterEngineAdapter : IRosterEngine
         var result = EnsureEngine().DuplicateForceById(EnsureState(), forceId);
         _state = result.State;
         var newForceId = result.ForceId!;
-        // Duplicated force inherits explicit status from original
-        if (_forcesWithExplicitSelections.Contains(forceId))
-            _forcesWithExplicitSelections.Add(newForceId);
         return new ActionOutputs { ForceId = newForceId };
     }
 
@@ -196,10 +184,7 @@ public sealed class SpecRosterEngineAdapter : IRosterEngine
     public IReadOnlyList<ValidationErrorState> GetValidationErrors()
     {
         var state = GetRosterState();
-        return HiddenConstraintFilter.Apply(
-            state.ValidationErrors,
-            _forcesWithExplicitSelections,
-            state.Forces);
+        return state.ValidationErrors;
     }
 
     public void Dispose()
@@ -207,7 +192,6 @@ public sealed class SpecRosterEngineAdapter : IRosterEngine
         _coreEngine = null;
         _state = null;
         _catalogCompilation = null;
-        _forcesWithExplicitSelections.Clear();
     }
 
     // ──────────────────────────────────────────────────────────────────
