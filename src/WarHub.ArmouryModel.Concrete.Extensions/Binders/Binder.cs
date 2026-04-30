@@ -125,6 +125,8 @@ internal class Binder
     internal ISymbol BindEffectTargetMemberSymbol(SourceNode node, string? symbolId, BindingDiagnosticBag diagnostics)
     {
         Debug.Assert(ContainingEntrySymbol is not null);
+        // Fallback chain: entry member → cost type → characteristic type.
+        // Cost/char type lookups use Discarded diagnostic bags (shared singleton, no allocation).
         var firstPassDiags = BindingDiagnosticBag.GetInstance();
         const LookupOptions Options = LookupOptions.SingleLevel | LookupOptions.ResourceByDefinitionId
             | LookupOptions.EntryMembersOnly | LookupOptions.LookupInReferencedEntryMembers;

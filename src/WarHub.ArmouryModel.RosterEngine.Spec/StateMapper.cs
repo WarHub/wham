@@ -195,16 +195,15 @@ internal sealed class StateMapper
         var result = new List<RuleState>(resources.Length);
         foreach (var resource in resources)
         {
-            if (resource is not IRuleSymbol r)
-                continue;
-            if (r.IsHidden)
-                continue;
-            result.Add(new RuleState(
-                Name: r.Name ?? "",
-                Description: r.DescriptionText,
-                Hidden: r.IsHidden,
-                Page: r.Page,
-                PublicationId: r.PublicationReference?.PublicationId));
+            if (resource is IRuleSymbol { IsHidden: false } r)
+            {
+                result.Add(new RuleState(
+                    Name: r.Name ?? "",
+                    Description: r.DescriptionText,
+                    Hidden: false,
+                    Page: r.Page,
+                    PublicationId: r.PublicationReference?.PublicationId));
+            }
         }
         return result;
     }

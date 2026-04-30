@@ -322,9 +322,8 @@ public sealed class WhamRosterEngine
             var autoCount = GetMinSelectionCount(child.Symbol);
 
             // Check 2: Does the source group have a min constraint?
-            if (autoCount < 1 && child.SourceGroup is { } group)
+            if (autoCount < 1 && child.SourceGroup is { Id: { } groupId } group)
             {
-                var groupId = group.Id ?? "";
                 if (!autoSelectedGroups.Contains(groupId))
                 {
                     var groupMin = GetGroupMinSelectionCount(group);
@@ -847,6 +846,9 @@ public sealed class WhamRosterEngine
 
     // ──────────────────────────────────────────────────────────────────────
     //  Symbol-based tree traversal (for ID-based operations)
+    //  These are O(n) linear scans — acceptable for typical roster sizes
+    //  (tens of forces, hundreds of selections). If rosters grow significantly
+    //  larger, consider building an ID-to-symbol index.
     // ──────────────────────────────────────────────────────────────────────
 
     private static IForceSymbol? FindForceSymbolDeep(IRosterSymbol roster, string forceId)
@@ -1223,9 +1225,8 @@ public sealed class WhamRosterEngine
 
             var minCount = GetMinAutoSelectCount(effectiveEntry);
 
-            if (minCount < 1 && avail.SourceGroup is { } group)
+            if (minCount < 1 && avail.SourceGroup is { Id: { } groupId } group)
             {
-                var groupId = group.Id ?? "";
                 if (!autoSelectedGroups.Contains(groupId))
                 {
                     var groupMin = GetGroupMinAutoSelectCount(group);

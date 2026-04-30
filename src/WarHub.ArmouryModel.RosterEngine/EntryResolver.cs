@@ -60,7 +60,7 @@ public static class EntryResolver
     }
 
     /// <summary>
-    /// Counts root-level selection entries and groups (without flattening groups)
+    /// Counts root-level selection entries (excluding groups)
     /// for the <c>availableEntryCount</c> protocol field.
     /// </summary>
     public static int GetRootEntryCount(ICatalogueSymbol catalogue)
