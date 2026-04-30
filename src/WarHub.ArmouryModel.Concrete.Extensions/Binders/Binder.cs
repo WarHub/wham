@@ -136,28 +136,22 @@ internal class Binder
             return initialResult;
         }
         // Fallback: cost type definition (e.g. "pts", "PL")
-        var costTypeDiags = BindingDiagnosticBag.GetInstance();
-        var costType = BindCostTypeSymbol(node, symbolId, costTypeDiags);
+        // Use Discarded bag — fallback diagnostics are never reported.
+        var costType = BindCostTypeSymbol(node, symbolId, BindingDiagnosticBag.Discarded);
         if (!costType.IsKind(SymbolKind.Error))
         {
             firstPassDiags.Free();
-            costTypeDiags.Free();
             return new GeneratedCostSymbol(ContainingEntrySymbol, costType);
         }
         // Fallback: characteristic type definition (e.g. "M", "WS", "BS", "S", "T")
-        var charTypeDiags = BindingDiagnosticBag.GetInstance();
-        var charType = BindCharacteristicTypeSymbol(node, symbolId, charTypeDiags);
+        var charType = BindCharacteristicTypeSymbol(node, symbolId, BindingDiagnosticBag.Discarded);
         if (!charType.IsKind(SymbolKind.Error))
         {
             firstPassDiags.Free();
-            costTypeDiags.Free();
-            charTypeDiags.Free();
             return charType;
         }
         // All fallbacks failed — report diagnostics from the first pass
         diagnostics.AddRangeAndFree(firstPassDiags);
-        costTypeDiags.Free();
-        charTypeDiags.Free();
         return initialResult;
     }
 

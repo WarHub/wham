@@ -708,4 +708,458 @@ public sealed class WhamRosterEngine
                 $"Selection index must be in [0, {force.Selections.Count}). Force contains {force.Selections.Count} selection(s).");
         }
     }
+
+    // ──────────────────────────────────────────────────────────────────────
+    //  ID-based tree traversal
+    // ──────────────────────────────────────────────────────────────────────
+
+    /// <summary>
+    /// Finds a force node by its instance ID anywhere in the roster's force tree (including nested child forces).
+    /// </summary>
+    private static ForceNode? FindForceDeep(RosterNode roster, string forceId)
+    {
+        foreach (var force in roster.Forces)
+        {
+            var found = FindForceDeep(force, forceId);
+            if (found is not null) return found;
+        }
+        return null;
+    }
+
+    private static ForceNode? FindForceDeep(ForceNode force, string forceId)
+    {
+        if (force.Id == forceId) return force;
+        foreach (var child in force.Forces)
+        {
+            var found = FindForceDeep(child, forceId);
+            if (found is not null) return found;
+        }
+        return null;
+    }
+
+    /// <summary>
+    /// Recursively searches for a selection node by ID within a force's selection tree
+    /// (including selections in child forces).
+    /// </summary>
+    private static SelectionNode? FindSelectionDeep(ForceNode force, string selectionId)
+    {
+        foreach (var sel in force.Selections)
+        {
+            var found = FindSelectionDeep(sel, selectionId);
+            if (found is not null) return found;
+        }
+        foreach (var childForce in force.Forces)
+        {
+            var found = FindSelectionDeep(childForce, selectionId);
+            if (found is not null) return found;
+        }
+        return null;
+    }
+
+    private static SelectionNode? FindSelectionDeep(SelectionNode sel, string selectionId)
+    {
+        if (sel.Id == selectionId) return sel;
+        foreach (var child in sel.Selections)
+        {
+            var found = FindSelectionDeep(child, selectionId);
+            if (found is not null) return found;
+        }
+        return null;
+    }
+
+    private static ForceNode FindForceDeepRequired(RosterNode roster, string forceId)
+        => FindForceDeep(roster, forceId)
+           ?? throw new ArgumentException($"Force '{forceId}' not found in roster.", nameof(forceId));
+
+    private static SelectionNode FindSelectionDeepRequired(ForceNode force, string forceId, string selectionId)
+        => FindSelectionDeep(force, selectionId)
+           ?? throw new ArgumentException(
+               $"Selection '{selectionId}' not found in force '{forceId}'.", nameof(selectionId));
+
+    // ──────────────────────────────────────────────────────────────────────
+    //  ID-based force operations
+    // ──────────────────────────────────────────────────────────────────────
+
+    /// <summary>
+    /// Adds a top-level force to the roster and auto-selects root entries with
+    /// min constraints. Returns a <see cref="MutationResult"/> containing the
+    /// new force ID and auto-created selections map.
+    /// </summary>
+    public MutationResult AddForceById(
+        RosterState state,
+        IForceEntrySymbol forceEntry,
+        ICatalogueSymbol catalogue)
+    {
+        // Create the force (reuse existing logic)
+        state = AddForce(state, forceEntry, catalogue);
+        var roster = state.RosterRequired;
+        var newForce = roster.Forces[^1];
+        var forceId = newForce.Id!;
+
+        // Auto-select root entries with min constraints
+        state = AutoSelectRootEntries(state, roster.Forces.Count - 1, catalogue);
+
+        // Build selections map from the force's final state
+        var finalForce = state.RosterRequired.Forces[^1];
+        var selections = MutationResult.CollectSelectionMapFromForce(finalForce);
+
+        return new MutationResult(state)
+        {
+            ForceId = forceId,
+            Selections = selections
+        };
+    }
+
+    /// <summary>
+    /// Adds a child force nested inside an existing force. Does NOT auto-select
+    /// root entries (matching BattleScribe behavior for nested forces).
+    /// </summary>
+    public MutationResult AddChildForceById(
+        RosterState state,
+        string parentForceId,
+        IForceEntrySymbol forceEntry,
+        ICatalogueSymbol catalogue)
+    {
+        var roster = state.RosterRequired;
+        var parentForce = FindForceDeepRequired(roster, parentForceId);
+
+        var forceEntryDecl = forceEntry.GetDeclaration()
+            ?? throw new InvalidOperationException(
+                $"Force entry '{forceEntry.Id}' has no declaration.");
+
+        var catalogueDecl = catalogue.GetDeclaration() as CatalogueBaseNode;
+        var childForce = NodeFactory.Force(forceEntryDecl, catalogueDecl);
+
+        var categories = BuildForceCategories(forceEntry);
+        if (categories.Length > 0)
+        {
+            childForce = childForce.AddCategories(categories);
+        }
+
+        var updatedParent = parentForce.AddForces(childForce);
+        var newRoster = roster.Replace(parentForce, _ => updatedParent).WithUpdatedCostTotals();
+
+        return new MutationResult(state.ReplaceRoster(newRoster))
+        {
+            ForceId = childForce.Id
+        };
+    }
+
+    /// <summary>
+    /// Removes a force by ID from anywhere in the roster's force tree.
+    /// </summary>
+    public RosterState RemoveForceById(RosterState state, string forceId)
+    {
+        var roster = state.RosterRequired;
+        var force = FindForceDeepRequired(roster, forceId);
+        var newRoster = roster.Remove(force).WithUpdatedCostTotals();
+        return state.ReplaceRoster(newRoster);
+    }
+
+    /// <summary>
+    /// Duplicates a top-level force. Returns the new force's ID.
+    /// </summary>
+    public MutationResult DuplicateForceById(RosterState state, string forceId)
+    {
+        var roster = state.RosterRequired;
+        // Find the force — duplication currently only supports top-level forces
+        for (var i = 0; i < roster.Forces.Count; i++)
+        {
+            if (roster.Forces[i].Id == forceId)
+            {
+                var newRoster = roster.AddForces(roster.Forces[i]).WithUpdatedCostTotals();
+                var newState = state.ReplaceRoster(newRoster);
+                var duplicatedForce = newState.RosterRequired.Forces[^1];
+                return new MutationResult(newState)
+                {
+                    ForceId = duplicatedForce.Id
+                };
+            }
+        }
+
+        throw new ArgumentException(
+            $"Force '{forceId}' not found at top level for duplication.", nameof(forceId));
+    }
+
+    // ──────────────────────────────────────────────────────────────────────
+    //  ID-based selection operations
+    // ──────────────────────────────────────────────────────────────────────
+
+    /// <summary>
+    /// Selects an entry and adds it to the specified force (by ID, any nesting depth).
+    /// </summary>
+    public MutationResult SelectEntryById(
+        RosterState state,
+        string forceId,
+        ISelectionEntryContainerSymbol entry,
+        ISelectionEntryGroupSymbol? sourceGroup = null)
+    {
+        var roster = state.RosterRequired;
+        var force = FindForceDeepRequired(roster, forceId);
+
+        var selectionNode = CreateSelectionWithAutoChildren(entry, sourceGroup);
+        var newForce = force.AddSelections(selectionNode);
+        var newRoster = roster.Replace(force, _ => newForce).WithUpdatedCostTotals();
+        var newState = state.ReplaceRoster(newRoster);
+
+        return new MutationResult(newState)
+        {
+            SelectionId = selectionNode.Id,
+            Selections = MutationResult.CollectSelectionMap(selectionNode)
+        };
+    }
+
+    /// <summary>
+    /// Selects a child entry and nests it under an existing selection (by ID, any nesting depth).
+    /// </summary>
+    public MutationResult SelectChildEntryById(
+        RosterState state,
+        string forceId,
+        string parentSelectionId,
+        ISelectionEntryContainerSymbol childEntry,
+        ISelectionEntryGroupSymbol? sourceGroup = null)
+    {
+        var roster = state.RosterRequired;
+        var force = FindForceDeepRequired(roster, forceId);
+        var parentSel = FindSelectionDeepRequired(force, forceId, parentSelectionId);
+
+        var childSelectionNode = CreateSelectionWithAutoChildren(childEntry, sourceGroup);
+        var newParent = parentSel.AddSelections(childSelectionNode);
+        var newRoster = roster.Replace(parentSel, _ => newParent).WithUpdatedCostTotals();
+        var newState = state.ReplaceRoster(newRoster);
+
+        return new MutationResult(newState)
+        {
+            SelectionId = childSelectionNode.Id,
+            Selections = MutationResult.CollectSelectionMap(childSelectionNode)
+        };
+    }
+
+    /// <summary>
+    /// Removes a selection by ID from a force (any nesting depth).
+    /// </summary>
+    public RosterState DeselectSelectionById(
+        RosterState state,
+        string forceId,
+        string selectionId)
+    {
+        var roster = state.RosterRequired;
+        var force = FindForceDeepRequired(roster, forceId);
+        var selNode = FindSelectionDeepRequired(force, forceId, selectionId);
+        var newRoster = roster.Remove(selNode).WithUpdatedCostTotals();
+        return state.ReplaceRoster(newRoster);
+    }
+
+    /// <summary>
+    /// Duplicates a selection by ID within a force (any nesting depth).
+    /// </summary>
+    public MutationResult DuplicateSelectionById(
+        RosterState state,
+        string forceId,
+        string selectionId)
+    {
+        var roster = state.RosterRequired;
+        var force = FindForceDeepRequired(roster, forceId);
+        var selNode = FindSelectionDeepRequired(force, forceId, selectionId);
+
+        var newForce = force.AddSelections(selNode);
+        var newRoster = roster.Replace(force, _ => newForce).WithUpdatedCostTotals();
+        var newState = state.ReplaceRoster(newRoster);
+
+        var updatedForce = FindForceDeepRequired(newState.RosterRequired, forceId);
+        return new MutationResult(newState)
+        {
+            SelectionId = updatedForce.Selections[^1].Id
+        };
+    }
+
+    /// <summary>
+    /// Sets the selection count by ID.
+    /// </summary>
+    public RosterState SetSelectionCountById(
+        RosterState state,
+        string forceId,
+        string selectionId,
+        int count)
+    {
+        var roster = state.RosterRequired;
+        var force = FindForceDeepRequired(roster, forceId);
+        var selNode = FindSelectionDeepRequired(force, forceId, selectionId);
+
+        var newSelNode = selNode.WithNumber(count);
+        var newRoster = roster.Replace(selNode, _ => newSelNode).WithUpdatedCostTotals();
+        return state.ReplaceRoster(newRoster);
+    }
+
+    /// <summary>
+    /// Sets customization (custom name/notes) on a force, selection, or category by ID.
+    /// </summary>
+    public RosterState SetCustomizationById(
+        RosterState state,
+        string forceId,
+        string? selectionId,
+        string? categoryEntryId,
+        string? customName,
+        string? customNotes)
+    {
+        var roster = state.RosterRequired;
+        var force = FindForceDeepRequired(roster, forceId);
+
+        RosterNode newRoster;
+        if (categoryEntryId is not null)
+        {
+            if (selectionId is not null)
+            {
+                var selNode = FindSelectionDeepRequired(force, forceId, selectionId);
+                var catNode = selNode.Categories.FirstOrDefault(c => c.EntryId == categoryEntryId)
+                    ?? throw new InvalidOperationException($"Category '{categoryEntryId}' not found.");
+                var newCat = catNode;
+                if (customNotes is not null) newCat = newCat.WithCustomNotes(customNotes);
+                newRoster = roster.Replace(catNode, _ => newCat);
+            }
+            else
+            {
+                var catNode = force.Categories.FirstOrDefault(c => c.EntryId == categoryEntryId)
+                    ?? throw new InvalidOperationException($"Category '{categoryEntryId}' not found.");
+                var newCat = catNode;
+                if (customNotes is not null) newCat = newCat.WithCustomNotes(customNotes);
+                newRoster = roster.Replace(catNode, _ => newCat);
+            }
+        }
+        else if (selectionId is not null)
+        {
+            var selNode = FindSelectionDeepRequired(force, forceId, selectionId);
+            var newSel = selNode;
+            if (customName is not null) newSel = newSel.WithCustomName(customName);
+            if (customNotes is not null) newSel = newSel.WithCustomNotes(customNotes);
+            newRoster = roster.Replace(selNode, _ => newSel);
+        }
+        else
+        {
+            var newForce = force;
+            if (customName is not null) newForce = newForce.WithCustomName(customName);
+            if (customNotes is not null) newForce = newForce.WithCustomNotes(customNotes);
+            newRoster = roster.Replace(force, _ => newForce);
+        }
+
+        return state.ReplaceRoster(newRoster);
+    }
+
+    // ──────────────────────────────────────────────────────────────────────
+    //  Root entry auto-selection
+    // ──────────────────────────────────────────────────────────────────────
+
+    /// <summary>
+    /// Auto-selects root entries that have min constraints on force/parent scope.
+    /// Called by <see cref="AddForceById"/> after adding a force to the roster.
+    /// </summary>
+    private RosterState AutoSelectRootEntries(
+        RosterState state,
+        int forceIndex,
+        ICatalogueSymbol catalogue)
+    {
+        var available = _entryResolver.GetAvailableEntries(catalogue);
+        var autoSelectedGroups = new HashSet<string>(StringComparer.Ordinal);
+
+        foreach (var avail in available)
+        {
+            var effectiveEntry = avail.Symbol.IsReference
+                ? avail.Symbol.ReferencedEntry ?? avail.Symbol
+                : avail.Symbol;
+
+            var minCount = GetMinAutoSelectCount(effectiveEntry);
+
+            if (minCount < 1 && avail.SourceGroup is { } group)
+            {
+                var groupId = group.Id ?? "";
+                if (!autoSelectedGroups.Contains(groupId))
+                {
+                    var groupMin = GetGroupMinAutoSelectCount(group);
+                    if (groupMin >= 1 && IsDefaultAutoSelectEntry(avail, available, group))
+                    {
+                        minCount = groupMin;
+                        autoSelectedGroups.Add(groupId);
+                    }
+                }
+            }
+
+            if (minCount < 1) continue;
+
+            for (int i = 0; i < minCount; i++)
+            {
+                state = SelectEntry(state, forceIndex, avail.Symbol, avail.SourceGroup);
+            }
+        }
+
+        return state;
+    }
+
+    /// <summary>
+    /// Gets the minimum auto-select count from an entry's constraints.
+    /// Uses the raw constraint declarations (not the symbol API) to match
+    /// the auto-select behavior that checks <c>type=min, field=selections,
+    /// scope=parent|force, value≥1</c>.
+    /// </summary>
+    private static int GetMinAutoSelectCount(ISelectionEntryContainerSymbol entry)
+    {
+        foreach (var constraint in entry.Constraints)
+        {
+            var decl = constraint.GetDeclaration();
+            if (decl is null) continue;
+            if (decl.Type != ConstraintKind.Minimum) continue;
+            if (decl.Field is not "selections") continue;
+            if (decl.Scope is not ("parent" or "force")) continue;
+            if (decl.IsValuePercentage) continue;
+            var value = (int)decl.Value;
+            if (value >= 1) return value;
+        }
+        return 0;
+    }
+
+    private static int GetGroupMinAutoSelectCount(ISelectionEntryGroupSymbol group)
+    {
+        foreach (var constraint in group.Constraints)
+        {
+            var decl = constraint.GetDeclaration();
+            if (decl is null) continue;
+            if (decl.Type != ConstraintKind.Minimum) continue;
+            if (decl.Field is not "selections") continue;
+            if (decl.Scope is not ("parent" or "force")) continue;
+            if (decl.IsValuePercentage) continue;
+            var value = (int)decl.Value;
+            if (value >= 1) return value;
+        }
+        return 0;
+    }
+
+    /// <summary>
+    /// Checks if an available entry is the default entry for its group during auto-selection.
+    /// </summary>
+    private static bool IsDefaultAutoSelectEntry(
+        AvailableEntry avail,
+        IReadOnlyList<AvailableEntry> allEntries,
+        ISelectionEntryGroupSymbol group)
+    {
+        var defaultEntry = group.DefaultSelectionEntry;
+        if (defaultEntry is not null)
+        {
+            var entryId = avail.Symbol.Id;
+            var resolvedId = avail.Symbol.ReferencedEntry?.Id;
+            var defaultId = defaultEntry.Id;
+            var defaultResolvedId = defaultEntry.ReferencedEntry?.Id;
+
+            if (entryId == defaultId || entryId == defaultResolvedId ||
+                resolvedId == defaultId || resolvedId == defaultResolvedId)
+                return true;
+            return false;
+        }
+
+        var count = 0;
+        foreach (var entry in allEntries)
+        {
+            if (entry.SourceGroup == group) count++;
+            if (count > 1) return false;
+        }
+        return count == 1;
+    }
 }

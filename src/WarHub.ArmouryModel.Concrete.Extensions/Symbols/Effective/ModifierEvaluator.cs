@@ -11,6 +11,18 @@ namespace WarHub.ArmouryModel.Concrete;
 /// (ensured by <c>EnsureReferencedCataloguesComplete</c>), so both catalogue-level and
 /// roster-level symbol properties are safe to access through their public API.
 /// </para>
+/// <para>
+/// <b>Binding order invariant:</b> The compilation pipeline guarantees that catalogue
+/// compilation completes all phases up to CheckReferences before roster compilation starts.
+/// This means:
+/// <list type="bullet">
+///   <item>It IS safe to access <c>IEntrySymbol.ReferencedEntry</c> on catalogue symbols (already resolved)</item>
+///   <item>It IS safe to navigate shared entry chains (infoLinks, entryLinks, categoryLinks)</item>
+///   <item>It IS safe to read modifier condition references to other catalogue entries</item>
+///   <item>It is NOT safe to access roster-level symbols that may not have completed their
+///     own binding — use <c>Declaration</c> node properties instead (see docs/roster-engine.md)</item>
+/// </list>
+/// </para>
 /// </summary>
 internal sealed class ModifierEvaluator
 {
@@ -233,12 +245,12 @@ internal sealed class ModifierEvaluator
             var context = new EvalContext(selection, force, entry);
             foreach (var effect in entry.Effects)
             {
-                ApplyCategoryEffect(effect, categories, ref primaryId, context);
+                ApplyEntryCategoryMutation(effect, categories, ref primaryId, context);
             }
         }
 
         // Process modifiers on individual category links (e.g. set primary=true on a categoryLink)
-        ApplyCategoryLinkEffects(entry, selection, force, categories, ref primaryId);
+        ApplyAllCategoryLinkPrimaryToggles(entry, selection, force, categories, ref primaryId);
 
         return (categories, primaryId);
     }
@@ -262,12 +274,12 @@ internal sealed class ModifierEvaluator
             var context = new EvalContext(selection, force, entry);
             foreach (var effect in entry.Effects)
             {
-                ApplyCategoryEffect(effect, categories, ref primaryId, context);
+                ApplyEntryCategoryMutation(effect, categories, ref primaryId, context);
             }
         }
 
         // Process modifiers on individual category links
-        ApplyCategoryLinkEffects(entry, selection, force, categories, ref primaryId);
+        ApplyAllCategoryLinkPrimaryToggles(entry, selection, force, categories, ref primaryId);
 
         return (categories, primaryId);
     }
@@ -276,7 +288,13 @@ internal sealed class ModifierEvaluator
     //  Effect application
     // ──────────────────────────────────────────────────────────────────
 
-    private void ApplyCategoryLinkEffects(
+    /// <summary>
+    /// Iterates all category links on the entry and applies per-link primary toggles.
+    /// Unlike <see cref="ApplyEntryCategoryMutation"/>, which operates on the entry's entire
+    /// category collection (add/remove/set primary/unset primary), this method processes
+    /// each <c>ICategoryLinkSymbol</c> individually, toggling only its primary flag.
+    /// </summary>
+    private void ApplyAllCategoryLinkPrimaryToggles(
         ISelectionEntryContainerSymbol entry,
         ISelectionSymbol? selection,
         IForceSymbol? force,
@@ -291,12 +309,19 @@ internal sealed class ModifierEvaluator
             var catContext = new EvalContext(selection, force, cat);
             foreach (var effect in cat.Effects)
             {
-                ApplyCategoryLinkPrimaryEffect(effect, catId, categories, ref primaryId, catContext);
+                ApplyCategoryLinkPrimaryToggle(effect, catId, categories, ref primaryId, catContext);
             }
         }
     }
 
-    private void ApplyCategoryLinkPrimaryEffect(
+    /// <summary>
+    /// Toggles the primary flag on a specific category link.
+    /// This operates at the link level — it only sets or unsets the primary flag for the
+    /// category identified by <paramref name="catId"/>. Compare with
+    /// <see cref="ApplyEntryCategoryMutation"/> which operates on the entry's entire category
+    /// collection (add/remove categories, set/unset primary).
+    /// </summary>
+    private void ApplyCategoryLinkPrimaryToggle(
         IEffectSymbol effect, string catId,
         List<string> categories, ref string? primaryId, EvalContext context)
     {
@@ -323,7 +348,7 @@ internal sealed class ModifierEvaluator
             var children = satisfied ? effect.ChildrenWhenSatisfied : effect.ChildrenWhenUnsatisfied;
             foreach (var child in children)
             {
-                ApplyCategoryLinkPrimaryEffect(child, catId, categories, ref primaryId, context);
+                ApplyCategoryLinkPrimaryToggle(child, catId, categories, ref primaryId, context);
             }
         }
     }
@@ -480,7 +505,13 @@ internal sealed class ModifierEvaluator
         return value;
     }
 
-    private void ApplyCategoryEffect(
+    /// <summary>
+    /// Mutates the entry's category set: add/remove categories, set/unset primary.
+    /// This operates at the entry level on the entire category collection. Compare with
+    /// <see cref="ApplyCategoryLinkPrimaryToggle"/> which only toggles the primary flag
+    /// on a specific category link.
+    /// </summary>
+    private void ApplyEntryCategoryMutation(
         IEffectSymbol effect, List<string> categories, ref string? primaryId, EvalContext context)
     {
         if (effect.TargetKind == EffectTargetKind.EntryCategory && EvaluateEffectCondition(effect, context))
@@ -516,7 +547,7 @@ internal sealed class ModifierEvaluator
             var children = satisfied ? effect.ChildrenWhenSatisfied : effect.ChildrenWhenUnsatisfied;
             foreach (var child in children)
             {
-                ApplyCategoryEffect(child, categories, ref primaryId, context);
+                ApplyEntryCategoryMutation(child, categories, ref primaryId, context);
             }
         }
     }
@@ -1139,3 +1170,4 @@ internal sealed class ModifierEvaluator
         return sel.EntryId == id || sel.EntryGroupId == id;
     }
 }
+

@@ -35,7 +35,7 @@ internal sealed class StateMapper
                 _costTypeNames.TryAdd(typeId, rosterCost.Name ?? "");
         }
 
-        var forces = new List<ForceState>();
+        var forces = new List<ForceState>(_roster.Forces.Length);
         for (int i = 0; i < _roster.Forces.Length; i++)
         {
             var count = i < forceAvailableEntryCounts.Count ? forceAvailableEntryCounts[i] : 0;
@@ -60,7 +60,7 @@ internal sealed class StateMapper
 
     private ForceState MapForce(IForceSymbol force, int availableEntryCount)
     {
-        var selections = new List<SelectionState>();
+        var selections = new List<SelectionState>(force.Selections.Length);
         foreach (var sel in SelectionOrdering.GetSortedSelections(force))
         {
             selections.Add(MapSelection(sel));
@@ -104,7 +104,7 @@ internal sealed class StateMapper
 
     private SelectionState MapSelection(ISelectionSymbol sel)
     {
-        var children = new List<SelectionState>();
+        var children = new List<SelectionState>(sel.Selections.Length);
         foreach (var child in SelectionOrdering.GetSortedChildSelections(sel))
         {
             children.Add(MapSelection(child));
@@ -152,7 +152,7 @@ internal sealed class StateMapper
 
     private static List<ProfileState> MapProfiles(ImmutableArray<IResourceEntrySymbol> resources)
     {
-        var result = new List<ProfileState>();
+        var result = new List<ProfileState>(resources.Length);
         foreach (var resource in resources)
         {
             if (resource is not IProfileSymbol p)
@@ -181,7 +181,7 @@ internal sealed class StateMapper
 
     private static List<RuleState> MapRules(ImmutableArray<IResourceEntrySymbol> resources)
     {
-        var result = new List<RuleState>();
+        var result = new List<RuleState>(resources.Length);
         foreach (var resource in resources)
         {
             if (resource is not IRuleSymbol r)
@@ -202,16 +202,15 @@ internal sealed class StateMapper
     {
         foreach (var resource in catalogue.RootResourceEntries)
         {
-            if (resource is not IRuleSymbol rule)
-                continue;
-            if (rule.IsHidden)
-                continue;
-            rules.Add(new RuleState(
-                Name: rule.Name ?? "",
-                Description: rule.DescriptionText,
-                Hidden: rule.IsHidden,
-                Page: rule.Page,
-                PublicationId: rule.PublicationReference?.PublicationId));
+            if (resource is IRuleSymbol { IsHidden: false } rule)
+            {
+                rules.Add(new RuleState(
+                    Name: rule.Name ?? "",
+                    Description: rule.DescriptionText,
+                    Hidden: false,
+                    Page: rule.Page,
+                    PublicationId: rule.PublicationReference?.PublicationId));
+            }
         }
     }
 
@@ -221,7 +220,7 @@ internal sealed class StateMapper
 
     private static List<CategoryState> MapSelectionCategories(ISelectionEntryContainerSymbol eff)
     {
-        var categories = new List<CategoryState>();
+        var categories = new List<CategoryState>(eff.Categories.Length);
         foreach (var cat in eff.Categories)
         {
             var entryId = cat.ReferencedEntry?.Id ?? cat.Id ?? "";
@@ -237,7 +236,7 @@ internal sealed class StateMapper
 
     private static List<CategoryState> MapForceCategories(IForceSymbol force)
     {
-        var categories = new List<CategoryState>();
+        var categories = new List<CategoryState>(force.Categories.Length + 1);
         // Prepend synthetic "Uncategorised" category (BattleScribe convention)
         categories.Add(new CategoryState(
             Name: "Uncategorised",
@@ -265,11 +264,10 @@ internal sealed class StateMapper
 
     private List<PublicationState> MapPublications(IForceSymbol force)
     {
-        var result = new List<PublicationState>();
-        var seen = new HashSet<string>(StringComparer.Ordinal);
-
-        // Catalogue-specific publications first
         var catalogue = force.CatalogueReference.Catalogue;
+        var gamesystem = catalogue.Gamesystem;
+        var result = new List<PublicationState>(catalogue.ResourceDefinitions.Length + gamesystem.ResourceDefinitions.Length);
+        var seen = new HashSet<string>(StringComparer.Ordinal);
         if (!catalogue.IsGamesystem)
         {
             foreach (var def in catalogue.ResourceDefinitions)
@@ -280,7 +278,6 @@ internal sealed class StateMapper
         }
 
         // Then game system publications
-        var gamesystem = catalogue.Gamesystem;
         foreach (var def in gamesystem.ResourceDefinitions)
         {
             if (def is IPublicationSymbol pub && pub.Id is not null && seen.Add(pub.Id))
@@ -296,7 +293,7 @@ internal sealed class StateMapper
 
     private List<ForceState> MapChildForces(IForceSymbol force)
     {
-        var childForces = new List<ForceState>();
+        var childForces = new List<ForceState>(force.Forces.Length);
         foreach (var child in force.Forces)
         {
             childForces.Add(MapForce(child, 0));
@@ -310,7 +307,7 @@ internal sealed class StateMapper
 
     private List<CostState> MapSelectionCosts(ISelectionEntryContainerSymbol eff, int selectedCount)
     {
-        var costs = new List<CostState>();
+        var costs = new List<CostState>(eff.Costs.Length);
         var emittedTypeIds = new HashSet<string>(StringComparer.Ordinal);
         foreach (var cost in eff.Costs)
         {

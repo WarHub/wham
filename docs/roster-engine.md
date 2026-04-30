@@ -120,7 +120,12 @@ Constructor takes `IRosterSymbol` and `WhamCompilation`.
 EntryGroupId, Categories, Costs) use `SelectionSymbol.Declaration` node
 properties instead of ISymbol accessors like `SourceEntry` or `SourceEntryPath`,
 because those trigger lazy binder resolution that would cause reentrancy
-during modifier evaluation.
+during modifier evaluation. More broadly, the compilation pipeline guarantees
+that catalogue compilation completes all phases up to CheckReferences before
+roster compilation starts — so catalogue symbol properties (e.g.
+`IEntrySymbol.ReferencedEntry`, shared entry chains, modifier condition
+references) are safe to access, but roster-level symbols that may not have
+completed their own binding should be accessed via `Declaration` node properties.
 
 Evaluates modifiers and conditions using IEffectSymbol/IConditionSymbol:
 

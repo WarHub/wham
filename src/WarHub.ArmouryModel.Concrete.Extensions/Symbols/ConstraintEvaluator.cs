@@ -21,6 +21,9 @@ internal static class ConstraintEvaluator
 
     private sealed class Evaluator
     {
+        private enum CountKeyKind { Entry, Group }
+        private readonly record struct CountKey(string Id, CountKeyKind Kind);
+
         private readonly RosterSymbol _roster;
         private readonly WhamCompilation _compilation;
         private readonly DiagnosticBag _diagnostics;
@@ -364,18 +367,17 @@ internal static class ConstraintEvaluator
             SelectionSymbol parent,
             ForceSymbol force)
         {
-            // Count children by entry ID
-            var childCounts = new Dictionary<string, int>(StringComparer.Ordinal);
-            // Count children by entry group ID (for group constraints)
-            var childGroupCounts = new Dictionary<string, int>(StringComparer.Ordinal);
+            // Count children by entry ID and entry group ID
+            var counts = new Dictionary<CountKey, int>();
             foreach (var child in parent.ChildSelections)
             {
-                var id = child.Declaration.EntryId;
-                childCounts[id] = childCounts.GetValueOrDefault(id) + child.SelectedCount;
+                var entryKey = new CountKey(child.Declaration.EntryId, CountKeyKind.Entry);
+                counts[entryKey] = counts.GetValueOrDefault(entryKey) + child.SelectedCount;
                 var groupId = child.Declaration.EntryGroupId;
                 if (groupId is not null)
                 {
-                    childGroupCounts[groupId] = childGroupCounts.GetValueOrDefault(groupId) + child.SelectedCount;
+                    var groupKey = new CountKey(groupId, CountKeyKind.Group);
+                    counts[groupKey] = counts.GetValueOrDefault(groupKey) + child.SelectedCount;
                 }
             }
 
@@ -395,7 +397,7 @@ internal static class ConstraintEvaluator
 
                     var constraintId = constraint.Id ?? "";
                     var constraintValue = effectiveChildValues.GetValueOrDefault(constraintId, query.ReferenceValue ?? 0m);
-                    var count = childCounts.GetValueOrDefault(child.Declaration.EntryId);
+                    var count = counts.GetValueOrDefault(new CountKey(child.Declaration.EntryId, CountKeyKind.Entry));
 
                     var parentEntryId = parent.Declaration.EntryId;
                     CheckConstraint(query.Comparison, constraintValue, count,
@@ -414,14 +416,7 @@ internal static class ConstraintEvaluator
 
                     // For groups, count by entryGroupId; for entries, count by entryId
                     var isGroup = childEntrySymbol is ISelectionEntryGroupSymbol;
-                    if (isGroup)
-                    {
-                        if (childGroupCounts.ContainsKey(childId)) continue;
-                    }
-                    else
-                    {
-                        if (childCounts.ContainsKey(childId)) continue;
-                    }
+                    if (counts.ContainsKey(new CountKey(childId, isGroup ? CountKeyKind.Group : CountKeyKind.Entry))) continue;
 
                     var targetEntry = childEntrySymbol.ReferencedEntry ?? childEntrySymbol;
                     var effectiveAvailValues = GetEffectiveConstraintValues(targetEntry, null, force);
@@ -434,9 +429,7 @@ internal static class ConstraintEvaluator
 
                         var constraintId = constraint.Id ?? "";
                         var constraintValue = effectiveAvailValues.GetValueOrDefault(constraintId, query.ReferenceValue ?? 0m);
-                        var count = isGroup
-                            ? childGroupCounts.GetValueOrDefault(childId)
-                            : 0;
+                        var count = counts.GetValueOrDefault(new CountKey(childId, isGroup ? CountKeyKind.Group : CountKeyKind.Entry));
                         CheckConstraint(query.Comparison, constraintValue, count,
                             childId, "selection", parent.Declaration.EntryId,
                             constraintId);
@@ -624,9 +617,14 @@ internal static class ConstraintEvaluator
 
         private bool IsEffectivelyHidden(ISelectionEntryContainerSymbol entry, ForceSymbol force)
         {
-            // Use modifier-applied hidden state from effective entry cache
-            var effectiveEntry = _effectiveCache.GetEffectiveEntry(entry, selection: null, force);
-            return effectiveEntry.IsHidden;
+            // Fast path: if entry has no effects (modifiers), just use the declaration value.
+            // This avoids the full effective entry evaluation (name, costs, constraints, etc.)
+            // which is expensive and unnecessary when we only need the hidden flag.
+            if (entry.Effects.IsEmpty)
+                return entry.IsHidden;
+
+            // Slow path: evaluate modifiers that can change hidden state
+            return _effectiveCache.Evaluator.GetEffectiveHidden(entry, selection: null, force);
         }
 
         private static IEnumerable<SelectionSymbol> FlattenSelections(ImmutableArray<SelectionSymbol> selections)
