@@ -23,10 +23,6 @@ public sealed class SpecRosterEngineAdapter : IRosterEngine
     private WhamCompilation? _catalogCompilation;
     private readonly EntryResolver _resolver = new();
 
-    // Force ID → catalogue ID mapping: tracks which catalogue each force was added with.
-    // Stores catalogue IDs (not symbol references) to avoid stale symbols across compilation rebuilds.
-    private readonly Dictionary<string, string> _forceCatalogueIds = new(StringComparer.Ordinal);
-
     // Tracks forces that have received explicit user selections (SelectEntry/SelectChildEntry).
     // Forces with only auto-selections (from AddForce) are not included.
     private readonly HashSet<string> _forcesWithExplicitSelections = new(StringComparer.Ordinal);
@@ -37,7 +33,6 @@ public sealed class SpecRosterEngineAdapter : IRosterEngine
         _catalogCompilation = compilation;
         _coreEngine = new WhamRosterEngine();
         _state = _coreEngine.CreateRoster(compilation);
-        _forceCatalogueIds.Clear();
         _forcesWithExplicitSelections.Clear();
         return [];
     }
@@ -53,9 +48,6 @@ public sealed class SpecRosterEngineAdapter : IRosterEngine
 
         var result = engine.AddForceById(state, forceEntry, catalogue);
         _state = result.State;
-
-        if (result.ForceId is not null)
-            _forceCatalogueIds[result.ForceId] = catalogueId;
 
         return new ActionOutputs
         {
@@ -76,9 +68,6 @@ public sealed class SpecRosterEngineAdapter : IRosterEngine
         var result = engine.AddChildForceById(state, parentForceId, forceEntry, catalogue);
         _state = result.State;
 
-        if (result.ForceId is not null)
-            _forceCatalogueIds[result.ForceId] = catalogueId;
-
         return new ActionOutputs { ForceId = result.ForceId };
     }
 
@@ -86,7 +75,6 @@ public sealed class SpecRosterEngineAdapter : IRosterEngine
     {
         var engine = EnsureEngine();
         _state = engine.RemoveForceById(EnsureState(), forceId);
-        _forceCatalogueIds.Remove(forceId);
         _forcesWithExplicitSelections.Remove(forceId);
     }
 
@@ -160,8 +148,6 @@ public sealed class SpecRosterEngineAdapter : IRosterEngine
         var result = EnsureEngine().DuplicateForceById(EnsureState(), forceId);
         _state = result.State;
         var newForceId = result.ForceId!;
-        if (_forceCatalogueIds.TryGetValue(forceId, out var catalogueId))
-            _forceCatalogueIds[newForceId] = catalogueId;
         // Duplicated force inherits explicit status from original
         if (_forcesWithExplicitSelections.Contains(forceId))
             _forcesWithExplicitSelections.Add(newForceId);
@@ -221,7 +207,6 @@ public sealed class SpecRosterEngineAdapter : IRosterEngine
         _coreEngine = null;
         _state = null;
         _catalogCompilation = null;
-        _forceCatalogueIds.Clear();
         _forcesWithExplicitSelections.Clear();
     }
 
@@ -280,22 +265,11 @@ public sealed class SpecRosterEngineAdapter : IRosterEngine
     }
 
     /// <summary>
-    /// Resolves the catalogue for a force — first checks local ID cache, then falls back
-    /// to the force symbol's <see cref="IForceSymbol.CatalogueReference"/>.
+    /// Resolves the catalogue for a force via the force symbol's
+    /// <see cref="IForceSymbol.CatalogueReference"/>.
     /// </summary>
-    private ICatalogueSymbol ResolveCatalogueForForce(WhamRosterState state, string forceId)
+    private static ICatalogueSymbol ResolveCatalogueForForce(WhamRosterState state, string forceId)
     {
-        var compilation = state.Compilation;
-
-        if (_forceCatalogueIds.TryGetValue(forceId, out var catalogueId))
-        {
-            foreach (var cat in compilation.GlobalNamespace.Catalogues)
-            {
-                if (cat.Id == catalogueId) return cat;
-            }
-        }
-
-        // Fall back to Symbol-based resolution via the roster's force tree.
         var rosterSymbol = state.RosterSymbol;
         if (rosterSymbol is not null)
         {
@@ -304,7 +278,7 @@ public sealed class SpecRosterEngineAdapter : IRosterEngine
                 return forceSymbol.CatalogueReference.Catalogue;
         }
 
-        return compilation.GlobalNamespace.RootCatalogue;
+        return state.Compilation.GlobalNamespace.RootCatalogue;
     }
 
     /// <summary>
