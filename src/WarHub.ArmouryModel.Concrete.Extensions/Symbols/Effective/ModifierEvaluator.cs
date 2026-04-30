@@ -1096,7 +1096,23 @@ internal sealed class ModifierEvaluator
     /// </summary>
     private static bool MatchesEntryOrGroup(ISelectionSymbol sel, string id)
     {
-        return sel.EntryId == id || sel.EntryGroupId == id;
+        if (sel.EntryGroupId == id)
+            return true;
+        if (sel.EntryId is not { } entryId)
+            return false;
+        if (entryId == id)
+            return true;
+        // Entry link format: "linkId::targetId" — check each segment
+        var span = entryId.AsSpan();
+        while (true)
+        {
+            var sepIndex = span.IndexOf("::", StringComparison.Ordinal);
+            if (sepIndex < 0)
+                return span.SequenceEqual(id.AsSpan());
+            if (span[..sepIndex].SequenceEqual(id.AsSpan()))
+                return true;
+            span = span[(sepIndex + 2)..];
+        }
     }
 }
 

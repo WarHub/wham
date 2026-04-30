@@ -1,8 +1,8 @@
-using BattleScribeSpec;
 using BattleScribeSpec.Protocol;
+using BattleScribeSpec.Roster;
 using WarHub.ArmouryModel.Concrete;
 using WarHub.ArmouryModel.EditorServices;
-using ProtocolRosterState = BattleScribeSpec.RosterState;
+using ProtocolRosterState = BattleScribeSpec.Roster.RosterState;
 using WhamRosterState = WarHub.ArmouryModel.EditorServices.RosterState;
 
 namespace WarHub.ArmouryModel.RosterEngine.Spec;
