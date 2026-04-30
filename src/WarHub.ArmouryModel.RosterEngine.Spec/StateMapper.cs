@@ -1,6 +1,7 @@
 using BattleScribeSpec;
 using BattleScribeSpec.Protocol;
 using WarHub.ArmouryModel.Concrete;
+using WarHub.ArmouryModel.RosterEngine;
 using ProtocolRosterState = BattleScribeSpec.RosterState;
 
 namespace WarHub.ArmouryModel.RosterEngine.Spec;
@@ -21,10 +22,20 @@ internal sealed class StateMapper
         _compilation = compilation;
     }
 
-    public ProtocolRosterState MapRosterState(
-        IReadOnlyList<int> forceAvailableEntryCounts,
-        IReadOnlySet<string> referencedCostTypeIds)
+    public ProtocolRosterState MapRosterState()
     {
+        // Collect referenced cost types from all force catalogues' available entries
+        var referencedCostTypeIds = new HashSet<string>(StringComparer.Ordinal);
+        foreach (var forceSymbol in _roster.Forces)
+        {
+            var catalogue = forceSymbol.CatalogueReference.Catalogue;
+            var entries = EntryResolver.GetAvailableEntries(catalogue);
+            foreach (var entry in entries)
+            {
+                CollectReferencedCostTypes(entry.Symbol, referencedCostTypeIds);
+            }
+        }
+
         // Build cost type ID → name map for filling missing costs on selections
         var costTypeNames = new Dictionary<string, string>(StringComparer.Ordinal);
         foreach (var rosterCost in _roster.Costs)
@@ -37,8 +48,7 @@ internal sealed class StateMapper
         var forces = new List<ForceState>(_roster.Forces.Length);
         for (int i = 0; i < _roster.Forces.Length; i++)
         {
-            var count = i < forceAvailableEntryCounts.Count ? forceAvailableEntryCounts[i] : 0;
-            forces.Add(MapForce(_roster.Forces[i], count, costTypeNames));
+            forces.Add(MapForce(_roster.Forces[i], costTypeNames));
         }
         // Sort forces alphabetically by name (BattleScribe canonical ordering)
         forces.Sort((a, b) => SelectionOrdering.NaturalSort.Compare(a.Name, b.Name));
@@ -57,8 +67,11 @@ internal sealed class StateMapper
             GameSystemName: _roster.ContainingNamespace?.RootCatalogue?.Name);
     }
 
-    private ForceState MapForce(IForceSymbol force, int availableEntryCount, IReadOnlyDictionary<string, string> costTypeNames)
+    private ForceState MapForce(IForceSymbol force, IReadOnlyDictionary<string, string> costTypeNames)
     {
+        var catalogue = force.CatalogueReference.Catalogue;
+        var availableEntryCount = EntryResolver.GetRootEntryCount(catalogue);
+
         var selections = new List<SelectionState>(force.Selections.Length);
         foreach (var sel in SelectionOrdering.GetSortedSelections(force))
         {
@@ -69,7 +82,6 @@ internal sealed class StateMapper
         var rules = MapRules(force.EffectiveSourceEntry.Resources);
 
         // Collect force-level rules from catalogue and game system root resource entries
-        var catalogue = force.CatalogueReference.Catalogue;
         var gamesystem = catalogue.Gamesystem;
         AppendRootRules(catalogue, rules);
         if (!catalogue.IsGamesystem)
@@ -295,7 +307,7 @@ internal sealed class StateMapper
         var childForces = new List<ForceState>(force.Forces.Length);
         foreach (var child in force.Forces)
         {
-            childForces.Add(MapForce(child, 0, costTypeNames));
+            childForces.Add(MapForce(child, costTypeNames));
         }
         return childForces;
     }

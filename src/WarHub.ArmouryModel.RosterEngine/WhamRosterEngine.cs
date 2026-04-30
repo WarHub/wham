@@ -17,8 +17,6 @@ public sealed class WhamRosterEngine
     /// </summary>
     internal const string EntryLinkIdSeparator = "::";
 
-    private readonly EntryResolver _entryResolver = new();
-
     // ──────────────────────────────────────────────────────────────────────
     //  Roster lifecycle
     // ──────────────────────────────────────────────────────────────────────
@@ -139,7 +137,7 @@ public sealed class WhamRosterEngine
 
         var force = roster.Forces[forceIndex];
         var catalogue = ResolveForceCatalogue(state, force);
-        return _entryResolver.GetAvailableEntries(catalogue);
+        return EntryResolver.GetAvailableEntries(catalogue);
     }
 
     /// <summary>
@@ -148,7 +146,7 @@ public sealed class WhamRosterEngine
     /// </summary>
     public IReadOnlyList<AvailableEntry> GetChildEntries(ISelectionEntryContainerSymbol entry)
     {
-        return _entryResolver.GetChildEntries(entry);
+        return EntryResolver.GetChildEntries(entry);
     }
 
     // ──────────────────────────────────────────────────────────────────────
@@ -313,7 +311,7 @@ public sealed class WhamRosterEngine
         var selectionNode = CreateSelectionNode(entry, sourceGroup);
 
         // Auto-select child entries that have a minimum constraint ≥ 1.
-        var childEntries = _entryResolver.GetChildEntries(entry);
+        var childEntries = EntryResolver.GetChildEntries(entry);
 
         // Track which groups we've already auto-selected for (to avoid duplicates)
         var autoSelectedGroups = new HashSet<string>(StringComparer.Ordinal);
@@ -848,6 +846,57 @@ public sealed class WhamRosterEngine
     }
 
     // ──────────────────────────────────────────────────────────────────────
+    //  Symbol-based tree traversal (for ID-based operations)
+    // ──────────────────────────────────────────────────────────────────────
+
+    private static IForceSymbol? FindForceSymbolDeep(IRosterSymbol roster, string forceId)
+    {
+        foreach (var force in roster.Forces)
+        {
+            var found = FindForceSymbolDeep(force, forceId);
+            if (found is not null) return found;
+        }
+        return null;
+    }
+
+    private static IForceSymbol? FindForceSymbolDeep(IForceSymbol force, string forceId)
+    {
+        if (force.Id == forceId) return force;
+        foreach (var child in force.Forces)
+        {
+            var found = FindForceSymbolDeep(child, forceId);
+            if (found is not null) return found;
+        }
+        return null;
+    }
+
+    private static ISelectionSymbol? FindSelectionSymbolDeep(IForceSymbol force, string selectionId)
+    {
+        foreach (var sel in force.Selections)
+        {
+            var found = FindSelectionSymbolDeep(sel, selectionId);
+            if (found is not null) return found;
+        }
+        foreach (var childForce in force.Forces)
+        {
+            var found = FindSelectionSymbolDeep(childForce, selectionId);
+            if (found is not null) return found;
+        }
+        return null;
+    }
+
+    private static ISelectionSymbol? FindSelectionSymbolDeep(ISelectionSymbol sel, string selectionId)
+    {
+        if (sel.Id == selectionId) return sel;
+        foreach (var child in sel.Selections)
+        {
+            var found = FindSelectionSymbolDeep(child, selectionId);
+            if (found is not null) return found;
+        }
+        return null;
+    }
+
+    // ──────────────────────────────────────────────────────────────────────
     //  ID-based force operations
     // ──────────────────────────────────────────────────────────────────────
 
@@ -956,18 +1005,22 @@ public sealed class WhamRosterEngine
     // ──────────────────────────────────────────────────────────────────────
 
     /// <summary>
-    /// Selects an entry and adds it to the specified force (by ID, any nesting depth).
+    /// Selects an entry by ID and adds it to the specified force (by ID, any nesting depth).
+    /// Resolves the entry from the force's catalogue's available entries.
     /// </summary>
     public MutationResult SelectEntryById(
         RosterState state,
         string forceId,
-        ISelectionEntryContainerSymbol entry,
-        ISelectionEntryGroupSymbol? sourceGroup = null)
+        string entryId)
     {
         var roster = state.RosterRequired;
         var force = FindForceDeepRequired(roster, forceId);
 
-        var selectionNode = CreateSelectionWithAutoChildren(entry, sourceGroup);
+        var catalogue = ResolveForceCatalogue(state, force);
+        var available = EntryResolver.GetAvailableEntries(catalogue);
+        var avail = EntryResolver.FindByEntryId(available, entryId);
+
+        var selectionNode = CreateSelectionWithAutoChildren(avail.Symbol, avail.SourceGroup);
         var newForce = force.AddSelections(selectionNode);
         var newRoster = roster.Replace(force, _ => newForce).WithUpdatedCostTotals();
         var newState = state.ReplaceRoster(newRoster);
@@ -980,20 +1033,33 @@ public sealed class WhamRosterEngine
     }
 
     /// <summary>
-    /// Selects a child entry and nests it under an existing selection (by ID, any nesting depth).
+    /// Selects a child entry by ID and nests it under an existing selection (by ID, any nesting depth).
+    /// Resolves the parent selection's source entry symbol to enumerate child entries.
     /// </summary>
     public MutationResult SelectChildEntryById(
         RosterState state,
         string forceId,
         string parentSelectionId,
-        ISelectionEntryContainerSymbol childEntry,
-        ISelectionEntryGroupSymbol? sourceGroup = null)
+        string entryId)
     {
         var roster = state.RosterRequired;
         var force = FindForceDeepRequired(roster, forceId);
         var parentSel = FindSelectionDeepRequired(force, forceId, parentSelectionId);
 
-        var childSelectionNode = CreateSelectionWithAutoChildren(childEntry, sourceGroup);
+        // Resolve the parent selection's source entry symbol from the current compilation.
+        var rosterSymbol = state.RosterSymbol
+            ?? throw new InvalidOperationException("No roster symbol found in state.");
+        var forceSymbol = FindForceSymbolDeep(rosterSymbol, forceId)
+            ?? throw new InvalidOperationException($"Force symbol '{forceId}' not found.");
+        var selectionSymbol = FindSelectionSymbolDeep(forceSymbol, parentSelectionId)
+            ?? throw new InvalidOperationException(
+                $"Selection symbol '{parentSelectionId}' not found in force '{forceId}'.");
+
+        var parentEntry = selectionSymbol.SourceEntry;
+        var childEntries = EntryResolver.GetChildEntries(parentEntry);
+        var childAvail = EntryResolver.FindByEntryId(childEntries, entryId);
+
+        var childSelectionNode = CreateSelectionWithAutoChildren(childAvail.Symbol, childAvail.SourceGroup);
         var newParent = parentSel.AddSelections(childSelectionNode);
         var newRoster = roster.Replace(parentSel, _ => newParent).WithUpdatedCostTotals();
         var newState = state.ReplaceRoster(newRoster);
@@ -1146,7 +1212,7 @@ public sealed class WhamRosterEngine
         int forceIndex,
         ICatalogueSymbol catalogue)
     {
-        var available = _entryResolver.GetAvailableEntries(catalogue);
+        var available = EntryResolver.GetAvailableEntries(catalogue);
         var autoSelectedGroups = new HashSet<string>(StringComparer.Ordinal);
 
         foreach (var avail in available)

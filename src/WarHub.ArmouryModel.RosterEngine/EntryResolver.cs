@@ -20,7 +20,7 @@ namespace WarHub.ArmouryModel.RosterEngine;
 /// with the originating <see cref="AvailableEntry.SourceGroup"/> recorded.
 /// </para>
 /// </remarks>
-public sealed class EntryResolver
+public static class EntryResolver
 {
     /// <summary>
     /// Gets the flattened list of available root entries for a catalogue.
@@ -42,7 +42,7 @@ public sealed class EntryResolver
     /// (<see cref="ICategoryEntrySymbol"/>) present in
     /// <see cref="ICatalogueSymbol.RootContainerEntries"/> are excluded.
     /// </remarks>
-    public IReadOnlyList<AvailableEntry> GetAvailableEntries(ICatalogueSymbol catalogue)
+    public static IReadOnlyList<AvailableEntry> GetAvailableEntries(ICatalogueSymbol catalogue)
     {
         var result = new List<AvailableEntry>();
 
@@ -63,7 +63,7 @@ public sealed class EntryResolver
     /// Counts root-level selection entries and groups (without flattening groups)
     /// for the <c>availableEntryCount</c> protocol field.
     /// </summary>
-    public int GetRootEntryCount(ICatalogueSymbol catalogue)
+    public static int GetRootEntryCount(ICatalogueSymbol catalogue)
     {
         var count = CountRootSelectionEntries(catalogue.Gamesystem.RootContainerEntries);
         if (!catalogue.IsGamesystem)
@@ -100,7 +100,7 @@ public sealed class EntryResolver
     /// If the entry is a link, it is resolved first via <see cref="ResolveEntry"/>.
     /// </param>
     /// <returns>An ordered, flattened list of child entries.</returns>
-    public IReadOnlyList<AvailableEntry> GetChildEntries(ISelectionEntryContainerSymbol entry)
+    public static IReadOnlyList<AvailableEntry> GetChildEntries(ISelectionEntryContainerSymbol entry)
     {
         var result = new List<AvailableEntry>();
 
@@ -208,6 +208,27 @@ public sealed class EntryResolver
             current = referenced;
         }
         return current;
+    }
+
+    /// <summary>
+    /// Finds an available entry by matching the definition entry ID.
+    /// Matches against the entry's own ID first, then against the resolved
+    /// (link target) ID as a fallback.
+    /// </summary>
+    public static AvailableEntry FindByEntryId(IReadOnlyList<AvailableEntry> available, string entryId)
+    {
+        foreach (var avail in available)
+        {
+            if (avail.Symbol.Id == entryId) return avail;
+        }
+        foreach (var avail in available)
+        {
+            var resolved = avail.Symbol.ReferencedEntry ?? avail.Symbol;
+            if (resolved.Id == entryId) return avail;
+        }
+        throw new ArgumentException(
+            $"Entry '{entryId}' not found among {available.Count} available entries.",
+            nameof(entryId));
     }
 }
 
