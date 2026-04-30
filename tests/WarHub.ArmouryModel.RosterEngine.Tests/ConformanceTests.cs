@@ -22,6 +22,10 @@ public class ConformanceTests
         // selects entries in a force. wham validates hidden constraints immediately.
         // See: https://github.com/WarHub/battlescribe-spec/issues/163
         "constraint-hidden-enforcement",
+        // CategoryLinks should not have modifiers — they are not valid modifier containers
+        // in the BattleScribe data model. All engines (battlescribe, newrecruit) fail this.
+        // See: https://github.com/WarHub/battlescribe-spec/issues/165
+        "modifier-group-on-category-link",
     };
 
     public static IEnumerable<object[]> AllSpecs()

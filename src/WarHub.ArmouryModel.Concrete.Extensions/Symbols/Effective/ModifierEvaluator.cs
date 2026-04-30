@@ -249,9 +249,6 @@ internal sealed class ModifierEvaluator
             }
         }
 
-        // Process modifiers on individual category links (e.g. set primary=true on a categoryLink)
-        ApplyAllCategoryLinkPrimaryToggles(entry, selection, force, categories, ref primaryId);
-
         return (categories, primaryId);
     }
 
@@ -278,80 +275,12 @@ internal sealed class ModifierEvaluator
             }
         }
 
-        // Process modifiers on individual category links
-        ApplyAllCategoryLinkPrimaryToggles(entry, selection, force, categories, ref primaryId);
-
         return (categories, primaryId);
     }
 
     // ──────────────────────────────────────────────────────────────────
     //  Effect application
     // ──────────────────────────────────────────────────────────────────
-
-    /// <summary>
-    /// Iterates all category links on the entry and applies per-link primary toggles.
-    /// Unlike <see cref="ApplyEntryCategoryMutation"/>, which operates on the entry's entire
-    /// category collection (add/remove/set primary/unset primary), this method processes
-    /// each <c>ICategoryLinkSymbol</c> individually, toggling only its primary flag.
-    /// </summary>
-    private void ApplyAllCategoryLinkPrimaryToggles(
-        ISelectionEntryContainerSymbol entry,
-        ISelectionSymbol? selection,
-        IForceSymbol? force,
-        List<string> categories,
-        ref string? primaryId)
-    {
-        foreach (var cat in entry.Categories)
-        {
-            if (cat.Effects.IsEmpty) continue;
-            var catId = cat.ReferencedEntry?.Id ?? cat.Id;
-            if (catId is null) continue;
-            var catContext = new EvalContext(selection, force, cat);
-            foreach (var effect in cat.Effects)
-            {
-                ApplyCategoryLinkPrimaryToggle(effect, catId, categories, ref primaryId, catContext);
-            }
-        }
-    }
-
-    /// <summary>
-    /// Toggles the primary flag on a specific category link.
-    /// This operates at the link level — it only sets or unsets the primary flag for the
-    /// category identified by <paramref name="catId"/>. Compare with
-    /// <see cref="ApplyEntryCategoryMutation"/> which operates on the entry's entire category
-    /// collection (add/remove categories, set/unset primary).
-    /// </summary>
-    private void ApplyCategoryLinkPrimaryToggle(
-        IEffectSymbol effect, string catId,
-        List<string> categories, ref string? primaryId, EvalContext context)
-    {
-        if (effect.TargetKind == EffectTargetKind.CategoryPrimary &&
-            effect.FunctionKind == EffectOperation.SetValue &&
-            EvaluateEffectCondition(effect, context))
-        {
-            if (ParseBool(effect.OperandValue))
-            {
-                primaryId = catId;
-                if (!categories.Contains(catId))
-                    categories.Add(catId);
-            }
-            else if (primaryId == catId)
-            {
-                primaryId = null;
-            }
-        }
-
-        // Process children (modifier groups)
-        if (effect.ChildrenWhenSatisfied.Length > 0 || effect.ChildrenWhenUnsatisfied.Length > 0)
-        {
-            var satisfied = EvaluateCondition(effect.Condition, context);
-            var children = satisfied ? effect.ChildrenWhenSatisfied : effect.ChildrenWhenUnsatisfied;
-            foreach (var child in children)
-            {
-                ApplyCategoryLinkPrimaryToggle(child, catId, categories, ref primaryId, context);
-            }
-        }
-    }
 
     private string ApplyNameEffect(IEffectSymbol effect, string name, EvalContext context)
     {
@@ -507,9 +436,7 @@ internal sealed class ModifierEvaluator
 
     /// <summary>
     /// Mutates the entry's category set: add/remove categories, set/unset primary.
-    /// This operates at the entry level on the entire category collection. Compare with
-    /// <see cref="ApplyCategoryLinkPrimaryToggle"/> which only toggles the primary flag
-    /// on a specific category link.
+    /// These are entry-level modifiers with <c>field="category"</c>.
     /// </summary>
     private void ApplyEntryCategoryMutation(
         IEffectSymbol effect, List<string> categories, ref string? primaryId, EvalContext context)
