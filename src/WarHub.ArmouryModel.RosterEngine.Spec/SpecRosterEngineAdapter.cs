@@ -2,7 +2,6 @@ using BattleScribeSpec;
 using BattleScribeSpec.Protocol;
 using WarHub.ArmouryModel.Concrete;
 using WarHub.ArmouryModel.EditorServices;
-using WarHub.ArmouryModel.Source;
 using ProtocolRosterState = BattleScribeSpec.RosterState;
 using WhamRosterState = WarHub.ArmouryModel.EditorServices.RosterState;
 
@@ -24,8 +23,9 @@ public sealed class SpecRosterEngineAdapter : IRosterEngine
     private WhamCompilation? _catalogCompilation;
     private readonly EntryResolver _resolver = new();
 
-    // Force ID → catalogue mapping: tracks which catalogue each force was added with.
-    private readonly Dictionary<string, ICatalogueSymbol> _forceCatalogues = new(StringComparer.Ordinal);
+    // Force ID → catalogue ID mapping: tracks which catalogue each force was added with.
+    // Stores catalogue IDs (not symbol references) to avoid stale symbols across compilation rebuilds.
+    private readonly Dictionary<string, string> _forceCatalogueIds = new(StringComparer.Ordinal);
 
     // Tracks forces that have received explicit user selections (SelectEntry/SelectChildEntry).
     // Forces with only auto-selections (from AddForce) are not included.
@@ -37,7 +37,7 @@ public sealed class SpecRosterEngineAdapter : IRosterEngine
         _catalogCompilation = compilation;
         _coreEngine = new WhamRosterEngine();
         _state = _coreEngine.CreateRoster(compilation);
-        _forceCatalogues.Clear();
+        _forceCatalogueIds.Clear();
         _forcesWithExplicitSelections.Clear();
         return [];
     }
@@ -55,7 +55,7 @@ public sealed class SpecRosterEngineAdapter : IRosterEngine
         _state = result.State;
 
         if (result.ForceId is not null)
-            _forceCatalogues[result.ForceId] = catalogue;
+            _forceCatalogueIds[result.ForceId] = catalogueId;
 
         return new ActionOutputs
         {
@@ -77,7 +77,7 @@ public sealed class SpecRosterEngineAdapter : IRosterEngine
         _state = result.State;
 
         if (result.ForceId is not null)
-            _forceCatalogues[result.ForceId] = catalogue;
+            _forceCatalogueIds[result.ForceId] = catalogueId;
 
         return new ActionOutputs { ForceId = result.ForceId };
     }
@@ -86,7 +86,7 @@ public sealed class SpecRosterEngineAdapter : IRosterEngine
     {
         var engine = EnsureEngine();
         _state = engine.RemoveForceById(EnsureState(), forceId);
-        _forceCatalogues.Remove(forceId);
+        _forceCatalogueIds.Remove(forceId);
         _forcesWithExplicitSelections.Remove(forceId);
     }
 
@@ -160,8 +160,8 @@ public sealed class SpecRosterEngineAdapter : IRosterEngine
         var result = EnsureEngine().DuplicateForceById(EnsureState(), forceId);
         _state = result.State;
         var newForceId = result.ForceId!;
-        if (_forceCatalogues.TryGetValue(forceId, out var catalogue))
-            _forceCatalogues[newForceId] = catalogue;
+        if (_forceCatalogueIds.TryGetValue(forceId, out var catalogueId))
+            _forceCatalogueIds[newForceId] = catalogueId;
         // Duplicated force inherits explicit status from original
         if (_forcesWithExplicitSelections.Contains(forceId))
             _forcesWithExplicitSelections.Add(newForceId);
@@ -185,18 +185,16 @@ public sealed class SpecRosterEngineAdapter : IRosterEngine
         var state = EnsureState();
         var compilation = (WhamCompilation)state.Compilation;
 
-        var rosterSymbol = compilation.SourceGlobalNamespace.Rosters
-            .FirstOrDefault(r => r.Declaration == state.RosterRequired)
-            ?? compilation.SourceGlobalNamespace.Rosters.FirstOrDefault();
+        var rosterSymbol = state.RosterSymbol
+            ?? throw new InvalidOperationException("No roster symbol found in state.");
 
         // Compute per-force available entry counts and referenced cost types
+        // using the symbol tree (no Node-layer access needed).
         var counts = new List<int>();
         var referencedCostTypes = new HashSet<string>(StringComparer.Ordinal);
-        var roster = state.RosterRequired;
-        for (var i = 0; i < roster.Forces.Count; i++)
+        foreach (var forceSymbol in rosterSymbol.Forces)
         {
-            var force = roster.Forces[i];
-            var catalogue = ResolveCatalogueForForce(state, force.Id!);
+            var catalogue = ResolveCatalogueForForce(state, forceSymbol.Id!);
             var entries = _resolver.GetAvailableEntries(catalogue);
             counts.Add(_resolver.GetRootEntryCount(catalogue));
             foreach (var entry in entries)
@@ -205,7 +203,7 @@ public sealed class SpecRosterEngineAdapter : IRosterEngine
             }
         }
 
-        var mapper = new StateMapper(rosterSymbol!, compilation);
+        var mapper = new StateMapper(rosterSymbol, compilation);
         return mapper.MapRosterState(counts, referencedCostTypes);
     }
 
@@ -223,7 +221,7 @@ public sealed class SpecRosterEngineAdapter : IRosterEngine
         _coreEngine = null;
         _state = null;
         _catalogCompilation = null;
-        _forceCatalogues.Clear();
+        _forceCatalogueIds.Clear();
         _forcesWithExplicitSelections.Clear();
     }
 
@@ -282,24 +280,31 @@ public sealed class SpecRosterEngineAdapter : IRosterEngine
     }
 
     /// <summary>
-    /// Resolves the catalogue for a force — first checks local tracking, then falls back
-    /// to the ForceNode's CatalogueId.
+    /// Resolves the catalogue for a force — first checks local ID cache, then falls back
+    /// to the force symbol's <see cref="IForceSymbol.CatalogueReference"/>.
     /// </summary>
     private ICatalogueSymbol ResolveCatalogueForForce(WhamRosterState state, string forceId)
     {
-        if (_forceCatalogues.TryGetValue(forceId, out var catalogue))
-            return catalogue;
+        var compilation = state.Compilation;
 
-        var roster = state.RosterRequired;
-        var force = WhamRosterEngine.FindForceDeep(roster, forceId);
-        if (force is not null && force.CatalogueId is not null)
+        if (_forceCatalogueIds.TryGetValue(forceId, out var catalogueId))
         {
-            foreach (var cat in state.Compilation.GlobalNamespace.Catalogues)
+            foreach (var cat in compilation.GlobalNamespace.Catalogues)
             {
-                if (cat.Id == force.CatalogueId) return cat;
+                if (cat.Id == catalogueId) return cat;
             }
         }
-        return state.Compilation.GlobalNamespace.RootCatalogue;
+
+        // Fall back to Symbol-based resolution via the roster's force tree.
+        var rosterSymbol = state.RosterSymbol;
+        if (rosterSymbol is not null)
+        {
+            var forceSymbol = FindForceSymbolDeep(rosterSymbol, forceId);
+            if (forceSymbol is not null)
+                return forceSymbol.CatalogueReference.Catalogue;
+        }
+
+        return compilation.GlobalNamespace.RootCatalogue;
     }
 
     /// <summary>
@@ -322,74 +327,80 @@ public sealed class SpecRosterEngineAdapter : IRosterEngine
     }
 
     /// <summary>
-    /// Finds the ISelectionEntryContainerSymbol matching a selection node's entry ID.
+    /// Finds the <see cref="ISelectionEntryContainerSymbol"/> for a selection's source entry
+    /// by traversing the roster's symbol tree. Uses the selection symbol's
+    /// <see cref="ISelectionSymbol.SourceEntry"/> which already resolves entry links
+    /// through the binder (no manual ID parsing needed).
     /// </summary>
     private static ISelectionEntryContainerSymbol? FindEntrySymbolForSelection(
         WhamRosterState state, string forceId, string selectionId)
     {
-        var roster = state.RosterRequired;
-        var force = WhamRosterEngine.FindForceDeep(roster, forceId);
-        if (force is null) return null;
-        var selNode = WhamRosterEngine.FindSelectionDeep(force, selectionId);
-        if (selNode is null) return null;
+        var rosterSymbol = state.RosterSymbol;
+        if (rosterSymbol is null) return null;
 
-        var entryId = selNode.EntryId;
-        if (string.IsNullOrEmpty(entryId)) return null;
+        var forceSymbol = FindForceSymbolDeep(rosterSymbol, forceId);
+        if (forceSymbol is null) return null;
 
-        var targetId = entryId;
-        var separatorIndex = entryId.IndexOf(WhamRosterEngine.EntryLinkIdSeparator, StringComparison.Ordinal);
-        if (separatorIndex >= 0)
-            targetId = entryId[(separatorIndex + WhamRosterEngine.EntryLinkIdSeparator.Length)..];
+        var selectionSymbol = FindSelectionSymbolDeep(forceSymbol, selectionId);
+        if (selectionSymbol is null) return null;
 
-        foreach (var cat in state.Compilation.GlobalNamespace.Catalogues)
+        return selectionSymbol.SourceEntry;
+    }
+
+    // ──────────────────────────────────────────────────────────────────
+    //  Symbol-based tree traversal
+    // ──────────────────────────────────────────────────────────────────
+
+    /// <summary>
+    /// Finds a force symbol by instance ID anywhere in the roster's force tree
+    /// (including nested child forces).
+    /// </summary>
+    private static IForceSymbol? FindForceSymbolDeep(IRosterSymbol roster, string forceId)
+    {
+        foreach (var force in roster.Forces)
         {
-            var found = FindEntryById(cat.RootContainerEntries, targetId)
-                     ?? FindEntryById(cat.SharedSelectionEntryContainers, targetId);
+            var found = FindForceSymbolDeep(force, forceId);
             if (found is not null) return found;
         }
         return null;
     }
 
-    private static ISelectionEntryContainerSymbol? FindEntryById(
-        ImmutableArray<IContainerEntrySymbol> entries, string id)
+    private static IForceSymbol? FindForceSymbolDeep(IForceSymbol force, string forceId)
     {
-        foreach (var entry in entries)
+        if (force.Id == forceId) return force;
+        foreach (var child in force.Forces)
         {
-            if (entry is ISelectionEntryContainerSymbol sec)
-            {
-                if (sec.Id == id) return sec;
-                var effective = sec.IsReference ? sec.ReferencedEntry ?? sec : sec;
-                if (effective.Id == id) return effective;
-                var found = FindEntryInChildren(effective, id);
-                if (found is not null) return found;
-            }
-        }
-        return null;
-    }
-
-    private static ISelectionEntryContainerSymbol? FindEntryById(
-        ImmutableArray<ISelectionEntryContainerSymbol> entries, string id)
-    {
-        foreach (var entry in entries)
-        {
-            if (entry.Id == id) return entry;
-            var effective = entry.IsReference ? entry.ReferencedEntry ?? entry : entry;
-            if (effective.Id == id) return effective;
-            var found = FindEntryInChildren(effective, id);
+            var found = FindForceSymbolDeep(child, forceId);
             if (found is not null) return found;
         }
         return null;
     }
 
-    private static ISelectionEntryContainerSymbol? FindEntryInChildren(
-        ISelectionEntryContainerSymbol parent, string id)
+    /// <summary>
+    /// Recursively searches for a selection symbol by ID within a force's selection tree
+    /// (including selections in child forces).
+    /// </summary>
+    private static ISelectionSymbol? FindSelectionSymbolDeep(IForceSymbol force, string selectionId)
     {
-        foreach (var child in parent.ChildSelectionEntries)
+        foreach (var sel in force.Selections)
         {
-            if (child.Id == id) return child;
-            var effective = child.IsReference ? child.ReferencedEntry ?? child : child;
-            if (effective.Id == id) return effective;
-            var found = FindEntryInChildren(effective, id);
+            var found = FindSelectionSymbolDeep(sel, selectionId);
+            if (found is not null) return found;
+        }
+        foreach (var childForce in force.Forces)
+        {
+            var found = FindSelectionSymbolDeep(childForce, selectionId);
+            if (found is not null) return found;
+        }
+        return null;
+    }
+
+    private static ISelectionSymbol? FindSelectionSymbolDeep(ISelectionSymbol sel, string selectionId)
+    {
+        if (sel.Id == selectionId) return sel;
+        foreach (var child in sel.Selections)
+        {
+            var found = FindSelectionSymbolDeep(child, selectionId);
             if (found is not null) return found;
         }
         return null;
