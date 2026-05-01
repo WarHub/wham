@@ -47,9 +47,7 @@ Core engine with zero TestKit dependency. Key classes:
   RemoveForce, SelectEntry, SelectChildEntry, DeselectSelection, etc.
 - **ModifierEvaluator** (internal to Concrete.Extensions): Evaluates
   `IEffectSymbol` effects with `EvalContext(ISelectionSymbol?, IForceSymbol?, EntrySymbol)`.
-  All public methods accept ISymbol types. Internally accesses `Declaration`
-  node properties for EntryId/EntryGroupId/Categories/Costs to avoid
-  triggering lazy binding reentrancy during evaluation.
+  All methods accept and consume ISymbol types exclusively.
 - Entry resolution leverages the Compilation's Binder for link targets.
 
 ### WarHub.ArmouryModel.RosterEngine.Spec
@@ -116,16 +114,21 @@ Evaluates modifiers and conditions using IEffectSymbol/IConditionSymbol.
 All public methods accept ISymbol types (ISelectionSymbol, IForceSymbol).
 Constructor takes `IRosterSymbol` and `WhamCompilation`.
 
-**Lazy binding safety**: Methods that query selection properties (EntryId,
-EntryGroupId, Categories, Costs) use `SelectionSymbol.Declaration` node
-properties instead of ISymbol accessors like `SourceEntry` or `SourceEntryPath`,
-because those trigger lazy binder resolution that would cause reentrancy
-during modifier evaluation. More broadly, the compilation pipeline guarantees
+**Symbol-layer API usage**: Both ModifierEvaluator and ConstraintEvaluator
+consume public symbol APIs exclusively. The compilation pipeline guarantees
 that catalogue compilation completes all phases up to CheckReferences before
 roster compilation starts — so catalogue symbol properties (e.g.
 `IEntrySymbol.ReferencedEntry`, shared entry chains, modifier condition
-references) are safe to access, but roster-level symbols that may not have
-completed their own binding should be accessed via `Declaration` node properties.
+references) are safe to access. Roster member symbols (Force, Selection, Cost,
+Category) also complete all phases through CheckReferences before the
+`CheckConstraints` phase begins, so their bound properties (`SourceEntry`,
+`CostType`, etc.) are resolved. Some symbol properties like
+`SelectionSymbol.EntryId` and `ForceSymbol.EntryId` are thin wrappers over
+declaration data, but they are accessed through the public symbol API surface.
+
+Error-symbol fallbacks exist in `GetCostTypeId` and `GetRosterCostTypeId`
+for cases where binding failed (the cost type couldn't be resolved) — these
+fall back to the declaration's TypeId to preserve correct matching behavior.
 
 Evaluates modifiers and conditions using IEffectSymbol/IConditionSymbol:
 
@@ -204,8 +207,8 @@ Non-roster symbols auto-complete phases 2-7 in the base virtual methods.
 
 ### ConstraintEvaluator (~810 lines, internal to Concrete.Extensions)
 
-Symbol-layer port of the legacy `ConstraintValidator`. Produces
-`WhamDiagnostic` instances with structured args:
+Symbol-layer constraint evaluator that consumes public symbol APIs exclusively.
+Produces `WhamDiagnostic` instances with structured args:
 
 - **Args format**: `[ownerType, ownerEntryId, entryId, constraintId]`
 - **Diagnostic codes**: `WRN_ConstraintMinSelections` through

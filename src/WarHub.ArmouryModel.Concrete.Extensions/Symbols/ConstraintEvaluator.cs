@@ -75,15 +75,17 @@ internal static class ConstraintEvaluator
                 AggregateCostsRecursive(force.ChildSelections, totalCosts);
             }
 
-            foreach (var limit in _roster.Declaration.CostLimits)
+            // Use Symbol-layer RosterCostSymbol which pairs Cost+CostLimit
+            // and exposes Limit (null = no limit) and CostType.
+            foreach (var rosterCost in _roster.Costs)
             {
-                if (limit.Value < 0) continue;
-                var actual = totalCosts.GetValueOrDefault(limit.TypeId, 0m);
-                if (actual > limit.Value + 0.001m)
+                if (rosterCost.Limit is not { } limitValue) continue;
+                var typeId = GetRosterCostTypeId(rosterCost);
+                var actual = totalCosts.GetValueOrDefault(typeId, 0m);
+                if (actual > limitValue + 0.001m)
                 {
-                    var costName = GetCostTypeName(limit.TypeId);
                     _diagnostics.Add(ErrorCode.WRN_ExceedsCostLimit, Location.None,
-                        "roster", "", "costLimits", limit.TypeId);
+                        "roster", "", "costLimits", typeId);
                 }
             }
         }
@@ -94,25 +96,28 @@ internal static class ConstraintEvaluator
         {
             foreach (var sel in selections)
             {
-                foreach (var cost in sel.Declaration.Costs)
+                // Use Symbol-layer Costs (CostSymbol) instead of Declaration-layer (CostNode).
+                // Safe because by CheckConstraints phase, all member symbols have completed
+                // through CheckReferences and their [Bound] Type properties are resolved.
+                foreach (var cost in sel.Costs)
                 {
-                    totals.TryGetValue(cost.TypeId, out var current);
-                    totals[cost.TypeId] = current + cost.Value;
+                    var typeId = GetCostTypeId(cost);
+                    totals.TryGetValue(typeId, out var current);
+                    totals[typeId] = current + cost.Value;
                 }
                 AggregateCostsRecursive(sel.ChildSelections, totals);
             }
         }
 
-        private string GetCostTypeName(string typeId)
-        {
-            var gs = _compilation.GlobalNamespace.RootCatalogue;
-            foreach (var rd in gs.ResourceDefinitions)
-            {
-                if (rd.ResourceKind == ResourceKind.Cost && rd.Id == typeId)
-                    return rd.Name;
-            }
-            return typeId;
-        }
+        /// <summary>
+        /// Resolves the cost type ID from a <see cref="RosterCostSymbol"/>.
+        /// Uses the bound CostType when available, falling back to
+        /// CostDeclaration.TypeId for error symbols.
+        /// </summary>
+        private static string GetRosterCostTypeId(RosterCostSymbol rosterCost) =>
+            rosterCost.CostType is IErrorSymbol || rosterCost.CostType.Id is null
+                ? rosterCost.CostDeclaration.TypeId ?? ""
+                : rosterCost.CostType.Id;
 
         // ──────────────────────────────────────────────────────────────────
         //  Force entry constraints (field=forces)
@@ -123,13 +128,13 @@ internal static class ConstraintEvaluator
             var forceCounts = new Dictionary<string, int>(StringComparer.Ordinal);
             foreach (var force in _roster.Forces)
             {
-                var entryId = force.Declaration.EntryId;
+                var entryId = force.EntryId;
                 forceCounts[entryId] = forceCounts.GetValueOrDefault(entryId) + 1;
             }
 
             foreach (var force in _roster.Forces)
             {
-                var entryId = force.Declaration.EntryId;
+                var entryId = force.EntryId;
                 if (!_forceEntryIndex.TryGetValue(entryId, out var forceEntry))
                     continue;
 
@@ -371,9 +376,9 @@ internal static class ConstraintEvaluator
             var counts = new Dictionary<CountKey, int>();
             foreach (var child in parent.ChildSelections)
             {
-                var entryKey = new CountKey(child.Declaration.EntryId, CountKeyKind.Entry);
+                var entryKey = new CountKey(child.EntryId, CountKeyKind.Entry);
                 counts[entryKey] = counts.GetValueOrDefault(entryKey) + child.SelectedCount;
-                var groupId = child.Declaration.EntryGroupId;
+                var groupId = child.EntryGroupId;
                 if (groupId is not null)
                 {
                     var groupKey = new CountKey(groupId, CountKeyKind.Group);
@@ -384,7 +389,7 @@ internal static class ConstraintEvaluator
             // Check constraints on child entries (scope=parent)
             foreach (var child in parent.ChildSelections)
             {
-                if (!TryGetIndexedEntry(child.Declaration.EntryId, out var childEntry))
+                if (!TryGetIndexedEntry(child.EntryId, out var childEntry))
                     continue;
 
                 var effectiveChildValues = GetEffectiveConstraintValues(childEntry, child, force);
@@ -397,17 +402,17 @@ internal static class ConstraintEvaluator
 
                     var constraintId = constraint.Id ?? "";
                     var constraintValue = effectiveChildValues.GetValueOrDefault(constraintId, query.ReferenceValue ?? 0m);
-                    var count = counts.GetValueOrDefault(new CountKey(child.Declaration.EntryId, CountKeyKind.Entry));
+                    var count = counts.GetValueOrDefault(new CountKey(child.EntryId, CountKeyKind.Entry));
 
-                    var parentEntryId = parent.Declaration.EntryId;
+                    var parentEntryId = parent.EntryId;
                     CheckConstraint(query.Comparison, constraintValue, count,
-                        child.Declaration.EntryId, "selection", parentEntryId,
+                        child.EntryId, "selection", parentEntryId,
                         constraintId);
                 }
             }
 
             // Also check entries that are available but have 0 selections (min violations)
-            if (TryGetIndexedEntry(parent.Declaration.EntryId, out var parentEntry))
+            if (TryGetIndexedEntry(parent.EntryId, out var parentEntry))
             {
                 foreach (var childEntrySymbol in parentEntry.ChildSelectionEntries)
                 {
@@ -431,7 +436,7 @@ internal static class ConstraintEvaluator
                         var constraintValue = effectiveAvailValues.GetValueOrDefault(constraintId, query.ReferenceValue ?? 0m);
                         var count = counts.GetValueOrDefault(new CountKey(childId, isGroup ? CountKeyKind.Group : CountKeyKind.Entry));
                         CheckConstraint(query.Comparison, constraintValue, count,
-                            childId, "selection", parent.Declaration.EntryId,
+                            childId, "selection", parent.EntryId,
                             constraintId);
                     }
                 }
@@ -446,19 +451,22 @@ internal static class ConstraintEvaluator
 
         private void ValidateCategoryConstraints(ForceSymbol force)
         {
-            // Count selections per category
+            // Count selections per category using Symbol-layer CategorySymbol.SourceEntry
             var categoryCounts = new Dictionary<string, int>(StringComparer.Ordinal);
             foreach (var sel in FlattenSelections(force.ChildSelections))
             {
-                foreach (var cat in sel.Declaration.Categories)
+                foreach (var cat in sel.Categories)
                 {
-                    categoryCounts[cat.EntryId] =
-                        categoryCounts.GetValueOrDefault(cat.EntryId) + sel.SelectedCount;
+                    if (cat.SourceEntry is not IErrorSymbol && cat.SourceEntry.Id is { } categoryId)
+                    {
+                        categoryCounts[categoryId] =
+                            categoryCounts.GetValueOrDefault(categoryId) + sel.SelectedCount;
+                    }
                 }
             }
 
             // Check force entry category link constraints
-            var forceEntryId = force.Declaration.EntryId;
+            var forceEntryId = force.EntryId;
             if (!_forceEntryIndex.TryGetValue(forceEntryId, out var forceEntry))
                 return;
 
@@ -511,7 +519,7 @@ internal static class ConstraintEvaluator
             decimal count = 0;
             foreach (var sel in selections)
             {
-                if (EntryIdMatches(sel.Declaration.EntryId, targetId))
+                if (EntryIdMatches(sel.EntryId, targetId))
                     count += sel.SelectedCount;
             }
             return count;
@@ -544,7 +552,7 @@ internal static class ConstraintEvaluator
             decimal count = 0;
             foreach (var sel in selections)
             {
-                if (EntryIdMatchesAny(sel.Declaration.EntryId, matchIds))
+                if (EntryIdMatchesAny(sel.EntryId, matchIds))
                     count += sel.SelectedCount;
             }
             return count;
@@ -568,10 +576,11 @@ internal static class ConstraintEvaluator
             decimal sum = 0;
             foreach (var sel in selections)
             {
-                if (!EntryIdMatches(sel.Declaration.EntryId, targetId)) continue;
-                foreach (var cost in sel.Declaration.Costs)
+                if (!EntryIdMatches(sel.EntryId, targetId)) continue;
+                // Use Symbol-layer Costs for consistency with AggregateCostsRecursive.
+                foreach (var cost in sel.Costs)
                 {
-                    if (cost.TypeId == costTypeId)
+                    if (GetCostTypeId(cost) == costTypeId)
                         sum += cost.Value;
                 }
             }
@@ -609,7 +618,7 @@ internal static class ConstraintEvaluator
             int count = 0;
             foreach (var sel in FlattenSelections(force.ChildSelections))
             {
-                if (EntryIdMatches(sel.Declaration.EntryId, entryId))
+                if (EntryIdMatches(sel.EntryId, entryId))
                     count += sel.SelectedCount;
             }
             return count;
@@ -809,6 +818,20 @@ internal static class ConstraintEvaluator
                     yield return desc;
             }
         }
+
+        // ──────────────────────────────────────────────────────────────────
+        //  Cost type ID resolution
+        // ──────────────────────────────────────────────────────────────────
+
+        /// <summary>
+        /// Resolves the cost type ID from a <see cref="CostSymbol"/>, using its bound
+        /// <see cref="CostSymbol.Type"/> property when available, falling back to
+        /// the Declaration's TypeId when the type couldn't be resolved (error symbol).
+        /// </summary>
+        private static string GetCostTypeId(CostSymbol cost) =>
+            cost.Type is IErrorSymbol || cost.Type.Id is null
+                ? cost.Declaration.TypeId ?? ""
+                : cost.Type.Id;
 
         // ──────────────────────────────────────────────────────────────────
         //  EntryId path matching
