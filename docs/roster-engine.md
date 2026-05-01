@@ -17,7 +17,6 @@ decision record.
 ┌──────────────────────────────────────────────────────────┐
 │         RosterEngine.Spec (adapter layer)                │
 │  ProtocolConverter → SpecRosterEngineAdapter → StateMapper│
-│  (ConstraintValidator — legacy, replaced by evaluator)   │
 └──────────────────────┬──────────────────────────────────┘
                        ↓
 ┌──────────────────────────────────────────────────────────┐
@@ -47,9 +46,7 @@ Core engine with zero TestKit dependency. Key classes:
   RemoveForce, SelectEntry, SelectChildEntry, DeselectSelection, etc.
 - **ModifierEvaluator** (internal to Concrete.Extensions): Evaluates
   `IEffectSymbol` effects with `EvalContext(ISelectionSymbol?, IForceSymbol?, EntrySymbol)`.
-  All public methods accept ISymbol types. Internally accesses `Declaration`
-  node properties for EntryId/EntryGroupId/Categories/Costs to avoid
-  triggering lazy binding reentrancy during evaluation.
+  All methods accept and consume ISymbol types exclusively.
 - Entry resolution leverages the Compilation's Binder for link targets.
 
 ### WarHub.ArmouryModel.RosterEngine.Spec
@@ -116,16 +113,22 @@ Evaluates modifiers and conditions using IEffectSymbol/IConditionSymbol.
 All public methods accept ISymbol types (ISelectionSymbol, IForceSymbol).
 Constructor takes `IRosterSymbol` and `WhamCompilation`.
 
-**Lazy binding safety**: Methods that query selection properties (EntryId,
-EntryGroupId, Categories, Costs) use `SelectionSymbol.Declaration` node
-properties instead of ISymbol accessors like `SourceEntry` or `SourceEntryPath`,
-because those trigger lazy binder resolution that would cause reentrancy
-during modifier evaluation. More broadly, the compilation pipeline guarantees
+**Symbol-layer API usage**: Both ModifierEvaluator and ConstraintEvaluator
+consume public symbol APIs exclusively. The compilation pipeline guarantees
 that catalogue compilation completes all phases up to CheckReferences before
 roster compilation starts — so catalogue symbol properties (e.g.
 `IEntrySymbol.ReferencedEntry`, shared entry chains, modifier condition
-references) are safe to access, but roster-level symbols that may not have
-completed their own binding should be accessed via `Declaration` node properties.
+references) are safe to access. Roster member symbols (Force, Selection, Cost,
+Category) also complete all phases through CheckReferences before the
+`CheckConstraints` phase begins, so their bound properties (`SourceEntry`,
+`CostType`, etc.) are resolved. Some symbol properties like
+`SelectionSymbol.EntryId` and `ForceSymbol.EntryId` are thin wrappers over
+declaration data, but they are accessed through the public symbol API surface.
+
+When a cost type cannot be resolved (the bound type is an error symbol — a data
+error already reported by the binder), cost entries are skipped rather than
+falling back to declaration-layer data. This ensures binding errors propagate
+correctly rather than being masked.
 
 Evaluates modifiers and conditions using IEffectSymbol/IConditionSymbol:
 
@@ -135,27 +138,6 @@ Evaluates modifiers and conditions using IEffectSymbol/IConditionSymbol:
 - **Condition evaluation**: IQuerySymbol comparison with scope resolution
 - **Scopes**: self, parent, force, roster, primary-category, ancestor
 - **Repeat handling**: Multiplicative repeat counts based on queries
-
-### ConstraintValidator (~850 lines, legacy)
-
-> **Note**: `ConstraintValidator` in RosterEngine.Spec is the legacy node-layer
-> validator. Constraint evaluation is now performed by `ConstraintEvaluator` in
-> Concrete.Extensions as part of the `CompletionPart.CheckConstraints` phase.
-> The adapter's `GetValidationErrors()` reads from
-> `compilation.GetConstraintDiagnostics()`.
-
-Validates IConstraintSymbol constraints using effective entry symbols:
-
-- **Force-level validation**: Root entry constraints (scope=force/roster)
-- **Child validation**: Parent-scoped constraints on child selections
-- **Category validation**: Min/max on category links
-- **Shared constraint counting**: Counts across ALL entry links to same
-  shared entry using link ID → shared entry mapping
-- **Constraint merging**: Link + shared constraints merged, most restrictive
-  wins. Merge key: `direction:valueKind` (not scope)
-- **Effective symbols**: Uses `EffectiveEntryCache` for modifier-adjusted
-  constraint boundary values (replaces direct ModifierEvaluator calls)
-- **Error format**: `on='ownerType ownerEntryId', from='entryId/constraintId'`
 
 ## BattleScribe Behavioral Alignment
 
@@ -204,8 +186,8 @@ Non-roster symbols auto-complete phases 2-7 in the base virtual methods.
 
 ### ConstraintEvaluator (~810 lines, internal to Concrete.Extensions)
 
-Symbol-layer port of the legacy `ConstraintValidator`. Produces
-`WhamDiagnostic` instances with structured args:
+Symbol-layer constraint evaluator that consumes public symbol APIs exclusively.
+Produces `WhamDiagnostic` instances with structured args:
 
 - **Args format**: `[ownerType, ownerEntryId, entryId, constraintId]`
 - **Diagnostic codes**: `WRN_ConstraintMinSelections` through
@@ -266,8 +248,6 @@ src/WarHub.ArmouryModel.RosterEngine.Spec/
 ├── SpecRosterEngineAdapter.cs (IRosterEngine impl, uses GetConstraintDiagnostics())
 ├── ProtocolConverter.cs       (Protocol → SourceNode)
 ├── StateMapper.cs             (ISymbol → Protocol state)
-└── ConstraintValidator.cs     (legacy constraint validation, replaced by ConstraintEvaluator)
-
 tests/WarHub.ArmouryModel.RosterEngine.Tests/
 ├── ConformanceTests.cs       (runs all 304 specs)
 └── WarHub.ArmouryModel.RosterEngine.Tests.csproj
