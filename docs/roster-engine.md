@@ -125,9 +125,10 @@ Category) also complete all phases through CheckReferences before the
 `SelectionSymbol.EntryId` and `ForceSymbol.EntryId` are thin wrappers over
 declaration data, but they are accessed through the public symbol API surface.
 
-Error-symbol fallbacks exist in `GetCostTypeId` and `GetRosterCostTypeId`
-for cases where binding failed (the cost type couldn't be resolved) — these
-fall back to the declaration's TypeId to preserve correct matching behavior.
+When a cost type cannot be resolved (the bound type is an error symbol — a data
+error already reported by the binder), cost entries are skipped rather than
+falling back to declaration-layer data. This ensures binding errors propagate
+correctly rather than being masked.
 
 Evaluates modifiers and conditions using IEffectSymbol/IConditionSymbol:
 

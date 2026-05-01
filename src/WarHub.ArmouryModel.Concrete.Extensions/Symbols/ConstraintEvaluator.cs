@@ -76,7 +76,7 @@ internal static class ConstraintEvaluator
             foreach (var rosterCost in _roster.Costs)
             {
                 if (rosterCost.Limit is not { } limitValue) continue;
-                var typeId = GetRosterCostTypeId(rosterCost);
+                if (GetRosterCostTypeId(rosterCost) is not { } typeId) continue;
                 var actual = totalCosts.GetValueOrDefault(typeId, 0m);
                 if (actual > limitValue + 0.001m)
                 {
@@ -97,7 +97,7 @@ internal static class ConstraintEvaluator
                 // through CheckReferences and their [Bound] Type properties are resolved.
                 foreach (var cost in sel.Costs)
                 {
-                    var typeId = GetCostTypeId(cost);
+                    if (GetCostTypeId(cost) is not { } typeId) continue;
                     totals.TryGetValue(typeId, out var current);
                     totals[typeId] = current + cost.Value;
                 }
@@ -107,13 +107,11 @@ internal static class ConstraintEvaluator
 
         /// <summary>
         /// Resolves the cost type ID from a <see cref="RosterCostSymbol"/>.
-        /// Uses the bound CostType when available, falling back to
-        /// CostDeclaration.TypeId for error symbols.
+        /// Returns <see langword="null"/> when the bound type is an error symbol
+        /// (binding failure already reported by the binder).
         /// </summary>
-        private static string GetRosterCostTypeId(RosterCostSymbol rosterCost) =>
-            rosterCost.CostType is IErrorSymbol || rosterCost.CostType.Id is null
-                ? rosterCost.CostDeclaration.TypeId ?? ""
-                : rosterCost.CostType.Id;
+        private static string? GetRosterCostTypeId(RosterCostSymbol rosterCost) =>
+            rosterCost.CostType is IErrorSymbol ? null : rosterCost.CostType.Id;
 
         // ──────────────────────────────────────────────────────────────────
         //  Force entry constraints (field=forces)
@@ -578,7 +576,7 @@ internal static class ConstraintEvaluator
                 // Use Symbol-layer Costs for consistency with AggregateCostsRecursive.
                 foreach (var cost in sel.Costs)
                 {
-                    if (GetCostTypeId(cost) == costTypeId)
+                    if (GetCostTypeId(cost) is { } resolvedId && resolvedId == costTypeId)
                         sum += cost.Value;
                 }
             }
@@ -822,14 +820,12 @@ internal static class ConstraintEvaluator
         // ──────────────────────────────────────────────────────────────────
 
         /// <summary>
-        /// Resolves the cost type ID from a <see cref="CostSymbol"/>, using its bound
-        /// <see cref="CostSymbol.Type"/> property when available, falling back to
-        /// the Declaration's TypeId when the type couldn't be resolved (error symbol).
+        /// Resolves the cost type ID from a <see cref="CostSymbol"/>.
+        /// Returns <see langword="null"/> when the bound type is an error symbol
+        /// (binding failure already reported by the binder).
         /// </summary>
-        private static string GetCostTypeId(CostSymbol cost) =>
-            cost.Type is IErrorSymbol || cost.Type.Id is null
-                ? cost.Declaration.TypeId ?? ""
-                : cost.Type.Id;
+        private static string? GetCostTypeId(CostSymbol cost) =>
+            cost.Type is IErrorSymbol ? null : cost.Type.Id;
 
         // ──────────────────────────────────────────────────────────────────
         //  EntryId path matching
