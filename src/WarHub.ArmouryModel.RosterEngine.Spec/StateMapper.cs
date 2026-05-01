@@ -40,9 +40,9 @@ internal sealed class StateMapper
         var costTypeNames = new Dictionary<string, string>(StringComparer.Ordinal);
         foreach (var rosterCost in _roster.Costs)
         {
-            var typeId = rosterCost.CostType?.Id ?? "";
+            var typeId = rosterCost.CostType.Id!;
             if (referencedCostTypeIds.Contains(typeId))
-                costTypeNames.TryAdd(typeId, rosterCost.Name ?? "");
+                costTypeNames.TryAdd(typeId, rosterCost.Name);
         }
 
         var forces = new List<ForceState>(_roster.Forces.Length);
@@ -58,13 +58,13 @@ internal sealed class StateMapper
         var costLimits = MapCostLimits();
 
         return new ProtocolRosterState(
-            Name: _roster.Name ?? "New Roster",
-            GameSystemId: _roster.ContainingNamespace?.RootCatalogue?.Id ?? "",
+            Name: _roster.Name,
+            GameSystemId: _roster.ContainingNamespace!.RootCatalogue.Id!,
             Forces: forces,
             Costs: costs,
             ValidationErrors: errors,
             CostLimits: costLimits.Count > 0 ? costLimits : null,
-            GameSystemName: _roster.ContainingNamespace?.RootCatalogue?.Name);
+            GameSystemName: _roster.ContainingNamespace.RootCatalogue.Name);
     }
 
     private ForceState MapForce(IForceSymbol force, IReadOnlyDictionary<string, string> costTypeNames)
@@ -105,11 +105,11 @@ internal sealed class StateMapper
             CustomName: force.CustomName,
             CustomNotes: force.CustomNotes)
         {
-            Profiles = profiles.Count > 0 ? profiles : [],
-            Rules = rules.Count > 0 ? rules : [],
-            Categories = categories.Count > 0 ? categories : [],
-            Publications = publications.Count > 0 ? publications : [],
-            ChildForces = childForces.Count > 0 ? childForces : [],
+            Profiles = profiles.Count > 0 ? profiles : null,
+            Rules = rules.Count > 0 ? rules : null,
+            Categories = categories.Count > 0 ? categories : null,
+            Publications = publications.Count > 0 ? publications : null,
+            ChildForces = childForces.Count > 0 ? childForces : null,
         };
     }
 
@@ -174,12 +174,12 @@ internal sealed class StateMapper
             foreach (var ch in p.Characteristics)
             {
                 chars.Add(new CharacteristicState(
-                    Name: ch.Name ?? "",
-                    TypeId: ch.Type?.Id ?? "",
+                    Name: ch.Name,
+                    TypeId: ch.Type?.Id,
                     Value: ch.Value));
             }
             result.Add(new ProfileState(
-                Name: p.Name ?? "",
+                Name: p.Name,
                 TypeId: p.Type?.Id,
                 TypeName: p.Type?.Name,
                 Hidden: p.IsHidden,
@@ -198,7 +198,7 @@ internal sealed class StateMapper
             if (resource is IRuleSymbol { IsHidden: false } r)
             {
                 result.Add(new RuleState(
-                    Name: r.Name ?? "",
+                    Name: r.Name,
                     Description: r.DescriptionText,
                     Hidden: false,
                     Page: r.Page,
@@ -215,7 +215,7 @@ internal sealed class StateMapper
             if (resource is IRuleSymbol { IsHidden: false } rule)
             {
                 rules.Add(new RuleState(
-                    Name: rule.Name ?? "",
+                    Name: rule.Name,
                     Description: rule.DescriptionText,
                     Hidden: false,
                     Page: rule.Page,
@@ -233,9 +233,9 @@ internal sealed class StateMapper
         var categories = new List<CategoryState>(eff.Categories.Length);
         foreach (var cat in eff.Categories)
         {
-            var entryId = cat.ReferencedEntry?.Id ?? cat.Id ?? "";
+            var entryId = cat.ReferencedEntry?.Id ?? cat.Id;
             categories.Add(new CategoryState(
-                Name: cat.Name ?? "",
+                Name: cat.Name,
                 EntryId: entryId,
                 Primary: cat == eff.PrimaryCategory,
                 PublicationId: cat.PublicationReference?.PublicationId,
@@ -256,9 +256,9 @@ internal sealed class StateMapper
             Page: null));
         foreach (var cat in force.Categories)
         {
-            var entryId = cat.SourceEntry?.Id ?? cat.Id ?? "";
+            var entryId = cat.SourceEntry.Id;
             categories.Add(new CategoryState(
-                Name: cat.Name ?? "",
+                Name: cat.Name,
                 EntryId: entryId,
                 Primary: cat.IsPrimaryCategory,
                 PublicationId: cat.PublicationReference?.PublicationId,
@@ -283,7 +283,7 @@ internal sealed class StateMapper
             foreach (var def in catalogue.ResourceDefinitions)
             {
                 if (def is IPublicationSymbol pub && pub.Id is not null && seen.Add(pub.Id))
-                    result.Add(new PublicationState(Id: pub.Id, Name: pub.Name ?? ""));
+                    result.Add(new PublicationState(Id: pub.Id, Name: pub.Name));
             }
         }
 
@@ -291,7 +291,7 @@ internal sealed class StateMapper
         foreach (var def in gamesystem.ResourceDefinitions)
         {
             if (def is IPublicationSymbol pub && pub.Id is not null && seen.Add(pub.Id))
-                result.Add(new PublicationState(Id: pub.Id, Name: pub.Name ?? ""));
+                result.Add(new PublicationState(Id: pub.Id, Name: pub.Name));
         }
 
         return result;
@@ -323,10 +323,10 @@ internal sealed class StateMapper
         var emittedTypeIds = new HashSet<string>(StringComparer.Ordinal);
         foreach (var cost in eff.Costs)
         {
-            var typeId = cost.Type?.Id ?? "";
+            var typeId = cost.Type!.Id!;
             emittedTypeIds.Add(typeId);
             costs.Add(new CostState(
-                Name: cost.Name ?? "",
+                Name: cost.Name,
                 TypeId: typeId,
                 Value: (double)(cost.Value * selectedCount)));
         }
@@ -357,11 +357,11 @@ internal sealed class StateMapper
         var result = new List<CostState>();
         foreach (var rosterCost in _roster.Costs)
         {
-            var typeId = rosterCost.CostType?.Id ?? "";
+            var typeId = rosterCost.CostType.Id!;
             if (referencedCostTypeIds.Contains(typeId))
             {
                 result.Add(new CostState(
-                    Name: rosterCost.Name ?? "",
+                    Name: rosterCost.Name,
                     TypeId: typeId,
                     Value: totals.GetValueOrDefault(typeId, 0)));
             }
@@ -377,8 +377,8 @@ internal sealed class StateMapper
             if (rosterCost.Limit is { } limit && limit >= 0)
             {
                 result.Add(new CostState(
-                    Name: rosterCost.Name ?? "",
-                    TypeId: rosterCost.CostType?.Id ?? "",
+                    Name: rosterCost.Name,
+                    TypeId: rosterCost.CostType.Id!,
                     Value: (double)limit));
             }
         }
@@ -416,10 +416,10 @@ internal sealed class StateMapper
             if (diagnostic is WhamDiagnostic whamDiag && whamDiag.DiagnosticInfo is WhamDiagnosticInfo info)
             {
                 var args = info.Args;
-                var ownerType = args.Length > 0 ? args[0] as string ?? "" : "";
+                var ownerType = args.Length > 0 ? args[0] as string : null;
                 var ownerEntryId = args.Length > 1 ? args[1] as string : null;
                 if (ownerEntryId is "") ownerEntryId = null;
-                var entryId = args.Length > 2 ? args[2] as string ?? "" : "";
+                var entryId = args.Length > 2 ? args[2] as string : null;
                 var constraintId = args.Length > 3 ? args[3] as string : null;
                 if (constraintId is "") constraintId = null;
                 result.Add(new ValidationErrorState(
