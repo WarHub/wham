@@ -17,6 +17,12 @@ public interface ISelectionSymbol : ISelectionContainerSymbol
     string? EntryId { get; }
 
     /// <summary>
+    /// The entry group ID that this selection was created from, if any.
+    /// This is the BattleScribe roster-level provenance from a selection entry group.
+    /// </summary>
+    string? EntryGroupId { get; }
+
+    /// <summary>
     /// Selection count (number of times that selection is "taken").
     /// </summary>
     int SelectedCount { get; }

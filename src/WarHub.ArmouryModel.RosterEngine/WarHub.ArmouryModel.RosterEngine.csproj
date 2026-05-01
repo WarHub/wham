@@ -12,6 +12,12 @@
   </ItemGroup>
 
   <ItemGroup>
+    <InternalsVisibleTo Include="WarHub.ArmouryModel.RosterEngine.Spec" />
+    <InternalsVisibleTo Include="WarHub.ArmouryModel.RosterEngine.Tests" />
+    <InternalsVisibleTo Include="WarHub.ArmouryModel.RosterEngine.Spec.Tests" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\WarHub.ArmouryModel.EditorServices\WarHub.ArmouryModel.EditorServices.csproj" />
     <ProjectReference Include="..\WarHub.ArmouryModel.Source\WarHub.ArmouryModel.Source.csproj" />
     <ProjectReference Include="..\WarHub.ArmouryModel.Source.BattleScribe\WarHub.ArmouryModel.Source.BattleScribe.csproj" />

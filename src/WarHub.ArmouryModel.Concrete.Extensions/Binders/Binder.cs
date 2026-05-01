@@ -50,6 +50,10 @@ internal class Binder
         BindSimple<IResourceDefinitionSymbol, ErrorSymbols.ErrorResourceDefinitionSymbol>(
             node, diagnostics, node.TypeId, LookupOptions.CharacteristicTypeOnly);
 
+    internal IResourceDefinitionSymbol BindCharacteristicTypeSymbol(SourceNode node, string? symbolId, BindingDiagnosticBag diagnostics) =>
+        BindSimple<IResourceDefinitionSymbol, ErrorSymbols.ErrorResourceDefinitionSymbol>(
+            node, diagnostics, symbolId, LookupOptions.CharacteristicTypeOnly);
+
     internal IForceEntrySymbol BindForceEntrySymbol(ForceNode node, BindingDiagnosticBag diagnostics) =>
         BindSimple<IForceEntrySymbol, ErrorSymbols.ErrorForceEntrySymbol>(
             node, diagnostics, node.EntryId, LookupOptions.ForceEntryOnly);
@@ -121,6 +125,8 @@ internal class Binder
     internal ISymbol BindEffectTargetMemberSymbol(SourceNode node, string? symbolId, BindingDiagnosticBag diagnostics)
     {
         Debug.Assert(ContainingEntrySymbol is not null);
+        // Fallback chain: entry member → cost type → characteristic type.
+        // Cost/char type lookups use Discarded diagnostic bags (shared singleton, no allocation).
         var firstPassDiags = BindingDiagnosticBag.GetInstance();
         const LookupOptions Options = LookupOptions.SingleLevel | LookupOptions.ResourceByDefinitionId
             | LookupOptions.EntryMembersOnly | LookupOptions.LookupInReferencedEntryMembers;
@@ -131,14 +137,24 @@ internal class Binder
             diagnostics.AddRangeAndFree(firstPassDiags);
             return initialResult;
         }
-        var costTypeDiags = BindingDiagnosticBag.GetInstance();
-        var costType = BindCostTypeSymbol(node, symbolId, costTypeDiags);
-        if (costType.IsKind(SymbolKind.Error))
+        // Fallback: cost type definition (e.g. "pts", "PL")
+        // Use Discarded bag — fallback diagnostics are never reported.
+        var costType = BindCostTypeSymbol(node, symbolId, BindingDiagnosticBag.Discarded);
+        if (!costType.IsKind(SymbolKind.Error))
         {
-            diagnostics.AddRangeAndFree(firstPassDiags);
-            return initialResult;
+            firstPassDiags.Free();
+            return new GeneratedCostSymbol(ContainingEntrySymbol, costType);
         }
-        return new GeneratedCostSymbol(ContainingEntrySymbol, costType);
+        // Fallback: characteristic type definition (e.g. "M", "WS", "BS", "S", "T")
+        var charType = BindCharacteristicTypeSymbol(node, symbolId, BindingDiagnosticBag.Discarded);
+        if (!charType.IsKind(SymbolKind.Error))
+        {
+            firstPassDiags.Free();
+            return charType;
+        }
+        // All fallbacks failed — report diagnostics from the first pass
+        diagnostics.AddRangeAndFree(firstPassDiags);
+        return initialResult;
     }
 
     internal ISymbol BindFilterEntrySymbol(SourceNode node, string? symbolId, QueryScopeKind scopeKind, BindingDiagnosticBag diagnostics)
@@ -202,8 +218,10 @@ internal class Binder
         }
         var qualifier = (Symbol?)parentSelection?.SourceEntry;
         var resultBuilder = ImmutableArray.CreateBuilder<IEntrySymbol>();
-        // copy over already resolved links from containing selection
-        if (parentSelection is { SourceEntryPath: { SourceEntries.Length: > 1 } path })
+        // copy over already resolved links from containing selection,
+        // but only when the child's entryId has enough segments to match the parent prefix
+        if (parentSelection is { SourceEntryPath: { SourceEntries.Length: > 1 } path }
+            && ids.Length > path.SourceEntries.Length - 1)
         {
             resultBuilder.AddRange(path.SourceEntries.SkipLast(1));
             qualifier = (Symbol?)path.SourceEntries[^2].ReferencedEntry;

@@ -1,4 +1,5 @@
 using BattleScribeSpec;
+using BattleScribeSpec.Roster;
 using WarHub.ArmouryModel.RosterEngine.Spec;
 using Xunit;
 
@@ -21,7 +22,7 @@ public class ConformanceTests
             }
             if (spec.Setup.DataSource is { Length: > 0 }) continue;
             if (spec.ShouldSkip("wham")) continue;
-            yield return [id, resourceName];
+            yield return [spec.Id, resourceName];
         }
     }
 
@@ -31,7 +32,7 @@ public class ConformanceTests
     {
         var spec = SpecLoader.LoadEmbedded(resourceName);
         using var engine = new SpecRosterEngineAdapter();
-        var runner = new SpecRunner(engine, engineName: "wham");
+        var runner = new RosterRunner(engine, engineName: "wham");
         var result = runner.Run(spec);
         if (spec.IsExpectedToFail("wham"))
         {

@@ -1,4 +1,3 @@
-using System.Diagnostics;
 using WarHub.ArmouryModel.Source; // SelectionEntryKind enum
 
 namespace WarHub.ArmouryModel.Concrete;
@@ -7,17 +6,22 @@ namespace WarHub.ArmouryModel.Concrete;
 /// Evaluates IEffectSymbol modifiers against runtime roster state.
 /// Produces effective values for entry properties (name, hidden, costs, characteristics, etc.)
 /// <para>
-/// <b>Reentrancy safety:</b> This evaluator runs during compilation and must NOT access
-/// lazily-bound roster-level symbol properties (SourceEntry, SourceEntryPath, ICategorySymbol.SourceEntry,
-/// ICostSymbol.Type on roster selections) as these trigger binder reentrancy → deadlocks.
-/// Instead, use <c>SelectionSymbol.Declaration</c> node properties for EntryId, EntryGroupId,
-/// Categories, and Costs.
+/// This evaluator runs during compilation's EffectiveEntries phase.
+/// All referenced catalogue symbols are fully bound before roster evaluation begins
+/// (ensured by <c>EnsureReferencedCataloguesComplete</c>), so both catalogue-level and
+/// roster-level symbol properties are safe to access through their public API.
 /// </para>
 /// <para>
-/// Catalogue-level lazy properties (IQuerySymbol.FilterSymbol/ScopeSymbol/ValueTypeSymbol,
-/// IEffectSymbol.TargetMember/OperandSymbol, entry.Costs[].Type) are safe because catalogue
-/// symbols are fully bound before roster evaluation begins. If this binding order invariant
-/// ever changes, these accesses must be converted to Declaration-based lookups as well.
+/// <b>Binding order invariant:</b> The compilation pipeline guarantees that catalogue
+/// compilation completes all phases up to CheckReferences before roster compilation starts.
+/// This means:
+/// <list type="bullet">
+///   <item>It IS safe to access <c>IEntrySymbol.ReferencedEntry</c> on catalogue symbols (already resolved)</item>
+///   <item>It IS safe to navigate shared entry chains (infoLinks, entryLinks, categoryLinks)</item>
+///   <item>It IS safe to read modifier condition references to other catalogue entries</item>
+///   <item>It is NOT safe to access roster-level symbols that may not have completed their
+///     own binding — use <c>Declaration</c> node properties instead (see docs/roster-engine.md)</item>
+/// </list>
 /// </para>
 /// </summary>
 internal sealed class ModifierEvaluator
@@ -236,13 +240,15 @@ internal sealed class ModifierEvaluator
         if (primarySym is not null)
             primaryId = primarySym.ReferencedEntry?.Id ?? primarySym.Id;
 
-        if (entry.Effects.IsEmpty)
-            return (categories, primaryId);
-        var context = new EvalContext(selection, force, entry);
-        foreach (var effect in entry.Effects)
+        if (!entry.Effects.IsEmpty)
         {
-            ApplyCategoryEffect(effect, categories, ref primaryId, context);
+            var context = new EvalContext(selection, force, entry);
+            foreach (var effect in entry.Effects)
+            {
+                ApplyEntryCategoryMutation(effect, categories, ref primaryId, context);
+            }
         }
+
         return (categories, primaryId);
     }
 
@@ -260,13 +266,15 @@ internal sealed class ModifierEvaluator
         var categories = new List<string>(initialCategoryIds);
         string? primaryId = initialPrimaryId;
 
-        if (entry.Effects.IsEmpty)
-            return (categories, primaryId);
-        var context = new EvalContext(selection, force, entry);
-        foreach (var effect in entry.Effects)
+        if (!entry.Effects.IsEmpty)
         {
-            ApplyCategoryEffect(effect, categories, ref primaryId, context);
+            var context = new EvalContext(selection, force, entry);
+            foreach (var effect in entry.Effects)
+            {
+                ApplyEntryCategoryMutation(effect, categories, ref primaryId, context);
+            }
         }
+
         return (categories, primaryId);
     }
 
@@ -369,9 +377,10 @@ internal sealed class ModifierEvaluator
 
     private decimal ApplyCostEffect(IEffectSymbol effect, string targetTypeId, decimal value, EvalContext context)
     {
-        if (effect.TargetKind == EffectTargetKind.Member && ResolveResourceTypeId(effect.TargetMember) == targetTypeId)
+        if (effect.TargetKind == EffectTargetKind.Member)
         {
-            if (EvaluateEffectCondition(effect, context))
+            var resolvedId = ResolveResourceTypeId(effect.TargetMember);
+            if (resolvedId == targetTypeId && EvaluateEffectCondition(effect, context))
             {
                 var repeatCount = GetRepeatCount(effect, context);
                 for (int r = 0; r < repeatCount; r++)
@@ -400,10 +409,13 @@ internal sealed class ModifierEvaluator
     private string ApplyCharacteristicEffect(
         IEffectSymbol effect, string characteristicTypeId, string value, EvalContext context)
     {
-        if (effect.TargetKind == EffectTargetKind.Member &&
-            ResolveResourceTypeId(effect.TargetMember) == characteristicTypeId)
+        if (effect.TargetKind == EffectTargetKind.Member)
         {
-            value = ApplyStringEffect(effect, value, context);
+            var resolvedId = ResolveResourceTypeId(effect.TargetMember);
+            if (resolvedId == characteristicTypeId)
+            {
+                value = ApplyStringEffect(effect, value, context);
+            }
         }
         // Process children
         if (effect.ChildrenWhenSatisfied.Length > 0 || effect.ChildrenWhenUnsatisfied.Length > 0)
@@ -422,7 +434,11 @@ internal sealed class ModifierEvaluator
         return value;
     }
 
-    private void ApplyCategoryEffect(
+    /// <summary>
+    /// Mutates the entry's category set: add/remove categories, set/unset primary.
+    /// These are entry-level modifiers with <c>field="category"</c>.
+    /// </summary>
+    private void ApplyEntryCategoryMutation(
         IEffectSymbol effect, List<string> categories, ref string? primaryId, EvalContext context)
     {
         if (effect.TargetKind == EffectTargetKind.EntryCategory && EvaluateEffectCondition(effect, context))
@@ -458,7 +474,7 @@ internal sealed class ModifierEvaluator
             var children = satisfied ? effect.ChildrenWhenSatisfied : effect.ChildrenWhenUnsatisfied;
             foreach (var child in children)
             {
-                ApplyCategoryEffect(child, categories, ref primaryId, context);
+                ApplyEntryCategoryMutation(child, categories, ref primaryId, context);
             }
         }
     }
@@ -580,8 +596,6 @@ internal sealed class ModifierEvaluator
     {
         // "instanceOf" is a boolean type check, NOT a count.
         // It checks if the current selection (or ancestor) matches a specific entry/category.
-        // Only scope=self and scope=ancestor work; all other scopes return false
-        // (force, roster, primary-category etc. are not selection entries).
 
         if (query.ScopeKind == QueryScopeKind.Self)
         {
@@ -593,8 +607,33 @@ internal sealed class ModifierEvaluator
             return CheckAncestorInstanceOf(query, context);
         }
 
-        // Non-self, non-ancestor scopes: the scope element (force, roster, etc.)
-        // is never an instance of a selection entry, so instanceOf always returns false.
+        // scope=force/roster with category-based filter: check child selections.
+        // BattleScribe resolves scope=force/roster to the Force/Roster element itself
+        // (not a Selection), so type-based (unit/model/upgrade) and entry-based checks
+        // always return false. Only category-based checks can scan child selections.
+        if (query.ScopeKind is QueryScopeKind.ContainingForce or QueryScopeKind.ContainingRoster)
+        {
+            if (query.ValueFilterKind == QueryFilterKind.SpecifiedEntry
+                && query.FilterSymbol is ICategoryEntrySymbol)
+            {
+                var selections = query.ScopeKind == QueryScopeKind.ContainingForce
+                    ? GetForceSelections(context)
+                    : GetRosterSelections();
+                return CheckScopeInstanceOf(query, selections);
+            }
+            return false;
+        }
+
+        return false;
+    }
+
+    private bool CheckScopeInstanceOf(IQuerySymbol query, IEnumerable<ISelectionSymbol> selections)
+    {
+        foreach (var sel in selections)
+        {
+            if (CheckInstanceOf(query, sel))
+                return true;
+        }
         return false;
     }
 
@@ -616,18 +655,12 @@ internal sealed class ModifierEvaluator
         if (filterId is null)
             return false;
 
-        // Use Declaration properties to avoid triggering lazy binding
-        // (SourceEntry/SourceEntryPath access the binder, which can re-enter evaluation)
-        Debug.Assert(selection is SelectionSymbol, "Expected concrete SelectionSymbol in ModifierEvaluator");
-        if (selection is SelectionSymbol ss)
+        if (selection.EntryId == filterId)
+            return true;
+        foreach (var cat in selection.Categories)
         {
-            if (ss.Declaration.EntryId == filterId)
+            if (cat.SourceEntry?.Id == filterId)
                 return true;
-            foreach (var cat in ss.Declaration.Categories)
-            {
-                if (cat.EntryId == filterId)
-                    return true;
-            }
         }
 
         return false;
@@ -787,10 +820,7 @@ internal sealed class ModifierEvaluator
         if (context.Selection is null || context.Force is null)
             yield break;
 
-        Debug.Assert(context.Selection is null or SelectionSymbol, "Expected concrete SelectionSymbol in ModifierEvaluator");
-        var primaryCat = context.Selection is SelectionSymbol ss
-            ? ss.Declaration.Categories.FirstOrDefault(c => c.Primary)?.EntryId
-            : null;
+        var primaryCat = context.Selection.PrimaryCategory?.SourceEntry?.Id;
 
         if (primaryCat is null)
             yield break;
@@ -844,8 +874,7 @@ internal sealed class ModifierEvaluator
 
         foreach (var force in _roster.Forces)
         {
-            Debug.Assert(force is ForceSymbol, "Expected concrete ForceSymbol in ModifierEvaluator");
-            if (filterId is null || (force is ForceSymbol fs && fs.Declaration.EntryId == filterId))
+            if (filterId is null || force.EntryId == filterId)
                 count++;
         }
         return count;
@@ -861,16 +890,11 @@ internal sealed class ModifierEvaluator
         {
             if (MatchesFilter(sel, query))
             {
-                // Use Declaration.Costs to avoid triggering lazy symbol binding
-                Debug.Assert(sel is SelectionSymbol, "Expected concrete SelectionSymbol in ModifierEvaluator");
-                if (sel is SelectionSymbol ss)
+                foreach (var cost in sel.Costs)
                 {
-                    foreach (var cost in ss.Declaration.Costs)
+                    if (cost.Type?.Id == valueTypeId)
                     {
-                        if (cost.TypeId == valueTypeId)
-                        {
-                            sum += cost.Value;
-                        }
+                        sum += cost.Value;
                     }
                 }
             }
@@ -883,15 +907,10 @@ internal sealed class ModifierEvaluator
         var valueTypeId = query.ValueTypeSymbol?.Id;
         if (valueTypeId is null) return 0m;
 
-        // Use Declaration.CostLimits to avoid triggering lazy symbol binding
-        Debug.Assert(_roster is RosterSymbol, "Expected concrete RosterSymbol in ModifierEvaluator");
-        if (_roster is RosterSymbol rs)
+        foreach (var rosterCost in _roster.Costs)
         {
-            foreach (var limit in rs.Declaration.CostLimits)
-            {
-                if (limit.TypeId == valueTypeId)
-                    return limit.Value;
-            }
+            if (rosterCost.CostType?.Id == valueTypeId && rosterCost.Limit is { } limit)
+                return limit;
         }
         return -1m; // No limit
     }
@@ -913,8 +932,7 @@ internal sealed class ModifierEvaluator
     private static bool MatchesSpecifiedEntry(ISelectionSymbol sel, IQuerySymbol query)
     {
         var filterSymbol = query.FilterSymbol;
-        // Error symbols (binding failures) or null → don't match anything
-        if (filterSymbol is null || filterSymbol.Kind == SymbolKind.Error)
+        if (filterSymbol is null or IErrorSymbol)
             return false;
         var filterId = filterSymbol.Id;
         if (filterId is null)
@@ -940,15 +958,10 @@ internal sealed class ModifierEvaluator
     private static bool SelectionHasCategory(ISelectionSymbol sel, string? categoryId)
     {
         if (categoryId is null) return false;
-        // Use Declaration.Categories to avoid triggering lazy symbol binding
-        Debug.Assert(sel is SelectionSymbol, "Expected concrete SelectionSymbol in ModifierEvaluator");
-        if (sel is SelectionSymbol ss)
+        foreach (var cat in sel.Categories)
         {
-            foreach (var cat in ss.Declaration.Categories)
-            {
-                if (cat.EntryId == categoryId)
-                    return true;
-            }
+            if (cat.SourceEntry?.Id == categoryId)
+                return true;
         }
         return false;
     }
@@ -1080,14 +1093,26 @@ internal sealed class ModifierEvaluator
 
     /// <summary>
     /// Checks if a selection matches a given entry or entry group ID.
-    /// Uses Declaration properties to avoid triggering lazy binding
-    /// (SourceEntryPath is lazily bound and would cause binder reentrancy).
     /// </summary>
     private static bool MatchesEntryOrGroup(ISelectionSymbol sel, string id)
     {
-        Debug.Assert(sel is SelectionSymbol, "Expected concrete SelectionSymbol in ModifierEvaluator");
-        if (sel is SelectionSymbol ss)
-            return ss.Declaration.EntryId == id || ss.Declaration.EntryGroupId == id;
-        return false;
+        if (sel.EntryGroupId == id)
+            return true;
+        if (sel.EntryId is not { } entryId)
+            return false;
+        if (entryId == id)
+            return true;
+        // Entry link format: "linkId::targetId" — check each segment
+        var span = entryId.AsSpan();
+        while (true)
+        {
+            var sepIndex = span.IndexOf("::", StringComparison.Ordinal);
+            if (sepIndex < 0)
+                return span.SequenceEqual(id.AsSpan());
+            if (span[..sepIndex].SequenceEqual(id.AsSpan()))
+                return true;
+            span = span[(sepIndex + 2)..];
+        }
     }
 }
+
