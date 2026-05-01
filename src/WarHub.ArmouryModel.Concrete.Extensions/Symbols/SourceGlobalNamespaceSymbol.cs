@@ -1,0 +1,191 @@
+using System.Diagnostics;
+using WarHub.ArmouryModel.Source;
+
+namespace WarHub.ArmouryModel.Concrete;
+
+[GenerateSymbol(SymbolKind.GamesystemNamespace)]
+internal sealed partial class SourceGlobalNamespaceSymbol : Symbol, IGamesystemNamespaceSymbol
+{
+    private SymbolCompletionState state;
+
+    /// <summary>
+    /// Creates a namespace for a standalone (catalogue-mode) compilation.
+    /// All root nodes produce catalogue and/or roster symbols.
+    /// </summary>
+    public SourceGlobalNamespaceSymbol(
+        ImmutableArray<SourceNode> rootDataNodes,
+        WhamCompilation declaringCompilation)
+    {
+        DeclaringCompilation = declaringCompilation;
+        DeclarationDiagnostics = DiagnosticBag.GetInstance();
+        AllRootSymbols = rootDataNodes.Select(CreateSymbol).Where(x => x is not null).ToImmutableArray()!;
+        Rosters = AllRootSymbols.OfType<RosterSymbol>().ToImmutableArray();
+        Catalogues = AllRootSymbols.OfType<CatalogueBaseSymbol>().ToImmutableArray();
+        RootCatalogue = GetOrCreateGamesystemSymbol();
+        // TODO more diagnostics, e.g. all catalogues are from the same game system?
+        state.NotePartComplete(CompletionPart.Members);
+
+        ICatalogueSymbol GetOrCreateGamesystemSymbol()
+        {
+            var rootCandidates = Catalogues.Where(x => x.IsGamesystem).ToImmutableArray();
+            if (rootCandidates.Length > 1)
+            {
+                foreach (var candidate in rootCandidates.Skip(1))
+                    DeclarationDiagnostics.Add(
+                        ErrorCode.ERR_MultipleGamesystems,
+                        candidate.Declaration.GetLocation(),
+                        candidate,
+                        rootCandidates[0]);
+            }
+            return rootCandidates.FirstOrDefault()
+                ?? DeclaringCompilation.CreateMissingGamesystemSymbol(DeclarationDiagnostics);
+        }
+
+        Symbol? CreateSymbol(SourceNode node)
+        {
+            if (node is CatalogueNode catalogueNode)
+            {
+                return new CatalogueSymbol(this, catalogueNode, DeclarationDiagnostics);
+            }
+            else if (node is GamesystemNode gamesystemNode)
+            {
+                return new GamesystemSymbol(this, gamesystemNode, DeclarationDiagnostics);
+            }
+            else if (node is RosterNode rosterNode)
+            {
+                return new RosterSymbol(this, rosterNode, DeclarationDiagnostics);
+            }
+            else
+            {
+                DeclarationDiagnostics.Add(
+                    ErrorCode.ERR_UnknownModuleType,
+                    node.GetLocation(),
+                    node);
+                return null;
+            }
+        }
+    }
+
+    /// <summary>
+    /// Creates a namespace for a roster compilation that references a catalogue compilation.
+    /// Own source trees produce only roster symbols; catalogue symbols come from the reference.
+    /// </summary>
+    /// <remarks>
+    /// Catalogue symbols are reused by object identity from the referenced namespace.
+    /// Their <see cref="Symbol.ContainingSymbol"/> and <c>DeclaringCompilation</c> still
+    /// point back to the catalogue compilation's namespace, not this roster namespace.
+    /// This is intentional: it avoids duplicating symbols and allows the catalogue
+    /// compilation to be shared across multiple roster compilations.
+    /// </remarks>
+    public SourceGlobalNamespaceSymbol(
+        ImmutableArray<SourceNode> rootDataNodes,
+        WhamCompilation declaringCompilation,
+        SourceGlobalNamespaceSymbol referencedNamespace)
+    {
+        DeclaringCompilation = declaringCompilation;
+        DeclarationDiagnostics = DiagnosticBag.GetInstance();
+
+        // Only create roster symbols from own source trees.
+        var ownSymbols = rootDataNodes
+            .OfType<RosterNode>()
+            .Select(rosterNode => (Symbol)new RosterSymbol(this, rosterNode, DeclarationDiagnostics))
+            .ToImmutableArray();
+
+        Rosters = ownSymbols.OfType<RosterSymbol>().ToImmutableArray();
+
+        // Catalogue symbols come from the referenced compilation — same object references.
+        Catalogues = referencedNamespace.Catalogues;
+        RootCatalogue = referencedNamespace.RootCatalogue;
+
+        // AllRootSymbols includes both own roster symbols and referenced catalogue symbols.
+        AllRootSymbols = ownSymbols
+            .AddRange(Catalogues.Cast<CatalogueBaseSymbol, Symbol>());
+
+        state.NotePartComplete(CompletionPart.Members);
+    }
+
+    public override string? Id => RootCatalogue.Id;
+
+    public override string Name => RootCatalogue.Name;
+
+    public override string? Comment => null;
+
+    public override Symbol? ContainingSymbol => null;
+
+    public override IGamesystemNamespaceSymbol? ContainingNamespace => null;
+
+    public override IModuleSymbol? ContainingModule => null;
+
+    public ICatalogueSymbol RootCatalogue { get; }
+
+    public ImmutableArray<Symbol> AllRootSymbols { get; }
+
+    public ImmutableArray<CatalogueBaseSymbol> Catalogues { get; }
+
+    public ImmutableArray<RosterSymbol> Rosters { get; }
+
+    internal override WhamCompilation DeclaringCompilation { get; }
+
+    internal DiagnosticBag DeclarationDiagnostics { get; }
+
+    internal override bool RequiresCompletion => true;
+
+    ImmutableArray<ICatalogueSymbol> IGamesystemNamespaceSymbol.Catalogues =>
+        Catalogues.Cast<CatalogueBaseSymbol, ICatalogueSymbol>();
+
+    ImmutableArray<IRosterSymbol> IGamesystemNamespaceSymbol.Rosters =>
+        Rosters.Cast<RosterSymbol, IRosterSymbol>();
+
+    ImmutableArray<ISymbol> IGamesystemNamespaceSymbol.AllRootSymbols =>
+        AllRootSymbols.Cast<Symbol, ISymbol>();
+
+    internal sealed override bool HasComplete(CompletionPart part) => state.HasComplete(part);
+
+    internal override void ForceComplete(CancellationToken cancellationToken)
+    {
+        while (true)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            var incompletePart = state.NextIncompletePart;
+            switch (incompletePart)
+            {
+                case CompletionPart.None:
+                    return;
+                case CompletionPart.MembersCompleted:
+                    {
+                        if (DeclaringCompilation.HasCatalogueReference)
+                        {
+                            // Roster compilation: only complete own roster symbols.
+                            // Referenced catalogue symbols are already complete
+                            // from their own compilation.
+                            foreach (var member in Rosters)
+                            {
+                                cancellationToken.ThrowIfCancellationRequested();
+                                member.ForceComplete(cancellationToken);
+                            }
+                        }
+                        else
+                        {
+                            // Catalogue compilation (or standalone): complete all symbols.
+                            foreach (var member in AllRootSymbols)
+                            {
+                                cancellationToken.ThrowIfCancellationRequested();
+                                member.ForceComplete(cancellationToken);
+                            }
+                        }
+                        state.NotePartComplete(CompletionPart.MembersCompleted);
+                        break;
+                    }
+                default:
+                    // This assert will trigger if we forgot to handle any of the completion parts
+                    Debug.Assert((incompletePart & CompletionPart.NamespaceAll) == 0);
+                    // any other values are completion parts intended for other kinds of symbols
+                    state.NotePartComplete(CompletionPart.All & ~CompletionPart.NamespaceAll);
+                    break;
+            }
+            state.SpinWaitComplete(incompletePart, cancellationToken);
+        }
+        throw new InvalidOperationException("Unreachable code.");
+    }
+
+}

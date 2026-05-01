@@ -27,7 +27,7 @@ namespace WarHub.ArmouryModel.Source
         /// (4 groups of 4 characters).
         /// </summary>
         /// <returns>Generated short format UUID.</returns>
-        private static string NewId() => Guid.NewGuid().ToString().Substring(4, 19);
+        internal static string NewId() => Guid.NewGuid().ToString().Substring(4, 19);
 
         /// <summary>
         /// Generates new name via prepending caller name with "New ".
@@ -257,9 +257,20 @@ namespace WarHub.ArmouryModel.Source
                 type: type);
         }
 
-        public static ForceNode Force(ForceEntryNode forceEntry, string? id = null)
+        /// <summary>
+        /// Creates a <see cref="ForceNode"/> from a force entry definition.
+        /// </summary>
+        /// <param name="forceEntry">The force entry to create the force from.</param>
+        /// <param name="catalogue">
+        /// The catalogue this force belongs to. If <see langword="null"/>,
+        /// the catalogue is derived from the force entry's ancestor — which may be
+        /// incorrect when the force entry is defined in the gamesystem but the force
+        /// should reference a different catalogue.
+        /// </param>
+        /// <param name="id">Optional force ID. A new GUID is generated if not provided.</param>
+        public static ForceNode Force(ForceEntryNode forceEntry, CatalogueBaseNode? catalogue = null, string? id = null)
         {
-            var catalogue = forceEntry.FirstAncestorOrSelf<CatalogueBaseNode>();
+            catalogue ??= forceEntry.FirstAncestorOrSelf<CatalogueBaseNode>();
             if (catalogue is null)
             {
                 throw new ArgumentException(
