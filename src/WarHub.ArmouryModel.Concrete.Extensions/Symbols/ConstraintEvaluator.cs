@@ -1,8 +1,4 @@
-// Ported code: many BattleScribe IDs are string? but dictionary keys are string.
-// Suppress nullable warnings at file level until IDs are properly typed.
-#pragma warning disable CS8604 // Possible null reference argument
-#pragma warning disable CS8620 // Nullability differences in argument
-
+using System.Diagnostics.CodeAnalysis;
 using WarHub.ArmouryModel.Source;
 
 namespace WarHub.ArmouryModel.Concrete;
@@ -128,13 +124,13 @@ internal static class ConstraintEvaluator
             var forceCounts = new Dictionary<string, int>(StringComparer.Ordinal);
             foreach (var force in _roster.Forces)
             {
-                var entryId = force.EntryId;
+                if (force.EntryId is not { } entryId) continue;
                 forceCounts[entryId] = forceCounts.GetValueOrDefault(entryId) + 1;
             }
 
             foreach (var force in _roster.Forces)
             {
-                var entryId = force.EntryId;
+                if (force.EntryId is not { } entryId) continue;
                 if (!_forceEntryIndex.TryGetValue(entryId, out var forceEntry))
                     continue;
 
@@ -376,7 +372,8 @@ internal static class ConstraintEvaluator
             var counts = new Dictionary<CountKey, int>();
             foreach (var child in parent.ChildSelections)
             {
-                var entryKey = new CountKey(child.EntryId, CountKeyKind.Entry);
+                if (child.EntryId is not { } childEntryId) continue;
+                var entryKey = new CountKey(childEntryId, CountKeyKind.Entry);
                 counts[entryKey] = counts.GetValueOrDefault(entryKey) + child.SelectedCount;
                 var groupId = child.EntryGroupId;
                 if (groupId is not null)
@@ -389,7 +386,8 @@ internal static class ConstraintEvaluator
             // Check constraints on child entries (scope=parent)
             foreach (var child in parent.ChildSelections)
             {
-                if (!TryGetIndexedEntry(child.EntryId, out var childEntry))
+                if (child.EntryId is not { } childEntryId) continue;
+                if (!TryGetIndexedEntry(childEntryId, out var childEntry))
                     continue;
 
                 var effectiveChildValues = GetEffectiveConstraintValues(childEntry, child, force);
@@ -402,17 +400,17 @@ internal static class ConstraintEvaluator
 
                     var constraintId = constraint.Id ?? "";
                     var constraintValue = effectiveChildValues.GetValueOrDefault(constraintId, query.ReferenceValue ?? 0m);
-                    var count = counts.GetValueOrDefault(new CountKey(child.EntryId, CountKeyKind.Entry));
+                    var count = counts.GetValueOrDefault(new CountKey(childEntryId, CountKeyKind.Entry));
 
-                    var parentEntryId = parent.EntryId;
                     CheckConstraint(query.Comparison, constraintValue, count,
-                        child.EntryId, "selection", parentEntryId,
+                        childEntryId, "selection", parent.EntryId ?? "",
                         constraintId);
                 }
             }
 
             // Also check entries that are available but have 0 selections (min violations)
-            if (TryGetIndexedEntry(parent.EntryId, out var parentEntry))
+            if (parent.EntryId is { } parentEntryIdForLookup
+                && TryGetIndexedEntry(parentEntryIdForLookup, out var parentEntry))
             {
                 foreach (var childEntrySymbol in parentEntry.ChildSelectionEntries)
                 {
@@ -436,7 +434,7 @@ internal static class ConstraintEvaluator
                         var constraintValue = effectiveAvailValues.GetValueOrDefault(constraintId, query.ReferenceValue ?? 0m);
                         var count = counts.GetValueOrDefault(new CountKey(childId, isGroup ? CountKeyKind.Group : CountKeyKind.Entry));
                         CheckConstraint(query.Comparison, constraintValue, count,
-                            childId, "selection", parent.EntryId,
+                            childId, "selection", parentEntryIdForLookup,
                             constraintId);
                     }
                 }
@@ -466,7 +464,7 @@ internal static class ConstraintEvaluator
             }
 
             // Check force entry category link constraints
-            var forceEntryId = force.EntryId;
+            if (force.EntryId is not { } forceEntryId) return;
             if (!_forceEntryIndex.TryGetValue(forceEntryId, out var forceEntry))
                 return;
 
@@ -732,8 +730,8 @@ internal static class ConstraintEvaluator
             {
                 if (entry is ISelectionEntryContainerSymbol selEntry)
                     IndexEntry(selEntry);
-                if (entry is IForceEntrySymbol fe)
-                    _forceEntryIndex.TryAdd(fe.Id, fe);
+                if (entry is IForceEntrySymbol { Id: { } feId } fe)
+                    _forceEntryIndex.TryAdd(feId, fe);
             }
             foreach (var entry in catalogue.SharedSelectionEntryContainers)
                 IndexEntry(entry);
@@ -841,8 +839,9 @@ internal static class ConstraintEvaluator
         /// Checks if a selection's entryId (which may be a "::" path like "link-1::shared-unit")
         /// matches the given <paramref name="targetId"/> (a single segment).
         /// </summary>
-        private static bool EntryIdMatches(string selectionEntryId, string targetId)
+        private static bool EntryIdMatches([NotNullWhen(true)] string? selectionEntryId, string targetId)
         {
+            if (selectionEntryId is null) return false;
             if (selectionEntryId == targetId)
                 return true;
             // Check if any segment of the :: path matches
@@ -861,8 +860,9 @@ internal static class ConstraintEvaluator
         /// <summary>
         /// Checks if a selection's entryId (which may be a "::" path) contains any ID in the set.
         /// </summary>
-        private static bool EntryIdMatchesAny(string selectionEntryId, HashSet<string> ids)
+        private static bool EntryIdMatchesAny([NotNullWhen(true)] string? selectionEntryId, HashSet<string> ids)
         {
+            if (selectionEntryId is null) return false;
             if (ids.Contains(selectionEntryId))
                 return true;
             // Check if any segment of the :: path is in the set
@@ -881,7 +881,7 @@ internal static class ConstraintEvaluator
         /// <summary>
         /// Looks up an entry in the index by any segment of a "::" path.
         /// </summary>
-        private bool TryGetIndexedEntry(string entryId, [System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out ISelectionEntryContainerSymbol? result)
+        private bool TryGetIndexedEntry(string entryId, [NotNullWhen(true)] out ISelectionEntryContainerSymbol? result)
         {
             if (_entryIndex.TryGetValue(entryId, out result))
                 return true;

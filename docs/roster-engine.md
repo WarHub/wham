@@ -17,7 +17,6 @@ decision record.
 ┌──────────────────────────────────────────────────────────┐
 │         RosterEngine.Spec (adapter layer)                │
 │  ProtocolConverter → SpecRosterEngineAdapter → StateMapper│
-│  (ConstraintValidator — legacy, replaced by evaluator)   │
 └──────────────────────┬──────────────────────────────────┘
                        ↓
 ┌──────────────────────────────────────────────────────────┐
@@ -139,27 +138,6 @@ Evaluates modifiers and conditions using IEffectSymbol/IConditionSymbol:
 - **Scopes**: self, parent, force, roster, primary-category, ancestor
 - **Repeat handling**: Multiplicative repeat counts based on queries
 
-### ConstraintValidator (~850 lines, legacy)
-
-> **Note**: `ConstraintValidator` in RosterEngine.Spec is the legacy node-layer
-> validator. Constraint evaluation is now performed by `ConstraintEvaluator` in
-> Concrete.Extensions as part of the `CompletionPart.CheckConstraints` phase.
-> The adapter's `GetValidationErrors()` reads from
-> `compilation.GetConstraintDiagnostics()`.
-
-Validates IConstraintSymbol constraints using effective entry symbols:
-
-- **Force-level validation**: Root entry constraints (scope=force/roster)
-- **Child validation**: Parent-scoped constraints on child selections
-- **Category validation**: Min/max on category links
-- **Shared constraint counting**: Counts across ALL entry links to same
-  shared entry using link ID → shared entry mapping
-- **Constraint merging**: Link + shared constraints merged, most restrictive
-  wins. Merge key: `direction:valueKind` (not scope)
-- **Effective symbols**: Uses `EffectiveEntryCache` for modifier-adjusted
-  constraint boundary values (replaces direct ModifierEvaluator calls)
-- **Error format**: `on='ownerType ownerEntryId', from='entryId/constraintId'`
-
 ## BattleScribe Behavioral Alignment
 
 | Behavior | BattleScribe | wham | Notes |
@@ -269,8 +247,6 @@ src/WarHub.ArmouryModel.RosterEngine.Spec/
 ├── SpecRosterEngineAdapter.cs (IRosterEngine impl, uses GetConstraintDiagnostics())
 ├── ProtocolConverter.cs       (Protocol → SourceNode)
 ├── StateMapper.cs             (ISymbol → Protocol state)
-└── ConstraintValidator.cs     (legacy constraint validation, replaced by ConstraintEvaluator)
-
 tests/WarHub.ArmouryModel.RosterEngine.Tests/
 ├── ConformanceTests.cs       (runs all 304 specs)
 └── WarHub.ArmouryModel.RosterEngine.Tests.csproj
