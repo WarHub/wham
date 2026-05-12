@@ -215,7 +215,7 @@ public static class ProtocolConverter
     {
         Id = c.Id,
         Type = ParseConstraintKind(c.Type),
-        Value = (decimal)c.Value,
+        Value = c.Value,
         Field = c.Field,
         Scope = c.Scope,
         Shared = c.Shared,
@@ -246,7 +246,7 @@ public static class ProtocolConverter
     private static ConditionCore ConvertCondition(ProtocolCondition c) => new()
     {
         Type = ParseConditionKind(c.Type),
-        Value = (decimal)c.Value,
+        Value = c.Value,
         Field = c.Field,
         Scope = c.Scope,
         ChildId = c.ChildId,
@@ -265,7 +265,7 @@ public static class ProtocolConverter
 
     private static RepeatCore ConvertRepeat(ProtocolRepeat r) => new()
     {
-        Value = (decimal)r.Value,
+        Value = r.Value,
         RepeatCount = r.Repeats,
         Field = r.Field,
         Scope = r.Scope,
@@ -355,7 +355,7 @@ public static class ProtocolConverter
     {
         Id = ct.Id,
         Name = ct.Name,
-        DefaultCostLimit = ct.DefaultCostLimit is { } limit ? (decimal)limit : -1m,
+        DefaultCostLimit = ct.DefaultCostLimit is { } limit ? limit : -1m,
         Hidden = ct.Hidden,
     };
 
@@ -363,7 +363,7 @@ public static class ProtocolConverter
     {
         Name = cv.Name,
         TypeId = cv.TypeId,
-        Value = (decimal)cv.Value,
+        Value = cv.Value,
     };
 
     private static ProfileTypeCore ConvertProfileType(ProtocolProfileType pt) => new()

@@ -18,8 +18,8 @@ internal static class SelectionOrdering
     /// <summary>
     /// Returns force's selections sorted in BattleScribe canonical order:
     /// primary by category order (as declared in the force's category list),
-    /// secondary by original entry name (natural sort),
-    /// tertiary by effective (modifier-applied) name (natural sort).
+    /// secondary by effective (modifier-applied) name (natural sort),
+    /// tertiary by original entry name (natural sort).
     /// </summary>
     internal static ImmutableArray<ISelectionSymbol> GetSortedSelections(IForceSymbol force)
     {
@@ -41,26 +41,26 @@ internal static class SelectionOrdering
                 int bOrder = bCatId is not null && categoryOrder.TryGetValue(bCatId, out var bo) ? bo : -1;
                 var cmp = aOrder.CompareTo(bOrder);
                 if (cmp != 0) return cmp;
-                // Sort by original (pre-modifier) entry name, with effective name as tiebreaker
-                cmp = NaturalSort.Compare(a.SourceEntry?.Name ?? a.Name, b.SourceEntry?.Name ?? b.Name);
+                // Sort by effective (modifier-applied) name, with original entry name as tiebreaker
+                cmp = NaturalSort.Compare(a.EffectiveSourceEntry.Name, b.EffectiveSourceEntry.Name);
                 if (cmp != 0) return cmp;
-                return NaturalSort.Compare(a.EffectiveSourceEntry.Name, b.EffectiveSourceEntry.Name);
+                return NaturalSort.Compare(a.SourceEntry?.Name ?? a.Name, b.SourceEntry?.Name ?? b.Name);
             });
     }
 
     /// <summary>
     /// Returns child selections sorted by name in BattleScribe canonical order:
-    /// primary by original entry name (natural sort),
-    /// secondary by effective name (natural sort).
+    /// primary by effective (modifier-applied) name (natural sort),
+    /// secondary by original entry name (natural sort).
     /// </summary>
     internal static ImmutableArray<ISelectionSymbol> GetSortedChildSelections(ISelectionSymbol parent)
     {
         return parent.Selections
             .Sort((a, b) =>
             {
-                var cmp = NaturalSort.Compare(a.SourceEntry?.Name ?? a.Name, b.SourceEntry?.Name ?? b.Name);
+                var cmp = NaturalSort.Compare(a.EffectiveSourceEntry.Name, b.EffectiveSourceEntry.Name);
                 if (cmp != 0) return cmp;
-                return NaturalSort.Compare(a.EffectiveSourceEntry.Name, b.EffectiveSourceEntry.Name);
+                return NaturalSort.Compare(a.SourceEntry?.Name ?? a.Name, b.SourceEntry?.Name ?? b.Name);
             });
     }
 

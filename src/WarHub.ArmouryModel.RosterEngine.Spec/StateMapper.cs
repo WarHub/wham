@@ -328,7 +328,7 @@ internal sealed class StateMapper
             costs.Add(new CostState(
                 Name: cost.Name,
                 TypeId: typeId,
-                Value: (double)(cost.Value * selectedCount)));
+                Value: cost.Value * selectedCount));
         }
         // BattleScribe emits all referenced cost types on every selection, filling 0 for missing ones
         foreach (var (typeId, name) in costTypeNames)
@@ -348,7 +348,7 @@ internal sealed class StateMapper
         List<ForceState> mappedForces,
         IReadOnlySet<string> referencedCostTypeIds)
     {
-        var totals = new Dictionary<string, double>(StringComparer.Ordinal);
+        var totals = new Dictionary<string, decimal>(StringComparer.Ordinal);
         foreach (var force in mappedForces)
         {
             AggregateCostsFromSelections(force.Selections, totals);
@@ -379,7 +379,7 @@ internal sealed class StateMapper
                 result.Add(new CostState(
                     Name: rosterCost.Name,
                     TypeId: rosterCost.CostType.Id!,
-                    Value: (double)limit));
+                    Value: limit));
             }
         }
         return result;
@@ -387,7 +387,7 @@ internal sealed class StateMapper
 
     private static void AggregateCostsFromSelections(
         IReadOnlyList<SelectionState> selections,
-        Dictionary<string, double> totals)
+        Dictionary<string, decimal> totals)
     {
         foreach (var sel in selections)
         {

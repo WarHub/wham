@@ -160,9 +160,9 @@ internal class Binder
     internal ISymbol BindFilterEntrySymbol(SourceNode node, string? symbolId, QueryScopeKind scopeKind, BindingDiagnosticBag diagnostics)
         => scopeKind switch
         {
-            QueryScopeKind.PrimaryCatalogue => BindCatalogueSymbol(node, symbolId, diagnostics),
-            // PrimaryCategory scope defines the scope (look in selections sharing the same primary category),
-            // but the childId/filter still references any container entry (typically a selection entry).
+            // primary-catalogue scope defines WHERE to count (in the force's primary catalogue),
+            // but the childId/filter still references a selection entry, same as other scopes.
+            // All scopes except ReferencedEntry use container entry lookup for the filter.
             _ => BindSimple<IContainerEntrySymbol, ErrorSymbols.ErrorContainerEntrySymbol>(node, diagnostics, symbolId, LookupOptions.ContainerEntryOnly)
         };
 

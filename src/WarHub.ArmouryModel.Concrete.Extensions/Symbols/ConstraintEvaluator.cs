@@ -230,12 +230,15 @@ internal static class ConstraintEvaluator
                             mergedShared[key] = (val, existing.constraintId, existing.comparison);
                     }
                 }
-                // Also merge link constraints into shared if both exist with same type
+                // Also merge link's OWN constraints into shared if both exist with same type.
+                // Only merge the link's own constraints (sourceEntryId != targetId).
+                // Target constraints with shared=false are evaluated independently per-link.
                 if (mergedShared.Count > 0)
                 {
-                    foreach (var (constraint, _, isShared) in constraintSources)
+                    foreach (var (constraint, srcEntryId, isShared) in constraintSources)
                     {
                         if (isShared) continue;
+                        if (srcEntryId == targetId) continue; // target's shared=false → evaluate independently
                         var query = constraint.Query;
                         var cid = constraint.Id ?? "";
                         var val = effectiveValues.GetValueOrDefault(cid, query.ReferenceValue ?? 0m);
@@ -254,9 +257,10 @@ internal static class ConstraintEvaluator
                 var mergedLinkConstraintIds = new HashSet<string>(StringComparer.Ordinal);
                 if (mergedShared.Count > 0)
                 {
-                    foreach (var (constraint, _, isShared) in constraintSources)
+                    foreach (var (constraint, srcEntryId, isShared) in constraintSources)
                     {
                         if (isShared) continue;
+                        if (srcEntryId == targetId) continue; // target's shared=false → not merged
                         var query = constraint.Query;
                         var direction = query.Comparison == QueryComparisonType.GreaterThanOrEqual ? "min" : "max";
                         var key = $"{direction}:{query.ValueKind}:{query.ValueTypeSymbol?.Id}";
@@ -366,18 +370,26 @@ internal static class ConstraintEvaluator
             SelectionSymbol parent,
             ForceSymbol force)
         {
-            // Count children by entry ID and entry group ID
+            // Count children by entry ID and entry group ID.
+            // For collective children, use per-model counts (divide by parent's number).
+            var parentCount = parent.SelectedCount;
             var counts = new Dictionary<CountKey, int>();
             foreach (var child in parent.ChildSelections)
             {
                 if (child.EntryId is not { } childEntryId) continue;
+                var childCount = child.SelectedCount;
+                // Per-model count for collective entries
+                if (parentCount > 0 && IsChildCollective(child))
+                {
+                    childCount /= parentCount;
+                }
                 var entryKey = new CountKey(childEntryId, CountKeyKind.Entry);
-                counts[entryKey] = counts.GetValueOrDefault(entryKey) + child.SelectedCount;
+                counts[entryKey] = counts.GetValueOrDefault(entryKey) + childCount;
                 var groupId = child.EntryGroupId;
                 if (groupId is not null)
                 {
                     var groupKey = new CountKey(groupId, CountKeyKind.Group);
-                    counts[groupKey] = counts.GetValueOrDefault(groupKey) + child.SelectedCount;
+                    counts[groupKey] = counts.GetValueOrDefault(groupKey) + childCount;
                 }
             }
 
@@ -417,10 +429,15 @@ internal static class ConstraintEvaluator
 
                     // For groups, count by entryGroupId; for entries, count by entryId
                     var isGroup = childEntrySymbol is ISelectionEntryGroupSymbol;
-                    if (counts.ContainsKey(new CountKey(childId, isGroup ? CountKeyKind.Group : CountKeyKind.Entry))) continue;
+                    var countKey = new CountKey(childId, isGroup ? CountKeyKind.Group : CountKeyKind.Entry);
 
                     var targetEntry = childEntrySymbol.ReferencedEntry ?? childEntrySymbol;
                     var effectiveAvailValues = GetEffectiveConstraintValues(targetEntry, null, force);
+                    var currentCount = counts.GetValueOrDefault(countKey);
+
+                    // Groups with selections still need max constraint evaluation;
+                    // entries with selections are handled by the child-selection loop above.
+                    if (!isGroup && counts.ContainsKey(countKey)) continue;
 
                     foreach (var constraint in targetEntry.Constraints)
                     {
@@ -430,8 +447,7 @@ internal static class ConstraintEvaluator
 
                         var constraintId = constraint.Id ?? "";
                         var constraintValue = effectiveAvailValues.GetValueOrDefault(constraintId, query.ReferenceValue ?? 0m);
-                        var count = counts.GetValueOrDefault(new CountKey(childId, isGroup ? CountKeyKind.Group : CountKeyKind.Entry));
-                        CheckConstraint(query.Comparison, constraintValue, count,
+                        CheckConstraint(query.Comparison, constraintValue, currentCount,
                             childId, "selection", parentEntryIdForLookup,
                             constraintId);
                     }
@@ -927,6 +943,33 @@ internal static class ConstraintEvaluator
                 }
             }
             return fallback;
+        }
+
+        /// <summary>
+        /// Checks if a selection's source entry is collective by resolving through
+        /// the entry chain. Used for per-model constraint counting.
+        /// </summary>
+        private static bool IsChildCollective(SelectionSymbol child)
+        {
+            try
+            {
+                var sourceEntry = child.SourceEntry;
+                if (sourceEntry is null) return false;
+                // Check the source entry itself
+                if (sourceEntry.IsCollective) return true;
+                // Check through the effective entry chain (for entry links to collective targets)
+                ISelectionEntryContainerSymbol current = sourceEntry;
+                for (var depth = 0; depth < 32 && current.ReferencedEntry is { } referenced; depth++)
+                {
+                    if (referenced.IsCollective) return true;
+                    current = referenced;
+                }
+                return current.IsCollective;
+            }
+            catch
+            {
+                return false;
+            }
         }
     }
 }

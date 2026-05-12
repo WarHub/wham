@@ -164,6 +164,8 @@ internal static class ErrorSymbols
 
     internal record ErrorSelectionEntryContainerSymbol : ErrorContainerEntrySymbol, ISelectionEntryContainerSymbol
     {
+        bool ISelectionEntryContainerSymbol.IsCollective => false;
+
         ICategoryEntrySymbol? ISelectionEntryContainerSymbol.PrimaryCategory => null;
 
         ImmutableArray<ICategoryEntrySymbol> ISelectionEntryContainerSymbol.Categories =>

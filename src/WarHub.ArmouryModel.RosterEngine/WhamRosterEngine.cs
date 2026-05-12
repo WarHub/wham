@@ -304,14 +304,23 @@ public sealed class WhamRosterEngine
     /// categories, and recursively auto-selected child entries (those with min ≥ 1
     /// constraints on <c>selections</c> in <c>parent</c> scope).
     /// </summary>
+    /// <param name="entry">The entry symbol to create a selection for.</param>
+    /// <param name="sourceGroup">The group this entry was flattened from, if any.</param>
+    /// <param name="linkPrefix">
+    /// The accumulated link prefix from parent links above this entry.
+    /// Propagated to child entries so that their <c>entryId</c> values are correctly
+    /// prefixed with all link IDs in the hierarchy above them.
+    /// </param>
     private SelectionNode CreateSelectionWithAutoChildren(
         ISelectionEntryContainerSymbol entry,
-        ISelectionEntryGroupSymbol? sourceGroup)
+        ISelectionEntryGroupSymbol? sourceGroup,
+        string linkPrefix = "")
     {
-        var selectionNode = CreateSelectionNode(entry, sourceGroup);
+        var selectionNode = CreateSelectionNode(entry, sourceGroup, linkPrefix);
 
         // Auto-select child entries that have a minimum constraint ≥ 1.
-        var childEntries = EntryResolver.GetChildEntries(entry);
+        // Pass linkPrefix so GetChildEntries computes each child's LinkPrefix correctly.
+        var childEntries = EntryResolver.GetChildEntries(entry, linkPrefix);
 
         // Track which groups we've already auto-selected for (to avoid duplicates)
         var autoSelectedGroups = new HashSet<string>(StringComparer.Ordinal);
@@ -341,7 +350,8 @@ public sealed class WhamRosterEngine
             }
 
             // Create one child selection with Number set to the min count.
-            var childSelection = CreateSelectionWithAutoChildren(child.Symbol, child.SourceGroup);
+            // Use child.LinkPrefix so the child's entryId is correctly prefixed.
+            var childSelection = CreateSelectionWithAutoChildren(child.Symbol, child.SourceGroup, child.LinkPrefix);
             if (autoCount > 1)
             {
                 childSelection = childSelection.WithNumber(autoCount);
@@ -412,9 +422,16 @@ public sealed class WhamRosterEngine
     /// Resolves the backing <see cref="SelectionEntryNode"/> declaration through links,
     /// then populates costs and categories.
     /// </summary>
+    /// <param name="entry">The entry symbol to create a selection for.</param>
+    /// <param name="sourceGroup">The group this entry was flattened from, if any.</param>
+    /// <param name="linkPrefix">
+    /// The accumulated link prefix from parent links above this entry.
+    /// Prepended to the entry's own ID path to form the composite <c>entryId</c>.
+    /// </param>
     private static SelectionNode CreateSelectionNode(
         ISelectionEntryContainerSymbol entry,
-        ISelectionEntryGroupSymbol? sourceGroup)
+        ISelectionEntryGroupSymbol? sourceGroup,
+        string linkPrefix = "")
     {
         var entryDecl = ResolveToEntryDeclaration(entry)
             ?? throw new ArgumentException(
@@ -425,8 +442,11 @@ public sealed class WhamRosterEngine
         // For entry links, use "linkId::targetId" so the binder resolves
         // SourceEntryPath = [link, target] with SourceEntry = target.
         // For direct entries, use just the entry's ID.
-        var entryId = BuildEntryIdPath(entry);
-        var entryGroupId = sourceGroup?.Id;
+        // When a linkPrefix is present (from parent links), it is prepended.
+        var entryId = BuildEntryIdPath(entry, linkPrefix);
+        var entryGroupId = sourceGroup is null
+            ? null
+            : EntryResolver.JoinLinkPrefix(linkPrefix, sourceGroup.Id!);
 
         var selectionNode = NodeFactory.Selection(entryDecl, entryId, entryGroupId);
 
@@ -486,16 +506,25 @@ public sealed class WhamRosterEngine
     /// <c>"::"</c>-separated path format. For entry links, the path is
     /// <c>"linkId::targetId"</c> so that the binder produces
     /// <c>SourceEntryPath = [link, resolvedTarget]</c>. For direct entries,
-    /// returns just the entry's own ID.
+    /// returns just the entry's own ID. When a <paramref name="linkPrefix"/> is provided
+    /// (from parent links higher in the hierarchy), it is prepended to the built path.
     /// </summary>
-    private static string BuildEntryIdPath(ISelectionEntryContainerSymbol entry)
+    private static string BuildEntryIdPath(
+        ISelectionEntryContainerSymbol entry,
+        string linkPrefix = "")
     {
+        string myPath;
         if (entry.ReferencedEntry is { Id: { } targetId })
         {
             var linkId = entry.Id ?? "";
-            return $"{linkId}{EntryLinkIdSeparator}{targetId}";
+            myPath = $"{linkId}{EntryLinkIdSeparator}{targetId}";
         }
-        return entry.Id ?? "";
+        else
+        {
+            myPath = entry.Id ?? "";
+        }
+
+        return EntryResolver.JoinLinkPrefix(linkPrefix, myPath);
     }
 
     /// <summary>
@@ -645,6 +674,70 @@ public sealed class WhamRosterEngine
                 yield return c;
             }
         }
+    }
+
+    // ──────────────────────────────────────────────────────────────────────
+    //  Collective entry helpers
+    // ──────────────────────────────────────────────────────────────────────
+
+    /// <summary>
+    /// Checks whether the resolved source entry for a symbol is collective.
+    /// Resolves through links to check the target entry.
+    /// </summary>
+    private static bool IsEntryCollective(ISelectionEntryContainerSymbol entry)
+    {
+        var resolved = EntryResolver.ResolveEntry(entry);
+        return resolved.IsCollective;
+    }
+
+    /// <summary>
+    /// Determines if an entry uses "number-increment" mode for repeated selections.
+    /// An entry is number-increment when ALL of its resolved children are either
+    /// collective or hidden. If any child is non-collective AND visible, the entry
+    /// uses "separate-node" mode instead.
+    /// </summary>
+    private static bool IsNumberIncrementEntry(ISelectionEntryContainerSymbol entry)
+    {
+        var resolved = EntryResolver.ResolveEntry(entry);
+        return AreAllChildrenCollectiveOrHidden(resolved);
+
+        static bool AreAllChildrenCollectiveOrHidden(ISelectionEntryContainerSymbol e)
+        {
+            foreach (var child in e.ChildSelectionEntries)
+            {
+                var childResolved = EntryResolver.ResolveEntry(child);
+                if (!childResolved.IsCollective && !childResolved.IsHidden)
+                    return false;
+                // Recursively check groups (their flattened children)
+                if (childResolved.ContainerKind == ContainerKind.SelectionGroup
+                    && !AreAllChildrenCollectiveOrHidden(childResolved))
+                    return false;
+            }
+            return true;
+        }
+    }
+
+    /// <summary>
+    /// Recursively scales all child selections proportionally when a parent's number changes.
+    /// Each child's new number = child.Number × newParentNumber / oldParentNumber.
+    /// </summary>
+    private static SelectionNode ScaleChildSelections(SelectionNode sel, int oldNumber, int newNumber)
+    {
+        if (oldNumber == newNumber || oldNumber == 0 || sel.Selections.Count == 0)
+            return sel;
+
+        var newChildren = new List<SelectionNode>(sel.Selections.Count);
+        foreach (var child in sel.Selections)
+        {
+            var scaledChildNumber = child.Number * newNumber / oldNumber;
+            if (scaledChildNumber < 1) scaledChildNumber = 1;
+            var scaledChild = child.WithNumber(scaledChildNumber);
+            // Recurse into grandchildren
+            scaledChild = ScaleChildSelections(scaledChild, child.Number, scaledChildNumber);
+            newChildren.Add(scaledChild);
+        }
+
+        return sel.WithSelections(sel.Selections.WithNodes(NodeList.Create(newChildren)));
     }
 
     // ──────────────────────────────────────────────────────────────────────
@@ -1022,7 +1115,7 @@ public sealed class WhamRosterEngine
         var available = EntryResolver.GetAvailableEntries(catalogue);
         var avail = EntryResolver.FindByEntryId(available, entryId);
 
-        var selectionNode = CreateSelectionWithAutoChildren(avail.Symbol, avail.SourceGroup);
+        var selectionNode = CreateSelectionWithAutoChildren(avail.Symbol, avail.SourceGroup, avail.LinkPrefix);
         var newForce = force.AddSelections(selectionNode);
         var newRoster = roster.Replace(force, _ => newForce).WithUpdatedCostTotals();
         var newState = state.ReplaceRoster(newRoster);
@@ -1058,10 +1151,69 @@ public sealed class WhamRosterEngine
                 $"Selection symbol '{parentSelectionId}' not found in force '{forceId}'.");
 
         var parentEntry = selectionSymbol.SourceEntry;
-        var childEntries = EntryResolver.GetChildEntries(parentEntry);
+
+        // Derive the link prefix accumulated up to the parent entry.
+        // The parent's entryId is a "linkId::targetId" (or "l1::l2::target") path;
+        // strip the last segment to recover the prefix used to reach parentEntry.
+        var parentEntryId = parentSel.EntryId ?? "";
+        var lastSep = parentEntryId.LastIndexOf("::", StringComparison.Ordinal);
+        var linkPrefix = lastSep >= 0 ? parentEntryId[..lastSep] : "";
+
+        var childEntries = EntryResolver.GetChildEntries(parentEntry, linkPrefix);
         var childAvail = EntryResolver.FindByEntryId(childEntries, entryId);
 
-        var childSelectionNode = CreateSelectionWithAutoChildren(childAvail.Symbol, childAvail.SourceGroup);
+        // isDuplicate: if the child entry has only collective/hidden children,
+        // repeated selectChildEntry increments the existing child's number.
+        if (IsNumberIncrementEntry(childAvail.Symbol))
+        {
+            foreach (var existingChild in parentSel.Selections)
+            {
+                if (existingChild.EntryId == entryId)
+                {
+                    // For collective entries, increment by parent's number (one per model).
+                    var increment = IsEntryCollective(childAvail.Symbol) ? parentSel.Number : 1;
+                    var newNumber = existingChild.Number + increment;
+                    var newSel = ScaleChildSelections(existingChild, existingChild.Number, newNumber)
+                        .WithNumber(newNumber);
+                    var newParentInc = parentSel.Replace(existingChild, _ => newSel);
+                    var newRosterInc = roster.Replace(parentSel, _ => newParentInc).WithUpdatedCostTotals();
+                    return new MutationResult(state.ReplaceRoster(newRosterInc))
+                    {
+                        SelectionId = newSel.Id,
+                        Selections = MutationResult.CollectSelectionMap(newSel)
+                    };
+                }
+            }
+        }
+
+        // If a child with this entryId was already auto-selected to satisfy a min constraint,
+        // return it as-is (no-op) instead of creating a duplicate.
+        var entryMin = GetMinSelectionCount(childAvail.Symbol);
+        if (entryMin >= 1)
+        {
+            foreach (var existingChild in parentSel.Selections)
+            {
+                if (existingChild.EntryId == entryId && existingChild.Number <= entryMin)
+                {
+                    return new MutationResult(state)
+                    {
+                        SelectionId = existingChild.Id,
+                        Selections = MutationResult.CollectSelectionMap(existingChild)
+                    };
+                }
+            }
+        }
+
+        var childSelectionNode = CreateSelectionWithAutoChildren(childAvail.Symbol, childAvail.SourceGroup, childAvail.LinkPrefix);
+
+        // Collective child: inherit parent's number.
+        if (IsEntryCollective(childAvail.Symbol) && parentSel.Number > 1)
+        {
+            var inheritedNumber = parentSel.Number;
+            childSelectionNode = ScaleChildSelections(childSelectionNode, childSelectionNode.Number, inheritedNumber)
+                .WithNumber(inheritedNumber);
+        }
+
         var newParent = parentSel.AddSelections(childSelectionNode);
         var newRoster = roster.Replace(parentSel, _ => newParent).WithUpdatedCostTotals();
         var newState = state.ReplaceRoster(newRoster);
@@ -1075,6 +1227,8 @@ public sealed class WhamRosterEngine
 
     /// <summary>
     /// Removes a selection by ID from a force (any nesting depth).
+    /// For collective entries, removes one per model (subtracts parent's number).
+    /// If the resulting count is zero or below, removes the node entirely.
     /// </summary>
     public RosterState DeselectSelectionById(
         RosterState state,
@@ -1084,8 +1238,37 @@ public sealed class WhamRosterEngine
         var roster = state.RosterRequired;
         var force = FindForceDeepRequired(roster, forceId);
         var selNode = FindSelectionDeepRequired(force, forceId, selectionId);
-        var newRoster = roster.Remove(selNode).WithUpdatedCostTotals();
-        return state.ReplaceRoster(newRoster);
+
+        // Check if this is a collective entry with a parent.
+        var rosterSymbol = state.RosterSymbol;
+        if (rosterSymbol is not null)
+        {
+            var forceSymbol = FindForceSymbolDeep(rosterSymbol, forceId);
+            if (forceSymbol is not null)
+            {
+                var selSymbol = FindSelectionSymbolDeep(forceSymbol, selectionId);
+                if (selSymbol is not null && IsEntryCollective(selSymbol.SourceEntry))
+                {
+                    var parentSel = FindParentSelection(force, selectionId);
+                    if (parentSel is not null && parentSel.Number > 0)
+                    {
+                        var newNumber = selNode.Number - parentSel.Number;
+                        if (newNumber > 0)
+                        {
+                            // Reduce count, scale children down proportionally.
+                            var newSelNode = ScaleChildSelections(selNode, selNode.Number, newNumber)
+                                .WithNumber(newNumber);
+                            var newRoster = roster.Replace(selNode, _ => newSelNode).WithUpdatedCostTotals();
+                            return state.ReplaceRoster(newRoster);
+                        }
+                        // Otherwise fall through to remove entirely.
+                    }
+                }
+            }
+        }
+
+        var removedRoster = roster.Remove(selNode).WithUpdatedCostTotals();
+        return state.ReplaceRoster(removedRoster);
     }
 
     /// <summary>
@@ -1124,7 +1307,9 @@ public sealed class WhamRosterEngine
     }
 
     /// <summary>
-    /// Sets the selection count by ID.
+    /// Sets the selection count by ID. For collective entries, the count is
+    /// per-model (multiplied by the parent's number). When any selection's
+    /// number changes, all children scale proportionally.
     /// </summary>
     public RosterState SetSelectionCountById(
         RosterState state,
@@ -1136,7 +1321,31 @@ public sealed class WhamRosterEngine
         var force = FindForceDeepRequired(roster, forceId);
         var selNode = FindSelectionDeepRequired(force, forceId, selectionId);
 
-        var newSelNode = selNode.WithNumber(count);
+        var oldNumber = selNode.Number;
+        var actualNumber = count;
+
+        // For collective entries, count is per-model: multiply by parent's number.
+        var rosterSymbol = state.RosterSymbol;
+        if (rosterSymbol is not null)
+        {
+            var forceSymbol = FindForceSymbolDeep(rosterSymbol, forceId);
+            if (forceSymbol is not null)
+            {
+                var selSymbol = FindSelectionSymbolDeep(forceSymbol, selectionId);
+                if (selSymbol is not null && IsEntryCollective(selSymbol.SourceEntry))
+                {
+                    var parentSel = FindParentSelection(force, selectionId);
+                    if (parentSel is not null)
+                    {
+                        actualNumber = count * parentSel.Number;
+                    }
+                }
+            }
+        }
+
+        // Scale children proportionally when the number changes.
+        var newSelNode = ScaleChildSelections(selNode, oldNumber, actualNumber)
+            .WithNumber(actualNumber);
         var newRoster = roster.Replace(selNode, _ => newSelNode).WithUpdatedCostTotals();
         return state.ReplaceRoster(newRoster);
     }

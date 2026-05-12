@@ -38,6 +38,7 @@ internal sealed class EffectiveSelectionEntrySymbol : EffectiveContainerEntrySym
     public ICategoryEntrySymbol? PrimaryCategory { get; }
 
     // Delegated from ISelectionEntryContainerSymbol
+    public bool IsCollective => OriginalEntry.IsCollective;
     public ImmutableArray<ISelectionEntryContainerSymbol> ChildSelectionEntries => OriginalEntry.ChildSelectionEntries;
 
     // ISelectionEntryContainerSymbol.ReferencedEntry (explicit for `new` member)

@@ -701,11 +701,15 @@ internal sealed class ModifierEvaluator
         {
             QueryScopeKind.Self => GetSelfSelections(context),
             QueryScopeKind.Parent => GetParentSelections(context),
-            QueryScopeKind.ContainingForce => GetForceSelections(context),
+            QueryScopeKind.ContainingForce => GetForceSelections(context,
+                includeDescendantForces: query.Options.HasFlag(QueryOptions.IncludeDescendantForces)),
             QueryScopeKind.ContainingRoster => GetRosterSelections(),
             QueryScopeKind.ContainingAncestor => GetAncestorSelections(query, context),
             QueryScopeKind.ReferencedEntry => GetReferencedEntrySelections(query),
             QueryScopeKind.PrimaryCategory => GetPrimaryCategorySelections(context),
+            // primary-catalogue scope: count across all selections in the force's primary catalogue.
+            // Since a force's catalogue IS its primary catalogue, this is equivalent to force scope.
+            QueryScopeKind.PrimaryCatalogue => GetForceSelections(context),
             _ => [],
         };
     }
@@ -743,7 +747,7 @@ internal sealed class ModifierEvaluator
         }
     }
 
-    private IEnumerable<ISelectionSymbol> GetForceSelections(EvalContext context)
+    private IEnumerable<ISelectionSymbol> GetForceSelections(EvalContext context, bool includeDescendantForces = false)
     {
         if (context.Force is null)
             yield break;
@@ -753,6 +757,27 @@ internal sealed class ModifierEvaluator
             yield return sel;
             foreach (var desc in GetDescendantSelections(sel))
                 yield return desc;
+        }
+
+        if (includeDescendantForces)
+        {
+            foreach (var sel in GetChildForceSelections(context.Force))
+                yield return sel;
+        }
+    }
+
+    private static IEnumerable<ISelectionSymbol> GetChildForceSelections(IForceSymbol force)
+    {
+        foreach (var childForce in force.Forces)
+        {
+            foreach (var sel in childForce.Selections)
+            {
+                yield return sel;
+                foreach (var desc in GetDescendantSelections(sel))
+                    yield return desc;
+            }
+            foreach (var sel in GetChildForceSelections(childForce))
+                yield return sel;
         }
     }
 
@@ -938,8 +963,12 @@ internal sealed class ModifierEvaluator
         if (filterId is null)
             return false;
 
+        // shared=true: segment-based matching (any segment of "linkId::targetId" can match)
+        // shared=false: exact matching only (composite IDs like "link::target" won't match base "target")
+        bool isShared = query.Options.HasFlag(QueryOptions.SharedConstraint);
+
         // Check if selection's entry matches
-        if (MatchesEntryOrGroup(sel, filterId))
+        if (isShared ? MatchesEntryOrGroup(sel, filterId) : MatchesEntryOrGroupExact(sel, filterId))
             return true;
 
         // Check if selection has a category matching the filter
@@ -947,6 +976,13 @@ internal sealed class ModifierEvaluator
             return true;
 
         return false;
+    }
+
+    private static bool MatchesEntryOrGroupExact(ISelectionSymbol sel, string id)
+    {
+        if (sel.EntryGroupId == id)
+            return true;
+        return sel.EntryId == id;
     }
 
     private static bool MatchesEntry(ISelectionSymbol sel, string? entryId)
@@ -992,6 +1028,17 @@ internal sealed class ModifierEvaluator
                 return 0;
 
             var value = CalculateQueryValue(query, context);
+
+            // percentValue: scale referenceValue to an absolute threshold
+            // e.g. value=25, total=5 → threshold=5*25/100=1.25; count=4; floor(4/1.25)=3
+            if (query.Options.HasFlag(QueryOptions.ValuePercentage))
+            {
+                var total = CountTotalSelectionsInScope(query, context);
+                referenceValue = total * referenceValue / 100m;
+                if (referenceValue == 0)
+                    return 0;
+            }
+
             var roundUp = query.Options.HasFlag(QueryOptions.ValueRoundUp);
 
             var repeats = value / referenceValue;
@@ -1000,15 +1047,13 @@ internal sealed class ModifierEvaluator
         }
 
         // Check repeat children (ModifierEffectBaseSymbol.Effects → RepeatEffectSymbol)
+        // Multiple repeats are additive: total = sum of each child's repeat count.
         if (effect.Effects.Length > 0)
         {
-            int totalRepeats = 1;
+            int totalRepeats = 0;
             foreach (var repeatEffect in effect.Effects)
             {
-                var childRepeat = GetRepeatCount(repeatEffect, context);
-                if (childRepeat == 0)
-                    return 0; // Any zero repeat means skip entirely
-                totalRepeats = childRepeat;
+                totalRepeats += GetRepeatCount(repeatEffect, context);
             }
             return totalRepeats;
         }
