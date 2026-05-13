@@ -23,7 +23,6 @@ internal static class SelectionOrdering
     /// </summary>
     internal static ImmutableArray<ISelectionSymbol> GetSortedSelections(IForceSymbol force)
     {
-        // Build category order map from force's category list
         var categoryOrder = new Dictionary<string, int>(StringComparer.Ordinal);
         for (int i = 0; i < force.Categories.Length; i++)
         {
@@ -32,20 +31,7 @@ internal static class SelectionOrdering
                 categoryOrder[catEntryId] = i;
         }
 
-        return force.Selections
-            .Sort((a, b) =>
-            {
-                var aCatId = a.PrimaryCategory?.SourceEntry?.Id;
-                var bCatId = b.PrimaryCategory?.SourceEntry?.Id;
-                int aOrder = aCatId is not null && categoryOrder.TryGetValue(aCatId, out var ao) ? ao : -1;
-                int bOrder = bCatId is not null && categoryOrder.TryGetValue(bCatId, out var bo) ? bo : -1;
-                var cmp = aOrder.CompareTo(bOrder);
-                if (cmp != 0) return cmp;
-                // Sort by effective (modifier-applied) name, with original entry name as tiebreaker
-                cmp = NaturalSort.Compare(a.EffectiveSourceEntry.Name, b.EffectiveSourceEntry.Name);
-                if (cmp != 0) return cmp;
-                return NaturalSort.Compare(a.SourceEntry?.Name ?? a.Name, b.SourceEntry?.Name ?? b.Name);
-            });
+        return force.Selections.Sort(new ForceSelectionComparer(categoryOrder));
     }
 
     /// <summary>
@@ -55,13 +41,7 @@ internal static class SelectionOrdering
     /// </summary>
     internal static ImmutableArray<ISelectionSymbol> GetSortedChildSelections(ISelectionSymbol parent)
     {
-        return parent.Selections
-            .Sort((a, b) =>
-            {
-                var cmp = NaturalSort.Compare(a.EffectiveSourceEntry.Name, b.EffectiveSourceEntry.Name);
-                if (cmp != 0) return cmp;
-                return NaturalSort.Compare(a.SourceEntry?.Name ?? a.Name, b.SourceEntry?.Name ?? b.Name);
-            });
+        return parent.Selections.Sort(SelectionNameComparer.Instance);
     }
 
     /// <summary>
@@ -69,6 +49,66 @@ internal static class SelectionOrdering
     /// </summary>
     internal static ImmutableArray<IForceSymbol> GetSortedForces(IForceContainerSymbol container)
     {
-        return container.Forces.Sort((a, b) => NaturalSort.Compare(a.Name, b.Name));
+        return container.Forces.Sort(ForceNameComparer.Instance);
+    }
+
+    /// <summary>
+    /// Compares selections by effective name (natural sort), with original entry name as tiebreaker
+    /// only when modifiers have changed at least one name.
+    /// </summary>
+    internal sealed class SelectionNameComparer : IComparer<ISelectionSymbol>
+    {
+        public static SelectionNameComparer Instance { get; } = new();
+
+        public int Compare(ISelectionSymbol? a, ISelectionSymbol? b)
+        {
+            if (ReferenceEquals(a, b)) return 0;
+            if (a is null) return -1;
+            if (b is null) return 1;
+            var cmp = NaturalSort.Compare(a.EffectiveSourceEntry.Name, b.EffectiveSourceEntry.Name);
+            if (cmp != 0) return cmp;
+            if (a.EffectiveSourceEntry.Name != a.SourceEntry?.Name
+                || b.EffectiveSourceEntry.Name != b.SourceEntry?.Name)
+            {
+                return NaturalSort.Compare(a.SourceEntry?.Name ?? a.Name, b.SourceEntry?.Name ?? b.Name);
+            }
+            return 0;
+        }
+    }
+
+    /// <summary>
+    /// Compares force-level selections by category order first, then by name.
+    /// </summary>
+    internal sealed class ForceSelectionComparer(Dictionary<string, int> categoryOrder) : IComparer<ISelectionSymbol>
+    {
+        public int Compare(ISelectionSymbol? a, ISelectionSymbol? b)
+        {
+            if (ReferenceEquals(a, b)) return 0;
+            if (a is null) return -1;
+            if (b is null) return 1;
+            var aCatId = a.PrimaryCategory?.SourceEntry?.Id;
+            var bCatId = b.PrimaryCategory?.SourceEntry?.Id;
+            int aOrder = aCatId is not null && categoryOrder.TryGetValue(aCatId, out var ao) ? ao : -1;
+            int bOrder = bCatId is not null && categoryOrder.TryGetValue(bCatId, out var bo) ? bo : -1;
+            var cmp = aOrder.CompareTo(bOrder);
+            if (cmp != 0) return cmp;
+            return SelectionNameComparer.Instance.Compare(a, b);
+        }
+    }
+
+    /// <summary>
+    /// Compares forces by name (natural sort).
+    /// </summary>
+    internal sealed class ForceNameComparer : IComparer<IForceSymbol>
+    {
+        public static ForceNameComparer Instance { get; } = new();
+
+        public int Compare(IForceSymbol? a, IForceSymbol? b)
+        {
+            if (ReferenceEquals(a, b)) return 0;
+            if (a is null) return -1;
+            if (b is null) return 1;
+            return NaturalSort.Compare(a.Name, b.Name);
+        }
     }
 }

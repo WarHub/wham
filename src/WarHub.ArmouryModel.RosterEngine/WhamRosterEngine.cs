@@ -944,6 +944,33 @@ public sealed class WhamRosterEngine
     //  larger, consider building an ID-to-symbol index.
     // ──────────────────────────────────────────────────────────────────────
 
+    /// <summary>
+    /// Finds force and selection symbols for a given force/selection ID pair.
+    /// Returns nulls for any part not found or when roster symbol is unavailable.
+    /// </summary>
+    private static SelectionContext FindSelectionContext(
+        IRosterSymbol? rosterSymbol, string forceId, string selectionId)
+    {
+        if (rosterSymbol is null)
+            return default;
+        var forceSymbol = FindForceSymbolDeep(rosterSymbol, forceId);
+        if (forceSymbol is null)
+            return default;
+        var selSymbol = FindSelectionSymbolDeep(forceSymbol, selectionId);
+        return new(forceSymbol, selSymbol);
+    }
+
+    private readonly record struct SelectionContext(
+        IForceSymbol? Force,
+        ISelectionSymbol? Selection)
+    {
+        /// <summary>
+        /// The parent selection, or null if this is a force-level selection.
+        /// </summary>
+        public ISelectionSymbol? ParentSelection =>
+            Selection?.ContainingSymbol as ISelectionSymbol;
+    }
+
     private static IForceSymbol? FindForceSymbolDeep(IRosterSymbol roster, string forceId)
     {
         foreach (var force in roster.Forces)
@@ -1239,30 +1266,19 @@ public sealed class WhamRosterEngine
         var force = FindForceDeepRequired(roster, forceId);
         var selNode = FindSelectionDeepRequired(force, forceId, selectionId);
 
-        // Check if this is a collective entry with a parent.
-        var rosterSymbol = state.RosterSymbol;
-        if (rosterSymbol is not null)
+        var ctx = FindSelectionContext(state.RosterSymbol, forceId, selectionId);
+        if (ctx.Selection is not null && IsEntryCollective(ctx.Selection.SourceEntry))
         {
-            var forceSymbol = FindForceSymbolDeep(rosterSymbol, forceId);
-            if (forceSymbol is not null)
+            var parentNumber = ctx.ParentSelection?.SelectedCount ?? 0;
+            if (parentNumber > 0)
             {
-                var selSymbol = FindSelectionSymbolDeep(forceSymbol, selectionId);
-                if (selSymbol is not null && IsEntryCollective(selSymbol.SourceEntry))
+                var newNumber = selNode.Number - parentNumber;
+                if (newNumber > 0)
                 {
-                    var parentSel = FindParentSelection(force, selectionId);
-                    if (parentSel is not null && parentSel.Number > 0)
-                    {
-                        var newNumber = selNode.Number - parentSel.Number;
-                        if (newNumber > 0)
-                        {
-                            // Reduce count, scale children down proportionally.
-                            var newSelNode = ScaleChildSelections(selNode, selNode.Number, newNumber)
-                                .WithNumber(newNumber);
-                            var newRoster = roster.Replace(selNode, _ => newSelNode).WithUpdatedCostTotals();
-                            return state.ReplaceRoster(newRoster);
-                        }
-                        // Otherwise fall through to remove entirely.
-                    }
+                    var newSelNode = ScaleChildSelections(selNode, selNode.Number, newNumber)
+                        .WithNumber(newNumber);
+                    var newRoster = roster.Replace(selNode, _ => newSelNode).WithUpdatedCostTotals();
+                    return state.ReplaceRoster(newRoster);
                 }
             }
         }
@@ -1324,23 +1340,11 @@ public sealed class WhamRosterEngine
         var oldNumber = selNode.Number;
         var actualNumber = count;
 
-        // For collective entries, count is per-model: multiply by parent's number.
-        var rosterSymbol = state.RosterSymbol;
-        if (rosterSymbol is not null)
+        var ctx = FindSelectionContext(state.RosterSymbol, forceId, selectionId);
+        if (ctx.Selection is not null && IsEntryCollective(ctx.Selection.SourceEntry)
+            && ctx.ParentSelection is { } parentSel)
         {
-            var forceSymbol = FindForceSymbolDeep(rosterSymbol, forceId);
-            if (forceSymbol is not null)
-            {
-                var selSymbol = FindSelectionSymbolDeep(forceSymbol, selectionId);
-                if (selSymbol is not null && IsEntryCollective(selSymbol.SourceEntry))
-                {
-                    var parentSel = FindParentSelection(force, selectionId);
-                    if (parentSel is not null)
-                    {
-                        actualNumber = count * parentSel.Number;
-                    }
-                }
-            }
+            actualNumber = count * parentSel.SelectedCount;
         }
 
         // Scale children proportionally when the number changes.

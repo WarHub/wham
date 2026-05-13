@@ -617,8 +617,8 @@ internal sealed class ModifierEvaluator
                 && query.FilterSymbol is ICategoryEntrySymbol)
             {
                 var selections = query.ScopeKind == QueryScopeKind.ContainingForce
-                    ? GetForceSelections(context)
-                    : GetRosterSelections();
+                    ? ForceSelections(context.Force!)
+                    : RosterSelections();
                 return CheckScopeInstanceOf(query, selections);
             }
             return false;
@@ -695,32 +695,69 @@ internal sealed class ModifierEvaluator
         };
     }
 
-    private IEnumerable<ISelectionSymbol> GetSelectionsInScope(IQuerySymbol query, EvalContext context)
+    // ──────────────────────────────────────────────────────────────────
+    //  Layer 1: Tree traversal primitives (pure, static, reusable)
+    // ──────────────────────────────────────────────────────────────────
+
+    /// <summary>
+    /// Yields a selection and all its recursive descendants (subtree flattened).
+    /// </summary>
+    private static IEnumerable<ISelectionSymbol> SelectionWithDescendants(ISelectionSymbol selection)
     {
-        return query.ScopeKind switch
+        yield return selection;
+        foreach (var child in selection.Selections)
         {
-            QueryScopeKind.Self => GetSelfSelections(context),
-            QueryScopeKind.Parent => GetParentSelections(context),
-            QueryScopeKind.ContainingForce => GetForceSelections(context,
-                includeDescendantForces: query.Options.HasFlag(QueryOptions.IncludeDescendantForces)),
-            QueryScopeKind.ContainingRoster => GetRosterSelections(),
-            QueryScopeKind.ContainingAncestor => GetAncestorSelections(query, context),
-            QueryScopeKind.ReferencedEntry => GetReferencedEntrySelections(query),
-            QueryScopeKind.PrimaryCategory => GetPrimaryCategorySelections(context),
-            // primary-catalogue scope: count across all selections in the force's primary catalogue.
-            // Since a force's catalogue IS its primary catalogue, this is equivalent to force scope.
-            QueryScopeKind.PrimaryCatalogue => GetForceSelections(context),
-            _ => [],
-        };
+            foreach (var desc in SelectionWithDescendants(child))
+                yield return desc;
+        }
     }
 
-    private IEnumerable<ISelectionSymbol> GetSelfSelections(EvalContext context)
+    /// <summary>
+    /// All selections under a single force, flattened (top-level + descendants).
+    /// </summary>
+    private static IEnumerable<ISelectionSymbol> ForceSelections(IForceSymbol force)
     {
-        if (context.Selection is { } sel)
-            yield return sel;
+        foreach (var sel in force.Selections)
+        {
+            foreach (var item in SelectionWithDescendants(sel))
+                yield return item;
+        }
     }
 
-    private IEnumerable<ISelectionSymbol> GetParentSelections(EvalContext context)
+    /// <summary>
+    /// All selections under a force and its descendant forces, flattened (recursive).
+    /// </summary>
+    private static IEnumerable<ISelectionSymbol> ForceSelectionsDeep(IForceSymbol force)
+    {
+        foreach (var item in ForceSelections(force))
+            yield return item;
+        foreach (var childForce in force.Forces)
+        {
+            foreach (var item in ForceSelectionsDeep(childForce))
+                yield return item;
+        }
+    }
+
+    /// <summary>
+    /// All selections in the roster across all forces (including nested forces).
+    /// </summary>
+    private IEnumerable<ISelectionSymbol> RosterSelections()
+    {
+        foreach (var force in _roster.Forces)
+        {
+            foreach (var item in ForceSelectionsDeep(force))
+                yield return item;
+        }
+    }
+
+    // ──────────────────────────────────────────────────────────────────
+    //  Layer 2: Context-aware scope resolution
+    // ──────────────────────────────────────────────────────────────────
+
+    /// <summary>
+    /// Direct children of the containing element (siblings in parent scope).
+    /// </summary>
+    private static IEnumerable<ISelectionSymbol> SiblingSelections(EvalContext context)
     {
         if (context.Selection is null)
         {
@@ -731,92 +768,42 @@ internal sealed class ModifierEvaluator
             }
             yield break;
         }
-        // Parent is just ContainingSymbol
         var parent = context.Selection.ContainingSymbol;
         if (parent is ISelectionSymbol parentSel)
         {
-            // Return siblings (parent's children)
             foreach (var s in parentSel.Selections)
                 yield return s;
         }
         else if (parent is IForceSymbol parentForce)
         {
-            // Root selection — parent is force, return force-level selections
             foreach (var s in parentForce.Selections)
                 yield return s;
         }
     }
 
-    private IEnumerable<ISelectionSymbol> GetForceSelections(EvalContext context, bool includeDescendantForces = false)
+    /// <summary>
+    /// Walk up ancestry to find matching entry, return its subtree.
+    /// Falls back to roster selections when no scopeId is specified.
+    /// </summary>
+    private IEnumerable<ISelectionSymbol> AncestorSelections(IQuerySymbol query, EvalContext context)
     {
-        if (context.Force is null)
-            yield break;
-
-        foreach (var sel in context.Force.Selections)
-        {
-            yield return sel;
-            foreach (var desc in GetDescendantSelections(sel))
-                yield return desc;
-        }
-
-        if (includeDescendantForces)
-        {
-            foreach (var sel in GetChildForceSelections(context.Force))
-                yield return sel;
-        }
-    }
-
-    private static IEnumerable<ISelectionSymbol> GetChildForceSelections(IForceSymbol force)
-    {
-        foreach (var childForce in force.Forces)
-        {
-            foreach (var sel in childForce.Selections)
-            {
-                yield return sel;
-                foreach (var desc in GetDescendantSelections(sel))
-                    yield return desc;
-            }
-            foreach (var sel in GetChildForceSelections(childForce))
-                yield return sel;
-        }
-    }
-
-    private IEnumerable<ISelectionSymbol> GetRosterSelections()
-    {
-        foreach (var force in _roster.Forces)
-        {
-            foreach (var sel in force.Selections)
-            {
-                yield return sel;
-                foreach (var desc in GetDescendantSelections(sel))
-                    yield return desc;
-            }
-        }
-    }
-
-    private IEnumerable<ISelectionSymbol> GetAncestorSelections(IQuerySymbol query, EvalContext context)
-    {
-        // Ancestor scope: walk up from current selection to find matching ancestor
         if (context.Selection is null || context.Force is null)
             yield break;
 
         var scopeId = query.ScopeSymbol?.Id;
         if (scopeId is null)
         {
-            // No specific ancestor — return roster-level selections
-            foreach (var sel in GetRosterSelections())
+            foreach (var sel in RosterSelections())
                 yield return sel;
             yield break;
         }
 
-        // Walk up ContainingSymbol chain looking for matching ancestor
         for (ISymbol? sym = context.Selection; sym is not null; sym = sym.ContainingSymbol)
         {
             if (sym is ISelectionSymbol selSym && MatchesEntryOrGroup(selSym, scopeId))
             {
-                yield return selSym;
-                foreach (var desc in GetDescendantSelections(selSym))
-                    yield return desc;
+                foreach (var item in SelectionWithDescendants(selSym))
+                    yield return item;
                 yield break;
             }
             if (sym is IForceSymbol)
@@ -824,46 +811,61 @@ internal sealed class ModifierEvaluator
         }
     }
 
-    private IEnumerable<ISelectionSymbol> GetReferencedEntrySelections(IQuerySymbol query)
+    // ──────────────────────────────────────────────────────────────────
+    //  Layer 3: Scope dispatch + scope filters
+    // ──────────────────────────────────────────────────────────────────
+
+    private IEnumerable<ISelectionSymbol> GetSelectionsInScope(IQuerySymbol query, EvalContext context)
     {
-        // Scope is a specific entry — find all selections matching that entry across the roster
+        return query.ScopeKind switch
+        {
+            QueryScopeKind.Self => context.Selection is { } s ? [s] : [],
+            QueryScopeKind.Parent => SiblingSelections(context),
+            QueryScopeKind.ContainingForce => context.Force is null ? [] :
+                query.Options.HasFlag(QueryOptions.IncludeDescendantForces)
+                    ? ForceSelectionsDeep(context.Force)
+                    : ForceSelections(context.Force),
+            QueryScopeKind.ContainingRoster => RosterSelections(),
+            QueryScopeKind.ContainingAncestor => AncestorSelections(query, context),
+            QueryScopeKind.ReferencedEntry => FilterByReferencedEntry(query),
+            QueryScopeKind.PrimaryCategory => FilterByPrimaryCategory(context),
+            QueryScopeKind.PrimaryCatalogue => context.Force is null ? [] : ForceSelections(context.Force),
+            _ => [],
+        };
+    }
+
+    /// <summary>
+    /// Roster selections filtered to those matching a referenced entry/group.
+    /// </summary>
+    private IEnumerable<ISelectionSymbol> FilterByReferencedEntry(IQuerySymbol query)
+    {
         var entryId = query.ScopeSymbol?.Id;
         if (entryId is null)
             yield break;
 
-        foreach (var sel in GetRosterSelections())
+        foreach (var sel in RosterSelections())
         {
             if (MatchesEntryOrGroup(sel, entryId))
                 yield return sel;
         }
     }
 
-    private IEnumerable<ISelectionSymbol> GetPrimaryCategorySelections(EvalContext context)
+    /// <summary>
+    /// Force selections filtered to those sharing the current selection's primary category.
+    /// </summary>
+    private IEnumerable<ISelectionSymbol> FilterByPrimaryCategory(EvalContext context)
     {
-        // Find the primary category of the current selection's root,
-        // then find all selections in the force with that category
         if (context.Selection is null || context.Force is null)
             yield break;
 
         var primaryCat = context.Selection.PrimaryCategory?.SourceEntry?.Id;
-
         if (primaryCat is null)
             yield break;
 
-        foreach (var sel in GetForceSelections(context))
+        foreach (var sel in ForceSelections(context.Force))
         {
             if (SelectionHasCategory(sel, primaryCat))
                 yield return sel;
-        }
-    }
-
-    private static IEnumerable<ISelectionSymbol> GetDescendantSelections(ISelectionSymbol sel)
-    {
-        foreach (var child in sel.Selections)
-        {
-            yield return child;
-            foreach (var desc in GetDescendantSelections(child))
-                yield return desc;
         }
     }
 

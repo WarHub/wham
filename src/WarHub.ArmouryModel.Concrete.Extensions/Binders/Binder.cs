@@ -157,14 +157,8 @@ internal class Binder
         return initialResult;
     }
 
-    internal ISymbol BindFilterEntrySymbol(SourceNode node, string? symbolId, QueryScopeKind scopeKind, BindingDiagnosticBag diagnostics)
-        => scopeKind switch
-        {
-            // primary-catalogue scope defines WHERE to count (in the force's primary catalogue),
-            // but the childId/filter still references a selection entry, same as other scopes.
-            // All scopes except ReferencedEntry use container entry lookup for the filter.
-            _ => BindSimple<IContainerEntrySymbol, ErrorSymbols.ErrorContainerEntrySymbol>(node, diagnostics, symbolId, LookupOptions.ContainerEntryOnly)
-        };
+    internal ISymbol BindFilterEntrySymbol(SourceNode node, string? symbolId, BindingDiagnosticBag diagnostics)
+        => BindSimple<IContainerEntrySymbol, ErrorSymbols.ErrorContainerEntrySymbol>(node, diagnostics, symbolId, LookupOptions.ContainerEntryOnly);
 
     internal ISymbol BindScopeEntrySymbol(SourceNode node, string? symbolId, BindingDiagnosticBag diagnostics) =>
         BindSimple<IContainerEntrySymbol, ErrorSymbols.ErrorContainerEntrySymbol>(node, diagnostics, symbolId, LookupOptions.ContainerEntryOnly);
