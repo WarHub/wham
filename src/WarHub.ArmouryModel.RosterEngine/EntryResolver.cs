@@ -116,7 +116,7 @@ public static class EntryResolver
 
         // If this entry is a link, children accumulate its ID into the prefix.
         var childPrefix = entry.ReferencedEntry is not null
-            ? JoinLinkPrefix(contextLinkPrefix, entry.Id!)
+            ? JoinLinkPrefix(contextLinkPrefix, entry.Id ?? "")
             : contextLinkPrefix;
 
         foreach (var child in effective.ChildSelectionEntries)
@@ -170,7 +170,7 @@ public static class EntryResolver
             // The target is a group — compute the prefix for the group's children.
             // If this entry is a link to the group, the link's ID is added to the prefix.
             var groupPrefix = entry.ReferencedEntry is not null
-                ? JoinLinkPrefix(parentLinkPrefix, entry.Id!)
+                ? JoinLinkPrefix(parentLinkPrefix, entry.Id ?? "")
                 : parentLinkPrefix;
             FlattenGroup(group, result, visited: null, groupLinkPrefix: groupPrefix);
         }
@@ -219,7 +219,7 @@ public static class EntryResolver
             {
                 // Nested group: if the child is a link to the group, extend the prefix.
                 var nestedPrefix = child.ReferencedEntry is not null
-                    ? JoinLinkPrefix(groupLinkPrefix, child.Id!)
+                    ? JoinLinkPrefix(groupLinkPrefix, child.Id ?? "")
                     : groupLinkPrefix;
                 FlattenGroup(childGroup, result, visited, nestedPrefix);
             }
@@ -238,9 +238,12 @@ public static class EntryResolver
     /// <summary>
     /// Joins a link prefix with an ID, using the "::" separator.
     /// When the prefix is empty, returns the ID directly.
+    /// When the ID is null or empty, returns the prefix unchanged (no-op).
     /// </summary>
     internal static string JoinLinkPrefix(string prefix, string id)
-        => string.IsNullOrEmpty(prefix) ? id : $"{prefix}::{id}";
+        => string.IsNullOrEmpty(id) ? prefix
+        : string.IsNullOrEmpty(prefix) ? id
+        : $"{prefix}::{id}";
 
     /// <summary>
     /// Follows the <see cref="ISelectionEntryContainerSymbol.ReferencedEntry"/> chain
