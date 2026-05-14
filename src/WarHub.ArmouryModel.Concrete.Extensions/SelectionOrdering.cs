@@ -70,9 +70,12 @@ internal static class SelectionOrdering
             if (a.EffectiveSourceEntry.Name != a.SourceEntry?.Name
                 || b.EffectiveSourceEntry.Name != b.SourceEntry?.Name)
             {
-                return NaturalSort.Compare(a.SourceEntry?.Name ?? a.Name, b.SourceEntry?.Name ?? b.Name);
+                cmp = NaturalSort.Compare(a.SourceEntry?.Name ?? a.Name, b.SourceEntry?.Name ?? b.Name);
+                if (cmp != 0) return cmp;
             }
-            return 0;
+            // Stable tiebreaker: compare by EntryId to ensure deterministic ordering
+            // when effective names match (ImmutableArray.Sort is unstable).
+            return string.Compare(a.EntryId, b.EntryId, StringComparison.Ordinal);
         }
     }
 

@@ -446,7 +446,7 @@ public sealed class WhamRosterEngine
         var entryId = BuildEntryIdPath(entry, linkPrefix);
         var entryGroupId = sourceGroup is null
             ? null
-            : EntryResolver.JoinLinkPrefix(linkPrefix, sourceGroup.Id!);
+            : EntryResolver.JoinLinkPrefix(linkPrefix, sourceGroup.Id ?? "");
 
         var selectionNode = NodeFactory.Selection(entryDecl, entryId, entryGroupId);
 
@@ -1192,11 +1192,15 @@ public sealed class WhamRosterEngine
 
         // isDuplicate: if the child entry has only collective/hidden children,
         // repeated selectChildEntry increments the existing child's number.
+        // Use the computed composite entryId for comparison, as stored selections
+        // use the composite form (e.g., "linkId::targetId") while the input entryId
+        // may be in raw form.
+        var compositeEntryId = EntryResolver.ComputeCompositeEntryId(childAvail);
         if (IsNumberIncrementEntry(childAvail.Symbol))
         {
             foreach (var existingChild in parentSel.Selections)
             {
-                if (existingChild.EntryId == entryId)
+                if (existingChild.EntryId == compositeEntryId)
                 {
                     // For collective entries, increment by parent's number (one per model).
                     var increment = IsEntryCollective(childAvail.Symbol) ? parentSel.Number : 1;
@@ -1221,7 +1225,7 @@ public sealed class WhamRosterEngine
         {
             foreach (var existingChild in parentSel.Selections)
             {
-                if (existingChild.EntryId == entryId && existingChild.Number <= entryMin)
+                if (existingChild.EntryId == compositeEntryId && existingChild.Number <= entryMin)
                 {
                     return new MutationResult(state)
                     {
@@ -1470,7 +1474,7 @@ public sealed class WhamRosterEngine
 
     /// <summary>
     /// Collects the set of category entry IDs declared on a force entry.
-    /// Returns null if the force has no categories (meaning no filtering needed for
+    /// Returns an empty set if the force has no categories (meaning no filtering needed for
     /// uncategorized entries, but categorized entries should NOT auto-select).
     /// </summary>
     private static HashSet<string>? GetForceCategoryIds(IForceEntrySymbol forceEntry)
