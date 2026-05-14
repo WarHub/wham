@@ -1038,8 +1038,9 @@ public sealed class WhamRosterEngine
         var newForce = roster.Forces[^1];
         var forceId = newForce.Id!;
 
-        // Auto-select root entries with min constraints
-        state = AutoSelectRootEntries(state, roster.Forces.Count - 1, catalogue);
+        // Auto-select root entries with min constraints, filtered by force categories
+        var forceCategoryIds = GetForceCategoryIds(forceEntry);
+        state = AutoSelectRootEntries(state, roster.Forces.Count - 1, catalogue, forceCategoryIds);
 
         // Build selections map from the force's final state
         var finalForce = state.RosterRequired.Forces[^1];
@@ -1425,7 +1426,8 @@ public sealed class WhamRosterEngine
     private RosterState AutoSelectRootEntries(
         RosterState state,
         int forceIndex,
-        ICatalogueSymbol catalogue)
+        ICatalogueSymbol catalogue,
+        HashSet<string>? forceCategoryIds)
     {
         var available = EntryResolver.GetAvailableEntries(catalogue);
         var autoSelectedGroups = new HashSet<string>(StringComparer.Ordinal);
@@ -1435,6 +1437,10 @@ public sealed class WhamRosterEngine
             var effectiveEntry = avail.Symbol.IsReference
                 ? avail.Symbol.ReferencedEntry ?? avail.Symbol
                 : avail.Symbol;
+
+            // Skip entries whose primary category is not in the force's categories.
+            if (forceCategoryIds is not null && !EntryMatchesForceCategories(effectiveEntry, forceCategoryIds))
+                continue;
 
             var minCount = GetMinAutoSelectCount(effectiveEntry);
 
@@ -1460,6 +1466,42 @@ public sealed class WhamRosterEngine
         }
 
         return state;
+    }
+
+    /// <summary>
+    /// Collects the set of category entry IDs declared on a force entry.
+    /// Returns null if the force has no categories (meaning no filtering needed for
+    /// uncategorized entries, but categorized entries should NOT auto-select).
+    /// </summary>
+    private static HashSet<string>? GetForceCategoryIds(IForceEntrySymbol forceEntry)
+    {
+        if (forceEntry.Categories.IsEmpty)
+            return new HashSet<string>(StringComparer.Ordinal);
+
+        var ids = new HashSet<string>(StringComparer.Ordinal);
+        foreach (var cat in forceEntry.Categories)
+        {
+            var target = cat.ReferencedEntry ?? cat;
+            if (target.Id is { } id)
+                ids.Add(id);
+        }
+        return ids;
+    }
+
+    /// <summary>
+    /// Checks if a root entry's primary category is among the force's declared categories.
+    /// Entries without a primary category are allowed in any force.
+    /// When the force has no categories, only uncategorized entries are allowed.
+    /// </summary>
+    private static bool EntryMatchesForceCategories(
+        ISelectionEntryContainerSymbol entry, HashSet<string> forceCategoryIds)
+    {
+        var primaryCat = entry.PrimaryCategory;
+        if (primaryCat is null)
+            return true; // uncategorized entries are available everywhere
+
+        var catTarget = primaryCat.ReferencedEntry ?? primaryCat;
+        return catTarget.Id is { } catId && forceCategoryIds.Contains(catId);
     }
 
     /// <summary>

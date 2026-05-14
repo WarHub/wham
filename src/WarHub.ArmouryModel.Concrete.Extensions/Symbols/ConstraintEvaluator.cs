@@ -162,6 +162,9 @@ internal static class ConstraintEvaluator
                 ? forceCatalogues[forceIndex]
                 : _compilation.GlobalNamespace.RootCatalogue;
 
+            // Collect force category IDs to filter constraint validation to relevant entries.
+            var forceCategoryIds = GetForceCategoryIds(force);
+
             var sharedChecked = new HashSet<(string constraintId, string entryId)>();
 
             // Walk root-level entries in the catalogue (not descendants)
@@ -170,10 +173,12 @@ internal static class ConstraintEvaluator
             {
                 var targetId = GetTargetEntryId(entry);
                 if (targetId is null) continue;
+
                 var isLink = entry.IsReference && entry.ReferencedEntry is not null;
                 var linkId = entry.Id; // link's own ID (same as targetId if not a link)
 
                 // Hidden entry validation: if entry is hidden but has selections, error
+                // This runs for ALL entries (not filtered by force categories)
                 if (IsEffectivelyHidden(entry, force))
                 {
                     var hiddenCountId = isLink ? linkId! : targetId;
@@ -184,6 +189,11 @@ internal static class ConstraintEvaluator
                             "selection", targetId, targetId, "hidden");
                     }
                 }
+
+                // Skip constraint validation for entries not relevant to this force.
+                var effectiveEntry = entry.ReferencedEntry ?? entry;
+                if (!EntryMatchesForceCategories(effectiveEntry, forceCategoryIds))
+                    continue;
 
                 // Collect all constraints: link's own + shared target's
                 var constraintSources = new List<(IConstraintSymbol constraint, string sourceEntryId, bool isShared)>();
@@ -435,6 +445,13 @@ internal static class ConstraintEvaluator
                     var effectiveAvailValues = GetEffectiveConstraintValues(targetEntry, null, force);
                     var currentCount = counts.GetValueOrDefault(countKey);
 
+                    // Hidden child entry validation: if child is hidden but has selections, error
+                    if (!isGroup && currentCount > 0 && IsEffectivelyHidden(targetEntry, force))
+                    {
+                        _diagnostics.Add(ErrorCode.WRN_MaxSelectionCountViolation, Location.None,
+                            "selection", parentEntryIdForLookup, parentEntryIdForLookup, "hidden");
+                    }
+
                     // Groups with selections still need max constraint evaluation;
                     // entries with selections are handled by the child-selection loop above.
                     if (!isGroup && counts.ContainsKey(countKey)) continue;
@@ -656,6 +673,42 @@ internal static class ConstraintEvaluator
                 foreach (var desc in FlattenSelections(sel.ChildSelections))
                     yield return desc;
             }
+        }
+
+        // ──────────────────────────────────────────────────────────────────
+        //  Force category filtering
+        // ──────────────────────────────────────────────────────────────────
+
+        /// <summary>
+        /// Collects the set of category IDs from a force's categories.
+        /// Forces with no categories return an empty set (meaning only
+        /// uncategorized entries should be evaluated).
+        /// </summary>
+        private static HashSet<string> GetForceCategoryIds(ForceSymbol force)
+        {
+            var ids = new HashSet<string>(StringComparer.Ordinal);
+            foreach (var cat in force.Categories)
+            {
+                if (cat.SourceEntry is not IErrorSymbol && cat.SourceEntry.Id is { } catId)
+                    ids.Add(catId);
+            }
+            return ids;
+        }
+
+        /// <summary>
+        /// Checks if an entry's primary category is among the force's declared categories.
+        /// Entries without a primary category are allowed in any force.
+        /// When the force has no categories, only uncategorized entries are allowed.
+        /// </summary>
+        private static bool EntryMatchesForceCategories(
+            ISelectionEntryContainerSymbol entry, HashSet<string> forceCategoryIds)
+        {
+            var primaryCat = entry.PrimaryCategory;
+            if (primaryCat is null)
+                return true;
+
+            var catTarget = primaryCat.ReferencedEntry ?? primaryCat;
+            return catTarget.Id is { } catId && forceCategoryIds.Contains(catId);
         }
 
         // ──────────────────────────────────────────────────────────────────
