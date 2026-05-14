@@ -444,9 +444,9 @@ public sealed class WhamRosterEngine
         // For direct entries, use just the entry's ID.
         // When a linkPrefix is present (from parent links), it is prepended.
         var entryId = BuildEntryIdPath(entry, linkPrefix);
-        var entryGroupId = sourceGroup is null
-            ? null
-            : EntryResolver.JoinLinkPrefix(linkPrefix, sourceGroup.Id ?? "");
+        var entryGroupId = sourceGroup?.Id is { Length: > 0 }
+            ? EntryResolver.JoinLinkPrefix(linkPrefix, sourceGroup.Id)
+            : null;
 
         var selectionNode = NodeFactory.Selection(entryDecl, entryId, entryGroupId);
 
@@ -513,18 +513,14 @@ public sealed class WhamRosterEngine
         ISelectionEntryContainerSymbol entry,
         string linkPrefix = "")
     {
-        string myPath;
         if (entry.ReferencedEntry is { Id: { } targetId })
         {
-            var linkId = entry.Id ?? "";
-            myPath = $"{linkId}{EntryLinkIdSeparator}{targetId}";
+            // For links: prefix::linkId::targetId (skipping empty segments)
+            return EntryResolver.JoinLinkPrefix(
+                EntryResolver.JoinLinkPrefix(linkPrefix, entry.Id ?? ""),
+                targetId);
         }
-        else
-        {
-            myPath = entry.Id ?? "";
-        }
-
-        return EntryResolver.JoinLinkPrefix(linkPrefix, myPath);
+        return EntryResolver.JoinLinkPrefix(linkPrefix, entry.Id ?? "");
     }
 
     /// <summary>
@@ -1431,7 +1427,7 @@ public sealed class WhamRosterEngine
         RosterState state,
         int forceIndex,
         ICatalogueSymbol catalogue,
-        HashSet<string>? forceCategoryIds)
+        HashSet<string> forceCategoryIds)
     {
         var available = EntryResolver.GetAvailableEntries(catalogue);
         var autoSelectedGroups = new HashSet<string>(StringComparer.Ordinal);
@@ -1477,7 +1473,7 @@ public sealed class WhamRosterEngine
     /// Returns an empty set if the force has no categories (meaning no filtering needed for
     /// uncategorized entries, but categorized entries should NOT auto-select).
     /// </summary>
-    private static HashSet<string>? GetForceCategoryIds(IForceEntrySymbol forceEntry)
+    private static HashSet<string> GetForceCategoryIds(IForceEntrySymbol forceEntry)
     {
         if (forceEntry.Categories.IsEmpty)
             return new HashSet<string>(StringComparer.Ordinal);

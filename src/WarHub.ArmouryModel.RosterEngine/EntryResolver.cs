@@ -238,9 +238,12 @@ public static class EntryResolver
     /// <summary>
     /// Joins a link prefix with an ID, using the "::" separator.
     /// When the prefix is empty, returns the ID directly.
+    /// When the ID is null or empty, returns the prefix unchanged (no-op).
     /// </summary>
     internal static string JoinLinkPrefix(string prefix, string id)
-        => string.IsNullOrEmpty(prefix) ? id : $"{prefix}::{id}";
+        => string.IsNullOrEmpty(id) ? prefix
+        : string.IsNullOrEmpty(prefix) ? id
+        : $"{prefix}::{id}";
 
     /// <summary>
     /// Follows the <see cref="ISelectionEntryContainerSymbol.ReferencedEntry"/> chain

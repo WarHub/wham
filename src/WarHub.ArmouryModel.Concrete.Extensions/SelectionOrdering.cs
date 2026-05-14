@@ -31,7 +31,8 @@ internal static class SelectionOrdering
                 categoryOrder[catEntryId] = i;
         }
 
-        return force.Selections.Sort(new ForceSelectionComparer(categoryOrder));
+        // Use stable LINQ sort to preserve insertion order (FIFO) for equal elements.
+        return [.. force.Selections.OrderBy(x => x, new ForceSelectionComparer(categoryOrder))];
     }
 
     /// <summary>
@@ -41,7 +42,8 @@ internal static class SelectionOrdering
     /// </summary>
     internal static ImmutableArray<ISelectionSymbol> GetSortedChildSelections(ISelectionSymbol parent)
     {
-        return parent.Selections.Sort(SelectionNameComparer.Instance);
+        // Use stable LINQ sort to preserve insertion order (FIFO) for equal elements.
+        return [.. parent.Selections.OrderBy(x => x, SelectionNameComparer.Instance)];
     }
 
     /// <summary>
@@ -55,6 +57,7 @@ internal static class SelectionOrdering
     /// <summary>
     /// Compares selections by effective name (natural sort), with original entry name as tiebreaker
     /// only when modifiers have changed at least one name.
+    /// Returns 0 for equal names to preserve insertion order (FIFO) when used with a stable sort.
     /// </summary>
     internal sealed class SelectionNameComparer : IComparer<ISelectionSymbol>
     {
@@ -73,9 +76,8 @@ internal static class SelectionOrdering
                 cmp = NaturalSort.Compare(a.SourceEntry?.Name ?? a.Name, b.SourceEntry?.Name ?? b.Name);
                 if (cmp != 0) return cmp;
             }
-            // Stable tiebreaker: compare by EntryId to ensure deterministic ordering
-            // when effective names match (ImmutableArray.Sort is unstable).
-            return string.Compare(a.EntryId, b.EntryId, StringComparison.Ordinal);
+            // Return 0 for equal names — stable sort preserves insertion order (FIFO).
+            return 0;
         }
     }
 
