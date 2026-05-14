@@ -616,9 +616,11 @@ internal sealed class ModifierEvaluator
             if (query.ValueFilterKind == QueryFilterKind.SpecifiedEntry
                 && query.FilterSymbol is ICategoryEntrySymbol)
             {
+                bool descSel = query.Options.HasFlag(QueryOptions.IncludeDescendantSelections);
+                bool descForce = query.Options.HasFlag(QueryOptions.IncludeDescendantForces);
                 var selections = query.ScopeKind == QueryScopeKind.ContainingForce
-                    ? ForceSelections(context.Force!)
-                    : RosterSelections();
+                    ? ForceSelections(context.Force!, descSel, descForce)
+                    : RosterSelections(descSel, descForce);
                 return CheckScopeInstanceOf(query, selections);
             }
             return false;
@@ -713,39 +715,43 @@ internal sealed class ModifierEvaluator
     }
 
     /// <summary>
-    /// All selections under a single force, flattened (top-level + descendants).
+    /// Enumerates selections under a force, optionally including descendant selections
+    /// and/or descendant child forces.
     /// </summary>
-    private static IEnumerable<ISelectionSymbol> ForceSelections(IForceSymbol force)
+    private static IEnumerable<ISelectionSymbol> ForceSelections(
+        IForceSymbol force, bool descendIntoSelections, bool descendIntoForces)
     {
         foreach (var sel in force.Selections)
         {
-            foreach (var item in SelectionWithDescendants(sel))
-                yield return item;
+            if (descendIntoSelections)
+            {
+                foreach (var item in SelectionWithDescendants(sel))
+                    yield return item;
+            }
+            else
+            {
+                yield return sel;
+            }
         }
-    }
-
-    /// <summary>
-    /// All selections under a force and its descendant forces, flattened (recursive).
-    /// </summary>
-    private static IEnumerable<ISelectionSymbol> ForceSelectionsDeep(IForceSymbol force)
-    {
-        foreach (var item in ForceSelections(force))
-            yield return item;
-        foreach (var childForce in force.Forces)
+        if (descendIntoForces)
         {
-            foreach (var item in ForceSelectionsDeep(childForce))
-                yield return item;
+            foreach (var childForce in force.Forces)
+            {
+                foreach (var item in ForceSelections(childForce, descendIntoSelections, descendIntoForces))
+                    yield return item;
+            }
         }
     }
 
     /// <summary>
-    /// All selections in the roster across all forces (including nested forces).
+    /// All selections in the roster across all forces, optionally including
+    /// descendant selections and/or descendant child forces.
     /// </summary>
-    private IEnumerable<ISelectionSymbol> RosterSelections()
+    private IEnumerable<ISelectionSymbol> RosterSelections(bool descendIntoSelections, bool descendIntoForces)
     {
         foreach (var force in _roster.Forces)
         {
-            foreach (var item in ForceSelectionsDeep(force))
+            foreach (var item in ForceSelections(force, descendIntoSelections, descendIntoForces))
                 yield return item;
         }
     }
@@ -756,28 +762,47 @@ internal sealed class ModifierEvaluator
 
     /// <summary>
     /// Direct children of the containing element (siblings in parent scope).
+    /// When <paramref name="descendIntoSelections"/> is true, also includes each sibling's descendants.
     /// </summary>
-    private static IEnumerable<ISelectionSymbol> SiblingSelections(EvalContext context)
+    private static IEnumerable<ISelectionSymbol> SiblingSelections(EvalContext context, bool descendIntoSelections)
     {
         if (context.Selection is null)
         {
             if (context.Force is not null)
             {
                 foreach (var s in context.Force.Selections)
-                    yield return s;
+                {
+                    if (descendIntoSelections)
+                    {
+                        foreach (var item in SelectionWithDescendants(s))
+                            yield return item;
+                    }
+                    else
+                    {
+                        yield return s;
+                    }
+                }
             }
             yield break;
         }
         var parent = context.Selection.ContainingSymbol;
-        if (parent is ISelectionSymbol parentSel)
+        var siblings = parent switch
         {
-            foreach (var s in parentSel.Selections)
-                yield return s;
-        }
-        else if (parent is IForceSymbol parentForce)
+            ISelectionSymbol parentSel => parentSel.Selections,
+            IForceSymbol parentForce => parentForce.Selections,
+            _ => Enumerable.Empty<ISelectionSymbol>(),
+        };
+        foreach (var s in siblings)
         {
-            foreach (var s in parentForce.Selections)
+            if (descendIntoSelections)
+            {
+                foreach (var item in SelectionWithDescendants(s))
+                    yield return item;
+            }
+            else
+            {
                 yield return s;
+            }
         }
     }
 
@@ -785,7 +810,8 @@ internal sealed class ModifierEvaluator
     /// Walk up ancestry to find matching entry, return its subtree.
     /// Falls back to roster selections when no scopeId is specified.
     /// </summary>
-    private IEnumerable<ISelectionSymbol> AncestorSelections(IQuerySymbol query, EvalContext context)
+    private IEnumerable<ISelectionSymbol> AncestorSelections(
+        IQuerySymbol query, EvalContext context, bool descendIntoSelections, bool descendIntoForces)
     {
         if (context.Selection is null || context.Force is null)
             yield break;
@@ -793,7 +819,7 @@ internal sealed class ModifierEvaluator
         var scopeId = query.ScopeSymbol?.Id;
         if (scopeId is null)
         {
-            foreach (var sel in RosterSelections())
+            foreach (var sel in RosterSelections(descendIntoSelections, descendIntoForces))
                 yield return sel;
             yield break;
         }
@@ -817,19 +843,20 @@ internal sealed class ModifierEvaluator
 
     private IEnumerable<ISelectionSymbol> GetSelectionsInScope(IQuerySymbol query, EvalContext context)
     {
+        bool descSel = query.Options.HasFlag(QueryOptions.IncludeDescendantSelections);
+        bool descForce = query.Options.HasFlag(QueryOptions.IncludeDescendantForces);
         return query.ScopeKind switch
         {
             QueryScopeKind.Self => context.Selection is { } s ? [s] : [],
-            QueryScopeKind.Parent => SiblingSelections(context),
-            QueryScopeKind.ContainingForce => context.Force is null ? [] :
-                query.Options.HasFlag(QueryOptions.IncludeDescendantForces)
-                    ? ForceSelectionsDeep(context.Force)
-                    : ForceSelections(context.Force),
-            QueryScopeKind.ContainingRoster => RosterSelections(),
-            QueryScopeKind.ContainingAncestor => AncestorSelections(query, context),
-            QueryScopeKind.ReferencedEntry => FilterByReferencedEntry(query),
-            QueryScopeKind.PrimaryCategory => FilterByPrimaryCategory(context),
-            QueryScopeKind.PrimaryCatalogue => context.Force is null ? [] : ForceSelections(context.Force),
+            QueryScopeKind.Parent => SiblingSelections(context, descSel),
+            QueryScopeKind.ContainingForce => context.Force is null ? []
+                : ForceSelections(context.Force, descSel, descForce),
+            QueryScopeKind.ContainingRoster => RosterSelections(descSel, descForce),
+            QueryScopeKind.ContainingAncestor => AncestorSelections(query, context, descSel, descForce),
+            QueryScopeKind.ReferencedEntry => FilterByReferencedEntry(query, descSel, descForce),
+            QueryScopeKind.PrimaryCategory => FilterByPrimaryCategory(context, descSel, descForce),
+            QueryScopeKind.PrimaryCatalogue => context.Force is null ? []
+                : ForceSelections(context.Force, descSel, descendIntoForces: false),
             _ => [],
         };
     }
@@ -837,13 +864,14 @@ internal sealed class ModifierEvaluator
     /// <summary>
     /// Roster selections filtered to those matching a referenced entry/group.
     /// </summary>
-    private IEnumerable<ISelectionSymbol> FilterByReferencedEntry(IQuerySymbol query)
+    private IEnumerable<ISelectionSymbol> FilterByReferencedEntry(
+        IQuerySymbol query, bool descendIntoSelections, bool descendIntoForces)
     {
         var entryId = query.ScopeSymbol?.Id;
         if (entryId is null)
             yield break;
 
-        foreach (var sel in RosterSelections())
+        foreach (var sel in RosterSelections(descendIntoSelections, descendIntoForces))
         {
             if (MatchesEntryOrGroup(sel, entryId))
                 yield return sel;
@@ -853,7 +881,8 @@ internal sealed class ModifierEvaluator
     /// <summary>
     /// Force selections filtered to those sharing the current selection's primary category.
     /// </summary>
-    private IEnumerable<ISelectionSymbol> FilterByPrimaryCategory(EvalContext context)
+    private static IEnumerable<ISelectionSymbol> FilterByPrimaryCategory(
+        EvalContext context, bool descendIntoSelections, bool descendIntoForces)
     {
         if (context.Selection is null || context.Force is null)
             yield break;
@@ -862,7 +891,7 @@ internal sealed class ModifierEvaluator
         if (primaryCat is null)
             yield break;
 
-        foreach (var sel in ForceSelections(context.Force))
+        foreach (var sel in ForceSelections(context.Force, descendIntoSelections, descendIntoForces))
         {
             if (SelectionHasCategory(sel, primaryCat))
                 yield return sel;
