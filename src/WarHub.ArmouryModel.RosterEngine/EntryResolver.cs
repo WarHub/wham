@@ -99,17 +99,29 @@ public static class EntryResolver
     /// The parent entry whose children to enumerate.
     /// If the entry is a link, it is resolved first via <see cref="ResolveEntry"/>.
     /// </param>
+    /// <param name="contextLinkPrefix">
+    /// The link prefix context of <paramref name="entry"/> itself (from parent links above it).
+    /// When <paramref name="entry"/> is itself a link, its ID is appended to this prefix
+    /// to form the prefix propagated to its children.
+    /// </param>
     /// <returns>An ordered, flattened list of child entries.</returns>
-    public static IReadOnlyList<AvailableEntry> GetChildEntries(ISelectionEntryContainerSymbol entry)
+    public static IReadOnlyList<AvailableEntry> GetChildEntries(
+        ISelectionEntryContainerSymbol entry,
+        string contextLinkPrefix = "")
     {
         var result = new List<AvailableEntry>();
 
         // Resolve through links to get the effective container with children.
         var effective = ResolveEntry(entry);
 
+        // If this entry is a link, children accumulate its ID into the prefix.
+        var childPrefix = entry.ReferencedEntry is not null
+            ? JoinLinkPrefix(contextLinkPrefix, entry.Id!)
+            : contextLinkPrefix;
+
         foreach (var child in effective.ChildSelectionEntries)
         {
-            AddEntryOrFlatten(child, result, sourceGroup: null);
+            AddEntryOrFlatten(child, result, sourceGroup: null, parentLinkPrefix: childPrefix);
         }
 
         return result;
@@ -118,6 +130,7 @@ public static class EntryResolver
     /// <summary>
     /// Filters <see cref="ICatalogueSymbol.RootContainerEntries"/> to selection entry
     /// containers and adds them to <paramref name="result"/>, flattening groups encountered.
+    /// Root entries have no link prefix context (they are at the catalogue root level).
     /// </summary>
     private static void AddRootSelectionEntries(
         ImmutableArray<IContainerEntrySymbol> rootEntries,
@@ -127,7 +140,7 @@ public static class EntryResolver
         {
             if (entry is ISelectionEntryContainerSymbol selEntry)
             {
-                AddEntryOrFlatten(selEntry, result, sourceGroup: null);
+                AddEntryOrFlatten(selEntry, result, sourceGroup: null, parentLinkPrefix: "");
             }
             // IForceEntrySymbol and ICategoryEntrySymbol are silently skipped.
         }
@@ -136,17 +149,30 @@ public static class EntryResolver
     /// <summary>
     /// Adds a single concrete entry to the result, or recursively flattens a group.
     /// </summary>
+    /// <param name="entry">The entry to add or flatten.</param>
+    /// <param name="result">The result list to populate.</param>
+    /// <param name="sourceGroup">The enclosing group (set on flattened children).</param>
+    /// <param name="parentLinkPrefix">
+    /// The accumulated link prefix from parent links above this entry.
+    /// When <paramref name="entry"/> is itself a link to a group, its ID extends the prefix
+    /// for the group's children.
+    /// </param>
     private static void AddEntryOrFlatten(
         ISelectionEntryContainerSymbol entry,
         List<AvailableEntry> result,
-        ISelectionEntryGroupSymbol? sourceGroup)
+        ISelectionEntryGroupSymbol? sourceGroup,
+        string parentLinkPrefix = "")
     {
         var resolved = ResolveEntry(entry);
 
         if (resolved is ISelectionEntryGroupSymbol group)
         {
-            // The target is a group — flatten its children.
-            FlattenGroup(group, result, visited: null);
+            // The target is a group — compute the prefix for the group's children.
+            // If this entry is a link to the group, the link's ID is added to the prefix.
+            var groupPrefix = entry.ReferencedEntry is not null
+                ? JoinLinkPrefix(parentLinkPrefix, entry.Id!)
+                : parentLinkPrefix;
+            FlattenGroup(group, result, visited: null, groupLinkPrefix: groupPrefix);
         }
         else
         {
@@ -155,6 +181,7 @@ public static class EntryResolver
             {
                 Symbol = entry,
                 SourceGroup = sourceGroup,
+                LinkPrefix = parentLinkPrefix,
             });
         }
     }
@@ -165,10 +192,18 @@ public static class EntryResolver
     /// <see cref="AvailableEntry.SourceGroup"/>.
     /// A visited-set prevents infinite recursion on self-referencing groups.
     /// </summary>
+    /// <param name="group">The group to flatten.</param>
+    /// <param name="result">The result list to populate.</param>
+    /// <param name="visited">Set of visited group IDs (cycle guard).</param>
+    /// <param name="groupLinkPrefix">
+    /// The accumulated link prefix for entries inside this group.
+    /// This includes the IDs of all links traversed to reach this group.
+    /// </param>
     private static void FlattenGroup(
         ISelectionEntryGroupSymbol group,
         List<AvailableEntry> result,
-        HashSet<string>? visited)
+        HashSet<string>? visited,
+        string groupLinkPrefix = "")
     {
         if (group.Id is not null)
         {
@@ -182,7 +217,11 @@ public static class EntryResolver
 
             if (resolved is ISelectionEntryGroupSymbol childGroup)
             {
-                FlattenGroup(childGroup, result, visited);
+                // Nested group: if the child is a link to the group, extend the prefix.
+                var nestedPrefix = child.ReferencedEntry is not null
+                    ? JoinLinkPrefix(groupLinkPrefix, child.Id!)
+                    : groupLinkPrefix;
+                FlattenGroup(childGroup, result, visited, nestedPrefix);
             }
             else
             {
@@ -190,10 +229,18 @@ public static class EntryResolver
                 {
                     Symbol = child,
                     SourceGroup = group,
+                    LinkPrefix = groupLinkPrefix,
                 });
             }
         }
     }
+
+    /// <summary>
+    /// Joins a link prefix with an ID, using the "::" separator.
+    /// When the prefix is empty, returns the ID directly.
+    /// </summary>
+    internal static string JoinLinkPrefix(string prefix, string id)
+        => string.IsNullOrEmpty(prefix) ? id : $"{prefix}::{id}";
 
     /// <summary>
     /// Follows the <see cref="ISelectionEntryContainerSymbol.ReferencedEntry"/> chain
@@ -211,12 +258,33 @@ public static class EntryResolver
     }
 
     /// <summary>
+    /// Computes the full composite entryId for an available entry, incorporating any link prefix.
+    /// For link entries: <c>linkPrefix::linkId::targetId</c>.
+    /// For direct entries: <c>linkPrefix::entryId</c> (prefix may be empty).
+    /// </summary>
+    public static string ComputeCompositeEntryId(AvailableEntry avail)
+    {
+        var entry = avail.Symbol;
+        var prefix = avail.LinkPrefix;
+        if (entry.ReferencedEntry is { Id: { } targetId })
+        {
+            return JoinLinkPrefix(JoinLinkPrefix(prefix, entry.Id ?? ""), targetId);
+        }
+        return JoinLinkPrefix(prefix, entry.Id ?? "");
+    }
+
+    /// <summary>
     /// Finds an available entry by matching the definition entry ID.
-    /// Matches against the entry's own ID first, then against the resolved
-    /// (link target) ID as a fallback.
+    /// First tries to match against each entry's computed composite entryId
+    /// (which incorporates any link prefix), then falls back to matching
+    /// the entry's own ID or resolved target ID directly.
     /// </summary>
     public static AvailableEntry FindByEntryId(IReadOnlyList<AvailableEntry> available, string entryId)
     {
+        foreach (var avail in available)
+        {
+            if (ComputeCompositeEntryId(avail) == entryId) return avail;
+        }
         foreach (var avail in available)
         {
             if (avail.Symbol.Id == entryId) return avail;
@@ -252,4 +320,11 @@ public sealed class AvailableEntry
     /// <see cref="Source.SelectionNode"/>.
     /// </summary>
     public ISelectionEntryGroupSymbol? SourceGroup { get; init; }
+
+    /// <summary>
+    /// The accumulated link prefix from all link entries traversed above this entry.
+    /// When non-empty, this prefix is prepended to the entry's own ID path to form
+    /// the composite <c>entryId</c> written into the roster selection node.
+    /// </summary>
+    public string LinkPrefix { get; init; } = "";
 }

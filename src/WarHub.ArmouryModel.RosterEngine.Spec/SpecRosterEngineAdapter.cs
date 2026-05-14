@@ -20,13 +20,16 @@ public sealed class SpecRosterEngineAdapter : IRosterEngine
     private WhamRosterEngine? _coreEngine;
     private WhamRosterState? _state;
     private WhamCompilation? _catalogCompilation;
+    private string? _specId;
+
+    public void SetTestContext(string specId) => _specId = specId;
 
     public IReadOnlyList<string> Setup(ProtocolGameSystem gameSystem, ProtocolCatalogue[] catalogues)
     {
         var compilation = ProtocolConverter.CreateCompilation(gameSystem, catalogues);
         _catalogCompilation = compilation;
         _coreEngine = new WhamRosterEngine();
-        _state = _coreEngine.CreateRoster(compilation);
+        _state = _coreEngine.CreateRoster(compilation, _specId);
         return [];
     }
 
@@ -118,9 +121,9 @@ public sealed class SpecRosterEngineAdapter : IRosterEngine
         return new ActionOutputs { ForceId = result.ForceId! };
     }
 
-    public void SetCostLimit(string costTypeId, double value)
+    public void SetCostLimit(string costTypeId, decimal value)
     {
-        _state = EnsureEngine().SetCostLimit(EnsureState(), costTypeId, (decimal)value);
+        _state = EnsureEngine().SetCostLimit(EnsureState(), costTypeId, value);
     }
 
     public void SetCustomization(string forceId, string? selectionId, string? categoryEntryId,

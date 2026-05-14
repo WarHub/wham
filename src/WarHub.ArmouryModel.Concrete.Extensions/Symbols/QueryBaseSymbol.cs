@@ -142,7 +142,7 @@ internal abstract partial class QueryBaseSymbol : LogicBaseSymbol, IQuerySymbol
         get
         {
             if (ValueFilterKind is QueryFilterKind.SpecifiedEntry)
-                return GetBoundField(ref lazyFilter, this, static (b, d, self) => b.BindFilterEntrySymbol(self.Declaration, ((QueryFilteredBaseNode)self.Declaration).ChildId, self.ScopeKind, d));
+                return GetBoundField(ref lazyFilter, this, static (b, d, self) => b.BindFilterEntrySymbol(self.Declaration, ((QueryFilteredBaseNode)self.Declaration).ChildId, d));
             return null;
         }
     }

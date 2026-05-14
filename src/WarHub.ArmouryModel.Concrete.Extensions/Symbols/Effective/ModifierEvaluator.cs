@@ -616,9 +616,11 @@ internal sealed class ModifierEvaluator
             if (query.ValueFilterKind == QueryFilterKind.SpecifiedEntry
                 && query.FilterSymbol is ICategoryEntrySymbol)
             {
+                bool descSel = query.Options.HasFlag(QueryOptions.IncludeDescendantSelections);
+                bool descForce = query.Options.HasFlag(QueryOptions.IncludeDescendantForces);
                 var selections = query.ScopeKind == QueryScopeKind.ContainingForce
-                    ? GetForceSelections(context)
-                    : GetRosterSelections();
+                    ? ForceSelections(context.Force!, descSel, descForce)
+                    : RosterSelections(descSel, descForce);
                 return CheckScopeInstanceOf(query, selections);
             }
             return false;
@@ -695,103 +697,139 @@ internal sealed class ModifierEvaluator
         };
     }
 
-    private IEnumerable<ISelectionSymbol> GetSelectionsInScope(IQuerySymbol query, EvalContext context)
+    // ──────────────────────────────────────────────────────────────────
+    //  Layer 1: Tree traversal primitives (pure, static, reusable)
+    // ──────────────────────────────────────────────────────────────────
+
+    /// <summary>
+    /// Yields a selection and all its recursive descendants (subtree flattened).
+    /// </summary>
+    private static IEnumerable<ISelectionSymbol> SelectionWithDescendants(ISelectionSymbol selection)
     {
-        return query.ScopeKind switch
+        yield return selection;
+        foreach (var child in selection.Selections)
         {
-            QueryScopeKind.Self => GetSelfSelections(context),
-            QueryScopeKind.Parent => GetParentSelections(context),
-            QueryScopeKind.ContainingForce => GetForceSelections(context),
-            QueryScopeKind.ContainingRoster => GetRosterSelections(),
-            QueryScopeKind.ContainingAncestor => GetAncestorSelections(query, context),
-            QueryScopeKind.ReferencedEntry => GetReferencedEntrySelections(query),
-            QueryScopeKind.PrimaryCategory => GetPrimaryCategorySelections(context),
-            _ => [],
-        };
+            foreach (var desc in SelectionWithDescendants(child))
+                yield return desc;
+        }
     }
 
-    private IEnumerable<ISelectionSymbol> GetSelfSelections(EvalContext context)
+    /// <summary>
+    /// Enumerates selections under a force, optionally including descendant selections
+    /// and/or descendant child forces.
+    /// </summary>
+    private static IEnumerable<ISelectionSymbol> ForceSelections(
+        IForceSymbol force, bool descendIntoSelections, bool descendIntoForces)
     {
-        if (context.Selection is { } sel)
-            yield return sel;
+        foreach (var sel in force.Selections)
+        {
+            if (descendIntoSelections)
+            {
+                foreach (var item in SelectionWithDescendants(sel))
+                    yield return item;
+            }
+            else
+            {
+                yield return sel;
+            }
+        }
+        if (descendIntoForces)
+        {
+            foreach (var childForce in force.Forces)
+            {
+                foreach (var item in ForceSelections(childForce, descendIntoSelections, descendIntoForces))
+                    yield return item;
+            }
+        }
     }
 
-    private IEnumerable<ISelectionSymbol> GetParentSelections(EvalContext context)
+    /// <summary>
+    /// All selections in the roster across all forces, optionally including
+    /// descendant selections and/or descendant child forces.
+    /// </summary>
+    private IEnumerable<ISelectionSymbol> RosterSelections(bool descendIntoSelections, bool descendIntoForces)
+    {
+        foreach (var force in _roster.Forces)
+        {
+            foreach (var item in ForceSelections(force, descendIntoSelections, descendIntoForces))
+                yield return item;
+        }
+    }
+
+    // ──────────────────────────────────────────────────────────────────
+    //  Layer 2: Context-aware scope resolution
+    // ──────────────────────────────────────────────────────────────────
+
+    /// <summary>
+    /// Direct children of the containing element (siblings in parent scope).
+    /// When <paramref name="descendIntoSelections"/> is true, also includes each sibling's descendants.
+    /// </summary>
+    private static IEnumerable<ISelectionSymbol> SiblingSelections(EvalContext context, bool descendIntoSelections)
     {
         if (context.Selection is null)
         {
             if (context.Force is not null)
             {
                 foreach (var s in context.Force.Selections)
-                    yield return s;
+                {
+                    if (descendIntoSelections)
+                    {
+                        foreach (var item in SelectionWithDescendants(s))
+                            yield return item;
+                    }
+                    else
+                    {
+                        yield return s;
+                    }
+                }
             }
             yield break;
         }
-        // Parent is just ContainingSymbol
         var parent = context.Selection.ContainingSymbol;
-        if (parent is ISelectionSymbol parentSel)
+        var siblings = parent switch
         {
-            // Return siblings (parent's children)
-            foreach (var s in parentSel.Selections)
-                yield return s;
-        }
-        else if (parent is IForceSymbol parentForce)
+            ISelectionSymbol parentSel => parentSel.Selections,
+            IForceSymbol parentForce => parentForce.Selections,
+            _ => Enumerable.Empty<ISelectionSymbol>(),
+        };
+        foreach (var s in siblings)
         {
-            // Root selection — parent is force, return force-level selections
-            foreach (var s in parentForce.Selections)
-                yield return s;
-        }
-    }
-
-    private IEnumerable<ISelectionSymbol> GetForceSelections(EvalContext context)
-    {
-        if (context.Force is null)
-            yield break;
-
-        foreach (var sel in context.Force.Selections)
-        {
-            yield return sel;
-            foreach (var desc in GetDescendantSelections(sel))
-                yield return desc;
-        }
-    }
-
-    private IEnumerable<ISelectionSymbol> GetRosterSelections()
-    {
-        foreach (var force in _roster.Forces)
-        {
-            foreach (var sel in force.Selections)
+            if (descendIntoSelections)
             {
-                yield return sel;
-                foreach (var desc in GetDescendantSelections(sel))
-                    yield return desc;
+                foreach (var item in SelectionWithDescendants(s))
+                    yield return item;
+            }
+            else
+            {
+                yield return s;
             }
         }
     }
 
-    private IEnumerable<ISelectionSymbol> GetAncestorSelections(IQuerySymbol query, EvalContext context)
+    /// <summary>
+    /// Walk up ancestry to find matching entry, return its subtree.
+    /// Falls back to roster selections when no scopeId is specified.
+    /// </summary>
+    private IEnumerable<ISelectionSymbol> AncestorSelections(
+        IQuerySymbol query, EvalContext context, bool descendIntoSelections, bool descendIntoForces)
     {
-        // Ancestor scope: walk up from current selection to find matching ancestor
         if (context.Selection is null || context.Force is null)
             yield break;
 
         var scopeId = query.ScopeSymbol?.Id;
         if (scopeId is null)
         {
-            // No specific ancestor — return roster-level selections
-            foreach (var sel in GetRosterSelections())
+            foreach (var sel in RosterSelections(descendIntoSelections, descendIntoForces))
                 yield return sel;
             yield break;
         }
 
-        // Walk up ContainingSymbol chain looking for matching ancestor
         for (ISymbol? sym = context.Selection; sym is not null; sym = sym.ContainingSymbol)
         {
             if (sym is ISelectionSymbol selSym && MatchesEntryOrGroup(selSym, scopeId))
             {
-                yield return selSym;
-                foreach (var desc in GetDescendantSelections(selSym))
-                    yield return desc;
+                foreach (var item in SelectionWithDescendants(selSym))
+                    yield return item;
                 yield break;
             }
             if (sym is IForceSymbol)
@@ -799,46 +837,64 @@ internal sealed class ModifierEvaluator
         }
     }
 
-    private IEnumerable<ISelectionSymbol> GetReferencedEntrySelections(IQuerySymbol query)
+    // ──────────────────────────────────────────────────────────────────
+    //  Layer 3: Scope dispatch + scope filters
+    // ──────────────────────────────────────────────────────────────────
+
+    private IEnumerable<ISelectionSymbol> GetSelectionsInScope(IQuerySymbol query, EvalContext context)
     {
-        // Scope is a specific entry — find all selections matching that entry across the roster
+        bool descSel = query.Options.HasFlag(QueryOptions.IncludeDescendantSelections);
+        bool descForce = query.Options.HasFlag(QueryOptions.IncludeDescendantForces);
+        return query.ScopeKind switch
+        {
+            QueryScopeKind.Self => context.Selection is { } s ? [s] : [],
+            QueryScopeKind.Parent => SiblingSelections(context, descSel),
+            QueryScopeKind.ContainingForce => context.Force is null ? []
+                : ForceSelections(context.Force, descSel, descForce),
+            QueryScopeKind.ContainingRoster => RosterSelections(descSel, descForce),
+            QueryScopeKind.ContainingAncestor => AncestorSelections(query, context, descSel, descForce),
+            QueryScopeKind.ReferencedEntry => FilterByReferencedEntry(query, descSel, descForce),
+            QueryScopeKind.PrimaryCategory => FilterByPrimaryCategory(context, descSel, descForce),
+            QueryScopeKind.PrimaryCatalogue => context.Force is null ? []
+                : ForceSelections(context.Force, descSel, descendIntoForces: false),
+            _ => [],
+        };
+    }
+
+    /// <summary>
+    /// Roster selections filtered to those matching a referenced entry/group.
+    /// </summary>
+    private IEnumerable<ISelectionSymbol> FilterByReferencedEntry(
+        IQuerySymbol query, bool descendIntoSelections, bool descendIntoForces)
+    {
         var entryId = query.ScopeSymbol?.Id;
         if (entryId is null)
             yield break;
 
-        foreach (var sel in GetRosterSelections())
+        foreach (var sel in RosterSelections(descendIntoSelections, descendIntoForces))
         {
             if (MatchesEntryOrGroup(sel, entryId))
                 yield return sel;
         }
     }
 
-    private IEnumerable<ISelectionSymbol> GetPrimaryCategorySelections(EvalContext context)
+    /// <summary>
+    /// Force selections filtered to those sharing the current selection's primary category.
+    /// </summary>
+    private static IEnumerable<ISelectionSymbol> FilterByPrimaryCategory(
+        EvalContext context, bool descendIntoSelections, bool descendIntoForces)
     {
-        // Find the primary category of the current selection's root,
-        // then find all selections in the force with that category
         if (context.Selection is null || context.Force is null)
             yield break;
 
         var primaryCat = context.Selection.PrimaryCategory?.SourceEntry?.Id;
-
         if (primaryCat is null)
             yield break;
 
-        foreach (var sel in GetForceSelections(context))
+        foreach (var sel in ForceSelections(context.Force, descendIntoSelections, descendIntoForces))
         {
             if (SelectionHasCategory(sel, primaryCat))
                 yield return sel;
-        }
-    }
-
-    private static IEnumerable<ISelectionSymbol> GetDescendantSelections(ISelectionSymbol sel)
-    {
-        foreach (var child in sel.Selections)
-        {
-            yield return child;
-            foreach (var desc in GetDescendantSelections(child))
-                yield return desc;
         }
     }
 
@@ -938,8 +994,12 @@ internal sealed class ModifierEvaluator
         if (filterId is null)
             return false;
 
+        // shared=true: segment-based matching (any segment of "linkId::targetId" can match)
+        // shared=false: exact matching only (composite IDs like "link::target" won't match base "target")
+        bool isShared = query.Options.HasFlag(QueryOptions.SharedConstraint);
+
         // Check if selection's entry matches
-        if (MatchesEntryOrGroup(sel, filterId))
+        if (isShared ? MatchesEntryOrGroup(sel, filterId) : MatchesEntryOrGroupExact(sel, filterId))
             return true;
 
         // Check if selection has a category matching the filter
@@ -947,6 +1007,13 @@ internal sealed class ModifierEvaluator
             return true;
 
         return false;
+    }
+
+    private static bool MatchesEntryOrGroupExact(ISelectionSymbol sel, string id)
+    {
+        if (sel.EntryGroupId == id)
+            return true;
+        return sel.EntryId == id;
     }
 
     private static bool MatchesEntry(ISelectionSymbol sel, string? entryId)
@@ -992,6 +1059,17 @@ internal sealed class ModifierEvaluator
                 return 0;
 
             var value = CalculateQueryValue(query, context);
+
+            // percentValue: scale referenceValue to an absolute threshold
+            // e.g. value=25, total=5 → threshold=5*25/100=1.25; count=4; floor(4/1.25)=3
+            if (query.Options.HasFlag(QueryOptions.ValuePercentage))
+            {
+                var total = CountTotalSelectionsInScope(query, context);
+                referenceValue = total * referenceValue / 100m;
+                if (referenceValue == 0)
+                    return 0;
+            }
+
             var roundUp = query.Options.HasFlag(QueryOptions.ValueRoundUp);
 
             var repeats = value / referenceValue;
@@ -1000,15 +1078,13 @@ internal sealed class ModifierEvaluator
         }
 
         // Check repeat children (ModifierEffectBaseSymbol.Effects → RepeatEffectSymbol)
+        // Multiple repeats are additive: total = sum of each child's repeat count.
         if (effect.Effects.Length > 0)
         {
-            int totalRepeats = 1;
+            int totalRepeats = 0;
             foreach (var repeatEffect in effect.Effects)
             {
-                var childRepeat = GetRepeatCount(repeatEffect, context);
-                if (childRepeat == 0)
-                    return 0; // Any zero repeat means skip entirely
-                totalRepeats = childRepeat;
+                totalRepeats += GetRepeatCount(repeatEffect, context);
             }
             return totalRepeats;
         }

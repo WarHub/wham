@@ -7,6 +7,11 @@ namespace WarHub.ArmouryModel;
 /// </summary>
 public interface ISelectionEntryContainerSymbol : IContainerEntrySymbol
 {
+    /// <summary>
+    /// Whether this entry is collective (per-model semantics for number operations).
+    /// </summary>
+    bool IsCollective { get; }
+
     ICategoryEntrySymbol? PrimaryCategory { get; }
 
     ImmutableArray<ICategoryEntrySymbol> Categories { get; }

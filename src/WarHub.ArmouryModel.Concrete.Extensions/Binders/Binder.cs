@@ -157,14 +157,8 @@ internal class Binder
         return initialResult;
     }
 
-    internal ISymbol BindFilterEntrySymbol(SourceNode node, string? symbolId, QueryScopeKind scopeKind, BindingDiagnosticBag diagnostics)
-        => scopeKind switch
-        {
-            QueryScopeKind.PrimaryCatalogue => BindCatalogueSymbol(node, symbolId, diagnostics),
-            // PrimaryCategory scope defines the scope (look in selections sharing the same primary category),
-            // but the childId/filter still references any container entry (typically a selection entry).
-            _ => BindSimple<IContainerEntrySymbol, ErrorSymbols.ErrorContainerEntrySymbol>(node, diagnostics, symbolId, LookupOptions.ContainerEntryOnly)
-        };
+    internal ISymbol BindFilterEntrySymbol(SourceNode node, string? symbolId, BindingDiagnosticBag diagnostics)
+        => BindSimple<IContainerEntrySymbol, ErrorSymbols.ErrorContainerEntrySymbol>(node, diagnostics, symbolId, LookupOptions.ContainerEntryOnly);
 
     internal ISymbol BindScopeEntrySymbol(SourceNode node, string? symbolId, BindingDiagnosticBag diagnostics) =>
         BindSimple<IContainerEntrySymbol, ErrorSymbols.ErrorContainerEntrySymbol>(node, diagnostics, symbolId, LookupOptions.ContainerEntryOnly);

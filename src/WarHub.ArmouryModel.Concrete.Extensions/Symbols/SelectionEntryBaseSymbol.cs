@@ -10,6 +10,7 @@ internal abstract class SelectionEntryBaseSymbol : ContainerEntryBaseSymbol, ISe
         DiagnosticBag diagnostics)
         : base(containingSymbol, declaration, diagnostics)
     {
+        IsCollective = declaration.Collective;
         Categories = CreateCategoryEntries().ToImmutableArray();
         PrimaryCategory = Categories.FirstOrDefault(x => x.IsPrimaryCategory);
         ChildSelectionEntries = CreateSelectionEntryContainers().ToImmutableArray();
@@ -39,6 +40,8 @@ internal abstract class SelectionEntryBaseSymbol : ContainerEntryBaseSymbol, ISe
     }
 
     public override ISelectionEntryContainerSymbol? ReferencedEntry => null;
+
+    public bool IsCollective { get; }
 
     public CategoryLinkSymbol? PrimaryCategory { get; }
 
