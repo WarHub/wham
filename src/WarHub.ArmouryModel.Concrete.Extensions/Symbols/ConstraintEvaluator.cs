@@ -56,6 +56,7 @@ internal static class ConstraintEvaluator
 
             ValidateForceEntryConstraints();
             ValidateCostLimits();
+            ValidateCostRepeatCycles();
         }
 
         // ──────────────────────────────────────────────────────────────────
@@ -112,6 +113,47 @@ internal static class ConstraintEvaluator
         /// </summary>
         private static string? GetRosterCostTypeId(RosterCostSymbol rosterCost) =>
             rosterCost.CostType is IErrorSymbol ? null : rosterCost.CostType.Id;
+
+        // ──────────────────────────────────────────────────────────────────
+        //  Cost repeat cycle validation
+        // ──────────────────────────────────────────────────────────────────
+
+        private void ValidateCostRepeatCycles()
+        {
+            // Delegate cycle detection to ModifierEvaluator which already computed it
+            // during effective cost evaluation. One diagnostic per distinct cycle group.
+            var cycleGroups = _effectiveCache.Evaluator.GetCostRepeatCycleGroups();
+            if (cycleGroups.Count == 0)
+                return;
+
+            // Determine which cycle groups are actually present in the roster
+            // (at least one participating selection must exist).
+            var presentEntryIds = new HashSet<string>(StringComparer.Ordinal);
+            foreach (var force in _roster.Forces)
+            {
+                foreach (var sel in FlattenSelections(force.ChildSelections))
+                {
+                    if (sel.SourceEntry?.Id is { } id)
+                        presentEntryIds.Add(id);
+                }
+            }
+
+            foreach (var group in cycleGroups)
+            {
+                // Only emit a diagnostic if this cycle is actually present in the roster.
+                bool present = false;
+                foreach (var id in group)
+                {
+                    if (presentEntryIds.Contains(id)) { present = true; break; }
+                }
+                if (!present) continue;
+
+                // Use the smallest ID as the canonical representative to get a stable diagnostic.
+                var representative = group.Min()!;
+                _diagnostics.Add(ErrorCode.WRN_CostRepeatCycle, Location.None,
+                    "selection", representative, representative, "");
+            }
+        }
 
         // ──────────────────────────────────────────────────────────────────
         //  Force entry constraints (field=forces)
@@ -367,9 +409,10 @@ internal static class ConstraintEvaluator
             }
 
             // Validate child selection constraints
+            var forceScopeChecked = new HashSet<(string entryId, string constraintId)>();
             foreach (var sel in force.ChildSelections)
             {
-                ValidateChildConstraints(sel, force);
+                ValidateChildConstraints(sel, force, forceScopeChecked);
             }
 
             // Validate category constraints
@@ -378,7 +421,8 @@ internal static class ConstraintEvaluator
 
         private void ValidateChildConstraints(
             SelectionSymbol parent,
-            ForceSymbol force)
+            ForceSymbol force,
+            HashSet<(string entryId, string constraintId)> forceScopeChecked)
         {
             // Count children by entry ID and entry group ID.
             // For collective children, use per-model counts (divide by parent's number).
@@ -416,15 +460,27 @@ internal static class ConstraintEvaluator
                 {
                     var query = constraint.Query;
                     if (query.ValueKind != QueryValueKind.SelectionCount) continue;
-                    if (query.ScopeKind != QueryScopeKind.Parent) continue;
 
                     var constraintId = constraint.Id ?? "";
-                    var constraintValue = effectiveChildValues.GetValueOrDefault(constraintId, query.ReferenceValue ?? 0m);
-                    var count = counts.GetValueOrDefault(new CountKey(childEntryId, CountKeyKind.Entry));
 
-                    CheckConstraint(query.Comparison, constraintValue, count,
-                        childEntryId, "selection", parent.EntryId ?? "",
-                        constraintId);
+                    if (query.ScopeKind == QueryScopeKind.Parent)
+                    {
+                        var constraintValue = effectiveChildValues.GetValueOrDefault(constraintId, query.ReferenceValue ?? 0m);
+                        var count = counts.GetValueOrDefault(new CountKey(childEntryId, CountKeyKind.Entry));
+                        CheckConstraint(query.Comparison, constraintValue, count,
+                            childEntryId, "selection", parent.EntryId ?? "",
+                            constraintId);
+                    }
+                    else if (query.ScopeKind is QueryScopeKind.ContainingForce or QueryScopeKind.ContainingRoster
+                          && forceScopeChecked.Add((childEntryId, constraintId)))
+                    {
+                        // Force/roster-scope constraint on a nested entry — evaluate once per force
+                        var constraintValue = effectiveChildValues.GetValueOrDefault(constraintId, query.ReferenceValue ?? 0m);
+                        var count = CountSelectionsInScope(query, childEntryId, force);
+                        CheckConstraint(query.Comparison, constraintValue, count,
+                            childEntryId, "selection", childEntryId,
+                            constraintId);
+                    }
                 }
             }
 
@@ -460,13 +516,25 @@ internal static class ConstraintEvaluator
                     {
                         var query = constraint.Query;
                         if (query.ValueKind != QueryValueKind.SelectionCount) continue;
-                        if (query.ScopeKind != QueryScopeKind.Parent) continue;
 
                         var constraintId = constraint.Id ?? "";
-                        var constraintValue = effectiveAvailValues.GetValueOrDefault(constraintId, query.ReferenceValue ?? 0m);
-                        CheckConstraint(query.Comparison, constraintValue, currentCount,
-                            childId, "selection", parentEntryIdForLookup,
-                            constraintId);
+
+                        if (query.ScopeKind == QueryScopeKind.Parent)
+                        {
+                            var constraintValue = effectiveAvailValues.GetValueOrDefault(constraintId, query.ReferenceValue ?? 0m);
+                            CheckConstraint(query.Comparison, constraintValue, currentCount,
+                                childId, "selection", parentEntryIdForLookup,
+                                constraintId);
+                        }
+                        else if (query.ScopeKind is QueryScopeKind.ContainingForce or QueryScopeKind.ContainingRoster
+                              && forceScopeChecked.Add((childId, constraintId)))
+                        {
+                            var constraintValue = effectiveAvailValues.GetValueOrDefault(constraintId, query.ReferenceValue ?? 0m);
+                            var count = CountSelectionsInScope(query, childId, force);
+                            CheckConstraint(query.Comparison, constraintValue, count,
+                                childId, "selection", childId,
+                                constraintId);
+                        }
                     }
                 }
             }
@@ -474,7 +542,7 @@ internal static class ConstraintEvaluator
             // Recurse
             foreach (var child in parent.ChildSelections)
             {
-                ValidateChildConstraints(child, force);
+                ValidateChildConstraints(child, force, forceScopeChecked);
             }
         }
 
@@ -535,14 +603,15 @@ internal static class ConstraintEvaluator
 
         private decimal CountSelectionsInScope(IQuerySymbol query, string targetId, ForceSymbol force)
         {
-            bool includeChildren = query.Options.HasFlag(QueryOptions.IncludeDescendantSelections);
+            bool descSel = query.Options.HasFlag(QueryOptions.IncludeDescendantSelections);
+            bool descForce = query.Options.HasFlag(QueryOptions.IncludeDescendantForces);
             var selections = query.ScopeKind switch
             {
                 QueryScopeKind.Parent or QueryScopeKind.ContainingForce =>
-                    includeChildren ? FlattenSelections(force.ChildSelections) : TopLevelSelections(force),
+                    GetForceSelections(force, descSel, descForce),
                 QueryScopeKind.ContainingRoster =>
-                    includeChildren ? AllSelectionsFlattened() : AllTopLevelSelections(),
-                _ => includeChildren ? FlattenSelections(force.ChildSelections) : TopLevelSelections(force),
+                    GetRosterSelections(descSel, descForce),
+                _ => GetForceSelections(force, descSel, descForce),
             };
 
             decimal count = 0;
@@ -568,14 +637,15 @@ internal static class ConstraintEvaluator
                     matchIds.Add(lid);
             }
 
-            bool includeChildren = query.Options.HasFlag(QueryOptions.IncludeDescendantSelections);
+            bool descSel = query.Options.HasFlag(QueryOptions.IncludeDescendantSelections);
+            bool descForce = query.Options.HasFlag(QueryOptions.IncludeDescendantForces);
             var selections = query.ScopeKind switch
             {
                 QueryScopeKind.Parent or QueryScopeKind.ContainingForce =>
-                    includeChildren ? FlattenSelections(force.ChildSelections) : TopLevelSelections(force),
+                    GetForceSelections(force, descSel, descForce),
                 QueryScopeKind.ContainingRoster =>
-                    includeChildren ? AllSelectionsFlattened() : AllTopLevelSelections(),
-                _ => includeChildren ? FlattenSelections(force.ChildSelections) : TopLevelSelections(force),
+                    GetRosterSelections(descSel, descForce),
+                _ => GetForceSelections(force, descSel, descForce),
             };
 
             decimal count = 0;
@@ -589,17 +659,18 @@ internal static class ConstraintEvaluator
 
         private decimal CountCostInScope(IQuerySymbol query, string targetId, ForceSymbol force)
         {
-            bool includeChildren = query.Options.HasFlag(QueryOptions.IncludeDescendantSelections);
+            bool descSel = query.Options.HasFlag(QueryOptions.IncludeDescendantSelections);
+            bool descForce = query.Options.HasFlag(QueryOptions.IncludeDescendantForces);
             var costTypeId = query.ValueTypeSymbol?.Id;
             if (costTypeId is null) return 0m;
 
             var selections = query.ScopeKind switch
             {
                 QueryScopeKind.Parent or QueryScopeKind.ContainingForce =>
-                    includeChildren ? FlattenSelections(force.ChildSelections) : TopLevelSelections(force),
+                    GetForceSelections(force, descSel, descForce),
                 QueryScopeKind.ContainingRoster =>
-                    includeChildren ? AllSelectionsFlattened() : AllTopLevelSelections(),
-                _ => includeChildren ? FlattenSelections(force.ChildSelections) : TopLevelSelections(force),
+                    GetRosterSelections(descSel, descForce),
+                _ => GetForceSelections(force, descSel, descForce),
             };
 
             decimal sum = 0;
@@ -618,14 +689,15 @@ internal static class ConstraintEvaluator
 
         private decimal CountTotalSelectionsInScope(IQuerySymbol query, ForceSymbol force)
         {
-            bool includeChildren = query.Options.HasFlag(QueryOptions.IncludeDescendantSelections);
+            bool descSel = query.Options.HasFlag(QueryOptions.IncludeDescendantSelections);
+            bool descForce = query.Options.HasFlag(QueryOptions.IncludeDescendantForces);
             var selections = query.ScopeKind switch
             {
                 QueryScopeKind.Parent or QueryScopeKind.ContainingForce =>
-                    includeChildren ? FlattenSelections(force.ChildSelections) : TopLevelSelections(force),
+                    GetForceSelections(force, descSel, descForce),
                 QueryScopeKind.ContainingRoster =>
-                    includeChildren ? AllSelectionsFlattened() : AllTopLevelSelections(),
-                _ => includeChildren ? FlattenSelections(force.ChildSelections) : TopLevelSelections(force),
+                    GetRosterSelections(descSel, descForce),
+                _ => GetForceSelections(force, descSel, descForce),
             };
 
             decimal count = 0;
@@ -641,6 +713,31 @@ internal static class ConstraintEvaluator
 
         private IEnumerable<SelectionSymbol> AllSelectionsFlattened() =>
             _roster.Forces.SelectMany(f => FlattenSelections(f.ChildSelections));
+
+        private static IEnumerable<SelectionSymbol> GetForceSelections(
+            ForceSymbol force, bool descSel, bool descForce)
+        {
+            var top = descSel ? FlattenSelections(force.ChildSelections) : TopLevelSelections(force);
+            foreach (var sel in top)
+                yield return sel;
+            if (descForce)
+            {
+                foreach (var child in force.Forces)
+                {
+                    foreach (var sel in GetForceSelections(child, descSel, descForce))
+                        yield return sel;
+                }
+            }
+        }
+
+        private IEnumerable<SelectionSymbol> GetRosterSelections(bool descSel, bool descForce)
+        {
+            foreach (var force in _roster.Forces)
+            {
+                foreach (var sel in GetForceSelections(force, descSel, descForce))
+                    yield return sel;
+            }
+        }
 
         private static int CountSelectionsInForce(string entryId, ForceSymbol force)
         {
