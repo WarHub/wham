@@ -149,7 +149,7 @@ internal static class ConstraintEvaluator
                 if (!present) continue;
 
                 // Use the smallest ID as the canonical representative to get a stable diagnostic.
-                var representative = group.Min()!;
+                var representative = group.Min(StringComparer.Ordinal)!;
                 _diagnostics.Add(ErrorCode.WRN_CostRepeatCycle, Location.None,
                     "selection", representative, representative, "");
             }
@@ -409,7 +409,7 @@ internal static class ConstraintEvaluator
             }
 
             // Validate child selection constraints
-            var forceScopeChecked = new HashSet<(string entryId, string constraintId)>();
+            var forceScopeChecked = new HashSet<(string entryId, IConstraintSymbol constraint)>();
             foreach (var sel in force.ChildSelections)
             {
                 ValidateChildConstraints(sel, force, forceScopeChecked);
@@ -422,7 +422,7 @@ internal static class ConstraintEvaluator
         private void ValidateChildConstraints(
             SelectionSymbol parent,
             ForceSymbol force,
-            HashSet<(string entryId, string constraintId)> forceScopeChecked)
+            HashSet<(string entryId, IConstraintSymbol constraint)> forceScopeChecked)
         {
             // Count children by entry ID and entry group ID.
             // For collective children, use per-model counts (divide by parent's number).
@@ -461,10 +461,9 @@ internal static class ConstraintEvaluator
                     var query = constraint.Query;
                     if (query.ValueKind != QueryValueKind.SelectionCount) continue;
 
-                    var constraintId = constraint.Id ?? "";
-
                     if (query.ScopeKind == QueryScopeKind.Parent)
                     {
+                        var constraintId = constraint.Id ?? "";
                         var constraintValue = effectiveChildValues.GetValueOrDefault(constraintId, query.ReferenceValue ?? 0m);
                         var count = counts.GetValueOrDefault(new CountKey(childEntryId, CountKeyKind.Entry));
                         CheckConstraint(query.Comparison, constraintValue, count,
@@ -472,9 +471,10 @@ internal static class ConstraintEvaluator
                             constraintId);
                     }
                     else if (query.ScopeKind is QueryScopeKind.ContainingForce or QueryScopeKind.ContainingRoster
-                          && forceScopeChecked.Add((childEntryId, constraintId)))
+                          && forceScopeChecked.Add((childEntryId, constraint)))
                     {
                         // Force/roster-scope constraint on a nested entry — evaluate once per force
+                        var constraintId = constraint.Id ?? "";
                         var constraintValue = effectiveChildValues.GetValueOrDefault(constraintId, query.ReferenceValue ?? 0m);
                         var count = CountSelectionsInScope(query, childEntryId, force);
                         CheckConstraint(query.Comparison, constraintValue, count,
@@ -517,18 +517,18 @@ internal static class ConstraintEvaluator
                         var query = constraint.Query;
                         if (query.ValueKind != QueryValueKind.SelectionCount) continue;
 
-                        var constraintId = constraint.Id ?? "";
-
                         if (query.ScopeKind == QueryScopeKind.Parent)
                         {
+                            var constraintId = constraint.Id ?? "";
                             var constraintValue = effectiveAvailValues.GetValueOrDefault(constraintId, query.ReferenceValue ?? 0m);
                             CheckConstraint(query.Comparison, constraintValue, currentCount,
                                 childId, "selection", parentEntryIdForLookup,
                                 constraintId);
                         }
                         else if (query.ScopeKind is QueryScopeKind.ContainingForce or QueryScopeKind.ContainingRoster
-                              && forceScopeChecked.Add((childId, constraintId)))
+                              && forceScopeChecked.Add((childId, constraint)))
                         {
+                            var constraintId = constraint.Id ?? "";
                             var constraintValue = effectiveAvailValues.GetValueOrDefault(constraintId, query.ReferenceValue ?? 0m);
                             var count = CountSelectionsInScope(query, childId, force);
                             CheckConstraint(query.Comparison, constraintValue, count,

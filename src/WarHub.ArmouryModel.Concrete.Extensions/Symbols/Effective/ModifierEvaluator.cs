@@ -28,11 +28,13 @@ internal sealed class ModifierEvaluator
 {
     private readonly IRosterSymbol _roster;
     private readonly WhamCompilation _compilation;
+    private readonly Lazy<(HashSet<string> CyclicIds, List<HashSet<string>> Groups)> _cycleDetectionLazy;
 
     public ModifierEvaluator(IRosterSymbol roster, WhamCompilation compilation)
     {
         _roster = roster;
         _compilation = compilation;
+        _cycleDetectionLazy = new Lazy<(HashSet<string>, List<HashSet<string>>)>(BuildCostRepeatCycles);
     }
 
     /// <summary>
@@ -1172,21 +1174,21 @@ internal sealed class ModifierEvaluator
     //  Cost-field repeat cycle detection
     // ──────────────────────────────────────────────────────────────────
 
-    private (HashSet<string> CyclicIds, List<HashSet<string>> Groups)? _cycleDetectionResult;
+    // Check repeat children (ModifierEffectBaseSymbol.Effects → RepeatEffectSymbol)
 
     /// <summary>
     /// Returns the set of all entry IDs involved in cost-field repeat cycles.
     /// Entries in this set should have their cyclic cost modifiers skipped.
     /// </summary>
-    public HashSet<string> GetCostRepeatCyclicEntryIds() =>
-        (_cycleDetectionResult ??= BuildCostRepeatCycles()).CyclicIds;
+    public IReadOnlySet<string> GetCostRepeatCyclicEntryIds() =>
+        _cycleDetectionLazy.Value.CyclicIds;
 
     /// <summary>
     /// Returns one group (SCC) per distinct cost-field repeat cycle.
     /// Used by ConstraintEvaluator to emit one diagnostic per cycle.
     /// </summary>
     public IReadOnlyList<HashSet<string>> GetCostRepeatCycleGroups() =>
-        (_cycleDetectionResult ??= BuildCostRepeatCycles()).Groups;
+        _cycleDetectionLazy.Value.Groups;
 
     private (HashSet<string> CyclicIds, List<HashSet<string>> Groups) BuildCostRepeatCycles()
     {
