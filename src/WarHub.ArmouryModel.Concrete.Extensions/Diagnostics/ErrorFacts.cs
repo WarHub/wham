@@ -82,6 +82,8 @@ internal static partial class ErrorFacts
                 "Minimum category count not met: on='{0}', from='{1}', min={2}, actual={3}.",
             ErrorCode.WRN_MaxCategoryCountViolation =>
                 "Maximum category count exceeded: on='{0}', from='{1}', max={2}, actual={3}.",
+            ErrorCode.WRN_CostRepeatCycle =>
+                "Cost-field repeat cycle detected: entry '{2}' has a modifier repeat that transitively depends on its own cost. The looping modifier is not applied.",
             _ => code.ToString(),
         };
 

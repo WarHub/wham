@@ -727,7 +727,7 @@ public sealed class WhamRosterEngine
         {
             var scaledChildNumber = child.Number * newNumber / oldNumber;
             if (scaledChildNumber < 1) scaledChildNumber = 1;
-            var scaledChild = child.WithNumber(scaledChildNumber);
+            var scaledChild = child.WithUpdatedNumberAndCosts(scaledChildNumber);
             // Recurse into grandchildren
             scaledChild = ScaleChildSelections(scaledChild, child.Number, scaledChildNumber);
             newChildren.Add(scaledChild);
@@ -1277,7 +1277,7 @@ public sealed class WhamRosterEngine
                 if (newNumber > 0)
                 {
                     var newSelNode = ScaleChildSelections(selNode, selNode.Number, newNumber)
-                        .WithNumber(newNumber);
+                        .WithUpdatedNumberAndCosts(newNumber);
                     var newRoster = roster.Replace(selNode, _ => newSelNode).WithUpdatedCostTotals();
                     return state.ReplaceRoster(newRoster);
                 }
@@ -1350,7 +1350,7 @@ public sealed class WhamRosterEngine
 
         // Scale children proportionally when the number changes.
         var newSelNode = ScaleChildSelections(selNode, oldNumber, actualNumber)
-            .WithNumber(actualNumber);
+            .WithUpdatedNumberAndCosts(actualNumber);
         var newRoster = roster.Replace(selNode, _ => newSelNode).WithUpdatedCostTotals();
         return state.ReplaceRoster(newRoster);
     }

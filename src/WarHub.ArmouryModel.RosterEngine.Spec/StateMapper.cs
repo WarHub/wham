@@ -36,19 +36,10 @@ internal sealed class StateMapper
             }
         }
 
-        // Build cost type ID → name map for filling missing costs on selections
-        var costTypeNames = new Dictionary<string, string>(StringComparer.Ordinal);
-        foreach (var rosterCost in _roster.Costs)
-        {
-            var typeId = rosterCost.CostType.Id!;
-            if (referencedCostTypeIds.Contains(typeId))
-                costTypeNames.TryAdd(typeId, rosterCost.Name);
-        }
-
         var forces = new List<ForceState>(_roster.Forces.Length);
         for (int i = 0; i < _roster.Forces.Length; i++)
         {
-            forces.Add(MapForce(_roster.Forces[i], costTypeNames));
+            forces.Add(MapForce(_roster.Forces[i]));
         }
         // Sort forces alphabetically by name (BattleScribe canonical ordering)
         forces.Sort((a, b) => SelectionOrdering.NaturalSort.Compare(a.Name, b.Name));
@@ -67,7 +58,7 @@ internal sealed class StateMapper
             GameSystemName: _roster.ContainingNamespace.RootCatalogue.Name);
     }
 
-    private ForceState MapForce(IForceSymbol force, IReadOnlyDictionary<string, string> costTypeNames)
+    private ForceState MapForce(IForceSymbol force)
     {
         var catalogue = force.CatalogueReference.Catalogue;
         var availableEntryCount = EntryResolver.GetRootEntryCount(catalogue);
@@ -75,7 +66,7 @@ internal sealed class StateMapper
         var selections = new List<SelectionState>(force.Selections.Length);
         foreach (var sel in SelectionOrdering.GetSortedSelections(force))
         {
-            selections.Add(MapSelection(sel, costTypeNames));
+            selections.Add(MapSelection(sel));
         }
 
         var profiles = MapProfiles(force.EffectiveSourceEntry.Resources);
@@ -89,7 +80,7 @@ internal sealed class StateMapper
 
         var categories = MapForceCategories(force);
         var publications = MapPublications(force);
-        var childForces = MapChildForces(force, costTypeNames);
+        var childForces = MapChildForces(force);
 
         return new ForceState(
             Id: force.Id,
@@ -113,17 +104,17 @@ internal sealed class StateMapper
         };
     }
 
-    private SelectionState MapSelection(ISelectionSymbol sel, IReadOnlyDictionary<string, string> costTypeNames)
+    private SelectionState MapSelection(ISelectionSymbol sel)
     {
         var children = new List<SelectionState>(sel.Selections.Length);
         foreach (var child in SelectionOrdering.GetSortedChildSelections(sel))
         {
-            children.Add(MapSelection(child, costTypeNames));
+            children.Add(MapSelection(child));
         }
 
         var eff = sel.EffectiveSourceEntry;
 
-        var costs = MapSelectionCosts(eff, sel.SelectedCount, costTypeNames);
+        var costs = MapSelectionCosts(eff, sel.SelectedCount);
         var categories = MapSelectionCategories(eff);
         var profiles = MapProfiles(eff.Resources);
         var rules = MapRules(eff.Resources);
@@ -301,12 +292,12 @@ internal sealed class StateMapper
     //  Child force mapping
     // ──────────────────────────────────────────────────────────────────
 
-    private List<ForceState> MapChildForces(IForceSymbol force, IReadOnlyDictionary<string, string> costTypeNames)
+    private List<ForceState> MapChildForces(IForceSymbol force)
     {
         var childForces = new List<ForceState>(force.Forces.Length);
-        foreach (var child in force.Forces)
+        foreach (var child in SelectionOrdering.GetSortedChildForces(force))
         {
-            childForces.Add(MapForce(child, costTypeNames));
+            childForces.Add(MapForce(child));
         }
         return childForces;
     }
@@ -316,30 +307,15 @@ internal sealed class StateMapper
     // ──────────────────────────────────────────────────────────────────
 
     private static List<CostState> MapSelectionCosts(
-        ISelectionEntryContainerSymbol eff, int selectedCount,
-        IReadOnlyDictionary<string, string> costTypeNames)
+        ISelectionEntryContainerSymbol eff, int selectedCount)
     {
         var costs = new List<CostState>(eff.Costs.Length);
-        var emittedTypeIds = new HashSet<string>(StringComparer.Ordinal);
         foreach (var cost in eff.Costs)
         {
-            var typeId = cost.Type!.Id!;
-            emittedTypeIds.Add(typeId);
             costs.Add(new CostState(
                 Name: cost.Name,
-                TypeId: typeId,
+                TypeId: cost.Type!.Id!,
                 Value: cost.Value * selectedCount));
-        }
-        // BattleScribe emits all referenced cost types on every selection, filling 0 for missing ones
-        foreach (var (typeId, name) in costTypeNames)
-        {
-            if (!emittedTypeIds.Contains(typeId))
-            {
-                costs.Add(new CostState(
-                    Name: name,
-                    TypeId: typeId,
-                    Value: 0));
-            }
         }
         return costs;
     }

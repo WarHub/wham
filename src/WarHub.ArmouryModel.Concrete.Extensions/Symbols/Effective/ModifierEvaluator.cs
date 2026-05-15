@@ -28,11 +28,13 @@ internal sealed class ModifierEvaluator
 {
     private readonly IRosterSymbol _roster;
     private readonly WhamCompilation _compilation;
+    private readonly Lazy<(HashSet<string> CyclicIds, List<HashSet<string>> Groups)> _cycleDetectionLazy;
 
     public ModifierEvaluator(IRosterSymbol roster, WhamCompilation compilation)
     {
         _roster = roster;
         _compilation = compilation;
+        _cycleDetectionLazy = new Lazy<(HashSet<string>, List<HashSet<string>>)>(BuildCostRepeatCycles);
     }
 
     /// <summary>
@@ -1058,6 +1060,15 @@ internal sealed class ModifierEvaluator
             if (referenceValue == 0)
                 return 0;
 
+            // Detect cost-field repeat cycles: if the current entry is involved in a cycle
+            // (its cost-field repeat transitively depends on its own cost), skip the modifier.
+            if (query.ValueKind == QueryValueKind.MemberValue
+                && context.EntrySymbol.Id is { } currentEntryId
+                && GetCostRepeatCyclicEntryIds().Contains(currentEntryId))
+            {
+                return 0;
+            }
+
             var value = CalculateQueryValue(query, context);
 
             // percentValue: scale referenceValue to an absolute threshold
@@ -1158,6 +1169,151 @@ internal sealed class ModifierEvaluator
     private static decimal ParseDecimal(string? value) =>
         decimal.TryParse(value, System.Globalization.NumberStyles.Any,
             System.Globalization.CultureInfo.InvariantCulture, out var result) ? result : 0m;
+
+    // ──────────────────────────────────────────────────────────────────
+    //  Cost-field repeat cycle detection
+    // ──────────────────────────────────────────────────────────────────
+
+    // Check repeat children (ModifierEffectBaseSymbol.Effects → RepeatEffectSymbol)
+
+    /// <summary>
+    /// Returns the set of all entry IDs involved in cost-field repeat cycles.
+    /// Entries in this set should have their cyclic cost modifiers skipped.
+    /// </summary>
+    public IReadOnlySet<string> GetCostRepeatCyclicEntryIds() =>
+        _cycleDetectionLazy.Value.CyclicIds;
+
+    /// <summary>
+    /// Returns one group (SCC) per distinct cost-field repeat cycle.
+    /// Used by ConstraintEvaluator to emit one diagnostic per cycle.
+    /// </summary>
+    public IReadOnlyList<HashSet<string>> GetCostRepeatCycleGroups() =>
+        _cycleDetectionLazy.Value.Groups;
+
+    private (HashSet<string> CyclicIds, List<HashSet<string>> Groups) BuildCostRepeatCycles()
+    {
+        var deps = new Dictionary<string, HashSet<string>>(StringComparer.Ordinal);
+        foreach (var force in _roster.Forces)
+            CollectCostRepeatDeps(force, deps);
+
+        var sccs = FindCostRepeatSCCs(deps);
+
+        var cyclicIds = new HashSet<string>(StringComparer.Ordinal);
+        foreach (var scc in sccs)
+            foreach (var id in scc)
+                cyclicIds.Add(id);
+
+        return (cyclicIds, sccs);
+    }
+
+    private static void CollectCostRepeatDeps(IForceSymbol force, Dictionary<string, HashSet<string>> deps)
+    {
+        foreach (var sel in force.Selections)
+            CollectCostRepeatDepsFromSelection(sel, deps);
+        foreach (var child in force.Forces)
+            CollectCostRepeatDeps(child, deps);
+    }
+
+    private static void CollectCostRepeatDepsFromSelection(
+        ISelectionSymbol sel, Dictionary<string, HashSet<string>> deps)
+    {
+        var entryId = sel.SourceEntry?.Id;
+        if (entryId is not null)
+        {
+            foreach (var effect in sel.SourceEntry!.Effects)
+                CollectCostRepeatDepsFromEffect(entryId, effect, deps);
+        }
+        foreach (var child in sel.Selections)
+            CollectCostRepeatDepsFromSelection(child, deps);
+    }
+
+    private static void CollectCostRepeatDepsFromEffect(
+        string ownerEntryId, IEffectSymbol effect, Dictionary<string, HashSet<string>> deps)
+    {
+        // Collect deps from RepetitionQuery with MemberValue — this targets cost fields.
+        // The outer modifier (TargetKind=Member) has children in Effects; those children
+        // are repeat effects (TargetKind=Effect) whose RepetitionQuery carries the filter.
+        if (effect.RepetitionQuery is { ValueKind: QueryValueKind.MemberValue } query
+            && query.FilterSymbol?.Id is { } targetId)
+        {
+            if (!deps.TryGetValue(ownerEntryId, out var set))
+                deps[ownerEntryId] = set = new HashSet<string>(StringComparer.Ordinal);
+            set.Add(targetId);
+        }
+        foreach (var child in effect.Effects)
+            CollectCostRepeatDepsFromEffect(ownerEntryId, child, deps);
+        foreach (var child in effect.ChildrenWhenSatisfied)
+            CollectCostRepeatDepsFromEffect(ownerEntryId, child, deps);
+        foreach (var child in effect.ChildrenWhenUnsatisfied)
+            CollectCostRepeatDepsFromEffect(ownerEntryId, child, deps);
+    }
+
+    /// <summary>
+    /// Tarjan's SCC algorithm — returns only SCCs that contain cycles
+    /// (size > 1, or a single node with a self-loop).
+    /// </summary>
+    private static List<HashSet<string>> FindCostRepeatSCCs(Dictionary<string, HashSet<string>> deps)
+    {
+        var result = new List<HashSet<string>>();
+        var index = 0;
+        var indexes = new Dictionary<string, int>(StringComparer.Ordinal);
+        var lowlinks = new Dictionary<string, int>(StringComparer.Ordinal);
+        var onStack = new HashSet<string>(StringComparer.Ordinal);
+        var stack = new Stack<string>();
+
+        foreach (var id in deps.Keys)
+        {
+            if (!indexes.ContainsKey(id))
+                TarjanSCC(id, deps, result, ref index, indexes, lowlinks, onStack, stack);
+        }
+        return result;
+    }
+
+    private static void TarjanSCC(
+        string id,
+        Dictionary<string, HashSet<string>> deps,
+        List<HashSet<string>> result,
+        ref int index,
+        Dictionary<string, int> indexes,
+        Dictionary<string, int> lowlinks,
+        HashSet<string> onStack,
+        Stack<string> stack)
+    {
+        indexes[id] = lowlinks[id] = index++;
+        stack.Push(id);
+        onStack.Add(id);
+
+        if (deps.TryGetValue(id, out var targets))
+        {
+            foreach (var target in targets)
+            {
+                if (!indexes.ContainsKey(target))
+                {
+                    TarjanSCC(target, deps, result, ref index, indexes, lowlinks, onStack, stack);
+                    lowlinks[id] = Math.Min(lowlinks[id], lowlinks[target]);
+                }
+                else if (onStack.Contains(target))
+                {
+                    lowlinks[id] = Math.Min(lowlinks[id], indexes[target]);
+                }
+            }
+        }
+
+        if (lowlinks[id] == indexes[id])
+        {
+            var scc = new HashSet<string>(StringComparer.Ordinal);
+            while (true)
+            {
+                var w = stack.Pop();
+                onStack.Remove(w);
+                scc.Add(w);
+                if (w == id) break;
+            }
+            // Only report SCCs with actual cycles: multi-node SCCs or self-loops
+            if (scc.Count > 1 || (deps.TryGetValue(id, out var t) && t.Contains(id)))
+                result.Add(scc);
+        }
+    }
 
     /// <summary>
     /// Evaluation context: runtime information about where the evaluation is happening.

@@ -24,4 +24,5 @@ internal enum ErrorCode
     WRN_MaxForceCountViolation = 105,
     WRN_MinCategoryCountViolation = 106,
     WRN_MaxCategoryCountViolation = 107,
+    WRN_CostRepeatCycle = 108,
 }
