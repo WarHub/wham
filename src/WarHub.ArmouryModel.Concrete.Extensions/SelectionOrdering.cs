@@ -55,6 +55,32 @@ internal static class SelectionOrdering
     }
 
     /// <summary>
+    /// Returns child forces sorted by definition order from the parent force entry.
+    /// Forces whose entry is not found in the definition list are placed last, in their original insertion order.
+    /// </summary>
+    internal static ImmutableArray<IForceSymbol> GetSortedChildForces(IForceSymbol force)
+    {
+        var children = force.Forces;
+        if (children.Length <= 1)
+            return children;
+
+        var definedChildForces = force.EffectiveSourceEntry.ChildForces;
+        if (definedChildForces.Length == 0)
+            return children;
+
+        var definitionOrder = new Dictionary<string, int>(StringComparer.Ordinal);
+        for (int i = 0; i < definedChildForces.Length; i++)
+        {
+            if (definedChildForces[i].Id is { } entryId)
+                definitionOrder[entryId] = i;
+        }
+
+        // Stable sort: forces in definition order first, then any unrecognized ones.
+        return [.. children.OrderBy(f =>
+            f.SourceEntry.Id is { } id && definitionOrder.TryGetValue(id, out var idx) ? idx : int.MaxValue)];
+    }
+
+    /// <summary>
     /// Compares selections by effective name (natural sort), with original entry name as tiebreaker
     /// only when modifiers have changed at least one name.
     /// Returns 0 for equal names to preserve insertion order (FIFO) when used with a stable sort.
