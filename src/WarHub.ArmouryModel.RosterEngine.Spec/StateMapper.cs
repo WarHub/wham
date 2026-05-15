@@ -304,7 +304,7 @@ internal sealed class StateMapper
     private List<ForceState> MapChildForces(IForceSymbol force, IReadOnlyDictionary<string, string> costTypeNames)
     {
         var childForces = new List<ForceState>(force.Forces.Length);
-        foreach (var child in force.Forces)
+        foreach (var child in SelectionOrdering.GetSortedChildForces(force))
         {
             childForces.Add(MapForce(child, costTypeNames));
         }
@@ -330,16 +330,11 @@ internal sealed class StateMapper
                 TypeId: typeId,
                 Value: cost.Value * selectedCount));
         }
-        // BattleScribe emits all referenced cost types on every selection, filling 0 for missing ones
+        // Zero-fill cost types that weren't declared on this entry (BattleScribe convention)
         foreach (var (typeId, name) in costTypeNames)
         {
             if (!emittedTypeIds.Contains(typeId))
-            {
-                costs.Add(new CostState(
-                    Name: name,
-                    TypeId: typeId,
-                    Value: 0));
-            }
+                costs.Add(new CostState(Name: name, TypeId: typeId, Value: 0));
         }
         return costs;
     }
