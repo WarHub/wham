@@ -11,6 +11,16 @@ namespace WarHub.ArmouryModel.Source
         Model,
 
         [XmlEnum("unit")]
-        Unit
+        Unit,
+
+        // NewRecruit additions.
+        [XmlEnum("unit-group")]
+        UnitGroup,
+
+        [XmlEnum("mount")]
+        Mount,
+
+        [XmlEnum("crew")]
+        Crew
     }
 }

@@ -90,7 +90,17 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                     var n = attribute.Xml.ElementNameLiteralExpression;
                     var ns = attribute.Xml.NamespaceLiteralExpression;
                     var value = TransformToString(attribute);
-                    yield return "WriteAttribute".Invoke(n, ns, value).AsStatement();
+                    var writeStatement = "WriteAttribute".Invoke(n, ns, value).AsStatement();
+                    // An attribute carrying [DefaultValue(x)] is omitted when it equals x, so data that
+                    // predates the attribute (e.g. original BattleScribe vs NewRecruit additions)
+                    // round-trips without gaining the attribute. WriteAttribute already skips null,
+                    // so this only matters for non-nullable value types like bool.
+                    var defaultValue = GetDefaultValueExpression(attribute);
+                    yield return defaultValue is null
+                        ? writeStatement
+                        : IfStatement(
+                            o.Dot(attribute.IdentifierName).OpNotEquals(defaultValue),
+                            writeStatement);
                 }
                 var textCount = elements.Count(x => x.Xml.Kind == XmlNodeKind.TextContent);
                 if (textCount > 0 && (textCount > 1 || elements.Count() > 1))
@@ -167,6 +177,27 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
                     yield return "WriteEndElement".Invoke().AsStatement();
                 }
             }
+        }
+
+        // If the attribute property carries [DefaultValue(x)], return a literal for x so the writer can
+        // omit the attribute when it holds that value; otherwise null (always write). Only constants the
+        // generator can render as a literal are honored; anything else falls back to always-write.
+        private ExpressionSyntax? GetDefaultValueExpression(CoreChildBase attribute)
+        {
+            if (DefaultValueSymbol is null)
+                return null;
+            var defaultAttribute = attribute.Symbol
+                .GetAttributes()
+                .FirstOrDefault(x => SymbolEqualityComparer.Default.Equals(x.AttributeClass, DefaultValueSymbol));
+            if (defaultAttribute is not { ConstructorArguments: { Length: 1 } })
+                return null;
+            return defaultAttribute.ConstructorArguments[0].Value switch
+            {
+                bool b => LiteralExpression(b ? SyntaxKind.TrueLiteralExpression : SyntaxKind.FalseLiteralExpression),
+                string s => LiteralExpression(SyntaxKind.StringLiteralExpression, Literal(s)),
+                int i => LiteralExpression(SyntaxKind.NumericLiteralExpression, Literal(i)),
+                _ => null
+            };
         }
 
         private ExpressionSyntax CreateWriteEnumCall(ITypeSymbol enumSymbol, ExpressionSyntax value)

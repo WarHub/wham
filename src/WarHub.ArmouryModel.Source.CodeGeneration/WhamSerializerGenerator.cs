@@ -16,6 +16,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
         private const string WhamCoreXmlSerializationReaderName = "WhamCoreXmlSerializationReader";
         private const string WhamCoreXmlSerializationWriterName = "WhamCoreXmlSerializationWriter";
         private const string XmlEnumAttributeMetadataName = "System.Xml.Serialization.XmlEnumAttribute";
+        private const string DefaultValueAttributeMetadataName = "System.ComponentModel.DefaultValueAttribute";
 
         public WhamSerializerGenerator(Compilation compilation, ImmutableArray<CoreDescriptor> descriptors)
         {
@@ -24,6 +25,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
             SealedCores = descriptors.Where(x => x.TypeSymbol.IsSealed).ToImmutableArray();
             RootCores = SealedCores.Where(x => x.Xml.IsRoot).ToImmutableArray();
             XmlEnumSymbol = Compilation.GetTypeByMetadataNameOrThrow(XmlEnumAttributeMetadataName);
+            DefaultValueSymbol = Compilation.GetTypeByMetadataName(DefaultValueAttributeMetadataName);
         }
 
         public Compilation Compilation { get; }
@@ -31,6 +33,7 @@ namespace WarHub.ArmouryModel.Source.CodeGeneration
         public ImmutableArray<CoreDescriptor> SealedCores { get; }
         public ImmutableArray<CoreDescriptor> RootCores { get; }
         private INamedTypeSymbol XmlEnumSymbol { get; }
+        private INamedTypeSymbol? DefaultValueSymbol { get; }
 
         private static ImmutableArray<string> DisabledErrorCodes { get; } =
             new[]

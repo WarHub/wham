@@ -114,7 +114,9 @@ namespace WarHub.ArmouryModel.Source
             return CharacteristicType(
                 comment: null,
                 id: NewId(),
-                name: name ?? NewName());
+                name: name ?? NewName(),
+                kindValue: null,
+                defaultValue: null);
         }
 
         public static ConditionNode Condition(
@@ -162,7 +164,10 @@ namespace WarHub.ArmouryModel.Source
                 includeChildSelections: false,
                 includeChildForces: false,
                 id: id ?? NewId(),
-                type: type);
+                type: type,
+                negative: false,
+                automatic: false,
+                message: null);
         }
 
         public static CostNode Cost(CostTypeNode costType, decimal value = 0m)
@@ -405,7 +410,8 @@ namespace WarHub.ArmouryModel.Source
             return ProfileType(
                 comment: null,
                 id: NewId(),
-                name: name ?? NewName());
+                name: name ?? NewName(),
+                kindValue: null);
         }
 
         public static PublicationNode Publication(string? name = null)

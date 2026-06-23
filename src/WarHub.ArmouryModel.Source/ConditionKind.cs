@@ -26,6 +26,16 @@ namespace WarHub.ArmouryModel.Source
         InstanceOf,
 
         [XmlEnum("notInstanceOf")]
-        NotInstanceOf
+        NotInstanceOf,
+
+        // NewRecruit additions.
+        [XmlEnum("always")]
+        Always,
+
+        [XmlEnum("never")]
+        Never,
+
+        [XmlEnum("before")]
+        Before
     }
 }

@@ -8,6 +8,10 @@ namespace WarHub.ArmouryModel.Source
         Minimum,
 
         [XmlEnum("max")]
-        Maximum
+        Maximum,
+
+        // NewRecruit addition.
+        [XmlEnum("exactly")]
+        Exactly
     }
 }

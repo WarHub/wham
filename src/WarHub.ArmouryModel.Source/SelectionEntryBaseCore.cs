@@ -23,5 +23,9 @@ namespace WarHub.ArmouryModel.Source
 
         [XmlArray("entryLinks")]
         public ImmutableArray<EntryLinkCore> EntryLinks { get; init; } = ImmutableArray<EntryLinkCore>.Empty;
+
+        // NewRecruit addition.
+        [XmlArray("associations")]
+        public ImmutableArray<AssociationCore> Associations { get; init; } = ImmutableArray<AssociationCore>.Empty;
     }
 }

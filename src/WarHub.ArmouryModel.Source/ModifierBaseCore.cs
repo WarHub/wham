@@ -14,5 +14,9 @@ namespace WarHub.ArmouryModel.Source
 
         [XmlArray("conditionGroups")]
         public ImmutableArray<ConditionGroupCore> ConditionGroups { get; init; } = ImmutableArray<ConditionGroupCore>.Empty;
+
+        // NewRecruit addition.
+        [XmlArray("localConditionGroups")]
+        public ImmutableArray<LocalConditionGroupCore> LocalConditionGroups { get; init; } = ImmutableArray<LocalConditionGroupCore>.Empty;
     }
 }
