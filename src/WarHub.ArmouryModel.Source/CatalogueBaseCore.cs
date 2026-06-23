@@ -71,5 +71,12 @@ namespace WarHub.ArmouryModel.Source
 
         [XmlArray("sharedInfoGroups")]
         public ImmutableArray<InfoGroupCore> SharedInfoGroups { get; init; } = ImmutableArray<InfoGroupCore>.Empty;
+
+        // NewRecruit additions.
+        [XmlArray("sharedForceEntries")]
+        public ImmutableArray<ForceEntryCore> SharedForceEntries { get; init; } = ImmutableArray<ForceEntryCore>.Empty;
+
+        [XmlArray("sharedAssociations")]
+        public ImmutableArray<AssociationCore> SharedAssociations { get; init; } = ImmutableArray<AssociationCore>.Empty;
     }
 }

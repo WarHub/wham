@@ -42,6 +42,13 @@
 
         Repeat, RepeatList,
 
+        // NewRecruit additions
+        Association, AssociationList,
+
+        AttributeType, AttributeTypeList,
+
+        LocalConditionGroup, LocalConditionGroupList,
+
         // infos
         Characteristic, CharacteristicList,
 

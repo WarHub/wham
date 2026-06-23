@@ -11,5 +11,12 @@ namespace WarHub.ArmouryModel.Source
 
         [XmlAttribute("name")]
         public string? Name { get; init; }
+
+        // NewRecruit additions. (KindValue avoids colliding with SourceNode.Kind.)
+        [XmlAttribute("kind")]
+        public string? KindValue { get; init; }
+
+        [XmlAttribute("defaultValue")]
+        public string? DefaultValue { get; init; }
     }
 }

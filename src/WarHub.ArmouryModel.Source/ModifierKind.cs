@@ -58,6 +58,49 @@ namespace WarHub.ArmouryModel.Source
         /// Usable on Category fields.
         /// </summary>
         [XmlEnum("unset-primary")]
-        UnsetPrimary
+        UnsetPrimary,
+
+        // NewRecruit additions: extended numeric operations, string ops, and hide.
+        [XmlEnum("multiply")]
+        Multiply,
+
+        [XmlEnum("divide")]
+        Divide,
+
+        [XmlEnum("modulo")]
+        Modulo,
+
+        [XmlEnum("power")]
+        Power,
+
+        [XmlEnum("exponent")]
+        Exponent,
+
+        [XmlEnum("triangular")]
+        Triangular,
+
+        [XmlEnum("ceil")]
+        Ceil,
+
+        [XmlEnum("floor")]
+        Floor,
+
+        [XmlEnum("cumulative-add")]
+        CumulativeAdd,
+
+        [XmlEnum("cumulative-multiply")]
+        CumulativeMultiply,
+
+        [XmlEnum("cumulative-power")]
+        CumulativePower,
+
+        [XmlEnum("prepend")]
+        Prepend,
+
+        [XmlEnum("replace")]
+        Replace,
+
+        [XmlEnum("hide")]
+        Hide
     }
 }

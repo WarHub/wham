@@ -51,6 +51,9 @@
       <xs:extension base="tns:Commentable">
         <xs:attribute name="id" type="tns:idtype" use="required" />
         <xs:attribute name="name" type="xs:string" use="required" />
+        <!--NewRecruit additions-->
+        <xs:attribute name="kind" type="xs:string" />
+        <xs:attribute name="defaultValue" type="xs:string" />
       </xs:extension>
     </xs:complexContent>
   </xs:complexType>
@@ -67,11 +70,31 @@
       <xs:extension base="tns:Commentable">
         <xs:sequence>
           <xs:element name="characteristicTypes" type="tns:CharacteristicTypeList" minOccurs="0" />
+          <!--NewRecruit addition-->
+          <xs:element name="attributeTypes" type="tns:AttributeTypeList" minOccurs="0" />
         </xs:sequence>
         <xs:attribute name="id" type="tns:idtype" use="required" />
         <xs:attribute name="name" type="xs:string" use="required" />
+        <!--NewRecruit addition-->
+        <xs:attribute name="kind" type="xs:string" />
       </xs:extension>
     </xs:complexContent>
+  </xs:complexType>
+
+  <!--NewRecruit addition: attribute type (parallel to characteristicType)-->
+  <xs:complexType name="AttributeType">
+    <xs:complexContent>
+      <xs:extension base="tns:Commentable">
+        <xs:attribute name="id" type="tns:idtype" />
+        <xs:attribute name="name" type="xs:string" />
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="AttributeTypeList">
+    <xs:sequence>
+      <xs:element name="attributeType" type="tns:AttributeType" minOccurs="0" maxOccurs="unbounded" />
+    </xs:sequence>
   </xs:complexType>
 
   <xs:complexType name="ProfileTypeList">
@@ -279,6 +302,8 @@
           <xs:element name="selectionEntries" type="tns:SelectionEntryList" minOccurs="0" />
           <xs:element name="selectionEntryGroups" type="tns:SelectionEntryGroupList" minOccurs="0" />
           <xs:element name="entryLinks" type="tns:EntryLinkList" minOccurs="0" />
+          <!--NewRecruit addition-->
+          <xs:element name="associations" type="tns:AssociationList" minOccurs="0" />
         </xs:sequence>
         <xs:attribute name="collective" type="xs:boolean" default="false" />
         <xs:attribute name="import" type="xs:boolean" default="false" />
@@ -309,6 +334,10 @@
       <xs:enumeration value="upgrade"/>
       <xs:enumeration value="model"/>
       <xs:enumeration value="unit"/>
+      <!--NewRecruit additions-->
+      <xs:enumeration value="unit-group"/>
+      <xs:enumeration value="mount"/>
+      <xs:enumeration value="crew"/>
     </xs:restriction>
   </xs:simpleType>
 
@@ -433,6 +462,25 @@
     </xs:complexContent>
   </xs:complexType>
   
+  <!--NewRecruit addition: association (a query relating a selection to min/max other selections)-->
+  <xs:complexType name="Association">
+    <xs:complexContent>
+      <xs:extension base="tns:QueryBase">
+        <xs:attribute name="id" type="tns:idtype" />
+        <xs:attribute name="name" type="xs:string" />
+        <xs:attribute name="min" type="xs:integer" default="0" />
+        <xs:attribute name="max" type="xs:integer" default="0" />
+        <xs:attribute name="childId" type="tns:idtype" />
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="AssociationList">
+    <xs:sequence>
+      <xs:element name="association" type="tns:Association" minOccurs="0" maxOccurs="unbounded" />
+    </xs:sequence>
+  </xs:complexType>
+
   <!--query filtered base-->
   <xs:complexType name="QueryFilteredBase">
     <xs:complexContent>
@@ -448,6 +496,10 @@
       <xs:extension base="tns:QueryBase">
         <xs:attribute name="id" type="tns:idtype" use="required" />
         <xs:attribute name="type" type="tns:ConstraintKind" use="required" />
+        <!--NewRecruit additions-->
+        <xs:attribute name="negative" type="xs:boolean" default="false" />
+        <xs:attribute name="automatic" type="xs:boolean" default="false" />
+        <xs:attribute name="message" type="xs:string" />
       </xs:extension>
     </xs:complexContent>
   </xs:complexType>
@@ -462,6 +514,8 @@
     <xs:restriction base="xs:string">
       <xs:enumeration value="min" />
       <xs:enumeration value="max" />
+      <!--NewRecruit addition (NR expands it to a min+max pair on export)-->
+      <xs:enumeration value="exactly" />
     </xs:restriction>
   </xs:simpleType>
 
@@ -473,9 +527,27 @@
           <xs:element name="repeats" type="tns:RepeatList" minOccurs="0" />
           <xs:element name="conditions" type="tns:ConditionList" minOccurs="0" />
           <xs:element name="conditionGroups" type="tns:ConditionGroupList" minOccurs="0" />
+          <!--NewRecruit addition-->
+          <xs:element name="localConditionGroups" type="tns:LocalConditionGroupList" minOccurs="0" />
         </xs:sequence>
       </xs:extension>
     </xs:complexContent>
+  </xs:complexType>
+
+  <!--NewRecruit addition: a modifier's local condition group (own query + condition type + repeat count)-->
+  <xs:complexType name="LocalConditionGroup">
+    <xs:complexContent>
+      <xs:extension base="tns:QueryFilteredBase">
+        <xs:attribute name="type" type="tns:ConditionKind" use="required" />
+        <xs:attribute name="repeats" type="xs:integer" default="0" />
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="LocalConditionGroupList">
+    <xs:sequence>
+      <xs:element name="localConditionGroup" type="tns:LocalConditionGroup" minOccurs="0" maxOccurs="unbounded" />
+    </xs:sequence>
   </xs:complexType>
 
   <!--modifier-->
@@ -505,6 +577,21 @@
       <xs:enumeration value="remove" />
       <xs:enumeration value="set-primary" />
       <xs:enumeration value="unset-primary" />
+      <!--NewRecruit additions (math/string ops, gated on the modified field's data type)-->
+      <xs:enumeration value="multiply" />
+      <xs:enumeration value="divide" />
+      <xs:enumeration value="modulo" />
+      <xs:enumeration value="power" />
+      <xs:enumeration value="exponent" />
+      <xs:enumeration value="triangular" />
+      <xs:enumeration value="ceil" />
+      <xs:enumeration value="floor" />
+      <xs:enumeration value="cumulative-add" />
+      <xs:enumeration value="cumulative-multiply" />
+      <xs:enumeration value="cumulative-power" />
+      <xs:enumeration value="prepend" />
+      <xs:enumeration value="replace" />
+      <xs:enumeration value="hide" />
     </xs:restriction>
   </xs:simpleType>
 
@@ -567,6 +654,10 @@
       <xs:enumeration value="atMost" />
       <xs:enumeration value="instanceOf" />
       <xs:enumeration value="notInstanceOf" />
+      <!--NewRecruit additions ("before" is valid only inside a localConditionGroup)-->
+      <xs:enumeration value="always" />
+      <xs:enumeration value="never" />
+      <xs:enumeration value="before" />
     </xs:restriction>
   </xs:simpleType>
 
@@ -593,6 +684,23 @@
     <xs:restriction base="xs:string">
       <xs:enumeration value="and" />
       <xs:enumeration value="or" />
+      <!--NewRecruit additions (a conditionGroup is now also a numeric/comparison expression node)-->
+      <xs:enumeration value="not" />
+      <xs:enumeration value="count" />
+      <xs:enumeration value="add" />
+      <xs:enumeration value="subtract" />
+      <xs:enumeration value="multiply" />
+      <xs:enumeration value="divide" />
+      <xs:enumeration value="modulo" />
+      <xs:enumeration value="power" />
+      <xs:enumeration value="min" />
+      <xs:enumeration value="max" />
+      <xs:enumeration value="greater" />
+      <xs:enumeration value="greaterOrEqual" />
+      <xs:enumeration value="less" />
+      <xs:enumeration value="lessOrEqual" />
+      <xs:enumeration value="equal" />
+      <xs:enumeration value="notEqual" />
     </xs:restriction>
   </xs:simpleType>
 
@@ -711,6 +819,9 @@
           <xs:element name="sharedRules" type="tns:RuleList" minOccurs="0" />
           <xs:element name="sharedProfiles" type="tns:ProfileList" minOccurs="0" />
           <xs:element name="sharedInfoGroups" type="tns:InfoGroupList" minOccurs="0" />
+          <!--NewRecruit additions-->
+          <xs:element name="sharedForceEntries" type="tns:ForceEntryList" minOccurs="0" />
+          <xs:element name="sharedAssociations" type="tns:AssociationList" minOccurs="0" />
         </xs:sequence>
         <xs:attribute name="id" type="tns:idtype" use="required" />
         <xs:attribute name="name" type="xs:string" use="required" />
