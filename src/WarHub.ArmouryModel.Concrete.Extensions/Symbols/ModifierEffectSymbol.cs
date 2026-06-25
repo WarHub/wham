@@ -1,0 +1,81 @@
+using WarHub.ArmouryModel.Source;
+
+namespace WarHub.ArmouryModel.Concrete;
+
+internal sealed partial class ModifierEffectSymbol : ModifierEffectBaseSymbol, IEffectSymbol, INodeDeclaredSymbol<ModifierNode>
+{
+    private ISymbol? lazyOperand;
+    private ISymbol? lazyTargetMember;
+
+    public ModifierEffectSymbol(
+        ISymbol? containingSymbol,
+        ModifierNode declaration,
+        DiagnosticBag diagnostics)
+        : base(containingSymbol, declaration, diagnostics)
+    {
+        Declaration = declaration;
+        FunctionKind = declaration.Type switch
+        {
+            ModifierKind.Set => EffectOperation.SetValue,
+            ModifierKind.Increment => EffectOperation.IncrementValue,
+            ModifierKind.Decrement => EffectOperation.DecrementValue,
+            ModifierKind.Append => EffectOperation.AppendText,
+            ModifierKind.Add => EffectOperation.AddCategory,
+            ModifierKind.Remove => EffectOperation.RemoveCategory,
+            ModifierKind.SetPrimary => EffectOperation.SetCategoryPrimary,
+            ModifierKind.UnsetPrimary => EffectOperation.UnsetCategoryPrimary,
+            _ => EffectOperation.None,
+        };
+        if (FunctionKind is EffectOperation.None)
+            diagnostics.Add(ErrorCode.ERR_UnknownEnumerationValue, declaration.GetLocation(), declaration.Type);
+        TargetKind = declaration.Field switch
+        {
+            "name" => EffectTargetKind.SymbolName,
+            "page" => EffectTargetKind.PublicationPage,
+            "hidden" => EffectTargetKind.EntryHiddenState,
+            "category" => EffectTargetKind.EntryCategory,
+            "description" => EffectTargetKind.RuleDescription,
+            "primary" => EffectTargetKind.CategoryPrimary,
+            { } id => EffectTargetKind.Member,
+            null => EffectTargetKind.None,
+        };
+        if (TargetKind is EffectTargetKind.None)
+            diagnostics.Add(ErrorCode.ERR_UnknownEnumerationValue, declaration.GetLocation(), declaration.Field ?? "field");
+
+        // TODO diagnostics when FunctionKind is *Category but TargetKind is not EntryCategory etc.
+        // TODO diagnostics when FunctionKind is numeric but OperandValue is not (e.g. increase by 'a'?)
+    }
+
+    public new ModifierNode Declaration { get; }
+
+    public override EffectTargetKind TargetKind { get; }
+
+    [Bound]
+    public override ISymbol? TargetMember
+    {
+        get
+        {
+            if (TargetKind is EffectTargetKind.Member)
+                return GetBoundField(ref lazyTargetMember, Declaration, static (b, d, decl) => b.BindEffectTargetMemberSymbol(decl, decl.Field, d));
+            return null;
+        }
+    }
+
+    public override EffectOperation FunctionKind { get; }
+
+    public override string? OperandValue => Declaration.Value;
+
+    [Bound]
+    public override ISymbol? OperandSymbol
+    {
+        get
+        {
+            if (TargetKind is EffectTargetKind.EntryCategory)
+                return GetBoundField(ref lazyOperand, Declaration, static (b, d, decl) => b.BindCategoryEntrySymbol(decl, decl.Value, d));
+            return null;
+        }
+    }
+
+    public override ImmutableArray<ModifierEffectBaseSymbol> ChildrenWhenSatisfied =>
+        ImmutableArray<ModifierEffectBaseSymbol>.Empty;
+}
