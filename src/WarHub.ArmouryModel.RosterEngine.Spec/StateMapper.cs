@@ -1,3 +1,4 @@
+using System.Globalization;
 using BattleScribeSpec.Protocol;
 using BattleScribeSpec.Roster;
 using WarHub.ArmouryModel.Concrete;
@@ -104,7 +105,7 @@ internal sealed class StateMapper
         };
     }
 
-    private SelectionState MapSelection(ISelectionSymbol sel)
+    private static SelectionState MapSelection(ISelectionSymbol sel)
     {
         var children = new List<SelectionState>(sel.Selections.Length);
         foreach (var child in SelectionOrdering.GetSortedChildSelections(sel))
@@ -263,7 +264,7 @@ internal sealed class StateMapper
     //  Publication mapping
     // ──────────────────────────────────────────────────────────────────
 
-    private List<PublicationState> MapPublications(IForceSymbol force)
+    private static List<PublicationState> MapPublications(IForceSymbol force)
     {
         var catalogue = force.CatalogueReference.Catalogue;
         var gamesystem = catalogue.Gamesystem;
@@ -322,7 +323,7 @@ internal sealed class StateMapper
 
     private List<CostState> ComputeRosterCosts(
         List<ForceState> mappedForces,
-        IReadOnlySet<string> referencedCostTypeIds)
+        HashSet<string> referencedCostTypeIds)
     {
         var totals = new Dictionary<string, decimal>(StringComparer.Ordinal);
         foreach (var force in mappedForces)
@@ -399,7 +400,7 @@ internal sealed class StateMapper
                 var constraintId = args.Length > 3 ? args[3] as string : null;
                 if (constraintId is "") constraintId = null;
                 result.Add(new ValidationErrorState(
-                    Message: diagnostic.GetMessage(),
+                    Message: diagnostic.GetMessage(CultureInfo.InvariantCulture),
                     OwnerType: ownerType,
                     OwnerEntryId: ownerEntryId,
                     EntryId: entryId,

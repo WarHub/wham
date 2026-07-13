@@ -33,6 +33,7 @@ public sealed class WhamRosterEngine
     /// <param name="name">Optional roster name. When <see langword="null"/>, a default name is generated.</param>
     /// <returns>A new <see cref="RosterState"/> with the roster added to the compilation.</returns>
     /// <exception cref="InvalidOperationException">The compilation has no gamesystem declaration.</exception>
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "Public API of WhamRosterEngine; kept as an instance method for API stability (consumed by SpecRosterEngineAdapter/EditorServices).")]
     public RosterState CreateRoster(WhamCompilation catalogCompilation, string? name = null)
     {
         var gsSym = catalogCompilation.GlobalNamespace.RootCatalogue;
@@ -72,6 +73,7 @@ public sealed class WhamRosterEngine
     /// </param>
     /// <returns>A new <see cref="RosterState"/> with the force appended.</returns>
     /// <exception cref="ArgumentException"><paramref name="forceEntry"/> has no backing declaration node.</exception>
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "Public API of WhamRosterEngine; kept as an instance method for API stability (consumed by SpecRosterEngineAdapter/EditorServices).")]
     public RosterState AddForce(
         RosterState state,
         IForceEntrySymbol forceEntry,
@@ -107,6 +109,7 @@ public sealed class WhamRosterEngine
     /// <exception cref="ArgumentOutOfRangeException">
     /// <paramref name="forceIndex"/> is negative or greater than or equal to the number of forces.
     /// </exception>
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "Public API of WhamRosterEngine; kept as an instance method for API stability (consumed by SpecRosterEngineAdapter/EditorServices).")]
     public RosterState RemoveForce(RosterState state, int forceIndex)
     {
         var roster = state.RosterRequired;
@@ -130,6 +133,7 @@ public sealed class WhamRosterEngine
     /// <returns>Ordered list of available entries for selection in the force's catalogue.</returns>
     /// <exception cref="ArgumentOutOfRangeException"><paramref name="forceIndex"/> is out of range.</exception>
     /// <exception cref="InvalidOperationException">No catalogue found for the force's catalogue ID.</exception>
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "Public API of WhamRosterEngine; kept as an instance method for API stability (consumed by SpecRosterEngineAdapter/EditorServices).")]
     public IReadOnlyList<AvailableEntry> GetAvailableEntries(RosterState state, int forceIndex)
     {
         var roster = state.RosterRequired;
@@ -144,6 +148,7 @@ public sealed class WhamRosterEngine
     /// Gets the available child entries for a specific entry symbol.
     /// Delegates to <see cref="EntryResolver.GetChildEntries"/>.
     /// </summary>
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "Public API of WhamRosterEngine; kept as an instance method for API stability (consumed by SpecRosterEngineAdapter/EditorServices).")]
     public IReadOnlyList<AvailableEntry> GetChildEntries(ISelectionEntryContainerSymbol entry)
     {
         return EntryResolver.GetChildEntries(entry);
@@ -167,6 +172,7 @@ public sealed class WhamRosterEngine
     /// Used to populate <see cref="SelectionNode.EntryGroupId"/>.
     /// </param>
     /// <returns>A new <see cref="RosterState"/> with the selection added.</returns>
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "Public API of WhamRosterEngine; kept as an instance method for API stability (consumed by SpecRosterEngineAdapter/EditorServices).")]
     public RosterState SelectEntry(
         RosterState state,
         int forceIndex,
@@ -192,6 +198,7 @@ public sealed class WhamRosterEngine
     /// <param name="childEntry">The child entry symbol to select.</param>
     /// <param name="sourceGroup">The group this entry was flattened from, if any.</param>
     /// <returns>A new <see cref="RosterState"/> with the child selection appended.</returns>
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "Public API of WhamRosterEngine; kept as an instance method for API stability (consumed by SpecRosterEngineAdapter/EditorServices).")]
     public RosterState SelectChildEntry(
         RosterState state,
         int forceIndex,
@@ -219,6 +226,7 @@ public sealed class WhamRosterEngine
     /// <param name="forceIndex">Zero-based index of the force.</param>
     /// <param name="selectionIndex">Zero-based index of the selection to remove.</param>
     /// <returns>A new <see cref="RosterState"/> without the specified selection.</returns>
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "Public API of WhamRosterEngine; kept as an instance method for API stability (consumed by SpecRosterEngineAdapter/EditorServices).")]
     public RosterState DeselectSelection(RosterState state, int forceIndex, int selectionIndex)
     {
         var roster = state.RosterRequired;
@@ -240,6 +248,7 @@ public sealed class WhamRosterEngine
     /// <param name="forceIndex">Zero-based index of the force.</param>
     /// <param name="selectionIndex">Zero-based index of the selection to duplicate.</param>
     /// <returns>A new <see cref="RosterState"/> with the duplicate appended to the force.</returns>
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "Public API of WhamRosterEngine; kept as an instance method for API stability (consumed by SpecRosterEngineAdapter/EditorServices).")]
     public RosterState DuplicateSelection(RosterState state, int forceIndex, int selectionIndex)
     {
         var roster = state.RosterRequired;
@@ -265,6 +274,7 @@ public sealed class WhamRosterEngine
     /// <param name="value">The new limit value.</param>
     /// <returns>A new <see cref="RosterState"/> with the updated cost limit.</returns>
     /// <exception cref="ArgumentException">No cost limit with the given type ID exists.</exception>
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "Public API of WhamRosterEngine; kept as an instance method for API stability (consumed by SpecRosterEngineAdapter/EditorServices).")]
     public RosterState SetCostLimit(RosterState state, string costTypeId, decimal value)
     {
         var roster = state.RosterRequired;
@@ -294,6 +304,7 @@ public sealed class WhamRosterEngine
     /// This public overload allows the adapter layer to create selections for nested forces
     /// where the index-based engine API cannot be used directly.
     /// </summary>
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "Public API of WhamRosterEngine; kept as an instance method for API stability (consumed by SpecRosterEngineAdapter/EditorServices).")]
     public SelectionNode CreateSelectionFromEntry(
         ISelectionEntryContainerSymbol entry,
         ISelectionEntryGroupSymbol? sourceGroup)
@@ -311,7 +322,7 @@ public sealed class WhamRosterEngine
     /// Propagated to child entries so that their <c>entryId</c> values are correctly
     /// prefixed with all link IDs in the hierarchy above them.
     /// </param>
-    private SelectionNode CreateSelectionWithAutoChildren(
+    private static SelectionNode CreateSelectionWithAutoChildren(
         ISelectionEntryContainerSymbol entry,
         ISelectionEntryGroupSymbol? sourceGroup,
         string linkPrefix = "")
@@ -1053,6 +1064,7 @@ public sealed class WhamRosterEngine
     /// Adds a child force nested inside an existing force. Does NOT auto-select
     /// root entries (matching BattleScribe behavior for nested forces).
     /// </summary>
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "Public API of WhamRosterEngine; kept as an instance method for API stability (consumed by SpecRosterEngineAdapter/EditorServices).")]
     public MutationResult AddChildForceById(
         RosterState state,
         string parentForceId,
@@ -1087,6 +1099,7 @@ public sealed class WhamRosterEngine
     /// <summary>
     /// Removes a force by ID from anywhere in the roster's force tree.
     /// </summary>
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "Public API of WhamRosterEngine; kept as an instance method for API stability (consumed by SpecRosterEngineAdapter/EditorServices).")]
     public RosterState RemoveForceById(RosterState state, string forceId)
     {
         var roster = state.RosterRequired;
@@ -1098,6 +1111,7 @@ public sealed class WhamRosterEngine
     /// <summary>
     /// Duplicates a top-level force. Returns the new force's ID.
     /// </summary>
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "Public API of WhamRosterEngine; kept as an instance method for API stability (consumed by SpecRosterEngineAdapter/EditorServices).")]
     public MutationResult DuplicateForceById(RosterState state, string forceId)
     {
         var roster = state.RosterRequired;
@@ -1127,6 +1141,7 @@ public sealed class WhamRosterEngine
     /// Selects an entry by ID and adds it to the specified force (by ID, any nesting depth).
     /// Resolves the entry from the force's catalogue's available entries.
     /// </summary>
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "Public API of WhamRosterEngine; kept as an instance method for API stability (consumed by SpecRosterEngineAdapter/EditorServices).")]
     public MutationResult SelectEntryById(
         RosterState state,
         string forceId,
@@ -1155,6 +1170,7 @@ public sealed class WhamRosterEngine
     /// Selects a child entry by ID and nests it under an existing selection (by ID, any nesting depth).
     /// Resolves the parent selection's source entry symbol to enumerate child entries.
     /// </summary>
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "Public API of WhamRosterEngine; kept as an instance method for API stability (consumed by SpecRosterEngineAdapter/EditorServices).")]
     public MutationResult SelectChildEntryById(
         RosterState state,
         string forceId,
@@ -1258,6 +1274,7 @@ public sealed class WhamRosterEngine
     /// For collective entries, removes one per model (subtracts parent's number).
     /// If the resulting count is zero or below, removes the node entirely.
     /// </summary>
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "Public API of WhamRosterEngine; kept as an instance method for API stability (consumed by SpecRosterEngineAdapter/EditorServices).")]
     public RosterState DeselectSelectionById(
         RosterState state,
         string forceId,
@@ -1292,6 +1309,7 @@ public sealed class WhamRosterEngine
     /// Duplicates a selection by ID within a force. The duplicate is placed
     /// alongside the original (same parent), with regenerated IDs throughout.
     /// </summary>
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "Public API of WhamRosterEngine; kept as an instance method for API stability (consumed by SpecRosterEngineAdapter/EditorServices).")]
     public MutationResult DuplicateSelectionById(
         RosterState state,
         string forceId,
@@ -1328,6 +1346,7 @@ public sealed class WhamRosterEngine
     /// per-model (multiplied by the parent's number). When any selection's
     /// number changes, all children scale proportionally.
     /// </summary>
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "Public API of WhamRosterEngine; kept as an instance method for API stability (consumed by SpecRosterEngineAdapter/EditorServices).")]
     public RosterState SetSelectionCountById(
         RosterState state,
         string forceId,
@@ -1360,6 +1379,7 @@ public sealed class WhamRosterEngine
     /// Categories only support <paramref name="customNotes"/>; passing a non-null
     /// <paramref name="customName"/> when <paramref name="categoryEntryId"/> is set throws.
     /// </summary>
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "Public API of WhamRosterEngine; kept as an instance method for API stability (consumed by SpecRosterEngineAdapter/EditorServices).")]
     public RosterState SetCustomizationById(
         RosterState state,
         string forceId,
