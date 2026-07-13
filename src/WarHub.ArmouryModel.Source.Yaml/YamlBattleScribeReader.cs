@@ -10,7 +10,10 @@ public static class YamlBattleScribeReader
     {
         var stream = new YamlStream();
         stream.Load(reader);
-        var root = (YamlMappingNode)stream.Documents[0].RootNode;
+        // Only the first document in the stream is read; multi-document YAML
+        // streams (`---` separated) are not supported. Intentional for now.
+        if (stream.Documents.Count == 0 || stream.Documents[0].RootNode is not YamlMappingNode root)
+            throw new YamlBattleScribeFormatException("expected a YAML mapping as the document root");
         var xml = YamlToXmlConverter.Convert(root);
         using var ms = new MemoryStream();
         xml.Save(ms);
