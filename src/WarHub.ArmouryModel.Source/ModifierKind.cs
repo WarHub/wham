@@ -58,6 +58,33 @@ namespace WarHub.ArmouryModel.Source
         /// Usable on Category fields.
         /// </summary>
         [XmlEnum("unset-primary")]
-        UnsetPrimary
+        UnsetPrimary,
+
+        /// <summary>
+        /// Modifies the target by replacing it with Modifier's value.
+        /// Observed in real-world wh40k-11e/NewRecruit data (not present in
+        /// src/dataformat/xml/schema/latest/Catalogue.xsd's ModifierKind enumeration - that XSD
+        /// predates this modifier kind).
+        /// </summary>
+        [XmlEnum("replace")]
+        Replace,
+
+        /// <summary>
+        /// Modifies the target by rounding its value up (ceiling).
+        /// Observed in real-world wh40k-11e/NewRecruit data (not present in
+        /// src/dataformat/xml/schema/latest/Catalogue.xsd's ModifierKind enumeration - that XSD
+        /// predates this modifier kind).
+        /// </summary>
+        [XmlEnum("ceil")]
+        Ceil,
+
+        /// <summary>
+        /// Modifies the target by rounding its value down (floor).
+        /// Observed in real-world wh40k-11e/NewRecruit data (not present in
+        /// src/dataformat/xml/schema/latest/Catalogue.xsd's ModifierKind enumeration - that XSD
+        /// predates this modifier kind).
+        /// </summary>
+        [XmlEnum("floor")]
+        Floor
     }
 }

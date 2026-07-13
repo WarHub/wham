@@ -42,6 +42,24 @@ public static class YamlToXmlConverter
         ["rules"] = "rule",
         ["costs"] = "cost",
         ["costLimits"] = "costLimit",
+        // Not in Catalogue.xsd (any version) - a NewRecruit extension. Documented in this repo's
+        // own spec notes (lib/battlescribe-spec/docs/data-editor-investigation.md:155) as
+        // `association: {min, max, scope, childId, ids, name, id}` - an object-shaped item, so it
+        // fits the existing plural-container/singular-item pattern. wham's XSD-generated node
+        // model has no Association type, so the deserializer silently drops it (same as any other
+        // unrecognized element) - this entry only keeps strict mode from rejecting real-world data.
+        ["associations"] = "association",
+    };
+
+    // Keys holding a YAML sequence of *scalars* (not mappings) that map to repeated sibling XML
+    // text elements sharing the YAML key as their tag name (no plural/singular wrapping, unlike
+    // ItemElementNames). Confirmed absent from Catalogue.xsd (latest, v2_02, v2_03): "alias" is a
+    // non-standard extension found on Rule entries in real wh40k-11e data (keyword aliases, e.g.
+    // `alias: [PISTOL]`), unrepresentable in wham's node model. Emitting <alias>PISTOL</alias>
+    // lets the XML deserializer silently drop it, same as it does for unrecognized attributes.
+    private static readonly HashSet<string> RepeatedTextElementNames = new(StringComparer.Ordinal)
+    {
+        "alias",
     };
 
     // Keys that are BattleScribe XML *child text elements* rather than attributes.
@@ -88,6 +106,14 @@ public static class YamlToXmlConverter
                     break;
                 case YamlScalarNode scalar:
                     SetAttribute(element, key, scalar.Value ?? "");
+                    break;
+                case YamlSequenceNode seq when RepeatedTextElementNames.Contains(key):
+                    foreach (var item in seq.Children)
+                    {
+                        var itemScalar = item as YamlScalarNode
+                            ?? throw new YamlBattleScribeFormatException($"expected a scalar item under key '{key}', found {DescribeNodeType(item)}");
+                        element.Add(CreateElement(ns, key, key, itemScalar.Value ?? ""));
+                    }
                     break;
                 case YamlSequenceNode seq:
                     if (!ItemElementNames.TryGetValue(key, out var itemName))

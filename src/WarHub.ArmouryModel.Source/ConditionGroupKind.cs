@@ -8,6 +8,15 @@ namespace WarHub.ArmouryModel.Source
         And,
 
         [XmlEnum("or")]
-        Or
+        Or,
+
+        /// <summary>
+        /// Observed in real-world wh40k-11e/NewRecruit data (not present in
+        /// src/dataformat/xml/schema/latest/Catalogue.xsd's ConditionGroupKind enumeration - that
+        /// XSD predates this condition group kind). Requires at least a specified count of the
+        /// contained conditions/groups to be true.
+        /// </summary>
+        [XmlEnum("count")]
+        Count
     }
 }
