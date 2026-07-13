@@ -98,4 +98,94 @@ public class YamlBattleScribeReaderTests
             () => YamlBattleScribeReader.ReadSourceNode(new StringReader(yaml)));
         Assert.Contains("xml:lang", ex.Message, StringComparison.Ordinal);
     }
+
+    private const string CatalogueWithModifiers = """
+        catalogue:
+          sharedSelectionEntries:
+            - modifiers:
+                - conditionGroups:
+                    - conditions:
+                        - type: lessThan
+                          value: 1
+                          field: forces
+                          scope: roster
+                          childId: cac3-71d1-ea4b-795d
+                          shared: true
+                          id: 1c00-f001-2a27-52b7
+                          includeChildSelections: true
+                      type: and
+                  type: set
+                  value: true
+                  field: hidden
+              costs:
+                - name: pts
+                  typeId: 51b2-306e-1021-d207
+                  value: 20
+              constraints:
+                - type: max
+                  value: 1
+                  field: selections
+                  scope: roster
+                  shared: true
+                  id: f2e6-938b-9ff0-37c7
+                  includeChildSelections: true
+              profiles:
+                - characteristics:
+                    - $text: While the bearer is leading a unit, models in that unit have the Stealth ability.
+                      name: Description
+                      typeId: 9082-un23-lead-abil
+                  typeId: 5570-9av2
+                  name: Veil of Darkness
+                  id: prof-veil-1
+              comment: Awakened Dynasty
+              type: upgrade
+              import: true
+              name: Veil of Darkness
+              hidden: false
+              id: a562-e37c-3a4d-d152
+          xmlns: http://www.battlescribe.net/schema/catalogueSchema
+          id: cat-necrons-test
+          name: Test Necrons
+          revision: 1
+          battleScribeVersion: "2.03"
+          gameSystemId: sys-352e-adc2-7639-d6a9
+          gameSystemRevision: 1
+        """;
+
+    [Fact]
+    public void ReadSourceNode_preserves_modifiers_costs_constraints_and_text()
+    {
+        var node = YamlBattleScribeReader.ReadSourceNode(new StringReader(CatalogueWithModifiers));
+
+        var cat = Assert.IsAssignableFrom<CatalogueNode>(node);
+        var entry = Assert.Single(cat.SharedSelectionEntries);
+        Assert.Equal("Veil of Darkness", entry.Name);
+        Assert.Equal(20m, Assert.Single(entry.Costs).Value);
+        var modifier = Assert.Single(entry.Modifiers);
+        Assert.Equal("true", modifier.Value);
+        var condition = Assert.Single(Assert.Single(modifier.ConditionGroups).Conditions);
+        Assert.Equal("cac3-71d1-ea4b-795d", condition.ChildId);
+        var characteristic = Assert.Single(Assert.Single(entry.Profiles).Characteristics);
+        Assert.Contains("Stealth ability", characteristic.Value);
+    }
+
+    [Fact]
+    public void ReadSourceNode_throws_on_unknown_collection_key()
+    {
+        const string bad = """
+            catalogue:
+              notARealCollection:
+                - name: x
+              xmlns: http://www.battlescribe.net/schema/catalogueSchema
+              id: c1
+              name: Bad
+              revision: 1
+              battleScribeVersion: "2.03"
+              gameSystemId: g1
+              gameSystemRevision: 1
+            """;
+        var ex = Assert.Throws<YamlBattleScribeFormatException>(
+            () => YamlBattleScribeReader.ReadSourceNode(new StringReader(bad)));
+        Assert.Contains("notARealCollection", ex.Message);
+    }
 }
