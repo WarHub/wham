@@ -16,7 +16,7 @@ public class Wh40kDataIntegrationTests
             ? Directory.EnumerateFiles(dir, "*.yaml").Select(f => new object[] { f })
             : [];
 
-    [Theory]
+    [Theory(SkipTestWithoutData = true)]
     [MemberData(nameof(AllDataFiles))]
     public void Every_wh40k11e_file_loads(string path)
     {

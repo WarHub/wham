@@ -56,4 +56,27 @@ public class SetupFromFilesTests
         var state = engine.GetRosterState();
         Assert.Contains(state.Costs, c => c.Value == 20);
     }
+
+    [Fact]
+    public void SetupFromFiles_malformed_second_file_reports_its_name()
+    {
+        const string malformedYaml = """
+            catalogue:
+              selectionEntries: [not-a-mapping]
+              xmlns: http://www.battlescribe.net/schema/catalogueSchema
+              id: cat-bad
+              name: Bad Catalogue
+              revision: 1
+              battleScribeVersion: "2.03"
+              gameSystemId: gs-test
+              gameSystemRevision: 1
+            """;
+
+        using IRosterEngine engine = new SpecRosterEngineAdapter();
+        var ex = Assert.Throws<InvalidOperationException>(() =>
+            engine.SetupFromFiles([("Test System.yaml", GstYaml), ("Bad Catalogue.yaml", malformedYaml)]));
+
+        Assert.Contains("Bad Catalogue.yaml", ex.Message, StringComparison.Ordinal);
+        Assert.NotNull(ex.InnerException);
+    }
 }
