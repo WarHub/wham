@@ -42,12 +42,24 @@ public sealed class SpecRosterEngineAdapter : IRosterEngine
         var roots = new List<SourceNode>();
         foreach (var (fileName, content) in files)
         {
-            SourceNode? root = Path.GetExtension(fileName).ToUpperInvariant() switch
+            SourceNode? root;
+            try
             {
-                ".YAML" or ".YML" => YamlBattleScribeReader.ReadSourceNode(new StringReader(content)),
-                ".CAT" or ".GST" or ".XML" => DeserializeXml(content),
-                var ext => throw new NotSupportedException($"Unsupported data file extension '{ext}' ({fileName})."),
-            };
+                root = Path.GetExtension(fileName).ToUpperInvariant() switch
+                {
+                    ".YAML" or ".YML" => YamlBattleScribeReader.ReadSourceNode(new StringReader(content)),
+                    ".CAT" or ".GST" or ".XML" => DeserializeXml(content),
+                    var ext => throw new NotSupportedException($"Unsupported data file extension '{ext}' ({fileName})."),
+                };
+            }
+            catch (NotSupportedException)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException($"Failed to parse data file '{fileName}': {ex.Message}", ex);
+            }
             if (root is null)
             {
                 warnings.Add($"{fileName}: produced no root node");
