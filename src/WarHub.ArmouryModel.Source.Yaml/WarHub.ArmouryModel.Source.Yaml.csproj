@@ -1,0 +1,11 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>$(CommonTargetFramework)</TargetFramework>
+    <Description>YAML reading for BattleScribe-schema wargame data (WarHub ArmouryModel).</Description>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="YamlDotNet" />
+    <ProjectReference Include="..\WarHub.ArmouryModel.Source\WarHub.ArmouryModel.Source.csproj" />
+    <ProjectReference Include="..\WarHub.ArmouryModel.Source.BattleScribe\WarHub.ArmouryModel.Source.BattleScribe.csproj" />
+  </ItemGroup>
+</Project>
