@@ -2,6 +2,9 @@ using BattleScribeSpec.Protocol;
 using BattleScribeSpec.Roster;
 using WarHub.ArmouryModel.Concrete;
 using WarHub.ArmouryModel.EditorServices;
+using WarHub.ArmouryModel.Source;
+using WarHub.ArmouryModel.Source.BattleScribe;
+using WarHub.ArmouryModel.Source.Yaml;
 using ProtocolRosterState = BattleScribeSpec.Roster.RosterState;
 using WhamRosterState = WarHub.ArmouryModel.EditorServices.RosterState;
 
@@ -31,6 +34,39 @@ public sealed class SpecRosterEngineAdapter : IRosterEngine
         _coreEngine = new WhamRosterEngine();
         _state = _coreEngine.CreateRoster(compilation, _specId);
         return [];
+    }
+
+    public IReadOnlyList<string> SetupFromFiles(IReadOnlyList<(string FileName, string Content)> files)
+    {
+        var warnings = new List<string>();
+        var roots = new List<SourceNode>();
+        foreach (var (fileName, content) in files)
+        {
+            SourceNode? root = Path.GetExtension(fileName).ToUpperInvariant() switch
+            {
+                ".YAML" or ".YML" => YamlBattleScribeReader.ReadSourceNode(new StringReader(content)),
+                ".CAT" or ".GST" or ".XML" => DeserializeXml(content),
+                var ext => throw new NotSupportedException($"Unsupported data file extension '{ext}' ({fileName})."),
+            };
+            if (root is null)
+            {
+                warnings.Add($"{fileName}: produced no root node");
+                continue;
+            }
+            roots.Add(root);
+        }
+        var trees = roots.Select(SourceTree.CreateForRoot).ToImmutableArray();
+        var compilation = WhamCompilation.Create(trees);
+        _catalogCompilation = compilation;
+        _coreEngine = new WhamRosterEngine();
+        _state = _coreEngine.CreateRoster(compilation, _specId);
+        return warnings;
+
+        static SourceNode? DeserializeXml(string content)
+        {
+            using var ms = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(content));
+            return ms.DeserializeSourceNodeAuto();
+        }
     }
 
     public ActionOutputs AddForce(string forceEntryId, string catalogueId)
