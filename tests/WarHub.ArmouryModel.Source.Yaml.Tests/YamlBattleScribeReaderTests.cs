@@ -163,10 +163,17 @@ public class YamlBattleScribeReaderTests
         Assert.Equal(20m, Assert.Single(entry.Costs).Value);
         var modifier = Assert.Single(entry.Modifiers);
         Assert.Equal("true", modifier.Value);
-        var condition = Assert.Single(Assert.Single(modifier.ConditionGroups).Conditions);
+        var conditionGroup = Assert.Single(modifier.ConditionGroups);
+        Assert.Equal(ConditionGroupKind.And, conditionGroup.Type);
+        var condition = Assert.Single(conditionGroup.Conditions);
         Assert.Equal("cac3-71d1-ea4b-795d", condition.ChildId);
+        var constraint = Assert.Single(entry.Constraints);
+        Assert.Equal("selections", constraint.Field);
+        Assert.Equal(1m, constraint.Value);
+        Assert.Equal("f2e6-938b-9ff0-37c7", constraint.Id);
+        Assert.Equal("Awakened Dynasty", entry.Comment);
         var characteristic = Assert.Single(Assert.Single(entry.Profiles).Characteristics);
-        Assert.Contains("Stealth ability", characteristic.Value);
+        Assert.Contains("Stealth ability", characteristic.Value, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -186,6 +193,6 @@ public class YamlBattleScribeReaderTests
             """;
         var ex = Assert.Throws<YamlBattleScribeFormatException>(
             () => YamlBattleScribeReader.ReadSourceNode(new StringReader(bad)));
-        Assert.Contains("notARealCollection", ex.Message);
+        Assert.Contains("notARealCollection", ex.Message, StringComparison.Ordinal);
     }
 }
