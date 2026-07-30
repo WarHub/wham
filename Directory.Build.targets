@@ -1,22 +1,5 @@
 <Project>
 
-  <!--
-    Intentionally empty — this file exists to STOP MSBuild's upward search, not to configure
-    anything.
-
-    MSBuild walks up the directory tree from each project until it finds a
-    Directory.Build.targets and imports the first one it hits. This repo has a
-    Directory.Build.props, which terminates the equivalent walk for props — but with no
-    Directory.Build.targets, the targets search escaped the repository entirely and kept
-    climbing.
-
-    That matters because wham is consumed as a git submodule: WarHub/battlescribe-spec
-    vendors it at .deps/wham, so when that repo added a root Directory.Build.targets it was
-    silently imported into every wham project. wham's build became a property of wherever it
-    happened to be checked out rather than of wham itself — and the failure mode is quiet,
-    since an inherited targets file usually builds fine right up until it doesn't.
-
-    Repo-wide targets, if this repo ever needs any, belong here.
-  -->
+  <!-- Repo-wide targets, if this repo ever needs any, belong here. -->
 
 </Project>
