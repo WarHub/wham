@@ -217,15 +217,28 @@ namespace WarHub.ArmouryModel.Workspaces.BattleScribe
             };
         }
 
-        public static bool IsXmlZipped(this XmlDocument document) => document.Kind.IsXmlZipped();
+        /// <summary>
+        /// Checks whether the given path has a zipped BattleScribe file extension
+        /// (<c>.gstz</c>, <c>.catz</c>, <c>.rosz</c>, <c>.bsi</c> or <c>.bsr</c>).
+        /// </summary>
+        public static bool IsXmlZippedPath(this string path)
+            => ZippedExtensions.Contains(Path.GetExtension(path));
 
+        public static bool IsXmlZipped(this XmlDocument document) => document.Filepath.IsXmlZippedPath();
+
+        /// <summary>
+        /// Checks whether <em>every</em> file of the given kind is zipped. Only
+        /// <see cref="XmlDocumentKind.RepoDistribution"/> qualifies; every other kind has
+        /// both a plain and a zipped extension, so this cannot answer whether a
+        /// particular file is zipped — use <see cref="IsXmlZippedPath(string)"/> for that.
+        /// </summary>
         public static bool IsXmlZipped(this XmlDocumentKind kind)
-            => ZippedExtensions.Contains(kind.GetXmlFileExtension());
+            => ExtensionsByKinds.TryGetValue(kind, out var extensions)
+                && extensions.All(ZippedExtensions.Contains);
 
         public static SourceNode? LoadSourceAuto(this Stream stream, string filename, CancellationToken cancellationToken = default)
         {
-            var kind = filename.GetXmlDocumentKind();
-            var data = kind.IsXmlZipped()
+            var data = filename.IsXmlZippedPath()
                 ? stream.LoadSourceZipped(cancellationToken)
                 : stream.LoadSource(cancellationToken);
             return data;
