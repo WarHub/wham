@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>$(CommonTargetFramework)</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Using Include="System.Collections.Immutable" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="*.cat;*.gst;*.ros" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\WarHub.ArmouryModel.Workspaces.BattleScribe\WarHub.ArmouryModel.Workspaces.BattleScribe.csproj" />
+  </ItemGroup>
+
+</Project>
