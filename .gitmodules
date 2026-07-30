@@ -1,0 +1,3 @@
+[submodule "lib/battlescribe-spec"]
+	path = lib/battlescribe-spec
+	url = https://github.com/WarHub/battlescribe-spec.git
