@@ -12,6 +12,7 @@
   <ItemGroup>
     <InternalsVisibleTo Include="WarHub.ArmouryModel.Source.BattleScribe" />
     <InternalsVisibleTo Include="WarHub.ArmouryModel.Source.Tests" />
+    <InternalsVisibleTo Include="WarHub.ArmouryModel.RosterEngine" />
   </ItemGroup>
 
   <ItemGroup>

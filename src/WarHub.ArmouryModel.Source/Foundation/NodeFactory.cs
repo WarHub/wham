@@ -27,7 +27,7 @@ namespace WarHub.ArmouryModel.Source
         /// (4 groups of 4 characters).
         /// </summary>
         /// <returns>Generated short format UUID.</returns>
-        private static string NewId() => Guid.NewGuid().ToString().Substring(4, 19);
+        internal static string NewId() => Guid.NewGuid().ToString().Substring(4, 19);
 
         /// <summary>
         /// Generates new name via prepending caller name with "New ".
