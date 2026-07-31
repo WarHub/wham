@@ -1,0 +1,30 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>$(CommonTargetFramework)</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <IsPackable>false</IsPackable>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <AnalysisMode>Default</AnalysisMode>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Using Include="System.Collections.Immutable" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Formatting/templates/**/*" LogicalName="Templates.%(Filename)%(Extension)" />
+    <InternalsVisibleTo Include="WarHub.ArmouryModel.Concrete.Extensions.Tests" />
+    <InternalsVisibleTo Include="WarHub.ArmouryModel.EditorServices.Tests" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\WarHub.ArmouryModel.Concrete.Extensions\WarHub.ArmouryModel.Concrete.Extensions.csproj" />
+    <ProjectReference Include="..\WarHub.ArmouryModel.Extensions\WarHub.ArmouryModel.Extensions.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Handlebars.Net" />
+  </ItemGroup>
+
+</Project>
