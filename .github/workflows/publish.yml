@@ -67,7 +67,7 @@ jobs:
           private-key: ${{ secrets.WARHUB_BOT_PRIVATE_KEY }}
           owner: WarHub
           repositories: battlescribe-spec
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0 # all history
           ref: ${{ inputs.ref || '' }}
