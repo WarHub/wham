@@ -12,18 +12,13 @@ jobs:
       DOTNET_NOLOGO: 1
     runs-on: ${{ matrix.os }}
     steps:
-      - name: Generate GitHub App token
-        id: app-token
-        uses: actions/create-github-app-token@v3
-        with:
-          app-id: ${{ vars.WARHUB_BOT_APP_ID }}
-          private-key: ${{ secrets.WARHUB_BOT_PRIVATE_KEY }}
-          owner: WarHub
-          repositories: battlescribe-spec
       - uses: actions/checkout@v6
         with:
           fetch-depth: 0 # all history
-          token: ${{ steps.app-token.outputs.token }}
+          # lib/battlescribe-spec is a public repository, so the default token can
+          # clone it. Do not reintroduce a GitHub App token here: secrets are not
+          # exposed to Dependabot-triggered runs, so the token step fails and takes
+          # every Dependabot PR's CI down with it.
           submodules: true
       - uses: actions/setup-dotnet@v5
         with:
