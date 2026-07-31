@@ -94,9 +94,17 @@ namespace WarHub.ArmouryModel.Source
         [XmlEnum("cumulative-power")]
         CumulativePower,
 
+        /// <summary>
+        /// Modifies the target by prepending its value with Modifier's value.
+        /// Usable on String fields.
+        /// </summary>
         [XmlEnum("prepend")]
         Prepend,
 
+        /// <summary>
+        /// Modifies the target by replacing its value with Modifier's value.
+        /// Usable on String fields.
+        /// </summary>
         [XmlEnum("replace")]
         Replace,
 
