@@ -8,3 +8,9 @@ updates:
     directory: "/"
     schedule:
       interval: daily
+    ignore:
+      # FluentAssertions 8.0.0 relicensed from Apache-2.0 to the commercial Xceed
+      # Community Licence. Staying on the 7.x line is a deliberate choice; moving
+      # past it needs a licensing decision, not an automated bump.
+      - dependency-name: FluentAssertions
+        versions: [">=8.0.0"]
