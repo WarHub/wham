@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- **Breaking**: `NodeFactory.Force` takes an optional `catalogue` parameter in
+  second position: `Force(ForceEntryNode forceEntry, CatalogueBaseNode? catalogue = null, string? id = null)`.
+  This is source- and binary-breaking for callers that passed `id`
+  positionally — `Force(entry, "some-id")` no longer compiles and must become
+  `Force(entry, id: "some-id")`. Callers using named arguments, or passing only
+  the force entry, are unaffected.
+
+  Previously the catalogue was always inferred from the force entry's nearest
+  `CatalogueBaseNode` ancestor. That is wrong when a force entry is defined in
+  the gamesystem but the resulting force should reference a different
+  catalogue; the inference is still the default when `catalogue` is omitted.
+
 ## [0.14.0] - 2026-02-28
 
 ### Changed
