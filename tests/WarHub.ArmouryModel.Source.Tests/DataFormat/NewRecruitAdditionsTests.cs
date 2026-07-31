@@ -1,4 +1,5 @@
 using System.IO;
+using System.Text;
 using FluentAssertions;
 using WarHub.ArmouryModel.Source.BattleScribe;
 using Xunit;
@@ -124,6 +125,47 @@ namespace WarHub.ArmouryModel.Source.Tests.DataFormat
             profileType.AttributeTypes.Should().ContainSingle().Which.Name.Should().Be("Attr");
             profileType.CharacteristicTypes[0].KindValue.Should().Be("Annotation");
             profileType.CharacteristicTypes[0].DefaultValue.Should().Be("0");
+        }
+
+        [Theory]
+        [InlineData(ModifierKind.Prepend, "prepend")]
+        [InlineData(ModifierKind.Append, "append")]
+        [InlineData(ModifierKind.Replace, "replace")]
+        public void String_modifier_kinds_round_trip(ModifierKind kind, string wireName)
+        {
+            var original =
+                Gamesystem()
+                .AddSelectionEntries(
+                    SelectionEntry("Squad", "se-1")
+                    .AddModifiers(Modifier(type: kind, field: "name")));
+
+            using var writer = new StringWriter();
+            original.Serialize(writer);
+            var xml = writer.ToString();
+
+            xml.Should().Contain($"type=\"{wireName}\"");
+
+            using var stream = new MemoryStream(Encoding.UTF8.GetBytes(xml));
+            var read = stream.DeserializeGamesystem()!;
+
+            read.SelectionEntries[0].Modifiers[0].Type.Should().Be(kind);
+        }
+
+        [Theory]
+        [InlineData(ModifierKind.Prepend)]
+        [InlineData(ModifierKind.Append)]
+        [InlineData(ModifierKind.Replace)]
+        public void String_modifier_kinds_are_schema_validated(ModifierKind kind)
+        {
+            var gamesystem =
+                Gamesystem()
+                .AddSelectionEntries(
+                    SelectionEntry("Squad", "se-1")
+                    .AddModifiers(Modifier(type: kind, field: "name")));
+
+            var messages = SchemaUtils.Validate(Catalogue(gamesystem));
+
+            messages.Should().BeEmpty();
         }
 
         [Fact]
