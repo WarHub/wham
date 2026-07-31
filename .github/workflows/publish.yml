@@ -73,7 +73,7 @@ jobs:
           ref: ${{ inputs.ref || '' }}
           token: ${{ steps.app-token.outputs.token }}
           submodules: true
-      - uses: actions/setup-dotnet@v5
+      - uses: actions/setup-dotnet@v6
         with:
           dotnet-version: '10.0.x'
       - run: dotnet --info
