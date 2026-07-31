@@ -14,3 +14,10 @@ updates:
       # past it needs a licensing decision, not an automated bump.
       - dependency-name: FluentAssertions
         versions: [">=8.0.0"]
+      # YamlDotNet 18.x breaks BattleScribeSpec.TestKit in the lib/battlescribe-spec
+      # submodule — its SpecLoader static initializer throws and all 362 conformance
+      # specs stop loading. Central package management applies our version to the
+      # submodule's projects too. Unblock only when battlescribe-spec moves to 18.x.
+      # See #330.
+      - dependency-name: YamlDotNet
+        versions: [">=18.0.0"]
