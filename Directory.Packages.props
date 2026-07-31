@@ -17,7 +17,7 @@
       the TestKit is built against the 17.x API. Bump only once battlescribe-spec
       itself moves to 18.x.
     -->
-    <PackageVersion Include="YamlDotNet" Version="17.1.0" />
+    <PackageVersion Include="YamlDotNet" Version="18.1.0" />
   </ItemGroup>
   <ItemGroup Label="Tests">
     <!--
