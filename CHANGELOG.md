@@ -14,12 +14,34 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   This is source- and binary-breaking for callers that passed `id`
   positionally — `Force(entry, "some-id")` no longer compiles and must become
   `Force(entry, id: "some-id")`. Callers using named arguments, or passing only
-  the force entry, are unaffected.
+  the force entry, are unaffected. ([#316])
 
   Previously the catalogue was always inferred from the force entry's nearest
   `CatalogueBaseNode` ancestor. That is wrong when a force entry is defined in
   the gamesystem but the resulting force should reference a different
   catalogue; the inference is still the default when `catalogue` is omitted.
+- `IsXmlZipped(this XmlDocumentKind)` is retained but now reports whether *every*
+  file of that kind is zipped, which is only true of `RepoDistribution`. Use
+  `IsXmlZippedPath(this string)` to test an actual file. ([#324])
+
+### Fixed
+
+- Zipped BattleScribe datafiles (`.catz`, `.gstz`, `.rosz`, `.bsi`) can be read
+  again. `IsXmlZipped` asked whether a document *kind*'s extension was zipped,
+  but a kind's extension list is built as `(plain, zipped)` and the check only
+  ever looked at the first entry — so it was always `false` and every zipped
+  file was handed to the XML reader as raw ZIP bytes, failing with
+  `XmlException: Data at the root level is invalid`. Zipped-ness is a property
+  of the path, not the kind, so `LoadSourceAuto` now decides from the file
+  extension via the new `IsXmlZippedPath`. This affected `wham publish` and
+  `wham convert xml` on any source directory containing zipped datafiles.
+  ([#311], [#324])
+- `XmlDocumentKind.Unknown.IsXmlZipped()` no longer throws
+  `KeyNotFoundException`. ([#324])
+
+[#311]: https://github.com/WarHub/wham/issues/311
+[#316]: https://github.com/WarHub/wham/pull/316
+[#324]: https://github.com/WarHub/wham/pull/324
 
 ## [0.14.0] - 2026-02-28
 
