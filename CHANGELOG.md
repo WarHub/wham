@@ -7,6 +7,43 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Roster engine, symbol model and workspace.** A Roslyn-inspired layer that
+  turns BattleScribe data into a bound, queryable symbol graph, and an engine
+  that builds and mutates rosters against it. Landed as a stack of eight
+  reviewable layers, split out of the long-running `feature/roster-engine`
+  branch:
+  - `WarHub.ArmouryModel.Extensions` — the `ISymbol` abstraction, binders,
+    diagnostics and compilation entry points. ([#317])
+  - `WarHub.ArmouryModel.Concrete.Extensions` — concrete symbols, binding,
+    effective values and `WhamCompilation`, with incremental compilation via a
+    references model. ([#319])
+  - `WarHub.ArmouryModel.Concrete.Extensions.Generators` — source generator
+    emitting reference-checking boilerplate from `[Bound]` annotations. ([#318])
+  - `WarHub.ArmouryModel.EditorServices` — `WhamWorkspace`, roster editing
+    operations and Handlebars-based formatting. ([#320])
+  - `WarHub.ArmouryModel.RosterEngine` — roster construction, force management,
+    entry discovery and selection mutation over the symbol model. ([#321])
+  - `WarHub.ArmouryModel.RosterEngine.Spec` — adapter for the BattleScribe-spec
+    conformance suite, added as a git submodule. 410 specs, 362 passing.
+    ([#322])
+  - `Phalanx.SampleDataset` — sample BattleScribe data used by tests and
+    benchmarks. ([#315])
+
+  Design decisions are recorded in `docs/adrs/`.
+- `WarHub.ArmouryModel.Source.Yaml` — reader for BattleScribe-schema data
+  expressed as YAML, plus file-based setup on the spec adapter. ([#325])
+- Support for the NewRecruit extensions to the BattleScribe data format: new
+  nodes, attributes and enum values across `ModifierKind`, `ConditionKind`,
+  `ConditionGroupKind`, `ConstraintKind` and `SelectionEntryKind`, modelled over
+  BattleScribe v2.03. ([#308])
+- Doc comments and round-trip/schema tests for the string-valued
+  `ModifierKind`s (`prepend`, `append`, `replace`). The `prepend` modifier was
+  originally contributed by [@The4D6] in [#221] and independently reimplemented
+  in [#308]; this restores the documentation and adds the test coverage that
+  came with the original contribution. ([#326])
+
 ### Changed
 
 - **Breaking**: `NodeFactory.Force` takes an optional `catalogue` parameter in
@@ -23,6 +60,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `IsXmlZipped(this XmlDocumentKind)` is retained but now reports whether *every*
   file of that kind is zipped, which is only true of `RepoDistribution`. Use
   `IsXmlZippedPath(this string)` to test an actual file. ([#324])
+- deps: update Microsoft.CodeAnalysis.CSharp to 5.6.0,
+  Microsoft.CodeAnalysis.Analyzers to 5.6.0, Serilog to 4.4.0,
+  System.CommandLine to 2.0.10, Microsoft.NET.Test.Sdk to 18.8.1, NSubstitute to
+  6.0.0, coverlet.collector to 10.0.1, Nerdbank.GitVersioning to 3.10.91 and
+  FluentAssertions to 7.2.2. FluentAssertions is deliberately held on the 7.x
+  line — 8.0.0 relicensed from Apache-2.0 to a commercial licence. YamlDotNet is
+  held at 17.1.0 because 18.1.0 breaks the conformance suite's spec loader.
+  ([#327])
+- build: add an empty `Directory.Build.targets` so the MSBuild search stops at
+  the repository root. ([#313])
 
 ### Fixed
 
@@ -38,10 +85,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   ([#311], [#324])
 - `XmlDocumentKind.Unknown.IsXmlZipped()` no longer throws
   `KeyNotFoundException`. ([#324])
+- The spec adapter's `ProtocolConverter` no longer guesses at unrecognised wire
+  values. Its parsers each ended in a silent fallback, so an unknown modifier
+  kind became `Set` and an unknown constraint kind became `Minimum` — a fixture
+  using `prepend` was evaluated as `set`, and `exactly` as `min`, with no error.
+  The maps are now derived from the `[XmlEnum]` attributes that define these
+  names, so they stay complete as the model grows, and a genuinely unknown value
+  throws. ([#322])
+- The conformance harness no longer discards specs it cannot load. A bare
+  `catch { continue; }` was silently removing them from the run, hiding 48
+  fixtures that the pinned spec revision cannot deserialize. They are now
+  reported as skipped. ([#322])
 
+[#221]: https://github.com/WarHub/wham/pull/221
+[#308]: https://github.com/WarHub/wham/pull/308
 [#311]: https://github.com/WarHub/wham/issues/311
+[#313]: https://github.com/WarHub/wham/pull/313
+[#315]: https://github.com/WarHub/wham/pull/315
 [#316]: https://github.com/WarHub/wham/pull/316
+[#317]: https://github.com/WarHub/wham/pull/317
+[#318]: https://github.com/WarHub/wham/pull/318
+[#319]: https://github.com/WarHub/wham/pull/319
+[#320]: https://github.com/WarHub/wham/pull/320
+[#321]: https://github.com/WarHub/wham/pull/321
+[#322]: https://github.com/WarHub/wham/pull/322
 [#324]: https://github.com/WarHub/wham/pull/324
+[#325]: https://github.com/WarHub/wham/pull/325
+[#326]: https://github.com/WarHub/wham/pull/326
+[#327]: https://github.com/WarHub/wham/pull/327
+[@The4D6]: https://github.com/The4D6
 
 ## [0.14.0] - 2026-02-28
 
