@@ -22,6 +22,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WarHub.ArmouryModel.Source.
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WarHub.ArmouryModel.Source.BattleScribe.Tests", "tests\WarHub.ArmouryModel.Source.BattleScribe.Tests\WarHub.ArmouryModel.Source.BattleScribe.Tests.csproj", "{F69E49A4-C234-4438-B98E-A0C4B71FA914}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WarHub.ArmouryModel.Source.Yaml", "src\WarHub.ArmouryModel.Source.Yaml\WarHub.ArmouryModel.Source.Yaml.csproj", "{0F46AD60-4CC8-4A21-92ED-DC5E7A493058}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WarHub.ArmouryModel.Source.Yaml.Tests", "tests\WarHub.ArmouryModel.Source.Yaml.Tests\WarHub.ArmouryModel.Source.Yaml.Tests.csproj", "{4B6CAFE0-4B4E-459C-AE26-9BD615E406C4}"
+EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WarHub.ArmouryModel.Workspaces.BattleScribe", "src\WarHub.ArmouryModel.Workspaces.BattleScribe\WarHub.ArmouryModel.Workspaces.BattleScribe.csproj", "{799D6CEC-4827-4CC5-830C-38EC02DFCCC3}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WarHub.ArmouryModel.CliTool", "src\WarHub.ArmouryModel.CliTool\WarHub.ArmouryModel.CliTool.csproj", "{674F56C5-F16F-4FE8-91E2-AA3B429BEDC4}"
@@ -428,6 +432,30 @@ Global
 		{C20380DF-E02A-4CDA-B14C-2D7D972F15BD}.Release|x64.Build.0 = Release|Any CPU
 		{C20380DF-E02A-4CDA-B14C-2D7D972F15BD}.Release|x86.ActiveCfg = Release|Any CPU
 		{C20380DF-E02A-4CDA-B14C-2D7D972F15BD}.Release|x86.Build.0 = Release|Any CPU
+		{0F46AD60-4CC8-4A21-92ED-DC5E7A493058}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0F46AD60-4CC8-4A21-92ED-DC5E7A493058}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0F46AD60-4CC8-4A21-92ED-DC5E7A493058}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{0F46AD60-4CC8-4A21-92ED-DC5E7A493058}.Debug|x64.Build.0 = Debug|Any CPU
+		{0F46AD60-4CC8-4A21-92ED-DC5E7A493058}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{0F46AD60-4CC8-4A21-92ED-DC5E7A493058}.Debug|x86.Build.0 = Debug|Any CPU
+		{0F46AD60-4CC8-4A21-92ED-DC5E7A493058}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0F46AD60-4CC8-4A21-92ED-DC5E7A493058}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0F46AD60-4CC8-4A21-92ED-DC5E7A493058}.Release|x64.ActiveCfg = Release|Any CPU
+		{0F46AD60-4CC8-4A21-92ED-DC5E7A493058}.Release|x64.Build.0 = Release|Any CPU
+		{0F46AD60-4CC8-4A21-92ED-DC5E7A493058}.Release|x86.ActiveCfg = Release|Any CPU
+		{0F46AD60-4CC8-4A21-92ED-DC5E7A493058}.Release|x86.Build.0 = Release|Any CPU
+		{4B6CAFE0-4B4E-459C-AE26-9BD615E406C4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4B6CAFE0-4B4E-459C-AE26-9BD615E406C4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4B6CAFE0-4B4E-459C-AE26-9BD615E406C4}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{4B6CAFE0-4B4E-459C-AE26-9BD615E406C4}.Debug|x64.Build.0 = Debug|Any CPU
+		{4B6CAFE0-4B4E-459C-AE26-9BD615E406C4}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{4B6CAFE0-4B4E-459C-AE26-9BD615E406C4}.Debug|x86.Build.0 = Debug|Any CPU
+		{4B6CAFE0-4B4E-459C-AE26-9BD615E406C4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4B6CAFE0-4B4E-459C-AE26-9BD615E406C4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4B6CAFE0-4B4E-459C-AE26-9BD615E406C4}.Release|x64.ActiveCfg = Release|Any CPU
+		{4B6CAFE0-4B4E-459C-AE26-9BD615E406C4}.Release|x64.Build.0 = Release|Any CPU
+		{4B6CAFE0-4B4E-459C-AE26-9BD615E406C4}.Release|x86.ActiveCfg = Release|Any CPU
+		{4B6CAFE0-4B4E-459C-AE26-9BD615E406C4}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -461,6 +489,8 @@ Global
 		{A8384927-C7B7-4EED-8701-50F5A2EE38A6} = {8C4E7D04-65AF-421E-9432-7741ADAF4714}
 		{96557914-A27D-4A6E-8255-050918412930} = {6055CEFB-2A8B-45E3-B6D7-B9DB2A4FE612}
 		{C20380DF-E02A-4CDA-B14C-2D7D972F15BD} = {8C4E7D04-65AF-421E-9432-7741ADAF4714}
+		{0F46AD60-4CC8-4A21-92ED-DC5E7A493058} = {6055CEFB-2A8B-45E3-B6D7-B9DB2A4FE612}
+		{4B6CAFE0-4B4E-459C-AE26-9BD615E406C4} = {8C4E7D04-65AF-421E-9432-7741ADAF4714}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {DAF2775E-5311-44A8-B7CB-F4A55225705A}
