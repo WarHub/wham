@@ -1,28 +1,43 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <PackageVersion Include="Microsoft.CodeAnalysis.CSharp" Version="5.0.0" PrivateAssets="all" />
-    <PackageVersion Include="Microsoft.CodeAnalysis.Analyzers" Version="3.11.0" PrivateAssets="all" />
+    <PackageVersion Include="Microsoft.CodeAnalysis.CSharp" Version="5.6.0" PrivateAssets="all" />
+    <PackageVersion Include="Microsoft.CodeAnalysis.Analyzers" Version="5.6.0" PrivateAssets="all" />
     <PackageVersion Include="Newtonsoft.Json" Version="13.0.4" />
-    <PackageVersion Include="Serilog" Version="4.3.1" />
+    <PackageVersion Include="Serilog" Version="4.4.0" />
     <PackageVersion Include="Serilog.Sinks.Console" Version="6.1.1" />
     <PackageVersion Include="Handlebars.Net" Version="2.1.6" />
     <PackageVersion Include="NaturalSort.Extension" Version="4.4.1" />
-    <PackageVersion Include="System.CommandLine" Version="2.0.3" />
+    <PackageVersion Include="System.CommandLine" Version="2.0.10" />
+    <!--
+      YamlDotNet is held at 17.x. 18.1.0 breaks BattleScribeSpec.TestKit in the
+      lib/battlescribe-spec submodule: its SpecLoader static initializer throws, so
+      every conformance spec fails to load (362 passing specs drop to 0). Central
+      package management applies this version to the submodule's projects too, and
+      the TestKit is built against the 17.x API. Bump only once battlescribe-spec
+      itself moves to 18.x.
+    -->
     <PackageVersion Include="YamlDotNet" Version="17.1.0" />
   </ItemGroup>
   <ItemGroup Label="Tests">
-    <PackageVersion Include="FluentAssertions" Version="7.2.0" />
-    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.3.0" />
-    <PackageVersion Include="NSubstitute" Version="5.3.0" />
+    <!--
+      FluentAssertions is deliberately pinned to the 7.x line. Version 8.0.0 changed
+      the licence from Apache-2.0 to the commercial Xceed Community Licence, which is
+      free only for non-commercial use. 7.x remains Apache-2.0. Do not accept
+      automated bumps past 7.x without a licensing decision — see .github/dependabot.yml,
+      which ignores those updates.
+    -->
+    <PackageVersion Include="FluentAssertions" Version="7.2.2" />
+    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.8.1" />
+    <PackageVersion Include="NSubstitute" Version="6.0.0" />
     <PackageVersion Include="NSubstitute.Analyzers.CSharp" Version="1.0.17" PrivateAssets="all" />
     <PackageVersion Include="XmlDiffPatch.Core" Version="1.0.1" />
     <PackageVersion Include="xunit" Version="2.9.3" />
     <PackageVersion Include="xunit.v3" Version="3.2.2" />
     <PackageVersion Include="xunit.runner.visualstudio" Version="3.1.5" PrivateAssets="all" />
-    <PackageVersion Include="coverlet.collector" Version="8.0.0" PrivateAssets="all" />
+    <PackageVersion Include="coverlet.collector" Version="10.0.1" PrivateAssets="all" />
   </ItemGroup>
   <ItemGroup>
-    <GlobalPackageReference Include="Nerdbank.GitVersioning" Version="3.9.50" />
+    <GlobalPackageReference Include="Nerdbank.GitVersioning" Version="3.10.91" />
   </ItemGroup>
 </Project>
