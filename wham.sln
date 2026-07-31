@@ -68,6 +68,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WarHub.ArmouryModel.Concret
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WarHub.ArmouryModel.EditorServices.Tests", "tests\WarHub.ArmouryModel.EditorServices.Tests\WarHub.ArmouryModel.EditorServices.Tests.csproj", "{31485C8E-C13D-41A2-8C78-41C4F3E4A013}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WarHub.ArmouryModel.RosterEngine", "src\WarHub.ArmouryModel.RosterEngine\WarHub.ArmouryModel.RosterEngine.csproj", "{4ACE8227-9C2D-4364-8F85-85D008B24317}"
+EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WarHub.ArmouryModel.Concrete.Extensions.Generators", "src\WarHub.ArmouryModel.Concrete.Extensions.Generators\WarHub.ArmouryModel.Concrete.Extensions.Generators.csproj", "{96557914-A27D-4A6E-8255-050918412930}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WarHub.ArmouryModel.Concrete.Extensions.Generators.Tests", "tests\WarHub.ArmouryModel.Concrete.Extensions.Generators.Tests\WarHub.ArmouryModel.Concrete.Extensions.Generators.Tests.csproj", "{C20380DF-E02A-4CDA-B14C-2D7D972F15BD}"
@@ -334,6 +336,18 @@ Global
 		{31485C8E-C13D-41A2-8C78-41C4F3E4A013}.Release|x64.Build.0 = Release|Any CPU
 		{31485C8E-C13D-41A2-8C78-41C4F3E4A013}.Release|x86.ActiveCfg = Release|Any CPU
 		{31485C8E-C13D-41A2-8C78-41C4F3E4A013}.Release|x86.Build.0 = Release|Any CPU
+		{4ACE8227-9C2D-4364-8F85-85D008B24317}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4ACE8227-9C2D-4364-8F85-85D008B24317}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4ACE8227-9C2D-4364-8F85-85D008B24317}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{4ACE8227-9C2D-4364-8F85-85D008B24317}.Debug|x64.Build.0 = Debug|Any CPU
+		{4ACE8227-9C2D-4364-8F85-85D008B24317}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{4ACE8227-9C2D-4364-8F85-85D008B24317}.Debug|x86.Build.0 = Debug|Any CPU
+		{4ACE8227-9C2D-4364-8F85-85D008B24317}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4ACE8227-9C2D-4364-8F85-85D008B24317}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4ACE8227-9C2D-4364-8F85-85D008B24317}.Release|x64.ActiveCfg = Release|Any CPU
+		{4ACE8227-9C2D-4364-8F85-85D008B24317}.Release|x64.Build.0 = Release|Any CPU
+		{4ACE8227-9C2D-4364-8F85-85D008B24317}.Release|x86.ActiveCfg = Release|Any CPU
+		{4ACE8227-9C2D-4364-8F85-85D008B24317}.Release|x86.Build.0 = Release|Any CPU
 		{96557914-A27D-4A6E-8255-050918412930}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{96557914-A27D-4A6E-8255-050918412930}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{96557914-A27D-4A6E-8255-050918412930}.Debug|x64.ActiveCfg = Debug|Any CPU
@@ -384,6 +398,7 @@ Global
 		{66F222A4-CF92-454B-98C6-16D6D4E7B734} = {6055CEFB-2A8B-45E3-B6D7-B9DB2A4FE612}
 		{FA264183-EF47-46A1-A810-1900B48A9215} = {8C4E7D04-65AF-421E-9432-7741ADAF4714}
 		{31485C8E-C13D-41A2-8C78-41C4F3E4A013} = {8C4E7D04-65AF-421E-9432-7741ADAF4714}
+		{4ACE8227-9C2D-4364-8F85-85D008B24317} = {6055CEFB-2A8B-45E3-B6D7-B9DB2A4FE612}
 		{96557914-A27D-4A6E-8255-050918412930} = {6055CEFB-2A8B-45E3-B6D7-B9DB2A4FE612}
 		{C20380DF-E02A-4CDA-B14C-2D7D972F15BD} = {8C4E7D04-65AF-421E-9432-7741ADAF4714}
 	EndGlobalSection
