@@ -8,7 +8,7 @@
     <PackageVersion Include="Serilog.Sinks.Console" Version="6.1.1" />
     <PackageVersion Include="Handlebars.Net" Version="2.4.1" />
     <PackageVersion Include="NaturalSort.Extension" Version="4.4.1" />
-    <PackageVersion Include="System.CommandLine" Version="2.0.10" />
+    <PackageVersion Include="System.CommandLine" Version="2.0.11" />
     <!--
       YamlDotNet is held at 17.x. 18.1.0 breaks BattleScribeSpec.TestKit in the
       lib/battlescribe-spec submodule: its SpecLoader static initializer throws, so
